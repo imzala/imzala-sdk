@@ -12,4 +12,6 @@ export interface EmbedOptions {
   onTimeout?: (p: { code: 'TOKEN_EXPIRED' | 'SESSION_TIMEOUT' }) => void;
   onError?: (p: { code: EmbedErrorCode; message?: string }) => void;
   onResize?: (p: { height: number }) => void;
+  onFieldSigned?: (p: { fieldId?: string; fieldType?: string }) => void;
+  onFieldUnsigned?: (p: { fieldId?: string; fieldType?: string }) => void;
 }

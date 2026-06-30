@@ -4,6 +4,7 @@ export type { EmbedOptions, EmbedErrorCode } from './types';
 
 export class ImzalaEmbed {
   private iframe: HTMLIFrameElement | null = null;
+  private modal: HTMLElement | null = null;
   private handler?: (e: MessageEvent) => void;
   private origin: string;
 
@@ -12,6 +13,7 @@ export class ImzalaEmbed {
   }
 
   open(embedToken: string) {
+    if (this.iframe) this.close(); // Minor 3: prevent listener leak on double open
     const url = `${this.origin}/embed/sign?token=${encodeURIComponent(embedToken)}${this.opts.locale ? `&lang=${this.opts.locale}` : ''}`;
     const iframe = document.createElement('iframe');
     iframe.src = url;
@@ -37,9 +39,7 @@ export class ImzalaEmbed {
 
   private onMessage(e: MessageEvent) {
     if (e.origin !== this.origin) return;                        // origin guard
-    // source guard: real postMessage always has a non-null source; only enforce when source
-    // is known so synthetic test events (source=null) pass through in jsdom.
-    if (e.source != null && e.source !== this.iframe?.contentWindow) return;
+    if (e.source !== this.iframe?.contentWindow) return;         // strict source guard
     const d = e.data;
     if (!d || typeof d !== 'object' || d.type !== 'imzala-embed') return; // namespace guard
     switch (d.event) {
@@ -50,15 +50,20 @@ export class ImzalaEmbed {
       case 'timeout':  this.opts.onTimeout?.(d.payload); this.close(); break;
       case 'error':    this.opts.onError?.(d.payload); break;
       case 'resize':
-        if (this.iframe && d.payload?.height) this.iframe.style.height = `${d.payload.height}px`;
+        if (this.iframe && d.payload?.height && this.opts.autoResize !== false) this.iframe.style.height = `${d.payload.height}px`; // Minor 4: autoResize:false blocks resize
         this.opts.onResize?.(d.payload);
         break;
-      default: break; // unknown event/version silently ignored
+      case 'field_signed':   this.opts.onFieldSigned?.(d.payload); break;
+      case 'field_unsigned': this.opts.onFieldUnsigned?.(d.payload); break;
+      default: break; // version intentionally not hard-rejected — forward-compatible per spec §5.4 (unknown event/version silently ignored)
     }
   }
 
   close() {
     if (this.handler) window.removeEventListener('message', this.handler);
+    this.handler = undefined;
+    this.modal?.remove();
+    this.modal = null;
     this.iframe?.remove();
     this.iframe = null;
   }
@@ -68,6 +73,7 @@ export class ImzalaEmbed {
     m.setAttribute('aria-modal', 'true');
     m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;';
     document.body.appendChild(m);
+    this.modal = m;
     return m;
   }
 }
