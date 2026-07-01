@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Ships as the single NuGet package `Imzala`. Rather than depending on a
+    separately-published generated client package, this project compiles the
+    vendored openapi-generator output (../generated/src/ImzalaApiClient) directly
+    into the SAME assembly as the hand-written facade below — mirrors how
+    @imzala/node (TS, B1) bundles ../generated/*.ts and how the `imzala` wheel
+    (Python, B2) vendors imzala_client/ via a package-dir remap, instead of
+    requiring consumers to install a second package.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>annotations</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Imzala</AssemblyName>
+    <RootNamespace>ImzalaSdk</RootNamespace>
+
+    <PackageId>Imzala</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>imzala.org</Authors>
+    <Company>imzala.org</Company>
+    <Description>imzala.org server-side SDK — templates, demands, embedded signing, timestamps, webhook verification.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/imzala/imzala-sdk</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The vendored generated code has plenty of missing-XML-doc-comment
+         gaps (private/internal members etc.) — don't fail the build on CS1591. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Vendored openapi-generator (csharp / httpclient library) output.
+         Only src/ImzalaApiClient/** (Api+Client+Model) — NOT the generator's
+         own src/ImzalaApiClient.Test/** scaffold tests, which we don't ship. -->
+    <Compile Include="../generated/src/ImzalaApiClient/**/*.cs" LinkBase="Generated" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Same runtime deps the vendored client's own (unused) csproj declares
+         — see ../generated/src/ImzalaApiClient/ImzalaApiClient.csproj. -->
+    <PackageReference Include="JsonSubTypes" Version="2.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Polly" Version="8.1.0" />
+  </ItemGroup>
+
+</Project>

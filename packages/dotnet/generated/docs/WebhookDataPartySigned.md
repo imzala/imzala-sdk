@@ -1,0 +1,12 @@
+# ImzalaApiClient.Model.WebhookDataPartySigned
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**DemandId** | **Guid** |  | 
+**PartyId** | **Guid** |  | 
+**Backfill** | **bool** | Replay bayrağı | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
