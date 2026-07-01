@@ -10,9 +10,9 @@
 # spec/openapi.v1.3.0.yaml to already exist.
 #
 # typescript-axios (packages/node), python (packages/python), csharp
-# (packages/dotnet), and java (packages/java) are wired up as GA today.
-# Other languages are listed here so a future task can flip them on one at
-# a time without re-plumbing the script.
+# (packages/dotnet), java (packages/java), and php (packages/php) are
+# wired up as GA today. Other languages are listed here so a future task
+# can flip them on one at a time without re-plumbing the script.
 
 set -euo pipefail
 
@@ -59,8 +59,38 @@ LANG_TABLE=(
   # while only ApiClient/Configuration/etc. follow invokerPackage — a
   # split-package footgun for a package meant to ship as org.imzala:*).
   "java:java:packages/java/generated:library=native,groupId=org.imzala,artifactId=imzala-client-generated,invokerPackage=org.imzala.client.generated,apiPackage=org.imzala.client.generated.api,modelPackage=org.imzala.client.generated.model"
-  # Future langs — not run yet, kept here so the next task just uncomments:
-  # "php:php:packages/php/generated:invokerPackage=Imzala\\\\ServerSdk"
+  # php: guzzle library (the generator's only GA HTTP option besides the
+  # beta psr-18 template). invokerPackage is deliberately NOT bare
+  # "Imzala" — the hand-written facade (packages/php/src) ships a class
+  # literally named `ImzalaClient` in namespace `Imzala`; "Imzala\\Client"
+  # is a *sibling* sub-namespace (Imzala\Client\Api, Imzala\Client\Model,
+  # ...), same avoidance strategy as B3 (csharp)'s "ImzalaApiClient" and
+  # B5 (java)'s "org.imzala.client.generated" — never a namespace segment
+  # the facade's own unqualified `Imzala\ImzalaClient` could collide with.
+  # composerPackageName is deliberately NOT "imzala/imzala-php" — that's
+  # the hand-written facade's own Packagist name (packages/php/composer.json);
+  # this vendored/bundled generated code is never installed as a separate
+  # Composer package (same "compile the generated sources directly into
+  # the facade's own package" strategy as Java's build-helper-maven-plugin
+  # add-source and C#'s <Compile Include>), so its composer.json is
+  # present but effectively inert — only its *namespace* (PSR-4 prefix)
+  # matters, and that comes from invokerPackage above, not this property.
+  #
+  # Backslash-escaping gotcha (found empirically — worth flagging for any
+  # future PHP-generator re-run): passing invokerPackage as a *single*
+  # literal backslash (`Imzala\Client`, i.e. 2 backslash chars in this
+  # bash double-quoted array-literal source, `\\`) silently produces the
+  # WRONG result — `namespace ImzalaClient\Api;` (segments concatenated,
+  # inner backslash swallowed) — because openapi-generator-cli's own
+  # --additional-properties value parsing treats a lone backslash as an
+  # escape character itself, one layer *above* bash's own double-quote
+  # escaping. Getting one literal namespace-separator backslash through
+  # to the generator therefore requires FOUR backslash characters here
+  # (bash collapses `\\\\` -> `\\`, i.e. two literal chars, which the
+  # generator's own parser then collapses `\\` -> `\`, i.e. one literal
+  # char) — confirmed by generating to a scratch dir and grepping the
+  # emitted `namespace` line for both spellings.
+  "php:php:packages/php/generated:invokerPackage=Imzala\\\\Client,composerPackageName=imzala/imzala-client-generated"
 )
 
 RUN_ONLY="${1:-}"

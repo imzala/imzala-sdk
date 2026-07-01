@@ -21,3 +21,11 @@ obj/
 # own Maven build output, a sibling of generated/, not nested under it).
 target/
 *.class
+
+# PHP (packages/php) — a library package, so composer.lock is deliberately
+# NOT committed either (consumers/CI resolve their own lock), same
+# convention as this repo's other language packages having no committed
+# lock file for their own dependency managers.
+packages/php/vendor/
+packages/php/composer.lock
+.phpunit.result.cache
