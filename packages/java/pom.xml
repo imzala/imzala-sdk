@@ -196,4 +196,108 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!--
+      Maven Central release plumbing (B6 — CI/release task) — dormant
+      unless explicitly activated with `-Prelease` (see
+      .github/workflows/java-publish.yml). A plain `mvn test` / `mvn
+      package` (local dev, or any other CI) never touches this profile,
+      needs no GPG key, and behaves exactly as it did before this profile
+      existed.
+
+      Publishes through the Central Publishing Portal
+      (central.sonatype.com) via
+      org.sonatype.central:central-publishing-maven-plugin — the legacy
+      OSSRH host (oss.sonatype.org / s01.oss.sonatype.org) is retired; do
+      not resurrect nexus-staging-maven-plugin here.
+    -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- Central requires a sources jar alongside the main jar. -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Central requires a javadoc jar alongside the main jar. -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.6.3</version>
+            <configuration>
+              <!-- The vendored generated/ sources (openapi-generator
+                   output) under-document plenty of public members — don't
+                   fail the release build on javadoc lint, only surface
+                   real errors. -->
+              <doclint>none</doclint>
+              <failOnError>false</failOnError>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Central requires every artifact (jar + sources + javadoc +
+               pom) GPG-signed. Passphrase passed via -Dgpg.passphrase
+               (see workflow — MAVEN_GPG_PASSPHRASE secret); the signing
+               key itself is imported into the runner's GPG keyring by
+               actions/setup-java's gpg-private-key input, keyed off
+               MAVEN_GPG_PRIVATE_KEY. -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.7</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Uploads the signed bundle to the Central Publishing Portal.
+               publishingServerId="central" matches the <server> id
+               actions/setup-java writes into ~/.m2/settings.xml
+               (server-id: central in the workflow) — username/password
+               there are the Sonatype Central Portal user token
+               (SONATYPE_USERNAME/SONATYPE_PASSWORD secrets), NOT a legacy
+               OSSRH account password.
+               autoPublish=false: CI uploads + validates the bundle, but a
+               human still clicks "Publish" in central.sonatype.com for
+               each release — flip to true only once the release process
+               has been exercised a few times without surprises. -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>false</autoPublish>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

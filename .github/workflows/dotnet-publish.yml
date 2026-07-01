@@ -1,0 +1,90 @@
+name: Publish NuGet package (Imzala)
+
+# packages/dotnet — NuGet package "Imzala". Compiles the vendored
+# openapi-generator output directly into the same assembly as the
+# hand-written facade (see packages/dotnet/src/Imzala.csproj comment).
+
+on:
+  push:
+    tags:
+      - 'dotnet-v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (pack only, no push to NuGet.org)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dotnet-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      dry_run: ${{ steps.resolve.outputs.dry_run }}
+    steps:
+      - name: Resolve mode from trigger
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "dry_run=$INPUT_DRY_RUN" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: resolve
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Version guard (tag must match csproj <Version>)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_REF_NAME: ${{ github.ref_name }}
+        run: |
+          manifest_version=$(grep -oPm1 '(?<=<Version>)[^<]+' packages/dotnet/src/Imzala.csproj)
+          tag_version="${TAG_REF_NAME#dotnet-v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::Tag ${TAG_REF_NAME} expects version ${tag_version} but packages/dotnet/src/Imzala.csproj has ${manifest_version}."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore packages/dotnet/Imzala.sln
+
+      - name: Build (Release)
+        run: dotnet build packages/dotnet/Imzala.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test packages/dotnet/Imzala.sln -c Release --no-build
+
+      - name: Pack
+        run: dotnet pack packages/dotnet/src/Imzala.csproj -c Release -o out
+
+      - name: List produced package (dry run)
+        if: needs.resolve.outputs.dry_run == 'true'
+        run: ls -la out/*.nupkg
+
+      - name: Push to NuGet.org
+        if: needs.resolve.outputs.dry_run != 'true'
+        run: dotnet nuget push out/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

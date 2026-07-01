@@ -1,0 +1,112 @@
+name: Publish Maven Central package (org.imzala:imzala-java)
+
+# packages/java — Maven Central artifact org.imzala:imzala-java, published
+# through the Central Publishing Portal (central.sonatype.com). The legacy
+# OSSRH host (oss.sonatype.org / s01.oss.sonatype.org) is retired — do not
+# resurrect nexus-staging-maven-plugin workflows here.
+#
+# Publish plumbing (source/javadoc jars, GPG signing, central-publishing-
+# maven-plugin) lives in a dormant Maven `release` profile in pom.xml,
+# activated only by `-Prelease` below — a plain `mvn test`/`mvn package`
+# never touches it and needs no GPG key.
+
+on:
+  push:
+    tags:
+      - 'java-v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (release-profile package only, no upload to Central)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      dry_run: ${{ steps.resolve.outputs.dry_run }}
+    steps:
+      - name: Resolve mode from trigger
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "dry_run=$INPUT_DRY_RUN" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: resolve
+    runs-on: ubuntu-latest
+    environment: maven-central
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 + Maven server credentials + GPG key
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          # Writes a <server> entry with id "central" into ~/.m2/settings.xml,
+          # username/password sourced from the named env vars at build time
+          # (set below) — matches <publishingServerId>central</publishingServerId>
+          # in pom.xml's release profile (central-publishing-maven-plugin).
+          server-id: central
+          server-username: SONATYPE_USERNAME
+          server-password: SONATYPE_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Version guard (tag must match pom.xml <version>)
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: packages/java
+        env:
+          TAG_REF_NAME: ${{ github.ref_name }}
+        run: |
+          manifest_version=$(mvn -q -B help:evaluate -Dexpression=project.version -DforceStdout)
+          tag_version="${TAG_REF_NAME#java-v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::Tag ${TAG_REF_NAME} expects version ${tag_version} but packages/java/pom.xml has ${manifest_version}."
+            exit 1
+          fi
+
+      - name: Test (default profile — no GPG/Central involved)
+        working-directory: packages/java
+        run: mvn -B test
+
+      - name: Verify release profile — sources + javadoc + GPG sign (dry run only)
+        # `verify` (not `package`) on purpose: in Maven's default lifecycle
+        # `package` runs BEFORE `verify`, and maven-gpg-plugin's sign goal
+        # is bound to `verify` (the standard Central Portal convention) —
+        # `mvn package` alone would silently skip signing. Only runs on the
+        # dry-run path since the real publish path's `mvn deploy` below
+        # already passes through verify (and package, and sign) itself;
+        # running it twice here would just duplicate work.
+        if: needs.resolve.outputs.dry_run == 'true'
+        working-directory: packages/java
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: mvn -B -Prelease -DskipTests -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE" verify
+
+      - name: Deploy to Central Publishing Portal
+        if: needs.resolve.outputs.dry_run != 'true'
+        working-directory: packages/java
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: mvn -B -Prelease -DskipTests -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE" deploy

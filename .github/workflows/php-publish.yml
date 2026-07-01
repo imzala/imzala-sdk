@@ -1,0 +1,94 @@
+name: Validate + notify Packagist (imzala/imzala-php)
+
+# packages/php — Packagist package "imzala/imzala-php".
+#
+# ⚠️ TAG SCHEME DELIBERATELY DIFFERENT FROM THE OTHER 5 WORKFLOWS.
+# Composer/Packagist does NOT read a version from composer.json (there is
+# no "version" field in packages/php/composer.json, which is the Composer-
+# recommended setup) — it reads the git TAG ITSELF as the published semver
+# string. A tag like "php-v1.0.0" does not match Composer's version regex
+# (optional "v" + digits, anchored at the start) and would register as an
+# unstable "dev-php-v1.0.0" branch-alias instead of a clean "1.0.0" release
+# — `composer require imzala/imzala-php` (which resolves the highest
+# *stable* version by default) would silently never see it.
+#
+# So bare `vX.Y.Z` tags (no package prefix) are reserved EXCLUSIVELY for
+# PHP/Packagist releases in this repo. Every other package uses a
+# `<pkg>-vX.Y.Z` prefixed tag (node-v1.0.0, python-v1.0.0, ...), which by
+# construction never collides with a bare `v*` tag filter.
+#
+# This workflow does NOT actually publish anything to Packagist — Packagist
+# is not an artifact registry, it's a metadata index that reads directly
+# from the GitHub repository (via a webhook or periodic poll). The workflow
+# just (1) validates + tests the package on every release tag as a safety
+# gate, and (2) optionally pings Packagist's update API so the new tag is
+# indexed immediately instead of waiting for the next poll.
+#
+# 🔴 MONOREPO CAVEAT (see RELEASING.md "Çağdaş action" list): Packagist's
+# standard GitHub integration expects composer.json at the REPOSITORY ROOT.
+# This repo's composer.json lives at packages/php/composer.json (a
+# subdirectory) — verify this works with a plain Packagist "GitHub" package
+# before relying on it; if not, the standard fix is a repo-splitter step
+# that mirrors packages/php/ into a dedicated imzala/imzala-php GitHub repo
+# on tag push, and pointing Packagist at THAT repo instead.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: php-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate composer.json
+        working-directory: packages/php
+        run: composer validate --strict
+
+      - name: Install dependencies
+        working-directory: packages/php
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run tests
+        working-directory: packages/php
+        run: vendor/bin/phpunit
+
+      - name: Ping Packagist to force immediate re-index
+        # No-op until PACKAGIST_USERNAME/PACKAGIST_TOKEN secrets exist —
+        # safe to leave this step in place before that one-time setup is
+        # done (see RELEASING.md). Packagist will still pick up the tag on
+        # its own via webhook/poll even if this step never runs.
+        #
+        # REPO_URL defaults to the repo this workflow runs in
+        # (imzala/imzala-sdk). If the Packagist monorepo caveat above gets
+        # resolved via a repo-splitter (packages/php/ mirrored into a
+        # dedicated imzala/imzala-php repo), point this at that split repo
+        # instead — Packagist must be told to update the SAME repository
+        # URL it was originally submitted with.
+        if: startsWith(github.ref, 'refs/tags/') && env.PACKAGIST_USERNAME != '' && env.PACKAGIST_TOKEN != ''
+        env:
+          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          curl -sf -X POST \
+            "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d "{\"repository\":{\"url\":\"${REPO_URL}\"}}"

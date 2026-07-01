@@ -1,0 +1,111 @@
+name: Publish PyPI package (imzala)
+
+# packages/python — PyPI project "imzala". Ships two top-level packages in
+# one sdist/wheel: the hand-written `imzala` facade + the vendored generated
+# `imzala_client` (see packages/python/pyproject.toml comment).
+
+on:
+  push:
+    tags:
+      - 'python-v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (build + twine check only, no upload)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      dry_run: ${{ steps.resolve.outputs.dry_run }}
+    steps:
+      - name: Resolve mode from trigger
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "dry_run=$INPUT_DRY_RUN" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-test:
+    needs: resolve
+    runs-on: ubuntu-latest
+    outputs:
+      dry_run: ${{ needs.resolve.outputs.dry_run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Version guard (tag must match pyproject.toml version)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_REF_NAME: ${{ github.ref_name }}
+        run: |
+          manifest_version=$(python -c "import tomllib; print(tomllib.load(open('packages/python/pyproject.toml','rb'))['project']['version'])")
+          tag_version="${TAG_REF_NAME#python-v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::Tag ${TAG_REF_NAME} expects version ${tag_version} but packages/python/pyproject.toml has ${manifest_version}."
+            exit 1
+          fi
+
+      - name: Install package + dev deps
+        run: pip install './packages/python[dev]'
+
+      - name: Run tests
+        run: pytest packages/python/tests
+
+      - name: Install build tooling
+        run: pip install build twine
+
+      - name: Build sdist + wheel
+        working-directory: packages/python
+        run: python -m build
+
+      - name: twine check (metadata/README render validation)
+        working-directory: packages/python
+        run: twine check dist/*
+
+      - name: Upload dist/ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: packages/python/dist/
+          retention-days: 7
+
+  publish:
+    needs: build-and-test
+    if: needs.build-and-test.outputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write # PyPI Trusted Publishing (OIDC) — no API token needed
+    steps:
+      - name: Download dist/ artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

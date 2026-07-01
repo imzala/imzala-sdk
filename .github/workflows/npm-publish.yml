@@ -1,0 +1,125 @@
+name: Publish npm packages
+
+# Covers all three npm-registry packages in this monorepo:
+#   @imzala/node        (packages/node)
+#   @imzala/embed        (packages/embed)        — browser, built by tsup
+#   @imzala/embed-react  (packages/embed-react)  — browser, depends on @imzala/embed at build time
+#
+# One workflow (not three) because embed-react always needs @imzala/embed's
+# dist/ built first (workspace-resolved import, see packages/embed-react/src/index.tsx)
+# — sharing the job avoids duplicating that dependency-build step three times.
+
+on:
+  push:
+    tags:
+      - 'node-v*'
+      - 'embed-v*'
+      - 'embed-react-v*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish'
+        required: true
+        type: choice
+        options:
+          - node
+          - embed
+          - embed-react
+      dry_run:
+        description: 'Dry run (build + npm publish --dry-run, no registry write)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      package: ${{ steps.resolve.outputs.package }}
+      dry_run: ${{ steps.resolve.outputs.dry_run }}
+    steps:
+      - name: Resolve target package + mode from trigger
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          TAG_REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "package=$INPUT_PACKAGE" >> "$GITHUB_OUTPUT"
+            echo "dry_run=$INPUT_DRY_RUN" >> "$GITHUB_OUTPUT"
+          else
+            ref="$TAG_REF_NAME"
+            case "$ref" in
+              embed-react-v*) pkg=embed-react ;;
+              embed-v*)       pkg=embed ;;
+              node-v*)        pkg=node ;;
+              *)
+                echo "::error::Unrecognized tag '$ref' — expected node-v*, embed-v*, or embed-react-v*."
+                exit 1
+                ;;
+            esac
+            echo "package=$pkg" >> "$GITHUB_OUTPUT"
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: resolve
+    runs-on: ubuntu-latest
+    environment: npm-registry
+    permissions:
+      contents: read
+      id-token: write # required by `npm publish --provenance` (OIDC attestation)
+    env:
+      PKG: ${{ needs.resolve.outputs.package }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Version guard (tag must match package.json version)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          manifest_version=$(node -p "require('./packages/${PKG}/package.json').version")
+          tag_version="${GITHUB_REF_NAME#"${PKG}"-v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} expects version ${tag_version} but packages/${PKG}/package.json has ${manifest_version}."
+            exit 1
+          fi
+
+      - name: Build @imzala/embed (build-time dependency of embed-react)
+        if: env.PKG == 'embed-react'
+        run: npm run build -w @imzala/embed
+
+      - name: Run tests for @imzala/${{ env.PKG }}
+        run: npm test -w "@imzala/${PKG}"
+
+      - name: Build @imzala/${{ env.PKG }}
+        run: npm run build -w "@imzala/${PKG}"
+
+      - name: Publish (dry run — no registry write)
+        if: needs.resolve.outputs.dry_run == 'true'
+        run: npm publish -w "@imzala/${PKG}" --access public --provenance --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish
+        if: needs.resolve.outputs.dry_run != 'true'
+        run: npm publish -w "@imzala/${PKG}" --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
