@@ -15,3 +15,9 @@ build/
 bin/
 obj/
 *.user
+
+# Java (packages/java) — packages/java/generated/.gitignore covers its own
+# nested target/; this covers packages/java/target/ (the facade module's
+# own Maven build output, a sibling of generated/, not nested under it).
+target/
+*.class

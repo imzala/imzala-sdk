@@ -9,10 +9,10 @@
 # Prereqs: run `node scripts/downconvert.mjs` first — this script expects
 # spec/openapi.v1.3.0.yaml to already exist.
 #
-# typescript-axios (packages/node), python (packages/python), and csharp
-# (packages/dotnet) are wired up as GA today. Other languages are listed
-# here so a future task can flip them on one at a time without
-# re-plumbing the script.
+# typescript-axios (packages/node), python (packages/python), csharp
+# (packages/dotnet), and java (packages/java) are wired up as GA today.
+# Other languages are listed here so a future task can flip them on one at
+# a time without re-plumbing the script.
 
 set -euo pipefail
 
@@ -43,9 +43,24 @@ LANG_TABLE=(
   # empirically while building this vertical. "ImzalaApiClient" avoids
   # the collision entirely.
   "csharp:csharp:packages/dotnet/generated:packageName=ImzalaApiClient,targetFramework=net8.0,library=httpclient,netCoreProjectFile=true"
+  # java: native library (java.net.http, no extra HTTP dependency — Java
+  # 11+ ships java.net.http.HttpClient in the JDK itself). invokerPackage
+  # is deliberately NOT "org.imzala.*" bare — the hand-written facade
+  # (packages/java/src) ships a class literally named `Imzala` in package
+  # `org.imzala`; if the vendored generated code's own package were also
+  # `org.imzala` (or a prefix collision like `org.imzala.client`), a
+  # generated class could shadow/collide with the facade's `Imzala` type
+  # or its resource classes on import. "org.imzala.client.generated" is a
+  # distinct sub-package, same avoidance strategy as B3 (csharp)'s
+  # "ImzalaApiClient" packageName. apiPackage/modelPackage are set
+  # explicitly too — the Java generator does NOT cascade invokerPackage
+  # into them (confirmed empirically: with invokerPackage alone, Api/Model
+  # classes land in the tool's own default org.openapitools.client.{api,model}
+  # while only ApiClient/Configuration/etc. follow invokerPackage — a
+  # split-package footgun for a package meant to ship as org.imzala:*).
+  "java:java:packages/java/generated:library=native,groupId=org.imzala,artifactId=imzala-client-generated,invokerPackage=org.imzala.client.generated,apiPackage=org.imzala.client.generated.api,modelPackage=org.imzala.client.generated.model"
   # Future langs — not run yet, kept here so the next task just uncomments:
   # "php:php:packages/php/generated:invokerPackage=Imzala\\\\ServerSdk"
-  # "java:java:packages/java/generated:invokerPackage=org.imzala.serversdk,artifactId=imzala-server-sdk"
 )
 
 RUN_ONLY="${1:-}"

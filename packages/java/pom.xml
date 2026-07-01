@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ships as the single Maven artifact `org.imzala:imzala-java`. Rather than
+  depending on a separately-published (and separately `mvn install`'d)
+  generated-client artifact, this module compiles the vendored
+  openapi-generator output (generated/src/main/java, package
+  org.imzala.client.generated — a SUBdirectory of this module's own
+  packages/java/, not a sibling) directly into the SAME jar as the
+  hand-written facade below (build-helper-maven-plugin add-source) —
+  mirrors how @imzala/node (TS, B1) bundles ../generated/*.ts and how the
+  Imzala NuGet package (C#, B3) compiles ../generated/src/ImzalaApiClient/**
+  into its own csproj via <Compile Include> (both of those really are "../"
+  since their hand-written source lives one level deeper, in a src/
+  subdirectory — packages/node/src/ and packages/dotnet/src/ respectively),
+  instead of requiring consumers to install/depend on a second package.
+
+  Only generated/src/main/java is added — NOT generated/src/test/java (the
+  generator's own *ApiTest.java/*ModelTest.java scaffold, which we don't
+  ship), same exclusion B3 (C#) applied.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.imzala</groupId>
+  <artifactId>imzala-java</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>imzala-java</name>
+  <description>imzala.org server-side SDK — templates, demands, embedded signing, timestamps, webhook verification.</description>
+  <url>https://github.com/imzala/imzala-sdk</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>imzala.org</name>
+      <email>destek@imzala.org</email>
+      <organization>imzala.org</organization>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:imzala/imzala-sdk.git</connection>
+    <developerConnection>scm:git:git@github.com:imzala/imzala-sdk.git</developerConnection>
+    <url>https://github.com/imzala/imzala-sdk</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+
+    <!-- Same runtime deps the vendored generated client's own (unused)
+         pom.xml declares — see generated/pom.xml — since its sources
+         are compiled directly into this module. -->
+    <jackson-version>2.21.1</jackson-version>
+    <jackson-annotations-version>2.21</jackson-annotations-version>
+    <jackson-databind-nullable-version>0.2.10</jackson-databind-nullable-version>
+    <jakarta-annotation-version>1.3.5</jakarta-annotation-version>
+    <httpmime-version>4.5.14</httpmime-version>
+
+    <junit-version>5.10.2</junit-version>
+    <mockito-version>5.14.2</mockito-version>
+  </properties>
+
+  <dependencies>
+    <!-- JSON processing: jackson (used by the vendored generated client's
+         ApiClient/JSON classes, and by this facade for the multipart
+         `parties`/`order` JSON-encoding in DemandsResource). -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson-annotations-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable-version}</version>
+    </dependency>
+
+    <!-- @Nullable/@Nonnull annotations used throughout the vendored generated model/api classes -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+    <!-- Provides javax.annotation.Generated (JSR 250) — removed from the
+         JDK itself in Java 11 (JEP 320) but referenced by every
+         @javax.annotation.Generated(...) annotation openapi-generator
+         emits. Despite the Maven groupId being the "jakarta" rebrand, 1.3.5
+         is pre-Jakarta-EE-9 and still ships the javax.annotation.* package
+         — matches generated/pom.xml exactly (do not bump to 2.x, which
+         moves to the jakarta.annotation.* package and would not satisfy
+         these imports). -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta-annotation-version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Apache HttpMime: the "native" (java.net.http) Java generator still
+         reaches for MultipartEntityBuilder to build multipart/form-data
+         bodies (uploadDocument / timestamps.create) — it is the one
+         non-JDK HTTP dependency library=native does NOT avoid. -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>${httpmime-version}</version>
+    </dependency>
+
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit-version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito-version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Adds generated/src/main/java as an extra source root, so the
+           vendored openapi-generator output compiles straight into this
+           module's target/classes alongside the hand-written facade — see
+           the file-level comment above for why (no second published
+           artifact / no `mvn install` step required to build this module). -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>add-generated-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <!-- packages/java/generated is a SUBdirectory of this module's
+                     own basedir (packages/java/), not a sibling — unlike
+                     packages/dotnet/src/Imzala.csproj (whose basedir is
+                     packages/dotnet/src/, making packages/dotnet/generated a
+                     sibling reached via "../generated"). No ".." here. -->
+                <source>${project.basedir}/generated/src/main/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
