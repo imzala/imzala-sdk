@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imzala"
+version = "0.1.0"
+description = "Official server-side SDK for the imzala.org External API (typed facade over a generated urllib3/pydantic client)."
+requires-python = ">=3.9"
+license = { text = "Proprietary" }
+authors = [{ name = "imzala Destek", email = "destek@imzala.org" }]
+
+# Same runtime deps the generated `imzala_client` client declares
+# (packages/python/generated/pyproject.toml) — pinned here too since we
+# vendor that source directly into this distribution rather than
+# depending on it as a separately-published package (see
+# [tool.setuptools.package-dir] below).
+dependencies = [
+  "urllib3>=2.1.0,<3.0.0",
+  "python-dateutil>=2.8.2",
+  "pydantic>=2.11",
+  "typing-extensions>=4.7.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.2.1"]
+
+# This distribution ships two top-level packages from two different
+# source roots:
+#   - imzala          — the hand-written facade (this directory)
+#   - imzala_client   — the openapi-generator-cli output in ./generated,
+#                        vendored (not installed as a separate PyPI dep)
+#                        the same way @imzala/node bundles ../generated
+#                        TS source directly rather than depending on a
+#                        published @imzala/server-sdk-node package.
+[tool.setuptools]
+packages = ["imzala", "imzala_client", "imzala_client.api", "imzala_client.models"]
+
+[tool.setuptools.package-dir]
+imzala_client = "generated/imzala_client"
+
+[tool.setuptools.package-data]
+imzala = ["py.typed"]
+imzala_client = ["py.typed"]

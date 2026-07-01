@@ -9,9 +9,9 @@
 # Prereqs: run `node scripts/downconvert.mjs` first — this script expects
 # spec/openapi.v1.3.0.yaml to already exist.
 #
-# Only typescript-axios is wired up as GA today (packages/node). Other
-# languages are listed here so a future task can flip them on one at a
-# time without re-plumbing the script.
+# typescript-axios (packages/node) and python (packages/python) are wired
+# up as GA today. Other languages are listed here so a future task can flip
+# them on one at a time without re-plumbing the script.
 
 set -euo pipefail
 
@@ -28,8 +28,8 @@ fi
 # lang:generator:output-dir:extra-additional-properties
 LANG_TABLE=(
   "typescript-axios:typescript-axios:packages/node/generated:supportsES6=true,npmName=@imzala/server-sdk-node,useSingleRequestParameter=true"
+  "python:python:packages/python/generated:packageName=imzala_client"
   # Future langs — not run yet, kept here so the next task just uncomments:
-  # "python:python:packages/python/generated:packageName=imzala_server_sdk"
   # "csharp:csharp:packages/csharp/generated:packageName=Imzala.ServerSdk"
   # "php:php:packages/php/generated:invokerPackage=Imzala\\\\ServerSdk"
   # "java:java:packages/java/generated:invokerPackage=org.imzala.serversdk,artifactId=imzala-server-sdk"
