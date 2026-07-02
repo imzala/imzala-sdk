@@ -45,7 +45,8 @@ için `new Imzala(apiKey, baseUrl: "https://test-api.imzala.org")`.
 ## Kaynaklar
 
 - `imzala.Templates.ListAsync(page?, limit?)` / `.GetAsync(id)` /
-  `.UsageAsync(id)`
+  `.UsageAsync(id)` / `.ListAllAsync(page?, limit?)` (bkz. aşağıdaki
+  sayfalama iteratörü)
 - `imzala.Demands.CreateAsync(body)` / `.GetAsync(id)` /
   `.AddItemsAsync(id, body)` / `.UploadDocumentAsync(new UploadDemandParams {...})` /
   `.SendReminderAsync(id, body?)`
@@ -58,6 +59,45 @@ Her metod bir `CancellationToken` opsiyonel parametresi alır. Dosya
 yükleyen metodlar (`Demands.UploadDocumentAsync`, `Timestamps.CreateAsync`)
 `FileInput { Content: byte[], FileName: string, ContentType?: string }`
 kabul eder.
+
+## Otomatik yeniden deneme
+
+`Templates.ListAsync/GetAsync/UsageAsync`, `Demands.GetAsync` ve `MeAsync`
+(hepsi **GET**, idempotent) `429` (rate limit — `Retry-After`'a uyar) veya
+`5xx` (sunucu hatası) aldığında, jitter'lı exponential backoff ile otomatik
+yeniden dener. Başka her durum (400/401/404/409/422/...) hemen fırlatılır.
+
+```csharp
+var imzala = new Imzala(apiKey, maxRetries: 2, retryBaseDelayMs: 300); // varsayılanlar
+var imzalaNoRetry = new Imzala(apiKey, maxRetries: 0); // yeniden denemeyi kapat
+```
+
+**🔒 Güvenlik — yazma (POST) metodları ASLA yeniden denenmez:**
+`Demands.CreateAsync`, `.AddItemsAsync`, `.UploadDocumentAsync`,
+`.SendReminderAsync`, `Embed.CreateSessionAsync`, `Timestamps.CreateAsync`
+her zaman tek seferlik `Http.Unwrap` kullanır — yeniden denenen bir
+`Demands.CreateAsync` çağrısı **yinelenen bir sözleşme** oluşturabilir. Bu
+kural yapısaldır (çalışma zamanı bayrağı değil): `Http.UnwrapRetryableGet`'in
+`method` parametresi yoktur, bu yüzden bir yazma çağrısını yeniden
+denemeye "opt-in" etmenin hiçbir yolu yoktur — her kaynak metodu kaynak
+kodu seviyesinde ya `Http.Unwrap` (yazma, tek deneme) ya da
+`Http.UnwrapRetryableGet` (okuma) kullanacak şekilde sabitlenmiştir.
+
+## Sayfalama iteratörü
+
+```csharp
+await foreach (var template in imzala.Templates.ListAllAsync(limit: 50))
+{
+    Console.WriteLine($"{template.Id} {template.Name}");
+}
+```
+
+`Templates.ListAllAsync(page?, limit?)`, `ListAsync(page, limit)`'i
+(yeniden denemeli) tekrar tekrar çağırıp `IAsyncEnumerable<TemplateSummary>`
+olarak tek tek şablon döndürür; bir sayfa istenen boyuttan kısa gelene
+(`Count < limit`) **veya** yanıtın `Total`'ı ulaşılana kadar — hangisi önce
+gerçekleşirse — devam eder, böylece bozuk/boş bir sonuç kümesine karşı bile
+asla sonsuz döngüye girmez. `ListAsync` kendisi değişmedi (hâlâ tek sayfa).
 
 ## Webhook doğrulama
 

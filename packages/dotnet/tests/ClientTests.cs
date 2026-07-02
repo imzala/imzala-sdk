@@ -18,6 +18,12 @@ namespace ImzalaSdk.Tests;
 /// </summary>
 public class ClientTests
 {
+    /// <summary>
+    /// Default retry config (2 retries / 300ms base) for tests that don't exercise
+    /// retry behavior themselves — see RetryTests.cs / PaginationTests.cs for those.
+    /// </summary>
+    private static readonly RetryConfig DefaultRetry = new();
+
     [Fact]
     public async Task Demands_GetAsync_unwraps_success_data_to_inner_data()
     {
@@ -28,7 +34,7 @@ public class ClientTests
             .ReturnsAsync(new ApiV1DemandsIdGet200Response(true, new DemandStatus(id: id, status: DemandStatus.StatusEnum.PENDING)));
         var mockReminders = new Mock<IRemindersApi>();
 
-        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object);
+        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object, DefaultRetry);
         var result = await resource.GetAsync(id);
 
         Assert.Equal(id, result.Id);
@@ -44,7 +50,7 @@ public class ClientTests
             .Setup(a => a.ApiV1MeGetAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1MeGet200Response(true, new ApiV1MeGet200ResponseData(id: userId, email: "a@b.com")));
 
-        var account = new AccountResource(mockAccount.Object);
+        var account = new AccountResource(mockAccount.Object, DefaultRetry);
         var result = await account.MeAsync();
 
         Assert.Equal(userId, result.Id);
@@ -63,7 +69,7 @@ public class ClientTests
                 page: 2,
                 limit: 10)));
 
-        var resource = new TemplatesResource(mockTemplates.Object);
+        var resource = new TemplatesResource(mockTemplates.Object, DefaultRetry);
         var result = await resource.ListAsync(page: 2, limit: 10);
 
         mockTemplates.Verify(a => a.ApiV1TemplatesGetAsync(2, 10, It.IsAny<CancellationToken>()), Times.Once);
@@ -81,7 +87,7 @@ public class ClientTests
             .Setup(a => a.ApiV1DemandsIdRemindersPostAsync(id, It.Is<TriggerReminderRequest>(r => r.Force), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1DemandsIdRemindersPost200Response(true, new ApiV1DemandsIdRemindersPost200ResponseData(demandId: id)));
 
-        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object);
+        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object, DefaultRetry);
         var result = await resource.SendReminderAsync(id, new TriggerReminderRequest(force: true));
 
         mockReminders.Verify(a => a.ApiV1DemandsIdRemindersPostAsync(id, It.Is<TriggerReminderRequest>(r => r.Force), It.IsAny<CancellationToken>()), Times.Once);
@@ -99,7 +105,7 @@ public class ClientTests
             .Setup(a => a.ApiV1DemandsIdRemindersPostAsync(id, It.Is<TriggerReminderRequest>(r => r.Force == false), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1DemandsIdRemindersPost200Response(true, new ApiV1DemandsIdRemindersPost200ResponseData(demandId: id)));
 
-        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object);
+        var resource = new DemandsResource(mockDemands.Object, mockReminders.Object, DefaultRetry);
         await resource.SendReminderAsync(id);
 
         mockReminders.Verify(a => a.ApiV1DemandsIdRemindersPostAsync(id, It.IsAny<TriggerReminderRequest>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -145,7 +151,7 @@ public class ClientTests
             })
             .ReturnsAsync(new ApiV1DemandsUploadPost201Response(true, new CreatedDemandUpload(id: Guid.NewGuid())));
 
-        var resource = new DemandsResource(mockDemands.Object, new Mock<IRemindersApi>().Object);
+        var resource = new DemandsResource(mockDemands.Object, new Mock<IRemindersApi>().Object, DefaultRetry);
         var result = await resource.UploadDocumentAsync(new UploadDemandParams
         {
             Files = new[] { new FileInput { Content = "hello"u8.ToArray(), FileName = "a.pdf", ContentType = "application/pdf" } },
@@ -206,7 +212,7 @@ public class ClientTests
             .Setup(a => a.ApiV1TemplatesIdGetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(false, null!));
 
-        var resource = new TemplatesResource(mockTemplates.Object);
+        var resource = new TemplatesResource(mockTemplates.Object, DefaultRetry);
 
         await Assert.ThrowsAsync<ImzalaError>(() => resource.GetAsync(Guid.NewGuid()));
     }

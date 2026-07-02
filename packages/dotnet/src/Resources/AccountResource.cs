@@ -7,10 +7,15 @@ namespace ImzalaSdk;
 internal sealed class AccountResource
 {
     private readonly IAccountApi _api;
+    private readonly RetryConfig _retry;
 
-    internal AccountResource(IAccountApi api) => _api = api;
+    internal AccountResource(IAccountApi api, RetryConfig retry)
+    {
+        _api = api;
+        _retry = retry;
+    }
 
-    /// <summary>Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the <c>timestamps</c> scope.</summary>
+    /// <summary>Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the <c>timestamps</c> scope. GET — safe to auto-retry.</summary>
     public Task<ApiV1MeGet200ResponseData> MeAsync(CancellationToken cancellationToken = default) =>
-        Http.Unwrap(_api.ApiV1MeGetAsync(cancellationToken), r => r.Success, r => r.Data);
+        Http.UnwrapRetryableGet(() => _api.ApiV1MeGetAsync(cancellationToken), r => r.Success, r => r.Data, _retry);
 }

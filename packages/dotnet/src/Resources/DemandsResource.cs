@@ -12,25 +12,30 @@ public sealed class DemandsResource
 {
     private readonly IDemandsApi _api;
     private readonly IRemindersApi _remindersApi;
+    private readonly RetryConfig _retry;
 
     private static readonly JsonSerializerOptions PartiesJsonOptions = new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
     };
 
-    internal DemandsResource(IDemandsApi api, IRemindersApi remindersApi)
+    internal DemandsResource(IDemandsApi api, IRemindersApi remindersApi, RetryConfig retry)
     {
         _api = api;
         _remindersApi = remindersApi;
+        _retry = retry;
     }
 
-    /// <summary>Creates a new demand (contract) from a template.</summary>
+    /// <summary>
+    /// Creates a new demand (contract) from a template. POST — never
+    /// auto-retried (a retried create would produce a duplicate demand).
+    /// </summary>
     public Task<CreatedDemand> CreateAsync(CreateDemandRequest body, CancellationToken cancellationToken = default) =>
         Http.Unwrap(_api.ApiV1DemandsPostAsync(body, cancellationToken), r => r.Success, r => r.Data);
 
-    /// <summary>Returns a demand's status + per-party signing progress.</summary>
+    /// <summary>Returns a demand's status + per-party signing progress. GET — safe to auto-retry.</summary>
     public Task<DemandStatus> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.Unwrap(_api.ApiV1DemandsIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data);
+        Http.UnwrapRetryableGet(() => _api.ApiV1DemandsIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry);
 
     /// <summary>
     /// Places (replaces) signature/form fields on a demand's pages.

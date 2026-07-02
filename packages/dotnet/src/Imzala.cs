@@ -29,6 +29,8 @@ public sealed class Imzala
 {
     private const string DefaultBaseUrl = "https://api-prd.imzala.org";
     private const int DefaultTimeoutMs = 30_000;
+    private const int DefaultMaxRetries = 2;
+    private const int DefaultRetryBaseDelayMs = 300;
 
     /// <summary><c>imzala.Templates.*</c> — list/get/usage.</summary>
     public TemplatesResource Templates { get; }
@@ -47,7 +49,19 @@ public sealed class Imzala
     /// <param name="apiKey"><c>imz_&lt;64 hex&gt;</c> — from Dashboard → Geliştirici → API Anahtarları, or Hesap Ayarları → API Anahtarları.</param>
     /// <param name="baseUrl">Defaults to <c>https://api-prd.imzala.org</c>. Use <c>https://test-api.imzala.org</c> for the test environment.</param>
     /// <param name="timeoutMs">Per-request timeout, in milliseconds. Defaults to 30000.</param>
-    public Imzala(string apiKey, string baseUrl = DefaultBaseUrl, int timeoutMs = DefaultTimeoutMs)
+    /// <param name="maxRetries">
+    /// Max auto-retry attempts for safe, idempotent <b>GET</b> requests that fail with 429
+    /// (rate limited) or 5xx (server error). Defaults to 2. Set to <c>0</c> to disable.
+    /// Writes (<c>Demands.CreateAsync</c>, <c>SendReminderAsync</c>, ...) are never retried,
+    /// regardless of this setting — see the SDK README.
+    /// </param>
+    /// <param name="retryBaseDelayMs">Base delay (ms) for the exponential backoff between retries. Defaults to 300.</param>
+    public Imzala(
+        string apiKey,
+        string baseUrl = DefaultBaseUrl,
+        int timeoutMs = DefaultTimeoutMs,
+        int maxRetries = DefaultMaxRetries,
+        int retryBaseDelayMs = DefaultRetryBaseDelayMs)
     {
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -61,14 +75,20 @@ public sealed class Imzala
         };
         configuration.ApiKey["X-API-Key"] = apiKey;
 
-        _account = new AccountResource(new AccountApi(configuration));
+        var retryConfig = new RetryConfig
+        {
+            MaxRetries = Math.Max(0, maxRetries),
+            RetryBaseDelayMs = Math.Max(0, retryBaseDelayMs),
+        };
+
+        _account = new AccountResource(new AccountApi(configuration), retryConfig);
         var demandsApi = new DemandsApi(configuration);
         var remindersApi = new RemindersApi(configuration);
         var templatesApi = new TemplatesApi(configuration);
         var timestampsApi = new TimestampsApi(configuration);
 
-        Templates = new TemplatesResource(templatesApi);
-        Demands = new DemandsResource(demandsApi, remindersApi);
+        Templates = new TemplatesResource(templatesApi, retryConfig);
+        Demands = new DemandsResource(demandsApi, remindersApi, retryConfig);
         Embed = new EmbedResource(demandsApi);
         Timestamps = new TimestampsResource(timestampsApi);
     }

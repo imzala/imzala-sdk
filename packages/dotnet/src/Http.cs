@@ -1,6 +1,22 @@
 namespace ImzalaSdk;
 
 /// <summary>
+/// Auto-retry configuration for safe, idempotent GET-backed resource methods.
+/// Mirrors the TS SDK's <c>RetryConfig</c> (<c>http.ts</c>) and the Python
+/// SDK's <c>_RetryConfig</c> (<c>client.py</c>). Internal — consumers set
+/// <c>maxRetries</c>/<c>retryBaseDelayMs</c> via the flattened <see cref="Imzala"/>
+/// constructor parameters, not this type directly.
+/// </summary>
+internal sealed class RetryConfig
+{
+    /// <summary>Max retry attempts (not counting the initial try). <c>0</c> disables retry.</summary>
+    public int MaxRetries { get; init; } = 2;
+
+    /// <summary>Base delay (ms) for exponential backoff between retries.</summary>
+    public int RetryBaseDelayMs { get; init; } = 300;
+}
+
+/// <summary>
 /// Every imzala.org API response uses the same envelope: <c>{success: true,
 /// data: {...}}</c> on success, or a non-2xx status with <c>{success: false,
 /// error/message: ...}</c> on failure (surfaced by the vendored generated
@@ -41,5 +57,68 @@ internal static class Http
         }
 
         return data(response);
+    }
+
+    /// <summary>
+    /// Like <see cref="Unwrap{TResponse, TData}"/>, but adds safe auto-retry for
+    /// <b>GET-only, idempotent</b> resource methods (<c>Templates.List/Get/UsageAsync</c>,
+    /// <c>Demands.GetAsync</c>, <c>MeAsync</c>). Retries on 429 (rate limited — honors
+    /// <c>Retry-After</c>) and 5xx (server error) with exponential backoff + jitter; any
+    /// other status (400/401/404/409/422/...) is thrown immediately, same as
+    /// <see cref="Unwrap{TResponse, TData}"/>.
+    ///
+    /// <b>SAFETY — never call this with a non-GET request.</b> There is deliberately no
+    /// <c>method</c> parameter and no way to opt a POST/PUT/PATCH/DELETE call into
+    /// retrying: this is not a caller-configurable behavior. Retrying a write (e.g.
+    /// <c>Demands.CreateAsync</c>, <c>Demands.SendReminderAsync</c>) could duplicate a
+    /// demand or double-send a reminder — those resource methods must keep using the
+    /// plain <see cref="Unwrap{TResponse, TData}"/> above, once, with no retry loop.
+    ///
+    /// <paramref name="requestFn"/> is a thunk (not an already-created <see cref="Task"/>)
+    /// because retrying means re-issuing the underlying HTTP request — a completed task
+    /// can't be replayed.
+    /// </summary>
+    public static async Task<TData> UnwrapRetryableGet<TResponse, TData>(
+        Func<Task<TResponse>> requestFn,
+        Func<TResponse, bool> success,
+        Func<TResponse, TData> data,
+        RetryConfig retry)
+    {
+        var attempt = 0;
+        for (; ; )
+        {
+            try
+            {
+                return await Unwrap(requestFn(), success, data).ConfigureAwait(false);
+            }
+            catch (Exception err)
+            {
+                var mapped = err as ImzalaError ?? ErrorMapper.Map(err);
+                if (attempt >= retry.MaxRetries || !IsRetryableStatus(mapped.StatusCode))
+                {
+                    throw mapped;
+                }
+
+                await Task.Delay(ComputeDelayMs(mapped, attempt, retry.RetryBaseDelayMs)).ConfigureAwait(false);
+                attempt++;
+            }
+        }
+    }
+
+    /// <summary>429 (rate limited) and 5xx (server error) are treated as transient. Everything else (4xx) is a client error and is never retried.</summary>
+    private static bool IsRetryableStatus(int? statusCode) =>
+        statusCode == 429 || statusCode is >= 500 and <= 599;
+
+    /// <summary>Exponential backoff with jitter, honoring <c>Retry-After</c> on 429s (already parsed onto <see cref="ImzalaRateLimitError.RetryAfter"/> by <see cref="ErrorMapper"/>).</summary>
+    private static int ComputeDelayMs(ImzalaError error, int attempt, int baseDelayMs)
+    {
+        if (error is ImzalaRateLimitError { RetryAfter: { } retryAfterSeconds })
+        {
+            return Math.Max(0, (int)(retryAfterSeconds * 1000));
+        }
+
+        var backoff = baseDelayMs * Math.Pow(2, attempt);
+        var jitter = Random.Shared.NextDouble() * baseDelayMs;
+        return (int)(backoff + jitter);
     }
 }
