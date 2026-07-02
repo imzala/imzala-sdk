@@ -46,7 +46,8 @@ için `Imzala(api_key=..., base_url="https://test-api.imzala.org")`.
 ## Kaynaklar
 
 - `client.templates.list(page=None, limit=None)` / `.get(template_id)` /
-  `.usage(template_id)`
+  `.usage(template_id)` / `.list_all(page=None, limit=None)` (bkz. aşağıdaki
+  sayfalama notu)
 - `client.demands.create(body)` / `.get(demand_id)` /
   `.add_items(demand_id, body)` /
   `.upload_document(files=[...], parties=[...], order=None, title=None, description=None)` /
@@ -59,6 +60,47 @@ için `Imzala(api_key=..., base_url="https://test-api.imzala.org")`.
 Dosya yükleyen metodlar `FileInput` (dataclass: `content: bytes, filename: str,
 content_type: Optional[str]`) veya doğrudan `content=`/`filename=` keyword'lerini
 kabul eder; Flask/FastAPI upload'larından gelen bytes'ı doğrudan geçebilirsiniz.
+
+## Otomatik yeniden deneme (safe auto-retry)
+
+Yalnızca **idempotent GET** metodları (`templates.list` / `.get` /
+`.usage`, `demands.get`, `me()`) 429 (rate limit — `Retry-After`
+header'ına uyar) veya 5xx (sunucu hatası) aldığında, exponential backoff +
+jitter ile otomatik olarak yeniden denenir:
+
+```python
+client = Imzala(
+    api_key=os.environ["IMZALA_API_KEY"],
+    max_retries=2,          # varsayılan 2 deneme; 0 = kapalı
+    retry_base_delay=0.3,   # saniye cinsinden taban gecikme, varsayılan 0.3 (300ms)
+)
+```
+
+**🔴 Güvenlik:** `demands.create` / `.add_items` / `.upload_document` /
+`.send_reminder`, `embed.create_session`, `timestamps.create` gibi
+**yazma (POST)** metodları **hiçbir zaman** otomatik yeniden denenmez —
+tekrarlanan bir `create` çağrısı **mükerrer sözleşme** oluşturur,
+tekrarlanan bir `send_reminder` ise **çift SMS/e-posta** gönderir. Bu
+davranış `max_retries` ile değiştirilemez: yeniden deneme sarmalayıcısı
+yalnızca GET çağrılarına uygulanır, POST/PUT/PATCH/DELETE çağıran
+metodların bu sarmalayıcıya girme yolu yoktur.
+
+## Sayfalama iterator'ü
+
+`templates.list()` tek sayfa döner; aktif tüm şablonlarınızı tek tek
+dolaşmak için `list_all()` kullanın. Dahili olarak `list(page=, limit=)`
+çağrısını tekrarlayıp `page`'i artırır; sayfa kısa geldiğinde (istenen
+sayıdan az öğe) veya cevaptaki `total`'a ulaşıldığında durur — bu yüzden
+sonsuz döngü riski yoktur:
+
+```python
+for template in client.templates.list_all():
+    print(template["id"], template["name"])
+
+# page/limit override edilebilir:
+for template in client.templates.list_all(limit=50):
+    ...
+```
 
 ## Webhook doğrulama
 

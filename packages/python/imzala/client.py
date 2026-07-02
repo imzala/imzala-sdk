@@ -9,7 +9,10 @@ server code reads the same regardless of language.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Mapping, Optional, Sequence, Union
+import random
+import time
+from dataclasses import dataclass
+from typing import Any, Callable, Iterator, Mapping, Optional, Sequence, Union
 
 from imzala_client.api.account_api import AccountApi
 from imzala_client.api.demands_api import DemandsApi
@@ -19,13 +22,21 @@ from imzala_client.api.timestamps_api import TimestampsApi
 from imzala_client.api_client import ApiClient
 from imzala_client.configuration import Configuration
 
-from .errors import ImzalaError, map_api_exception
+from .errors import ImzalaError, ImzalaRateLimitError, map_api_exception
 from .files import FileInput, UploadPartyInput, to_multipart_tuple
 
-__all__ = ["Imzala", "DEFAULT_BASE_URL", "DEFAULT_TIMEOUT_S"]
+__all__ = [
+    "Imzala",
+    "DEFAULT_BASE_URL",
+    "DEFAULT_TIMEOUT_S",
+    "DEFAULT_MAX_RETRIES",
+    "DEFAULT_RETRY_BASE_DELAY_S",
+]
 
 DEFAULT_BASE_URL = "https://api-prd.imzala.org"
 DEFAULT_TIMEOUT_S = 30.0
+DEFAULT_MAX_RETRIES = 2
+DEFAULT_RETRY_BASE_DELAY_S = 0.3
 
 
 def _unwrap(call: Callable[[], Any]) -> Any:
@@ -52,6 +63,74 @@ def _unwrap(call: Callable[[], Any]) -> Any:
     return response.data
 
 
+@dataclass(frozen=True)
+class _RetryConfig:
+    """Max retry attempts (not counting the initial try) + base delay
+    (seconds) for exponential backoff. `max_retries=0` disables retry."""
+
+    max_retries: int
+    base_delay_s: float
+
+
+def _is_retryable_status(status_code: Optional[int]) -> bool:
+    """429 (rate limited) and 5xx (server error) are treated as transient.
+    Everything else (4xx) is a client error and is never retried."""
+    if status_code == 429:
+        return True
+    return isinstance(status_code, int) and 500 <= status_code <= 599
+
+
+def _compute_delay_s(error: ImzalaError, attempt: int, base_delay_s: float) -> float:
+    """Exponential backoff with jitter, honoring `Retry-After` on 429s
+    (already parsed onto `ImzalaRateLimitError.retry_after` by
+    `map_api_exception`)."""
+    if isinstance(error, ImzalaRateLimitError) and error.retry_after is not None:
+        return max(0.0, float(error.retry_after))
+    backoff = base_delay_s * (2**attempt)
+    jitter = random.random() * base_delay_s
+    return backoff + jitter
+
+
+def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
+    """Like `_unwrap`, but adds safe auto-retry for **GET-only, idempotent**
+    facade methods (`templates.list/get/usage`, `demands.get`, `me()`).
+    Retries on 429 (rate limited — honors `Retry-After`) and 5xx (server
+    error) with exponential backoff + jitter; any other status (400, 401,
+    404, 409, 422, ...) is raised immediately, same as `_unwrap`.
+
+    **SAFETY — never call this with a non-GET request.** There is
+    deliberately no `method` parameter and no way to opt a POST/PUT/PATCH/
+    DELETE call into retrying — this is not a caller-configurable
+    behavior. Retrying a write (e.g. `demands.create`,
+    `demands.send_reminder`) could duplicate a demand or double-send a
+    reminder — those facade methods must keep using the plain `_unwrap()`
+    above, once, with no retry loop.
+
+    `call` is a thunk (not an already-evaluated value) because retrying
+    means re-issuing the underlying HTTP request — a settled result can't
+    be replayed.
+    """
+    attempt = 0
+    while True:
+        try:
+            return _unwrap(call)
+        except ImzalaError as err:
+            if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
+                raise
+            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            attempt += 1
+
+
+def _get_field(obj: Any, name: str, default: Any = None) -> Any:
+    """Reads `name` off a response payload that may be a plain dict (as
+    used throughout this SDK's test suite) or a generated-client pydantic
+    model instance (this SDK's real runtime shape) — `list_all()` needs to
+    read `total`/`page`/`limit` regardless of which one it got."""
+    if isinstance(obj, Mapping):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
 def _party_to_dict(party: Union[UploadPartyInput, Mapping[str, Any]]) -> dict:
     if isinstance(party, UploadPartyInput):
         data: dict = {"first_name": party.first_name, "last_name": party.last_name}
@@ -66,40 +145,84 @@ def _party_to_dict(party: Union[UploadPartyInput, Mapping[str, Any]]) -> dict:
 class TemplatesResource:
     """`imzala.templates.*` — list/inspect your active templates."""
 
-    def __init__(self, api: TemplatesApi, timeout: float) -> None:
+    def __init__(self, api: TemplatesApi, timeout: float, retry: _RetryConfig) -> None:
         self._api = api
         self._timeout = timeout
+        self._retry = retry
 
     def list(self, *, page: Optional[int] = None, limit: Optional[int] = None) -> Any:
-        """Lists your active templates."""
-        return _unwrap(
-            lambda: self._api.api_v1_templates_get(page=page, limit=limit, _request_timeout=self._timeout)
+        """Lists your active templates (one page). GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_templates_get(page=page, limit=limit, _request_timeout=self._timeout),
+            self._retry,
         )
 
     def get(self, template_id: str) -> Any:
-        """Returns a template's parties + fillable variables."""
-        return _unwrap(
-            lambda: self._api.api_v1_templates_id_get(id=template_id, _request_timeout=self._timeout)
+        """Returns a template's parties + fillable variables. GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_templates_id_get(id=template_id, _request_timeout=self._timeout),
+            self._retry,
         )
 
     def usage(self, template_id: str) -> Any:
         """Returns a ready-to-use integration guide (endpoint, required
-        headers, example curl+JSON) for a template."""
-        return _unwrap(
-            lambda: self._api.api_v1_templates_id_usage_get(id=template_id, _request_timeout=self._timeout)
+        headers, example curl+JSON) for a template. GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_templates_id_usage_get(id=template_id, _request_timeout=self._timeout),
+            self._retry,
         )
+
+    def list_all(self, *, page: Optional[int] = None, limit: Optional[int] = None) -> Iterator[Any]:
+        """Walks every page of your active templates, transparently,
+        yielding one template at a time. Internally calls
+        `list(page=, limit=)` and increments `page` until a page comes
+        back short (fewer items than the requested page size) or the
+        response's `total` has been reached — whichever happens first —
+        so it always terminates even against a misbehaving/empty result
+        set.
+
+        Example:
+            >>> for template in client.templates.list_all():
+            ...     print(template["id"], template["name"])
+        """
+        requested_limit = limit
+        current_page = page if page is not None else 1
+        yielded = 0
+
+        while True:
+            result = self.list(page=current_page, limit=requested_limit)
+            templates = _get_field(result, "templates") or []
+
+            for template in templates:
+                yield template
+            yielded += len(templates)
+
+            if len(templates) == 0:
+                break
+
+            total = _get_field(result, "total")
+            if isinstance(total, int) and yielded >= total:
+                break
+
+            effective_limit = _get_field(result, "limit", requested_limit)
+            if isinstance(effective_limit, int) and len(templates) < effective_limit:
+                break
+
+            current_page = (_get_field(result, "page") or current_page) + 1
 
 
 class DemandsResource:
     """`imzala.demands.*` — create/inspect demands (contracts) and trigger reminders."""
 
-    def __init__(self, api: DemandsApi, reminders_api: RemindersApi, timeout: float) -> None:
+    def __init__(self, api: DemandsApi, reminders_api: RemindersApi, timeout: float, retry: _RetryConfig) -> None:
         self._api = api
         self._reminders_api = reminders_api
         self._timeout = timeout
+        self._retry = retry
 
     def create(self, body: Mapping[str, Any]) -> Any:
-        """Creates a new demand (contract) from a template."""
+        """Creates a new demand (contract) from a template. POST — never
+        auto-retried (a retried create would produce a duplicate demand)."""
         return _unwrap(
             lambda: self._api.api_v1_demands_post(
                 create_demand_request=dict(body), _request_timeout=self._timeout
@@ -107,9 +230,10 @@ class DemandsResource:
         )
 
     def get(self, demand_id: str) -> Any:
-        """Returns a demand's status + per-party signing progress."""
-        return _unwrap(
-            lambda: self._api.api_v1_demands_id_get(id=demand_id, _request_timeout=self._timeout)
+        """Returns a demand's status + per-party signing progress. GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_demands_id_get(id=demand_id, _request_timeout=self._timeout),
+            self._retry,
         )
 
     def add_items(self, demand_id: str, body: Mapping[str, Any]) -> Any:
@@ -152,7 +276,8 @@ class DemandsResource:
         parties. Independent of the template/demand's scheduled
         `reminder_settings`. Subject to a 5-minute anti-spam window
         (override with `{"force": True}`) and a hard per-person cap of 3
-        reminders per channel (not overridable)."""
+        reminders per channel (not overridable). POST — never
+        auto-retried (a retried call could double-send)."""
         return _unwrap(
             lambda: self._reminders_api.api_v1_demands_id_reminders_post(
                 id=demand_id,
@@ -240,6 +365,8 @@ class Imzala:
         api_key: str,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT_S,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        retry_base_delay: float = DEFAULT_RETRY_BASE_DELAY_S,
     ) -> None:
         """
         Args:
@@ -248,11 +375,22 @@ class Imzala:
             base_url: defaults to `https://api-prd.imzala.org`. Use
                 `https://test-api.imzala.org` for the test environment.
             timeout: per-request timeout, in seconds. Defaults to 30.0.
+            max_retries: max auto-retry attempts for safe, idempotent
+                **GET** requests that fail with 429 (rate limited) or 5xx
+                (server error). Defaults to 2. Set to `0` to disable.
+                Writes (`demands.create`, `send_reminder`, ...) are never
+                retried, regardless of this setting — see the SDK README.
+            retry_base_delay: base delay (seconds) for the exponential
+                backoff between retries. Defaults to 0.3 (300ms).
         """
         if not api_key:
             raise ValueError("Imzala(api_key=...) — api_key is required.")
 
         self._timeout = float(timeout)
+        self._retry = _RetryConfig(
+            max_retries=max(0, int(max_retries)),
+            base_delay_s=max(0.0, float(retry_base_delay)),
+        )
 
         configuration = Configuration(host=base_url, api_key={"ApiKeyAuth": api_key})
         api_client = ApiClient(configuration)
@@ -263,12 +401,16 @@ class Imzala:
         templates_api = TemplatesApi(api_client)
         timestamps_api = TimestampsApi(api_client)
 
-        self.templates = TemplatesResource(templates_api, self._timeout)
-        self.demands = DemandsResource(demands_api, reminders_api, self._timeout)
+        self.templates = TemplatesResource(templates_api, self._timeout, self._retry)
+        self.demands = DemandsResource(demands_api, reminders_api, self._timeout, self._retry)
         self.embed = EmbedResource(demands_api, self._timeout)
         self.timestamps = TimestampsResource(timestamps_api, self._timeout)
 
     def me(self) -> Any:
         """Returns the calling API key's owner info (id, email, name,
-        workspace, remaining credits). Requires the `timestamps` scope."""
-        return _unwrap(lambda: self._account_api.api_v1_me_get(_request_timeout=self._timeout))
+        workspace, remaining credits). Requires the `timestamps` scope.
+        GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._account_api.api_v1_me_get(_request_timeout=self._timeout),
+            self._retry,
+        )
