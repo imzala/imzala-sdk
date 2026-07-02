@@ -25,6 +25,7 @@ final class DemandsResource
     public function __construct(
         private readonly DemandsApi $api,
         private readonly RemindersApi $remindersApi,
+        private readonly RetryConfig $retryConfig,
     ) {
     }
 
@@ -42,10 +43,10 @@ final class DemandsResource
         return Http::unwrap(fn () => $this->api->apiV1DemandsPostWithHttpInfo($request));
     }
 
-    /** Returns a demand's status + per-party signing progress. */
+    /** Returns a demand's status + per-party signing progress. GET — safe to auto-retry. */
     public function get(string $id): DemandStatus
     {
-        return Http::unwrap(fn () => $this->api->apiV1DemandsIdGetWithHttpInfo($id));
+        return Http::unwrapRetryableGet(fn () => $this->api->apiV1DemandsIdGetWithHttpInfo($id), $this->retryConfig);
     }
 
     /**

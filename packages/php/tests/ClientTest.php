@@ -41,6 +41,7 @@ use Imzala\EmbedResource;
 use Imzala\FileInput;
 use Imzala\ImzalaClient;
 use Imzala\ImzalaException;
+use Imzala\RetryConfig;
 use Imzala\TemplatesResource;
 use Imzala\TimestampsResource;
 use Imzala\UploadDemandParams;
@@ -50,6 +51,12 @@ use PHPUnit\Framework\TestCase;
 
 final class ClientTest extends TestCase
 {
+    /** Retry is orthogonal to what these tests exercise — no retries expected/exercised here. */
+    private static function noRetry(): RetryConfig
+    {
+        return new RetryConfig(0, 0);
+    }
+
     public function testConstructorRejectsEmptyApiKey(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -67,7 +74,7 @@ final class ClientTest extends TestCase
             ->with(2, 10)
             ->willReturn([$envelope, 200, []]);
 
-        $resource = new TemplatesResource($api);
+        $resource = new TemplatesResource($api, self::noRetry());
         $this->assertSame($data, $resource->list(2, 10));
     }
 
@@ -82,7 +89,7 @@ final class ClientTest extends TestCase
             ->with(null, null)
             ->willReturn([$envelope, 200, []]);
 
-        $resource = new TemplatesResource($api);
+        $resource = new TemplatesResource($api, self::noRetry());
         $resource->list();
     }
 
@@ -94,7 +101,7 @@ final class ClientTest extends TestCase
         $api = $this->createMock(TemplatesApi::class);
         $api->method('apiV1TemplatesIdGetWithHttpInfo')->with('tpl-1')->willReturn([$envelope, 200, []]);
 
-        $resource = new TemplatesResource($api);
+        $resource = new TemplatesResource($api, self::noRetry());
         $this->assertSame($data, $resource->get('tpl-1'));
     }
 
@@ -106,7 +113,7 @@ final class ClientTest extends TestCase
         $api = $this->createMock(TemplatesApi::class);
         $api->method('apiV1TemplatesIdUsageGetWithHttpInfo')->with('tpl-1')->willReturn([$envelope, 200, []]);
 
-        $resource = new TemplatesResource($api);
+        $resource = new TemplatesResource($api, self::noRetry());
         $this->assertSame($data, $resource->usage('tpl-1'));
     }
 
@@ -122,7 +129,7 @@ final class ClientTest extends TestCase
             ->willReturn([$envelope, 201, []]);
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $this->assertSame($data, $resource->create(['template_id' => 'tpl-1']));
     }
@@ -140,7 +147,7 @@ final class ClientTest extends TestCase
             ->willReturn([$envelope, 201, []]);
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $this->assertSame($data, $resource->create($request));
     }
@@ -154,7 +161,7 @@ final class ClientTest extends TestCase
         $api->method('apiV1DemandsIdGetWithHttpInfo')->with('demand-1')->willReturn([$envelope, 200, []]);
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $this->assertSame($data, $resource->get('demand-1'));
     }
@@ -171,7 +178,7 @@ final class ClientTest extends TestCase
             ->willReturn([$envelope, 200, []]);
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $this->assertSame($data, $resource->addItems('demand-1', ['page_ids' => [1, 2]]));
     }
@@ -190,7 +197,7 @@ final class ClientTest extends TestCase
             ->with('demand-1', $this->callback(fn ($req) => $req instanceof TriggerReminderRequest))
             ->willReturn([$envelope, 200, []]);
 
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
         $this->assertSame($data, $resource->sendReminder('demand-1'));
     }
 
@@ -206,7 +213,7 @@ final class ClientTest extends TestCase
             ->with('demand-1', $this->callback(fn (TriggerReminderRequest $req) => $req->getForce() === true))
             ->willReturn([$envelope, 200, []]);
 
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
         $resource->sendReminder('demand-1', ['force' => true]);
     }
 
@@ -247,7 +254,7 @@ final class ClientTest extends TestCase
             ->willReturn([$envelope, 201, []]);
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $fileInput = new FileInput('%PDF-1.4 fake bytes', 'sozlesme.pdf', 'application/pdf');
         $party = new UploadPartyInput('Ada', 'Lovelace', 'ada@example.com', null);
@@ -278,7 +285,7 @@ final class ClientTest extends TestCase
             ->willThrowException(new \RuntimeException('boom'));
 
         $remindersApi = $this->createMock(RemindersApi::class);
-        $resource = new DemandsResource($api, $remindersApi);
+        $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $fileInput = new FileInput('bytes', 'a.pdf');
         $party = new UploadPartyInput('Ada', 'Lovelace', 'ada@example.com', null);

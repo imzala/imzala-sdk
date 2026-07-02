@@ -42,12 +42,14 @@ print_r($demand->getSigningUrls()); // her taraf için imzalama linki
 ```
 
 `baseUrl` varsayılan olarak `https://api-prd.imzala.org`'dur; test ortamı
-için `new ImzalaClient($apiKey, 'https://test-api.imzala.org')`.
+için `new ImzalaClient($apiKey, 'https://test-api.imzala.org')`. Otomatik
+yeniden deneme (`maxRetries`, `retryBaseDelayMs`) aşağıda ayrı bölümde.
 
 ## Kaynaklar
 
 - `$imzala->templates()->list($page = null, $limit = null)` /
-  `->get($id)` / `->usage($id)`
+  `->get($id)` / `->usage($id)` / `->listAll($page = null, $limit = null)`
+  (bkz. aşağıdaki sayfalama notu)
 - `$imzala->demands()->create($body)` / `->get($id)` /
   `->addItems($id, $body)` /
   `->uploadDocument(new UploadDemandParams($files, $parties))` /
@@ -62,6 +64,52 @@ associative array (snake_case anahtarlarla) kabul eder. Dosya yükleyen
 metodlar `FileInput($content, $fileName, $contentType = null)` kullanır;
 SDK içeride geçici bir dosyaya yazıp temizler, çağıran taraf dosya
 sistemiyle uğraşmaz.
+
+## Otomatik yeniden deneme (safe auto-retry)
+
+`templates()->list/get/usage`, `demands()->get` ve `me()` — yani **sadece
+GET** (okuma) uçları — 429 (rate limit, `Retry-After`'a uyarak) veya 5xx
+(sunucu hatası) aldığında, jitter'lı exponential backoff ile otomatik
+olarak yeniden denenir:
+
+```php
+<?php
+
+use Imzala\ImzalaClient;
+
+$imzala = new ImzalaClient(
+    apiKey: getenv('IMZALA_API_KEY'),
+    maxRetries: 2, // varsayılan 2, 0 = kapalı
+    retryBaseDelayMs: 300, // varsayılan 300ms (backoff: 300ms, 600ms, ...)
+);
+```
+
+**Güvenlik:** `demands()->create()`, `sendReminder()`, `uploadDocument()`,
+`addItems()`, `embed()->createSession()`, `timestamps()->create()` gibi
+**yazma** (POST) uçları **asla otomatik yeniden denenmez** — bu davranış
+yapılandırılamaz. Bir `demands()->create()` çağrısının otomatik tekrarı,
+mükerrer bir sözleşme oluşturur; bu yüzden retry mantığı sadece GET
+isteklerine bağlıdır (caller tarafından açılıp kapatılabilecek bir bayrak
+değildir — bkz. `src/Http.php`'deki `unwrapRetryableGet()`, hiçbir yazma
+metodu bu fonksiyona yönlendirilmez).
+
+## Sayfalama iterator'ı
+
+`templates()->list()` tek sayfa döner (`{templates, total, page, limit}`).
+Tüm şablonları sayfa sayfa elle çekmek yerine `listAll()` generator'ını
+kullanabilirsiniz — sayfaları şeffaf şekilde gezer:
+
+```php
+<?php
+
+foreach ($imzala->templates()->listAll(limit: 50) as $template) {
+    echo $template->getId() . ' ' . $template->getName() . "\n";
+}
+```
+
+`total` alanına ulaşıldığında veya bir sayfa `limit`'ten az öğe
+döndürdüğünde durur — sonsuz döngüye girmez. `list()` (tek sayfa)
+davranışı değişmedi.
 
 ## Webhook doğrulama
 

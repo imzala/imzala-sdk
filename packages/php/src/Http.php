@@ -75,4 +75,89 @@ final class Http
 
         return (is_object($data) && method_exists($data, 'getData')) ? $data->getData() : null;
     }
+
+    /**
+     * Like {@see self::unwrap()}, but adds safe auto-retry for **GET-only,
+     * idempotent** facade methods ({@code templates->list/get/usage},
+     * {@code demands->get}, {@code me()}). Retries on 429 (rate limited —
+     * honors {@code Retry-After}/{@see ImzalaRateLimitException::getRetryAfter()})
+     * and 5xx (server error) with exponential backoff + jitter; any other
+     * status (400/401/403/404/409/422/...) is thrown immediately, same as
+     * {@see self::unwrap()}. Mirrors {@code unwrapRetryableGet()} in
+     * {@code http.ts} (Node).
+     *
+     * <p>Whatever status code the underlying vendored generated client's
+     * {@code ...WithHttpInfo()} call produces — whether it's a normally
+     * *returned* declared-schema response (see the class doc above, e.g.
+     * this spec's 401 on {@code apiV1TemplatesGet}) or a *thrown* {@see
+     * ApiException} for an undeclared status (this spec never declares
+     * 429/5xx response schemas on any of the 5 retryable GET operations, so
+     * those always arrive as a thrown {@see ApiException}) — {@see
+     * self::unwrap()} above already normalizes both into a single thrown
+     * {@see ImzalaException} with {@see ImzalaException::getStatusCode()}
+     * set. This method only has to inspect *that*, once, in one place.
+     *
+     * <p><b>SAFETY — never call this with a non-GET request.</b> There is
+     * deliberately no {@code $method} parameter and no way to opt a
+     * POST/PUT/PATCH/DELETE call into retrying: this is not a
+     * caller-configurable behavior. Retrying a write (e.g. {@code
+     * demands->create()}, {@code sendReminder()}) could duplicate a demand
+     * or double-send a reminder — those facade methods must keep calling
+     * {@see self::unwrap()} above, once, with no retry loop reachable.
+     *
+     * <p>{@code $call} is a thunk (not an already-invoked value) because
+     * retrying means re-issuing the underlying HTTP request — {@see
+     * self::unwrap()} itself already requires this (it invokes {@code
+     * $call()} internally), so simply passing the same closure back in on
+     * each loop iteration re-issues the real API call every attempt.
+     *
+     * @param callable():array{0:mixed,1:int,2:array<string,string[]>} $call
+     *     a generated client's {@code ...WithHttpInfo(...)} call — NOT the
+     *     plain method, see class docs
+     */
+    public static function unwrapRetryableGet(callable $call, RetryConfig $retry): mixed
+    {
+        $attempt = 0;
+        for (;;) {
+            try {
+                return self::unwrap($call);
+            } catch (ImzalaException $e) {
+                if ($attempt >= $retry->maxRetries || !self::isRetryableStatus($e->getStatusCode())) {
+                    throw $e;
+                }
+                self::sleepMs(self::computeDelayMs($e, $attempt, $retry->retryBaseDelayMs));
+                $attempt++;
+            }
+        }
+    }
+
+    /** 429 (rate limited) and 5xx (server error) are treated as transient. Everything else (4xx, network-error-with-no-status) is never retried. */
+    private static function isRetryableStatus(?int $statusCode): bool
+    {
+        if ($statusCode === 429) {
+            return true;
+        }
+        return $statusCode !== null && $statusCode >= 500 && $statusCode <= 599;
+    }
+
+    /** Exponential backoff with jitter, honoring {@code Retry-After} on 429s (already parsed onto {@see ImzalaRateLimitException::getRetryAfter()} by {@see ErrorMapper}). */
+    private static function computeDelayMs(ImzalaException $error, int $attempt, int $baseDelayMs): float
+    {
+        if ($error instanceof ImzalaRateLimitException && $error->getRetryAfter() !== null) {
+            return max(0.0, $error->getRetryAfter() * 1000);
+        }
+
+        $backoff = $baseDelayMs * (2 ** $attempt);
+        $jitter = $baseDelayMs > 0 ? mt_rand(0, $baseDelayMs) : 0;
+
+        return (float) ($backoff + $jitter);
+    }
+
+    private static function sleepMs(float $ms): void
+    {
+        if ($ms <= 0) {
+            return;
+        }
+        usleep((int) round($ms * 1000));
+    }
 }

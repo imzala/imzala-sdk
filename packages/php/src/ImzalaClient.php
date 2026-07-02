@@ -46,22 +46,33 @@ final class ImzalaClient
 {
     public const DEFAULT_BASE_URL = 'https://api-prd.imzala.org';
     private const DEFAULT_TIMEOUT_SECONDS = 30.0;
+    private const DEFAULT_MAX_RETRIES = 2;
+    private const DEFAULT_RETRY_BASE_DELAY_MS = 300;
 
     private readonly AccountApi $accountApi;
     private readonly TemplatesResource $templatesResource;
     private readonly DemandsResource $demandsResource;
     private readonly EmbedResource $embedResource;
     private readonly TimestampsResource $timestampsResource;
+    private readonly RetryConfig $retryConfig;
 
     /**
      * @param string $apiKey {@code imz_<64 hex>} — from Dashboard → Geliştirici → API Anahtarları, or Hesap Ayarları → API Anahtarları.
      * @param string $baseUrl defaults to {@code https://api-prd.imzala.org}. Use {@code https://test-api.imzala.org} for the test environment.
      * @param float $timeoutSeconds per-request timeout, in seconds. Defaults to 30.
+     * @param int $maxRetries max auto-retry attempts for safe, idempotent
+     *     **GET** requests that fail with 429 (rate limited) or 5xx (server
+     *     error). Defaults to 2. Set to {@code 0} to disable. Writes
+     *     ({@code demands()->create()}, {@code sendReminder()}, ...) are
+     *     never retried, regardless of this setting — see {@see Http::unwrapRetryableGet()}.
+     * @param int $retryBaseDelayMs base delay (ms) for the exponential backoff between retries. Defaults to 300.
      */
     public function __construct(
         string $apiKey,
         string $baseUrl = self::DEFAULT_BASE_URL,
-        float $timeoutSeconds = self::DEFAULT_TIMEOUT_SECONDS
+        float $timeoutSeconds = self::DEFAULT_TIMEOUT_SECONDS,
+        int $maxRetries = self::DEFAULT_MAX_RETRIES,
+        int $retryBaseDelayMs = self::DEFAULT_RETRY_BASE_DELAY_MS
     ) {
         if ($apiKey === '') {
             throw new InvalidArgumentException('new ImzalaClient(apiKey) — apiKey is required.');
@@ -73,14 +84,16 @@ final class ImzalaClient
 
         $httpClient = new GuzzleClient(['timeout' => $timeoutSeconds]);
 
+        $this->retryConfig = new RetryConfig(max(0, $maxRetries), max(0, $retryBaseDelayMs));
+
         $this->accountApi = new AccountApi($httpClient, $config);
         $demandsApi = new DemandsApi($httpClient, $config);
         $remindersApi = new RemindersApi($httpClient, $config);
         $templatesApi = new TemplatesApi($httpClient, $config);
         $timestampsApi = new TimestampsApi($httpClient, $config);
 
-        $this->templatesResource = new TemplatesResource($templatesApi);
-        $this->demandsResource = new DemandsResource($demandsApi, $remindersApi);
+        $this->templatesResource = new TemplatesResource($templatesApi, $this->retryConfig);
+        $this->demandsResource = new DemandsResource($demandsApi, $remindersApi, $this->retryConfig);
         $this->embedResource = new EmbedResource($demandsApi);
         $this->timestampsResource = new TimestampsResource($timestampsApi);
     }
@@ -109,10 +122,10 @@ final class ImzalaClient
         return $this->timestampsResource;
     }
 
-    /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. */
+    /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
     public function me(): ApiV1MeGet200ResponseData
     {
-        return Http::unwrap(fn () => $this->accountApi->apiV1MeGetWithHttpInfo());
+        return Http::unwrapRetryableGet(fn () => $this->accountApi->apiV1MeGetWithHttpInfo(), $this->retryConfig);
     }
 
     /**
