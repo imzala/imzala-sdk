@@ -17,7 +17,8 @@ import type {
   UpsertItemsRequest,
   UpsertItemsResponseData,
 } from '../generated/api';
-import { unwrap } from './http';
+import { unwrap, unwrapRetryableGet } from './http';
+import type { RetryConfig } from './http';
 import { toUploadFile } from './files';
 import type { CreateTimestampParams, UploadDemandParams } from './files';
 
@@ -49,6 +50,8 @@ export type {
 
 const DEFAULT_BASE_URL = 'https://api-prd.imzala.org';
 const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_RETRY_BASE_DELAY_MS = 300;
 
 export interface ImzalaOptions {
   /** `imz_<64 hex>` — from Dashboard → Geliştirici → API Anahtarları, or Hesap Ayarları → API Anahtarları. */
@@ -57,6 +60,15 @@ export interface ImzalaOptions {
   baseUrl?: string;
   /** Per-request axios timeout, in milliseconds. Defaults to 30000. */
   timeoutMs?: number;
+  /**
+   * Max auto-retry attempts for safe, idempotent **GET** requests that fail
+   * with 429 (rate limited) or 5xx (server error). Defaults to 2. Set to
+   * `0` to disable. Writes (`demands.create`, `sendReminder`, ...) are
+   * never retried, regardless of this setting — see the SDK README.
+   */
+  maxRetries?: number;
+  /** Base delay (ms) for the exponential backoff between retries. Defaults to 300. */
+  retryBaseDelayMs?: number;
 }
 
 export interface ListTemplatesParams {
@@ -65,21 +77,68 @@ export interface ListTemplatesParams {
 }
 
 class TemplatesResource {
-  constructor(private readonly api: TemplatesApi) {}
+  constructor(
+    private readonly api: TemplatesApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
 
-  /** Lists your active templates. */
+  /** Lists your active templates (one page). GET — safe to auto-retry. */
   list(params: ListTemplatesParams = {}): Promise<ApiV1TemplatesGet200ResponseData> {
-    return unwrap(this.api.apiV1TemplatesGet({ page: params.page, limit: params.limit }));
+    return unwrapRetryableGet(
+      () => this.api.apiV1TemplatesGet({ page: params.page, limit: params.limit }),
+      this.retryConfig,
+    );
   }
 
-  /** Returns a template's parties + fillable variables. */
+  /** Returns a template's parties + fillable variables. GET — safe to auto-retry. */
   get(id: string): Promise<TemplateDetail> {
-    return unwrap(this.api.apiV1TemplatesIdGet({ id }));
+    return unwrapRetryableGet(() => this.api.apiV1TemplatesIdGet({ id }), this.retryConfig);
   }
 
-  /** Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. */
+  /** Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. GET — safe to auto-retry. */
   usage(id: string): Promise<TemplateUsage> {
-    return unwrap(this.api.apiV1TemplatesIdUsageGet({ id }));
+    return unwrapRetryableGet(() => this.api.apiV1TemplatesIdUsageGet({ id }), this.retryConfig);
+  }
+
+  /**
+   * Walks every page of your active templates, transparently, yielding one
+   * template at a time. Internally calls `list({page, limit})` and
+   * increments `page` until a page comes back short (fewer items than the
+   * requested page size) or the response's `total` has been reached —
+   * whichever happens first — so it always terminates even against a
+   * misbehaving/empty result set.
+   *
+   * @example
+   * ```ts
+   * for await (const template of imzala.templates.listAll()) {
+   *   console.log(template.id, template.name);
+   * }
+   * ```
+   */
+  async *listAll(params: ListTemplatesParams = {}): AsyncGenerator<TemplateSummary, void, undefined> {
+    const requestedLimit = params.limit;
+    let page = params.page ?? 1;
+    let yielded = 0;
+
+    for (;;) {
+      const result = await this.list({ page, limit: requestedLimit });
+      const templates = result.templates ?? [];
+
+      for (const template of templates) {
+        yield template;
+      }
+      yielded += templates.length;
+
+      if (templates.length === 0) break;
+
+      const total = result.total;
+      if (typeof total === 'number' && yielded >= total) break;
+
+      const effectiveLimit = result.limit ?? requestedLimit;
+      if (typeof effectiveLimit === 'number' && templates.length < effectiveLimit) break;
+
+      page = (result.page ?? page) + 1;
+    }
   }
 }
 
@@ -87,16 +146,20 @@ class DemandsResource {
   constructor(
     private readonly api: DemandsApi,
     private readonly remindersApi: RemindersApi,
+    private readonly retryConfig: RetryConfig,
   ) {}
 
-  /** Creates a new demand (contract) from a template. */
+  /**
+   * Creates a new demand (contract) from a template. POST — never
+   * auto-retried (a retried create would produce a duplicate demand).
+   */
   create(body: CreateDemandRequest): Promise<CreatedDemand> {
     return unwrap(this.api.apiV1DemandsPost({ createDemandRequest: body }));
   }
 
-  /** Returns a demand's status + per-party signing progress. */
+  /** Returns a demand's status + per-party signing progress. GET — safe to auto-retry. */
   get(id: string): Promise<DemandStatus> {
-    return unwrap(this.api.apiV1DemandsIdGet({ id }));
+    return unwrapRetryableGet(() => this.api.apiV1DemandsIdGet({ id }), this.retryConfig);
   }
 
   /**
@@ -129,7 +192,8 @@ class DemandsResource {
    * parties. Independent of the template/demand's scheduled
    * `reminder_settings`. Subject to a 5-minute anti-spam window (override
    * with `{force: true}`) and a hard per-person cap of 3 reminders per
-   * channel (not overridable).
+   * channel (not overridable). POST — never auto-retried (a retried call
+   * could double-send).
    */
   sendReminder(
     id: string,
@@ -215,6 +279,7 @@ export class Imzala {
   readonly timestamps: TimestampsResource;
 
   private readonly accountApi: AccountApi;
+  private readonly retryConfig: RetryConfig;
 
   constructor(options: ImzalaOptions) {
     if (typeof window !== 'undefined') {
@@ -232,21 +297,26 @@ export class Imzala {
       baseOptions: { timeout: options.timeoutMs ?? DEFAULT_TIMEOUT_MS },
     });
 
+    this.retryConfig = {
+      maxRetries: Math.max(0, options.maxRetries ?? DEFAULT_MAX_RETRIES),
+      retryBaseDelayMs: Math.max(0, options.retryBaseDelayMs ?? DEFAULT_RETRY_BASE_DELAY_MS),
+    };
+
     this.accountApi = new AccountApi(configuration);
     const demandsApi = new DemandsApi(configuration);
     const remindersApi = new RemindersApi(configuration);
     const templatesApi = new TemplatesApi(configuration);
     const timestampsApi = new TimestampsApi(configuration);
 
-    this.templates = new TemplatesResource(templatesApi);
-    this.demands = new DemandsResource(demandsApi, remindersApi);
+    this.templates = new TemplatesResource(templatesApi, this.retryConfig);
+    this.demands = new DemandsResource(demandsApi, remindersApi, this.retryConfig);
     this.embed = new EmbedResource(demandsApi);
     this.timestamps = new TimestampsResource(timestampsApi);
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the `timestamps` scope. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the `timestamps` scope. GET — safe to auto-retry. */
   me(): Promise<ApiV1MeGet200ResponseData> {
-    return unwrap(this.accountApi.apiV1MeGet());
+    return unwrapRetryableGet(() => this.accountApi.apiV1MeGet(), this.retryConfig);
   }
 }
 

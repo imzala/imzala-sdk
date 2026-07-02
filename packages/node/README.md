@@ -44,7 +44,8 @@ için `new Imzala({ apiKey, baseUrl: 'https://test-api.imzala.org' })`.
 
 ## Kaynaklar
 
-- `imzala.templates.list({ page?, limit? })` / `.get(id)` / `.usage(id)`
+- `imzala.templates.list({ page?, limit? })` / `.get(id)` / `.usage(id)` /
+  `.listAll({ page?, limit? })` (bkz. aşağıdaki sayfalama notu)
 - `imzala.demands.create(body)` / `.get(id)` / `.addItems(id, body)` /
   `.uploadDocument({ files, parties, order?, title?, description? })` /
   `.sendReminder(id, { force? })`
@@ -56,6 +57,44 @@ için `new Imzala({ apiKey, baseUrl: 'https://test-api.imzala.org' })`.
 Dosya yükleyen metodlar (`demands.uploadDocument`, `timestamps.create`)
 Node `Buffer`/`Uint8Array` + dosya adı kabul eder (`FileInput` tipi);
 `multer`'dan veya `fs.readFile`'dan gelen bytes'ı doğrudan geçebilirsiniz.
+
+## Otomatik yeniden deneme (safe auto-retry)
+
+`templates.list/get/usage`, `demands.get` ve `me()` — yani **sadece GET**
+(okuma) uçları — 429 (rate limit, `Retry-After`'a uyarak) veya 5xx (sunucu
+hatası) aldığında, jitter'lı exponential backoff ile otomatik olarak
+yeniden denenir:
+
+```ts
+const imzala = new Imzala({
+  apiKey: process.env.IMZALA_API_KEY!,
+  maxRetries: 2, // varsayılan 2, 0 = kapalı
+  retryBaseDelayMs: 300, // varsayılan 300ms (backoff: 300ms, 600ms, ...)
+});
+```
+
+**Güvenlik:** `demands.create`, `sendReminder`, `uploadDocument`,
+`addItems`, `embed.createSession`, `timestamps.create` gibi **yazma**
+(POST) uçları **asla otomatik yeniden denenmez** — bu davranış
+yapılandırılamaz. Bir `demands.create` çağrısının otomatik tekrarı,
+mükerrer bir sözleşme oluşturur; bu yüzden retry mantığı sadece GET
+isteklerine bağlıdır (caller tarafından açılıp kapatılabilecek bir bayrak
+değildir).
+
+## Sayfalama iterator'ı
+
+`templates.list()` tek sayfa döner (`{templates, total, page, limit}`).
+Tüm şablonları sayfa sayfa elle çekmek yerine `listAll()` async
+iterator'ını kullanabilirsiniz — sayfaları şeffaf şekilde gezer:
+
+```ts
+for await (const template of imzala.templates.listAll({ limit: 50 })) {
+  console.log(template.id, template.name);
+}
+```
+
+`total` alanına ulaşıldığında veya bir sayfa `limit`'ten az öğe
+döndürdüğünde durur — sonsuz döngüye girmez.
 
 ## Webhook doğrulama
 
