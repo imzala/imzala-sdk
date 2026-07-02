@@ -7,16 +7,19 @@ import org.imzala.client.generated.model.ApiV1MeGet200ResponseData;
 final class AccountResource {
 
   private final AccountApi api;
+  private final RetryConfig retryConfig;
 
-  AccountResource(AccountApi api) {
+  AccountResource(AccountApi api, RetryConfig retryConfig) {
     this.api = api;
+    this.retryConfig = retryConfig;
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
   ApiV1MeGet200ResponseData me() {
-    return Http.unwrap(
+    return Http.unwrapRetryableGet(
         api::apiV1MeGet,
         r -> Boolean.TRUE.equals(r.getSuccess()),
-        r -> r.getData());
+        r -> r.getData(),
+        retryConfig);
   }
 }

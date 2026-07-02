@@ -61,6 +61,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ClientTest {
 
+  /**
+   * These envelope-unwrap tests don't exercise retry behavior themselves
+   * (see {@code RetryTest}/{@code PaginationTest} for that) — {@code
+   * maxRetries: 0} keeps them fast/deterministic and avoids a retry loop
+   * ever sleeping in an unrelated assertion.
+   */
+  private static final RetryConfig NO_RETRY = new RetryConfig(0, 0);
+
   @Mock
   private DemandsApi demandsApi;
   @Mock
@@ -76,7 +84,7 @@ class ClientTest {
     when(demandsApi.apiV1DemandsIdGet(id)).thenReturn(
         new ApiV1DemandsIdGet200Response().success(true).data(new DemandStatus().id(id).status(DemandStatus.StatusEnum.PENDING)));
 
-    DemandsResource resource = new DemandsResource(demandsApi, remindersApi);
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
     DemandStatus result = resource.get(id);
 
     assertEquals(id, result.getId());
@@ -89,7 +97,7 @@ class ClientTest {
     when(accountApi.apiV1MeGet()).thenReturn(
         new ApiV1MeGet200Response().success(true).data(new ApiV1MeGet200ResponseData().id(userId).email("a@b.com")));
 
-    AccountResource account = new AccountResource(accountApi);
+    AccountResource account = new AccountResource(accountApi, NO_RETRY);
     ApiV1MeGet200ResponseData result = account.me();
 
     assertEquals(userId, result.getId());
@@ -105,7 +113,7 @@ class ClientTest {
             .page(2)
             .limit(10)));
 
-    TemplatesResource resource = new TemplatesResource(templatesApi);
+    TemplatesResource resource = new TemplatesResource(templatesApi, NO_RETRY);
     ApiV1TemplatesGet200ResponseData result = resource.list(2, 10);
 
     verify(templatesApi).apiV1TemplatesGet(2, 10);
@@ -119,7 +127,7 @@ class ClientTest {
     when(remindersApi.apiV1DemandsIdRemindersPost(eq(id), any(TriggerReminderRequest.class))).thenReturn(
         new ApiV1DemandsIdRemindersPost200Response().success(true).data(new ApiV1DemandsIdRemindersPost200ResponseData().demandId(id)));
 
-    DemandsResource resource = new DemandsResource(demandsApi, remindersApi);
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
     ApiV1DemandsIdRemindersPost200ResponseData result = resource.sendReminder(id, new TriggerReminderRequest().force(true));
 
     ArgumentCaptor<TriggerReminderRequest> captor = ArgumentCaptor.forClass(TriggerReminderRequest.class);
@@ -135,7 +143,7 @@ class ClientTest {
     when(remindersApi.apiV1DemandsIdRemindersPost(eq(id), any(TriggerReminderRequest.class))).thenReturn(
         new ApiV1DemandsIdRemindersPost200Response().success(true).data(new ApiV1DemandsIdRemindersPost200ResponseData().demandId(id)));
 
-    DemandsResource resource = new DemandsResource(demandsApi, remindersApi);
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
     resource.sendReminder(id);
 
     ArgumentCaptor<TriggerReminderRequest> captor = ArgumentCaptor.forClass(TriggerReminderRequest.class);
@@ -168,7 +176,7 @@ class ClientTest {
     when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any())).thenReturn(
         new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload().id(UUID.randomUUID())));
 
-    DemandsResource resource = new DemandsResource(demandsApi, remindersApi);
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
     CreatedDemandUpload result = resource.uploadDocument(
         new UploadDemandParams(
             List.of(new FileInput("hello".getBytes(), "a.pdf", "application/pdf")),
@@ -197,7 +205,7 @@ class ClientTest {
     when(templatesApi.apiV1TemplatesIdGet(any(UUID.class))).thenReturn(
         new ApiV1TemplatesIdGet200Response().success(false));
 
-    TemplatesResource resource = new TemplatesResource(templatesApi);
+    TemplatesResource resource = new TemplatesResource(templatesApi, NO_RETRY);
 
     assertThrows(ImzalaException.class, () -> resource.get(UUID.randomUUID()));
   }

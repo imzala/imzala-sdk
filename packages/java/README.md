@@ -49,7 +49,7 @@ için `new Imzala(apiKey, "https://test-api.imzala.org")`.
 ## Kaynaklar
 
 - `imzala.templates().list()` / `.list(page, limit)` / `.get(id)` /
-  `.usage(id)`
+  `.usage(id)` / `.listAll()` / `.listAll(page, limit)`
 - `imzala.demands().create(body)` / `.get(id)` / `.addItems(id, body)` /
   `.uploadDocument(new UploadDemandParams(files, parties))` /
   `.sendReminder(id)` / `.sendReminder(id, body)`
@@ -62,6 +62,57 @@ Dosya yükleyen metodlar `FileInput(byte[] content, String fileName,
 String contentType)` kullanır; SDK içeride geçici bir dosyaya yazıp
 temizler (vendored generated client `java.io.File` bekliyor), çağıran
 taraf dosya sistemiyle uğraşmaz.
+
+## Otomatik yeniden deneme (safe auto-retry)
+
+`templates().list/get/usage`, `demands().get` ve `me()` — yani **sadece
+GET** (okuma) uçları — 429 (rate limit, sunucunun bildirdiği bekleme
+süresine uyarak) veya 5xx (sunucu hatası) aldığında, jitter'lı exponential
+backoff ile otomatik olarak yeniden denenir:
+
+```java
+Imzala imzala = new Imzala(
+    System.getenv("IMZALA_API_KEY"),
+    "https://api-prd.imzala.org",
+    30_000, // timeoutMs
+    2,      // maxRetries — varsayılan 2, 0 = kapalı
+    300);   // retryBaseDelayMs — varsayılan 300ms (backoff: 300ms, 600ms, ...)
+```
+
+Bu iki yeni parametre mevcut 3-parametreli constructor'ların (`Imzala(apiKey)`
+/ `Imzala(apiKey, baseUrl)` / `Imzala(apiKey, baseUrl, timeoutMs)`) sonuna
+eklendi — hepsi hâlâ çalışır, `maxRetries`/`retryBaseDelayMs` belirtilmezse
+varsayılanlarını (2 / 300ms) kullanırlar.
+
+**Güvenlik:** `demands().create`, `sendReminder`, `uploadDocument`,
+`addItems`, `embed().createSession`, `timestamps().create` gibi **yazma**
+(POST) uçları **asla otomatik yeniden denenmez** — bu davranış
+yapılandırılamaz. Bir `demands().create` çağrısının otomatik tekrarı,
+mükerrer bir sözleşme oluşturur; bu yüzden retry mantığı sadece GET
+isteklerine bağlıdır (caller tarafından açılıp kapatılabilecek bir bayrak
+değildir) — `Http.unwrapRetryableGet` içeride yalnızca GET'e sarılan
+metodlardan çağrılır, POST metodları hâlâ düz `Http.unwrap` kullanır.
+
+## Sayfalama iteratörü
+
+`templates().list()` tek sayfa döner (`{templates, total, page, limit}`).
+Tüm şablonları sayfa sayfa elle çekmek yerine `listAll()` iterator'ını
+kullanabilirsiniz — sayfaları şeffaf şekilde gezer:
+
+```java
+for (TemplateSummary template : imzala.templates().listAll()) {
+    System.out.println(template.getId() + " " + template.getName());
+}
+
+// veya belirli bir sayfa/limit'ten başlayarak:
+for (TemplateSummary template : imzala.templates().listAll(1, 50)) {
+    // ...
+}
+```
+
+`total` alanına ulaşıldığında veya bir sayfa `limit`'ten az öğe
+döndürdüğünde durur — sonsuz döngüye girmez. `list()`'in kendisi hâlâ tek
+sayfa döner, değişmedi.
 
 ## Webhook doğrulama
 

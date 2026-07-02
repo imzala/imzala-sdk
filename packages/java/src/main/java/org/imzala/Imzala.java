@@ -38,6 +38,8 @@ public final class Imzala {
 
   private static final String DEFAULT_BASE_URL = "https://api-prd.imzala.org";
   private static final long DEFAULT_TIMEOUT_MS = 30_000;
+  private static final int DEFAULT_MAX_RETRIES = 2;
+  private static final long DEFAULT_RETRY_BASE_DELAY_MS = 300;
   private static final String HMAC_ALGORITHM = "HmacSHA256";
 
   private final AccountResource account;
@@ -65,6 +67,24 @@ public final class Imzala {
    * @param timeoutMs per-request read timeout, in milliseconds. Defaults to 30000.
    */
   public Imzala(String apiKey, String baseUrl, long timeoutMs) {
+    this(apiKey, baseUrl, timeoutMs, DEFAULT_MAX_RETRIES, DEFAULT_RETRY_BASE_DELAY_MS);
+  }
+
+  /**
+   * @param apiKey {@code imz_<64 hex>} — from Dashboard → Geliştirici → API Anahtarları, or Hesap Ayarları → API Anahtarları.
+   * @param baseUrl defaults to {@code https://api-prd.imzala.org}. Use {@code https://test-api.imzala.org} for the test environment.
+   * @param timeoutMs per-request read timeout, in milliseconds. Defaults to 30000.
+   * @param maxRetries max auto-retry attempts for safe, idempotent <b>GET</b>
+   *     resource methods ({@code templates().list/get/usage},
+   *     {@code demands().get}, {@code me()}) that fail with 429 (rate
+   *     limited) or 5xx (server error). Defaults to 2. Clamped to
+   *     {@code >= 0}; {@code 0} disables retry. Writes ({@code
+   *     demands().create}, {@code sendReminder}, ...) are never retried,
+   *     regardless of this setting — see the SDK README.
+   * @param retryBaseDelayMs base delay (ms) for the exponential backoff
+   *     between retries. Defaults to 300. Clamped to {@code >= 0}.
+   */
+  public Imzala(String apiKey, String baseUrl, long timeoutMs, int maxRetries, long retryBaseDelayMs) {
     if (apiKey == null || apiKey.isEmpty()) {
       throw new IllegalArgumentException("new Imzala(apiKey) — apiKey is required.");
     }
@@ -74,14 +94,16 @@ public final class Imzala {
     apiClient.setReadTimeout(Duration.ofMillis(timeoutMs));
     apiClient.setRequestInterceptor(requestBuilder -> requestBuilder.header("X-API-Key", apiKey));
 
-    this.account = new AccountResource(new AccountApi(apiClient));
+    RetryConfig retryConfig = new RetryConfig(maxRetries, retryBaseDelayMs);
+
+    this.account = new AccountResource(new AccountApi(apiClient), retryConfig);
     DemandsApi demandsApi = new DemandsApi(apiClient);
     RemindersApi remindersApi = new RemindersApi(apiClient);
     TemplatesApi templatesApi = new TemplatesApi(apiClient);
     TimestampsApi timestampsApi = new TimestampsApi(apiClient);
 
-    this.templates = new TemplatesResource(templatesApi);
-    this.demands = new DemandsResource(demandsApi, remindersApi);
+    this.templates = new TemplatesResource(templatesApi, retryConfig);
+    this.demands = new DemandsResource(demandsApi, remindersApi, retryConfig);
     this.embed = new EmbedResource(demandsApi);
     this.timestamps = new TimestampsResource(timestampsApi);
   }
@@ -106,7 +128,7 @@ public final class Imzala {
     return timestamps;
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
   public ApiV1MeGet200ResponseData me() {
     return account.me();
   }

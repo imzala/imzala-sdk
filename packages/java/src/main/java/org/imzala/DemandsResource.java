@@ -32,13 +32,18 @@ public final class DemandsResource {
 
   private final DemandsApi api;
   private final RemindersApi remindersApi;
+  private final RetryConfig retryConfig;
 
-  DemandsResource(DemandsApi api, RemindersApi remindersApi) {
+  DemandsResource(DemandsApi api, RemindersApi remindersApi, RetryConfig retryConfig) {
     this.api = api;
     this.remindersApi = remindersApi;
+    this.retryConfig = retryConfig;
   }
 
-  /** Creates a new demand (contract) from a template. */
+  /**
+   * Creates a new demand (contract) from a template. POST — never
+   * auto-retried (a retried create would produce a duplicate demand).
+   */
   public CreatedDemand create(CreateDemandRequest body) {
     return Http.unwrap(
         () -> api.apiV1DemandsPost(body),
@@ -46,18 +51,19 @@ public final class DemandsResource {
         r -> r.getData());
   }
 
-  /** Returns a demand's status + per-party signing progress. */
+  /** Returns a demand's status + per-party signing progress. GET — safe to auto-retry. */
   public DemandStatus get(UUID id) {
-    return Http.unwrap(
+    return Http.unwrapRetryableGet(
         () -> api.apiV1DemandsIdGet(id),
         r -> Boolean.TRUE.equals(r.getSuccess()),
-        r -> r.getData());
+        r -> r.getData(),
+        retryConfig);
   }
 
   /**
    * Places (replaces) signature/form fields on a demand's pages. See
    * {@code UpsertItemsRequest.getPageIds()} for full-replace vs
-   * per-page-replace semantics.
+   * per-page-replace semantics. POST — never auto-retried.
    */
   public UpsertItemsResponseData addItems(UUID id, UpsertItemsRequest body) {
     return Http.unwrap(
@@ -74,7 +80,8 @@ public final class DemandsResource {
    * UploadDemandParams#getFiles()} to throwaway temp files — the vendored
    * generated client's multipart layer requires real {@code java.io.File}s.
    * Temp files (and their parent temp directories) are always deleted
-   * before this method returns, success or failure.
+   * before this method returns, success or failure. POST — never
+   * auto-retried.
    */
   public CreatedDemandUpload uploadDocument(UploadDemandParams params) {
     List<File> tempFiles = new ArrayList<>(params.getFiles().size());
@@ -117,7 +124,8 @@ public final class DemandsResource {
    * {@code DemandsApi} — the OpenAPI spec groups {@code POST
    * /api/v1/demands/{id}/reminders} under a {@code Reminders} tag even
    * though the route lives under {@code demands}. Same gotcha B1 (TS), B2
-   * (Python), and B3 (C#) flagged for their generators.
+   * (Python), and B3 (C#) flagged for their generators. POST — never
+   * auto-retried (a retried call could double-send).
    */
   public ApiV1DemandsIdRemindersPost200ResponseData sendReminder(UUID id, TriggerReminderRequest body) {
     TriggerReminderRequest effectiveBody = body != null ? body : new TriggerReminderRequest();
