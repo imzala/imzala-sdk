@@ -14,15 +14,19 @@ oturumu — bkz. RELEASING.md kapsam notu), `timestamps` (RFC 3161 zaman
 damgası) ve `me()` (hesap bilgisi) kaynaklarını + `verifyWebhook` yardımcı
 fonksiyonunu sağlar. Tarayıcı paketleri gömülü imza iframe widget'ıdır.
 
+Her paketin kendi README'si kurulum + hızlı başlangıç + webhook doğrulama +
+hata yönetimi örneklerini o dilin idiomlarıyla, gerçek facade kaynak
+kodundan doğrulanmış olarak içerir:
+
 | Paket | Registry | Kurulum | Tek satır kullanım |
 |---|---|---|---|
-| `@imzala/node` | npm | `npm install @imzala/node` | `import { Imzala } from '@imzala/node'; const imzala = new Imzala({ apiKey: process.env.IMZALA_API_KEY! });` |
-| `imzala` | PyPI | `pip install imzala` | `from imzala import Imzala; client = Imzala(api_key="imz_...")` |
-| `Imzala` | NuGet | `dotnet add package Imzala` | `var imzala = new Imzala(Environment.GetEnvironmentVariable("IMZALA_API_KEY")!);` |
-| `imzala/imzala-php` | Packagist | `composer require imzala/imzala-php` | `$imzala = new \Imzala\ImzalaClient($apiKey);` |
-| `org.imzala:imzala-java` | Maven Central | `<dependency><groupId>org.imzala</groupId><artifactId>imzala-java</artifactId><version>X.Y.Z</version></dependency>` | `Imzala imzala = new Imzala(System.getenv("IMZALA_API_KEY"));` |
-| `@imzala/embed` | npm | `npm install @imzala/embed` | `new ImzalaEmbed({ container }).open(embedToken)` (tarayıcı, iframe widget) |
-| `@imzala/embed-react` | npm | `npm install @imzala/embed-react` | `<ImzalaSign token={embedToken} onComplete={...} />` |
+| [`@imzala/node`](./packages/node/README.md) | npm | `npm install @imzala/node` | `import { Imzala } from '@imzala/node'; const imzala = new Imzala({ apiKey: process.env.IMZALA_API_KEY! });` |
+| [`imzala`](./packages/python/README.md) | PyPI | `pip install imzala` | `from imzala import Imzala; client = Imzala(api_key="imz_...")` |
+| [`Imzala`](./packages/dotnet/README.md) | NuGet | `dotnet add package Imzala` | `var imzala = new Imzala(Environment.GetEnvironmentVariable("IMZALA_API_KEY")!);` |
+| [`imzala/imzala-php`](./packages/php/README.md) | Packagist | `composer require imzala/imzala-php` | `$imzala = new \Imzala\ImzalaClient($apiKey);` |
+| [`org.imzala:imzala-java`](./packages/java/README.md) | Maven Central | `<dependency><groupId>org.imzala</groupId><artifactId>imzala-java</artifactId><version>X.Y.Z</version></dependency>` | `Imzala imzala = new Imzala(System.getenv("IMZALA_API_KEY"));` |
+| [`@imzala/embed`](./packages/embed/README.md) | npm | `npm install @imzala/embed` | `new ImzalaEmbed({ container }).open(embedToken)` (tarayıcı, iframe widget) |
+| [`@imzala/embed-react`](./packages/embed-react/README.md) | npm | `npm install @imzala/embed-react` | `<ImzalaSign token={embedToken} onComplete={...} />` |
 
 Her sunucu SDK'sı aynı deseni izler: `new Imzala(apiKey)` → tipli
 kaynak nesneleri (`.demands`, `.templates`, `.embed`, `.timestamps`) →
