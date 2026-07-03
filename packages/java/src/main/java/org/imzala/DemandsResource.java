@@ -2,9 +2,16 @@ package org.imzala;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.imzala.client.generated.ApiException;
 import org.imzala.client.generated.api.DemandsApi;
 import org.imzala.client.generated.api.RemindersApi;
+import org.imzala.client.generated.model.ApiV1DemandsGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdCancelPost200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdCancelPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdRemindersPost200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdTimelineGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200ResponseData;
 import org.imzala.client.generated.model.CreateDemandRequest;
 import org.imzala.client.generated.model.CreatedDemand;
 import org.imzala.client.generated.model.CreatedDemandUpload;
@@ -133,6 +140,168 @@ public final class DemandsResource {
         () -> remindersApi.apiV1DemandsIdRemindersPost(id, effectiveBody),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData());
+  }
+
+  /**
+   * Lists your demands — counts-only, first page, no filters. See {@link
+   * #list(ListDemandsParams)}.
+   */
+  public ApiV1DemandsGet200ResponseData list() {
+    return list(null);
+  }
+
+  /**
+   * Lists your demands — counts-only (id/title/status/timestamps +
+   * {@code parties_total}/{@code parties_signed}, <b>no</b> party
+   * names/emails/phones). Filter by status/date/template, paginate with
+   * page/limit. GET — safe to auto-retry. For per-party detail use {@link
+   * #get(UUID)}.
+   */
+  public ApiV1DemandsGet200ResponseData list(ListDemandsParams params) {
+    ListDemandsParams p = params != null ? params : new ListDemandsParams();
+    return Http.unwrapRetryableGet(
+        () -> api.apiV1DemandsGet(
+            p.getStatus(),
+            p.getQ(),
+            p.getFrom(),
+            p.getTo(),
+            p.getTemplateId(),
+            p.getPage(),
+            p.getLimit(),
+            p.getSort()),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData(),
+        retryConfig);
+  }
+
+  /**
+   * Downloads the signed contract PDF (only once {@code status ==
+   * COMPLETED}) as raw bytes. Requires the API key's owner to own the
+   * demand.
+   *
+   * <p>The vendored generated client materializes an {@code
+   * application/pdf} response as a temp {@link File}; this reads it into a
+   * {@code byte[]} and deletes that temp file before returning. GET.
+   */
+  public byte[] getPdf(UUID id) {
+    return toBytes(() -> api.apiV1DemandsIdPdfGet(id));
+  }
+
+  /**
+   * Downloads the completion certificate (PAdES B-T sealed audit document)
+   * as raw bytes. Only produced for {@code COMPLETED} demands. In the
+   * default (Turkish) language — see {@link #getCertificate(UUID, String)}
+   * for English. GET.
+   */
+  public byte[] getCertificate(UUID id) {
+    return getCertificate(id, null);
+  }
+
+  /**
+   * Downloads the completion certificate as raw bytes, in the requested
+   * language. Pass {@code "en"} for English (default is Turkish). Same temp-
+   * {@link File}-to-{@code byte[]} handling as {@link #getPdf(UUID)}. GET.
+   */
+  public byte[] getCertificate(UUID id, String lang) {
+    return toBytes(() -> api.apiV1DemandsIdCertificateGet(id, lang));
+  }
+
+  /**
+   * Returns the signing audit trail (view/sign/reject events). PII-masked:
+   * {@code ip_masked} (last octet hidden), actor name+email masked, no raw
+   * IP/device. GET — safe to auto-retry.
+   */
+  public ApiV1DemandsIdTimelineGet200ResponseData getTimeline(UUID id) {
+    return Http.unwrapRetryableGet(
+        () -> api.apiV1DemandsIdTimelineGet(id),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData(),
+        retryConfig);
+  }
+
+  /**
+   * Cancels (voids) a pending demand, with default options (no reason). See
+   * {@link #cancel(UUID, ApiV1DemandsIdCancelPostRequest)}.
+   */
+  public ApiV1DemandsIdCancelPost200ResponseData cancel(UUID id) {
+    return cancel(id, null);
+  }
+
+  /**
+   * Cancels (voids) a pending demand — sets it to {@code CANCELLED} and
+   * stops any scheduled reminders. A {@code COMPLETED} (or already-cancelled)
+   * demand can't be cancelled (throws). Attach a reason with {@code new
+   * ApiV1DemandsIdCancelPostRequest().reason("...")}. POST — never
+   * auto-retried.
+   */
+  public ApiV1DemandsIdCancelPost200ResponseData cancel(UUID id, ApiV1DemandsIdCancelPostRequest body) {
+    ApiV1DemandsIdCancelPostRequest effectiveBody = body != null ? body : new ApiV1DemandsIdCancelPostRequest();
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdCancelPost(id, effectiveBody),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Re-sends the signing invitation to a single party (by {@code party_id}
+   * from the demand's create/get response). Can't resend to a party who has
+   * already signed or declined, or one whose turn hasn't come in ordered
+   * signing (throws). POST — never auto-retried.
+   */
+  public ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData resendParty(UUID id, UUID partyId) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdPartiesPartyIdResendPost(id, partyId),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Deletes a demand and all its data. Only NON-completed demands can be
+   * deleted via the API — a {@code COMPLETED} demand (signed document +
+   * audit trail) returns 409 and must be removed from the dashboard. The
+   * deletion result reuses the shared {@code
+   * ApiV1TemplatesIdDelete200ResponseData} shape ({@code id}/{@code
+   * deleted}). DELETE — never auto-retried.
+   */
+  public ApiV1TemplatesIdDelete200ResponseData delete(UUID id) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdDelete(id),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Runs a generated-client call that returns a downloaded {@link File}
+   * (a binary {@code application/pdf} response), reads it fully into a
+   * {@code byte[]}, and deletes the temp file. Any thrown checked {@link
+   * ApiException} is normalized to a typed {@link ImzalaException} via
+   * {@link ErrorMapper}, exactly like {@link Http#unwrap}. Unlike the
+   * envelope endpoints there is no {@code {success,data}} to unwrap — the
+   * body is the raw file.
+   */
+  private static byte[] toBytes(Http.ApiCall<File> call) {
+    File file;
+    try {
+      file = call.call();
+    } catch (ApiException err) {
+      throw ErrorMapper.map(err);
+    }
+
+    if (file == null) {
+      return new byte[0];
+    }
+
+    try {
+      return Files.readAllBytes(file.toPath());
+    } catch (IOException e) {
+      throw new ImzalaException("İndirilen dosya okunamadı (failed to read downloaded file)", null, null, null, e);
+    } finally {
+      try {
+        Files.deleteIfExists(file.toPath());
+      } catch (IOException ignored) {
+        // best-effort — the generated client already registered deleteOnExit
+      }
+    }
   }
 
   private static String writeJson(Object value) {

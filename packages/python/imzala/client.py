@@ -121,6 +121,43 @@ def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
             attempt += 1
 
 
+def _retryable_binary_get(call: Callable[[], Any], retry: _RetryConfig) -> bytes:
+    """Like `_unwrap_retryable_get`, but for **binary GET** endpoints that
+    return raw file bytes (a signed PDF / a completion certificate) rather
+    than the JSON `{success, data}` envelope. There is nothing to unwrap —
+    the generated client already deserializes a `200 application/pdf`
+    response straight to `bytes` — so this only layers the same safe,
+    GET-only auto-retry (429 / 5xx, exponential backoff + jitter) around
+    the call and coerces the result to `bytes`.
+
+    Mirrors the node facade's `demands.getPdf`/`getCertificate`, which read
+    the raw body (`responseType: 'arraybuffer'` → `Buffer`) instead of
+    routing through the envelope `unwrap`.
+
+    **SAFETY — never call this with a non-GET request**, for the same
+    reason as `_unwrap_retryable_get`: a retried write could duplicate an
+    effect. There is deliberately no way to opt a write into this path.
+    """
+    attempt = 0
+    while True:
+        try:
+            result = call()
+        except ImzalaError as err:
+            if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
+                raise
+            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            attempt += 1
+            continue
+        except Exception as exc:  # ApiException, urllib3/network errors, ...
+            err = map_api_exception(exc)
+            if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
+                raise err from exc
+            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            attempt += 1
+            continue
+        return bytes(result)
+
+
 def _get_field(obj: Any, name: str, default: Any = None) -> Any:
     """Reads `name` off a response payload that may be a plain dict (as
     used throughout this SDK's test suite) or a generated-client pydantic
@@ -210,6 +247,27 @@ class TemplatesResource:
 
             current_page = (_get_field(result, "page") or current_page) + 1
 
+    def update(self, template_id: str, body: Mapping[str, Any]) -> Any:
+        """Updates a template's metadata (`name` / `description` /
+        `category`). The page/field/party structure can't be changed via
+        the API — edit that in the dashboard. PATCH — never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_templates_id_patch(
+                id=template_id,
+                api_v1_templates_id_patch_request=dict(body),
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def delete(self, template_id: str) -> Any:
+        """Deletes (soft-deletes) a template. Existing demands created from
+        it are unaffected. DELETE — never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_templates_id_delete(
+                id=template_id, _request_timeout=self._timeout
+            )
+        )
+
 
 class DemandsResource:
     """`imzala.demands.*` — create/inspect demands (contracts) and trigger reminders."""
@@ -283,6 +341,113 @@ class DemandsResource:
                 id=demand_id,
                 trigger_reminder_request=dict(body) if body else {},
                 _request_timeout=self._timeout,
+            )
+        )
+
+    def list(
+        self,
+        *,
+        status: Optional[str] = None,
+        q: Optional[str] = None,
+        from_: Optional[str] = None,
+        to: Optional[str] = None,
+        template_id: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[str] = None,
+    ) -> Any:
+        """Lists your demands — counts-only (id/title/status/timestamps +
+        `parties_total`/`parties_signed`, NO party names/emails/phones).
+        Filter by status/date/template, paginate with page/limit. GET —
+        safe to auto-retry. For per-party detail use `get(demand_id)`.
+
+        `from_` (trailing underscore) is the creation lower-bound — `from`
+        is a Python keyword — and maps to the API's `from` query param;
+        `to` is the upper bound. Both are ISO dates (`YYYY-MM-DD`).
+        `template_id` filters to demands created from that template.
+        `sort` is `field:direction`, e.g. `createdAt:desc`.
+        """
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_demands_get(
+                status=status,
+                q=q,
+                var_from=from_,
+                to=to,
+                template_id=template_id,
+                page=page,
+                limit=limit,
+                sort=sort,
+                _request_timeout=self._timeout,
+            ),
+            self._retry,
+        )
+
+    def get_pdf(self, demand_id: str) -> bytes:
+        """Downloads the signed contract PDF (only once
+        `status == "COMPLETED"`). Returns the raw `bytes` — write them to
+        disk or stream them on. Requires the API key's owner to own the
+        demand. GET — safe to auto-retry."""
+        return _retryable_binary_get(
+            lambda: self._api.api_v1_demands_id_pdf_get(
+                id=demand_id, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def get_certificate(self, demand_id: str, *, lang: Optional[str] = None) -> bytes:
+        """Downloads the completion certificate (PAdES B-T sealed audit
+        document) as raw `bytes`. Only produced for `COMPLETED` demands.
+        Pass `lang="en"` for English. GET — safe to auto-retry."""
+        return _retryable_binary_get(
+            lambda: self._api.api_v1_demands_id_certificate_get(
+                id=demand_id, lang=lang, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def get_timeline(self, demand_id: str) -> Any:
+        """Returns the signing audit trail (view/sign/reject events).
+        PII-masked: `ip_masked` (last octet hidden), actor name+email
+        masked, no raw IP/device. GET — safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_demands_id_timeline_get(
+                id=demand_id, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def cancel(self, demand_id: str, body: Optional[Mapping[str, Any]] = None) -> Any:
+        """Cancels (voids) a pending demand — sets it to `CANCELLED` and
+        stops any scheduled reminders. A `COMPLETED` (or already-cancelled)
+        demand can't be cancelled (raises). Pass `{"reason": "..."}` to
+        record why. POST — never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_cancel_post(
+                id=demand_id,
+                api_v1_demands_id_cancel_post_request=dict(body) if body else {},
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def resend_party(self, demand_id: str, party_id: str) -> Any:
+        """Re-sends the signing invitation to a single party (by `party_id`
+        from the demand's create/get response). Can't resend to a party who
+        has already signed or declined, or one whose turn hasn't come in
+        ordered signing (raises). POST — never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_parties_party_id_resend_post(
+                id=demand_id, party_id=party_id, _request_timeout=self._timeout
+            )
+        )
+
+    def delete(self, demand_id: str) -> Any:
+        """Deletes a demand and all its data. Only NON-completed demands can
+        be deleted via the API — a `COMPLETED` demand (signed document +
+        audit trail) returns 409 and must be removed from the dashboard.
+        DELETE — never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_delete(
+                id=demand_id, _request_timeout=self._timeout
             )
         )
 

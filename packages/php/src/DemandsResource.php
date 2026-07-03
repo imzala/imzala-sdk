@@ -6,7 +6,13 @@ namespace Imzala;
 
 use Imzala\Client\Api\DemandsApi;
 use Imzala\Client\Api\RemindersApi;
+use Imzala\Client\Model\ApiV1DemandsGet200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdCancelPost200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest;
+use Imzala\Client\Model\ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdRemindersPost200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdTimelineGet200ResponseData;
+use Imzala\Client\Model\ApiV1TemplatesIdDelete200ResponseData;
 use Imzala\Client\Model\CreateDemandRequest;
 use Imzala\Client\Model\CreatedDemand;
 use Imzala\Client\Model\CreatedDemandUpload;
@@ -128,5 +134,111 @@ final class DemandsResource
         // B2 (Python), B3 (C#), and B5 (Java) flagged for their
         // generators.
         return Http::unwrap(fn () => $this->remindersApi->apiV1DemandsIdRemindersPostWithHttpInfo($id, $request));
+    }
+
+    /**
+     * Lists your demands — <b>counts-only</b> (id/title/status/timestamps +
+     * {@code parties_total}/{@code parties_signed}, with NO party
+     * names/emails/phones). Filter by status/date/template, paginate with
+     * {@code $page}/{@code $limit}. GET — safe to auto-retry. For per-party
+     * detail use {@see self::get()}.
+     *
+     * @param string|null $status     filter by demand status (DRAFT / PENDING / COMPLETED / CANCELLED / EXPIRED)
+     * @param string|null $q          title search
+     * @param string|null $from       ISO date (YYYY-MM-DD) lower bound on creation
+     * @param string|null $to         ISO date (YYYY-MM-DD) upper bound on creation
+     * @param string|null $templateId only demands created from this template
+     * @param string|null $sort       {@code field:direction}, e.g. {@code createdAt:desc}
+     */
+    public function list(
+        ?string $status = null,
+        ?string $q = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?string $templateId = null,
+        ?int $page = null,
+        ?int $limit = null,
+        ?string $sort = null,
+    ): ApiV1DemandsGet200ResponseData {
+        return Http::unwrapRetryableGet(
+            fn () => $this->api->apiV1DemandsGetWithHttpInfo($status, $q, $from, $to, $templateId, $page, $limit, $sort),
+            $this->retryConfig,
+        );
+    }
+
+    /**
+     * Downloads the signed contract PDF (only once {@code status ===
+     * 'COMPLETED'}). Returns the raw bytes as a PHP {@code string} (PHP models
+     * binary as a byte string) — write it to disk with {@see file_put_contents()}
+     * or stream it on. Requires the API key's owner to own the demand. GET.
+     */
+    public function getPdf(string $id): string
+    {
+        return Http::unwrapBinary(fn () => $this->api->apiV1DemandsIdPdfGetWithHttpInfo($id));
+    }
+
+    /**
+     * Downloads the completion certificate (PAdES B-T sealed audit document)
+     * as raw bytes ({@code string}). Only produced for {@code COMPLETED}
+     * demands. Pass {@code $lang = 'en'} for English. GET.
+     */
+    public function getCertificate(string $id, ?string $lang = null): string
+    {
+        return Http::unwrapBinary(fn () => $this->api->apiV1DemandsIdCertificateGetWithHttpInfo($id, $lang));
+    }
+
+    /**
+     * Returns the signing audit trail (view/sign/reject events). PII-masked:
+     * {@code ip_masked} (last octet hidden), actor name+email masked, no raw
+     * IP/device. GET — safe to auto-retry.
+     */
+    public function getTimeline(string $id): ApiV1DemandsIdTimelineGet200ResponseData
+    {
+        return Http::unwrapRetryableGet(
+            fn () => $this->api->apiV1DemandsIdTimelineGetWithHttpInfo($id),
+            $this->retryConfig,
+        );
+    }
+
+    /**
+     * Cancels (voids) a pending demand — sets it to {@code CANCELLED} and
+     * stops any scheduled reminders. A {@code COMPLETED} (or already-cancelled)
+     * demand can't be cancelled (throws). POST — never auto-retried.
+     *
+     * @param ApiV1DemandsIdCancelPostRequest|array<string, mixed>|null $body a
+     *     generated request instance, or a plain associative array — e.g.
+     *     {@code ['reason' => 'vazgeçildi']}. Defaults to no reason.
+     */
+    public function cancel(string $id, ApiV1DemandsIdCancelPostRequest|array|null $body = null): ApiV1DemandsIdCancelPost200ResponseData
+    {
+        $request = match (true) {
+            $body instanceof ApiV1DemandsIdCancelPostRequest => $body,
+            is_array($body) => new ApiV1DemandsIdCancelPostRequest($body),
+            default => new ApiV1DemandsIdCancelPostRequest(),
+        };
+
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdCancelPostWithHttpInfo($id, $request));
+    }
+
+    /**
+     * Re-sends the signing invitation to a single party (by {@code $partyId}
+     * from the demand's create/get response). Can't resend to a party who has
+     * already signed or declined, or one whose turn hasn't come in ordered
+     * signing (throws). POST — never auto-retried.
+     */
+    public function resendParty(string $id, string $partyId): ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData
+    {
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo($id, $partyId));
+    }
+
+    /**
+     * Deletes a demand and all its data. Only NON-completed demands can be
+     * deleted via the API — a {@code COMPLETED} demand (signed document + audit
+     * trail) returns 409 and must be removed from the dashboard. DELETE —
+     * never auto-retried.
+     */
+    public function delete(string $id): ApiV1TemplatesIdDelete200ResponseData
+    {
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdDeleteWithHttpInfo($id));
     }
 }

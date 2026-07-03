@@ -2,6 +2,9 @@ package org.imzala;
 
 import org.imzala.client.generated.api.TemplatesApi;
 import org.imzala.client.generated.model.ApiV1TemplatesGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200ResponseData;
+import org.imzala.client.generated.model.ApiV1TemplatesIdPatch200ResponseData;
+import org.imzala.client.generated.model.ApiV1TemplatesIdPatchRequest;
 import org.imzala.client.generated.model.TemplateDetail;
 import org.imzala.client.generated.model.TemplateSummary;
 import org.imzala.client.generated.model.TemplateUsage;
@@ -52,6 +55,31 @@ public final class TemplatesResource {
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData(),
         retryConfig);
+  }
+
+  /**
+   * Updates a template's metadata (name / description / category). The
+   * page/field/party structure can't be changed via the API — edit that in
+   * the dashboard. Build the body with {@code new
+   * ApiV1TemplatesIdPatchRequest().name("...").description("...").category("...")}.
+   * PATCH — never auto-retried.
+   */
+  public ApiV1TemplatesIdPatch200ResponseData update(UUID id, ApiV1TemplatesIdPatchRequest body) {
+    return Http.unwrap(
+        () -> api.apiV1TemplatesIdPatch(id, body),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Deletes (soft-deletes) a template. Existing demands created from it are
+   * unaffected. DELETE — never auto-retried.
+   */
+  public ApiV1TemplatesIdDelete200ResponseData delete(UUID id) {
+    return Http.unwrap(
+        () -> api.apiV1TemplatesIdDelete(id),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
   }
 
   /**

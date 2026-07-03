@@ -124,3 +124,71 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
                 client.demands.create({"template_id": "t1", "party_mapping": []})
 
         assert mocked.call_count == 1
+
+    def test_delete_demand_returning_429_raises_immediately_no_retry(self):
+        with patch.object(
+            DemandsApi, "api_v1_demands_id_delete", side_effect=api_exception(429)
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            with pytest.raises(ImzalaRateLimitError):
+                client.demands.delete("d1")
+
+        assert mocked.call_count == 1
+
+    def test_cancel_demand_returning_503_raises_immediately_no_retry(self):
+        with patch.object(
+            DemandsApi, "api_v1_demands_id_cancel_post", side_effect=api_exception(503)
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            with pytest.raises(ImzalaError):
+                client.demands.cancel("d1", {"reason": "x"})
+
+        assert mocked.call_count == 1
+
+    def test_template_update_returning_429_raises_immediately_no_retry(self):
+        with patch.object(
+            TemplatesApi, "api_v1_templates_id_patch", side_effect=api_exception(429)
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            with pytest.raises(ImzalaRateLimitError):
+                client.templates.update("t1", {"name": "x"})
+
+        assert mocked.call_count == 1
+
+
+class TestBinaryGetDownloadsRetryLikeOtherGets:
+    def test_get_pdf_retries_on_5xx_then_returns_bytes(self):
+        with patch.object(
+            DemandsApi,
+            "api_v1_demands_id_pdf_get",
+            side_effect=[api_exception(503), b"%PDF-1.7 fake"],
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            out = client.demands.get_pdf("d1")
+
+        assert mocked.call_count == 2
+        assert out == b"%PDF-1.7 fake"
+
+    def test_get_certificate_retries_on_429_honoring_retry_after(self):
+        with patch.object(
+            DemandsApi,
+            "api_v1_demands_id_certificate_get",
+            side_effect=[api_exception(429), b"%PDF cert"],
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            out = client.demands.get_certificate("d1", lang="en")
+
+        assert mocked.call_count == 2
+        assert out == b"%PDF cert"
+
+    def test_get_pdf_does_not_retry_on_404(self):
+        with patch.object(
+            DemandsApi,
+            "api_v1_demands_id_pdf_get",
+            side_effect=api_exception(404, {"success": False, "error": "DEMAND_NOT_FOUND"}),
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            with pytest.raises(ImzalaError):
+                client.demands.get_pdf("missing")
+
+        assert mocked.call_count == 1

@@ -88,4 +88,27 @@ public sealed class TemplatesResource
             currentPage = result.Page > 0 ? result.Page + 1 : currentPage + 1;
         }
     }
+
+    /// <summary>
+    /// Updates a template's metadata (name / description / category). The page/
+    /// field/party structure can't be changed via the API — edit that in the
+    /// dashboard. Only the non-null arguments are sent. PATCH — never auto-retried.
+    /// </summary>
+    public Task<ApiV1TemplatesIdPatch200ResponseData> UpdateAsync(
+        Guid id,
+        string? name = null,
+        string? description = null,
+        string? category = null,
+        CancellationToken cancellationToken = default) =>
+        Http.Unwrap(
+            _api.ApiV1TemplatesIdPatchAsync(id, new ApiV1TemplatesIdPatchRequest(name, description, category), cancellationToken),
+            r => r.Success,
+            r => r.Data);
+
+    /// <summary>
+    /// Deletes (soft-deletes) a template. Existing demands created from it are
+    /// unaffected. DELETE — never auto-retried.
+    /// </summary>
+    public Task<ApiV1TemplatesIdDelete200ResponseData> DeleteAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(_api.ApiV1TemplatesIdDeleteAsync(id, cancellationToken), r => r.Success, r => r.Data);
 }

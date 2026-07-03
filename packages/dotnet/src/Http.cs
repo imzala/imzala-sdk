@@ -1,3 +1,5 @@
+using GeneratedFileParameter = ImzalaApiClient.Client.FileParameter;
+
 namespace ImzalaSdk;
 
 /// <summary>
@@ -57,6 +59,61 @@ internal static class Http
         }
 
         return data(response);
+    }
+
+    /// <summary>
+    /// Awaits a generated-client call that returns a raw binary body (an
+    /// <c>application/pdf</c> response, materialized by the vendored client as a
+    /// <see cref="GeneratedFileParameter"/> wrapping a <see cref="Stream"/>) and
+    /// reads it fully into a <c>byte[]</c>. Used by the binary demand downloads
+    /// (<c>Demands.GetPdfAsync</c> / <c>Demands.GetCertificateAsync</c>) — these
+    /// endpoints don't return the <c>{success, data}</c> JSON envelope, so they
+    /// bypass <see cref="Unwrap{TResponse, TData}"/>, but they still funnel any
+    /// thrown generated exception through <see cref="ErrorMapper"/> so callers
+    /// get the same typed <see cref="ImzalaError"/> taxonomy. GET-only — never
+    /// auto-retried here (the download methods are still GETs; retry wasn't wired
+    /// for binary because a partially-read response stream can't be replayed).
+    /// </summary>
+    public static async Task<byte[]> UnwrapBinary(Task<GeneratedFileParameter> call)
+    {
+        GeneratedFileParameter response;
+        try
+        {
+            response = await call.ConfigureAwait(false);
+        }
+        catch (Exception err)
+        {
+            throw ErrorMapper.Map(err);
+        }
+
+        if (response is null)
+        {
+            throw new ImzalaError("imzala.org API returned an empty binary response");
+        }
+
+        return await ReadAllBytesAsync(response.Content).ConfigureAwait(false);
+    }
+
+    private static async Task<byte[]> ReadAllBytesAsync(Stream? content)
+    {
+        if (content is null)
+        {
+            return Array.Empty<byte>();
+        }
+
+        if (content.CanSeek && content.Position != 0)
+        {
+            content.Position = 0;
+        }
+
+        if (content is MemoryStream ms)
+        {
+            return ms.ToArray();
+        }
+
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer).ConfigureAwait(false);
+        return buffer.ToArray();
     }
 
     /// <summary>

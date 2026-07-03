@@ -7,6 +7,9 @@ namespace Imzala;
 use Generator;
 use Imzala\Client\Api\TemplatesApi;
 use Imzala\Client\Model\ApiV1TemplatesGet200ResponseData;
+use Imzala\Client\Model\ApiV1TemplatesIdDelete200ResponseData;
+use Imzala\Client\Model\ApiV1TemplatesIdPatch200ResponseData;
+use Imzala\Client\Model\ApiV1TemplatesIdPatchRequest;
 use Imzala\Client\Model\TemplateDetail;
 use Imzala\Client\Model\TemplateSummary;
 use Imzala\Client\Model\TemplateUsage;
@@ -90,5 +93,29 @@ final class TemplatesResource
 
             $currentPage = ($result->getPage() ?? $currentPage) + 1;
         }
+    }
+
+    /**
+     * Updates a template's metadata (name / description / category). The
+     * page/field/party structure can't be changed via the API — edit that in
+     * the dashboard. PATCH — never auto-retried.
+     *
+     * @param ApiV1TemplatesIdPatchRequest|array<string, mixed> $body a
+     *     generated request instance, or a plain associative array with the
+     *     same keys — e.g. {@code ['name' => 'Yeni Ad', 'category' => 'HR']}
+     */
+    public function update(string $id, ApiV1TemplatesIdPatchRequest|array $body): ApiV1TemplatesIdPatch200ResponseData
+    {
+        $request = $body instanceof ApiV1TemplatesIdPatchRequest ? $body : new ApiV1TemplatesIdPatchRequest($body);
+        return Http::unwrap(fn () => $this->api->apiV1TemplatesIdPatchWithHttpInfo($id, $request));
+    }
+
+    /**
+     * Deletes (soft-deletes) a template. Existing demands created from it are
+     * unaffected. DELETE — never auto-retried.
+     */
+    public function delete(string $id): ApiV1TemplatesIdDelete200ResponseData
+    {
+        return Http::unwrap(fn () => $this->api->apiV1TemplatesIdDeleteWithHttpInfo($id));
     }
 }

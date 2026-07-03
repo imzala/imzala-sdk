@@ -77,6 +77,48 @@ final class Http
     }
 
     /**
+     * Like {@see self::unwrap()}, but for the two <b>binary</b> GET endpoints
+     * — {@code demands()->getPdf()} (signed contract PDF) and {@code
+     * demands()->getCertificate()} (completion certificate) — whose 2xx body
+     * is raw {@code application/pdf} bytes, not the {@code {success, data}}
+     * JSON envelope. Returns those bytes as a PHP {@code string} (PHP has no
+     * distinct binary type — a {@code string} is a byte buffer).
+     *
+     * <p>Uses the exact same {@code ...WithHttpInfo()} + status-classification
+     * pattern as {@see self::unwrap()} — see the class docs for why the plain
+     * generated method can't be trusted to throw on a *declared* error status
+     * (e.g. this spec declares a 404 body schema on both PDF operations, so a
+     * 404 is *returned* as a deserialized model, not thrown) — but it skips
+     * the {@code getSuccess()}/{@code getData()} envelope unwrap, since a
+     * binary response has neither.
+     *
+     * <p>On 2xx the vendored generated client deserializes an {@code
+     * application/pdf} body to a {@see \SplFileObject} backed by a temp file
+     * (its {@code '\SplFileObject'} return-type branch); {@see self::readBinary}
+     * reads that back into a string. A plain {@code string}, or any other
+     * {@code __toString}-able stream body, is returned as-is — so a
+     * caller/test can hand back either shape.
+     *
+     * @param callable():array{0:mixed,1:int,2:array<string,string[]>} $call
+     *     a generated client's {@code ...WithHttpInfo(...)} call — NOT the
+     *     plain method, see class docs
+     */
+    public static function unwrapBinary(callable $call): string
+    {
+        try {
+            [$data, $statusCode, $headers] = $call();
+        } catch (ApiException $e) {
+            throw ErrorMapper::fromException($e);
+        }
+
+        if ($statusCode < 200 || $statusCode >= 300) {
+            throw ErrorMapper::fromResponse($data, $statusCode, $headers);
+        }
+
+        return self::readBinary($data);
+    }
+
+    /**
      * Like {@see self::unwrap()}, but adds safe auto-retry for **GET-only,
      * idempotent** facade methods ({@code templates->list/get/usage},
      * {@code demands->get}, {@code me()}). Retries on 429 (rate limited —
@@ -159,5 +201,40 @@ final class Http
             return;
         }
         usleep((int) round($ms * 1000));
+    }
+
+    /**
+     * Reads a 2xx binary response body (from {@see self::unwrapBinary}) into a
+     * raw-bytes string. Handles the vendored generated client's {@see
+     * \SplFileObject} (a temp file it wrote the {@code application/pdf} stream
+     * to), a plain {@code string}, and any other {@code __toString}-able body
+     * (e.g. a PSR-7 stream) — reading the {@see \SplFileObject} via a chunked
+     * {@code fread} loop rather than its path, so it works for an in-memory
+     * ({@code php://temp}) file object too.
+     */
+    private static function readBinary(mixed $data): string
+    {
+        if ($data instanceof \SplFileObject) {
+            $bytes = '';
+            $data->rewind();
+            while (!$data->eof()) {
+                $chunk = $data->fread(8192);
+                if ($chunk === false) {
+                    break;
+                }
+                $bytes .= $chunk;
+            }
+            return $bytes;
+        }
+
+        if (is_string($data)) {
+            return $data;
+        }
+
+        if (is_object($data) && method_exists($data, '__toString')) {
+            return (string) $data;
+        }
+
+        return '';
     }
 }
