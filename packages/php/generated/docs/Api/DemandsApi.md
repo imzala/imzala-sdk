@@ -6,12 +6,285 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**apiV1DemandsGet()**](DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**apiV1DemandsIdCancelPost()**](DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
+| [**apiV1DemandsIdCertificateGet()**](DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
+| [**apiV1DemandsIdDelete()**](DemandsApi.md#apiV1DemandsIdDelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
 | [**apiV1DemandsIdEmbedSessionPost()**](DemandsApi.md#apiV1DemandsIdEmbedSessionPost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
 | [**apiV1DemandsIdGet()**](DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**apiV1DemandsIdItemsPost()**](DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
+| [**apiV1DemandsIdPartiesPartyIdResendPost()**](DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder |
+| [**apiV1DemandsIdPdfGet()**](DemandsApi.md#apiV1DemandsIdPdfGet) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme) |
+| [**apiV1DemandsIdTimelineGet()**](DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
 | [**apiV1DemandsPost()**](DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**apiV1DemandsUploadPost()**](DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
 
+
+## `apiV1DemandsGet()`
+
+```php
+apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort): \Imzala\Client\Model\ApiV1DemandsGet200Response
+```
+
+Sözleşme listesi (counts-only, PII'siz)
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$status = 'status_example'; // string
+$q = 'q_example'; // string | Başlık araması
+$from = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
+$to = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
+$template_id = 'template_id_example'; // string
+$page = 1; // int
+$limit = 20; // int | Sayfa boyutu (page_size ile aynı)
+$sort = 'sort_example'; // string | alan:yön (ör. createdAt:desc)
+
+try {
+    $result = $apiInstance->apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **status** | **string**|  | [optional] |
+| **q** | **string**| Başlık araması | [optional] |
+| **from** | **\DateTime**|  | [optional] |
+| **to** | **\DateTime**|  | [optional] |
+| **template_id** | **string**|  | [optional] |
+| **page** | **int**|  | [optional] [default to 1] |
+| **limit** | **int**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
+| **sort** | **string**| alan:yön (ör. createdAt:desc) | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsGet200Response**](../Model/ApiV1DemandsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdCancelPost()`
+
+```php
+apiV1DemandsIdCancelPost($id, $api_v1_demands_id_cancel_post_request): \Imzala\Client\Model\ApiV1DemandsIdCancelPost200Response
+```
+
+Sözleşme iptal (void)
+
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$api_v1_demands_id_cancel_post_request = new \Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest(); // \Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsIdCancelPost($id, $api_v1_demands_id_cancel_post_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdCancelPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **api_v1_demands_id_cancel_post_request** | [**\Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest**](../Model/ApiV1DemandsIdCancelPostRequest.md)|  | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdCancelPost200Response**](../Model/ApiV1DemandsIdCancelPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdCertificateGet()`
+
+```php
+apiV1DemandsIdCertificateGet($id, $lang): \SplFileObject
+```
+
+Tamamlanma sertifikası (PAdES B-T)
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$lang = 'lang_example'; // string | tr | en
+
+try {
+    $result = $apiInstance->apiV1DemandsIdCertificateGet($id, $lang);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdCertificateGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **lang** | **string**| tr | en | [optional] |
+
+### Return type
+
+**\SplFileObject**
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/pdf`, `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdDelete()`
+
+```php
+apiV1DemandsIdDelete($id): \Imzala\Client\Model\ApiV1TemplatesIdDelete200Response
+```
+
+Sözleşme sil (yalnızca tamamlanmamış)
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdDelete($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdDelete: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1TemplatesIdDelete200Response**](../Model/ApiV1TemplatesIdDelete200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
 
 ## `apiV1DemandsIdEmbedSessionPost()`
 
@@ -195,6 +468,194 @@ try {
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdPartiesPartyIdResendPost()`
+
+```php
+apiV1DemandsIdPartiesPartyIdResendPost($id, $party_id): \Imzala\Client\Model\ApiV1DemandsIdPartiesPartyIdResendPost200Response
+```
+
+Tekil tarafa imza davetini tekrar gönder
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$party_id = 'party_id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdPartiesPartyIdResendPost($id, $party_id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdPartiesPartyIdResendPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **party_id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdPartiesPartyIdResendPost200Response**](../Model/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdPdfGet()`
+
+```php
+apiV1DemandsIdPdfGet($id): \SplFileObject
+```
+
+İmzalı sözleşme PDF'i (auth'lu indirme)
+
+Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public `/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdPdfGet($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdPdfGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+**\SplFileObject**
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/pdf`, `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdTimelineGet()`
+
+```php
+apiV1DemandsIdTimelineGet($id): \Imzala\Client\Model\ApiV1DemandsIdTimelineGet200Response
+```
+
+İmza denetim izi (maskeli)
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdTimelineGet($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdTimelineGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdTimelineGet200Response**](../Model/ApiV1DemandsIdTimelineGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 [[Back to top]](#) [[Back to API list]](../../README.md#endpoints)

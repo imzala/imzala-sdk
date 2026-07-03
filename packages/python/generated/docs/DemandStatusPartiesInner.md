@@ -6,11 +6,12 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **party_id** | **UUID** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
+**name** | **str** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme | [optional] 
+**email_masked** | **str** | Maskeli e-posta (ah***@x.com) | [optional] 
 **signed** | **bool** |  | [optional] 
 **signed_at** | **datetime** |  | [optional] 
+**rejected** | **bool** |  | [optional] 
+**rejected_at** | **datetime** |  | [optional] 
 **signing_url** | **str** |  | [optional] 
 
 ## Example

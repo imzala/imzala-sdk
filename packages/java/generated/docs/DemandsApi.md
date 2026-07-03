@@ -4,17 +4,673 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**apiV1DemandsGet**](DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**apiV1DemandsGetWithHttpInfo**](DemandsApi.md#apiV1DemandsGetWithHttpInfo) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**apiV1DemandsIdCancelPost**](DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
+| [**apiV1DemandsIdCancelPostWithHttpInfo**](DemandsApi.md#apiV1DemandsIdCancelPostWithHttpInfo) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
+| [**apiV1DemandsIdCertificateGet**](DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
+| [**apiV1DemandsIdCertificateGetWithHttpInfo**](DemandsApi.md#apiV1DemandsIdCertificateGetWithHttpInfo) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
+| [**apiV1DemandsIdDelete**](DemandsApi.md#apiV1DemandsIdDelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
+| [**apiV1DemandsIdDeleteWithHttpInfo**](DemandsApi.md#apiV1DemandsIdDeleteWithHttpInfo) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
 | [**apiV1DemandsIdEmbedSessionPost**](DemandsApi.md#apiV1DemandsIdEmbedSessionPost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
 | [**apiV1DemandsIdEmbedSessionPostWithHttpInfo**](DemandsApi.md#apiV1DemandsIdEmbedSessionPostWithHttpInfo) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
 | [**apiV1DemandsIdGet**](DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**apiV1DemandsIdGetWithHttpInfo**](DemandsApi.md#apiV1DemandsIdGetWithHttpInfo) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**apiV1DemandsIdItemsPost**](DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
 | [**apiV1DemandsIdItemsPostWithHttpInfo**](DemandsApi.md#apiV1DemandsIdItemsPostWithHttpInfo) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
+| [**apiV1DemandsIdPartiesPartyIdResendPost**](DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder |
+| [**apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo**](DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder |
+| [**apiV1DemandsIdPdfGet**](DemandsApi.md#apiV1DemandsIdPdfGet) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme) |
+| [**apiV1DemandsIdPdfGetWithHttpInfo**](DemandsApi.md#apiV1DemandsIdPdfGetWithHttpInfo) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme) |
+| [**apiV1DemandsIdTimelineGet**](DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
+| [**apiV1DemandsIdTimelineGetWithHttpInfo**](DemandsApi.md#apiV1DemandsIdTimelineGetWithHttpInfo) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
 | [**apiV1DemandsPost**](DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**apiV1DemandsPostWithHttpInfo**](DemandsApi.md#apiV1DemandsPostWithHttpInfo) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**apiV1DemandsUploadPost**](DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
 | [**apiV1DemandsUploadPostWithHttpInfo**](DemandsApi.md#apiV1DemandsUploadPostWithHttpInfo) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
 
+
+
+## apiV1DemandsGet
+
+> ApiV1DemandsGet200Response apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort)
+
+Sözleşme listesi (counts-only, PII&#39;siz)
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (&#x60;parties_total&#x60;, &#x60;parties_signed&#x60;). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için &#x60;GET /demands/{id}&#x60;. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        String status = "DRAFT"; // String | 
+        String q = "q_example"; // String | Başlık araması
+        LocalDate from = LocalDate.now(); // LocalDate | 
+        LocalDate to = LocalDate.now(); // LocalDate | 
+        UUID templateId = UUID.randomUUID(); // UUID | 
+        Integer page = 1; // Integer | 
+        Integer limit = 20; // Integer | Sayfa boyutu (page_size ile aynı)
+        String sort = "sort_example"; // String | alan:yön (ör. createdAt:desc)
+        try {
+            ApiV1DemandsGet200Response result = apiInstance.apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **status** | **String**|  | [optional] [enum: DRAFT, PENDING, COMPLETED, CANCELLED, EXPIRED] |
+| **q** | **String**| Başlık araması | [optional] |
+| **from** | **LocalDate**|  | [optional] |
+| **to** | **LocalDate**|  | [optional] |
+| **templateId** | **UUID**|  | [optional] |
+| **page** | **Integer**|  | [optional] [default to 1] |
+| **limit** | **Integer**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
+| **sort** | **String**| alan:yön (ör. createdAt:desc) | [optional] |
+
+### Return type
+
+[**ApiV1DemandsGet200Response**](ApiV1DemandsGet200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+## apiV1DemandsGetWithHttpInfo
+
+> ApiResponse<ApiV1DemandsGet200Response> apiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort)
+
+Sözleşme listesi (counts-only, PII&#39;siz)
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (&#x60;parties_total&#x60;, &#x60;parties_signed&#x60;). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için &#x60;GET /demands/{id}&#x60;. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        String status = "DRAFT"; // String | 
+        String q = "q_example"; // String | Başlık araması
+        LocalDate from = LocalDate.now(); // LocalDate | 
+        LocalDate to = LocalDate.now(); // LocalDate | 
+        UUID templateId = UUID.randomUUID(); // UUID | 
+        Integer page = 1; // Integer | 
+        Integer limit = 20; // Integer | Sayfa boyutu (page_size ile aynı)
+        String sort = "sort_example"; // String | alan:yön (ör. createdAt:desc)
+        try {
+            ApiResponse<ApiV1DemandsGet200Response> response = apiInstance.apiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **status** | **String**|  | [optional] [enum: DRAFT, PENDING, COMPLETED, CANCELLED, EXPIRED] |
+| **q** | **String**| Başlık araması | [optional] |
+| **from** | **LocalDate**|  | [optional] |
+| **to** | **LocalDate**|  | [optional] |
+| **templateId** | **UUID**|  | [optional] |
+| **page** | **Integer**|  | [optional] [default to 1] |
+| **limit** | **Integer**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
+| **sort** | **String**| alan:yön (ör. createdAt:desc) | [optional] |
+
+### Return type
+
+ApiResponse<[**ApiV1DemandsGet200Response**](ApiV1DemandsGet200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+
+## apiV1DemandsIdCancelPost
+
+> ApiV1DemandsIdCancelPost200Response apiV1DemandsIdCancelPost(id, apiV1DemandsIdCancelPostRequest)
+
+Sözleşme iptal (void)
+
+Bekleyen bir sözleşmeyi iptal eder (status&#x3D;CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        ApiV1DemandsIdCancelPostRequest apiV1DemandsIdCancelPostRequest = new ApiV1DemandsIdCancelPostRequest(); // ApiV1DemandsIdCancelPostRequest | 
+        try {
+            ApiV1DemandsIdCancelPost200Response result = apiInstance.apiV1DemandsIdCancelPost(id, apiV1DemandsIdCancelPostRequest);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdCancelPost");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **apiV1DemandsIdCancelPostRequest** | [**ApiV1DemandsIdCancelPostRequest**](ApiV1DemandsIdCancelPostRequest.md)|  | [optional] |
+
+### Return type
+
+[**ApiV1DemandsIdCancelPost200Response**](ApiV1DemandsIdCancelPost200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | İptal edildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış/iptal edilmiş sözleşme |  -  |
+
+## apiV1DemandsIdCancelPostWithHttpInfo
+
+> ApiResponse<ApiV1DemandsIdCancelPost200Response> apiV1DemandsIdCancelPostWithHttpInfo(id, apiV1DemandsIdCancelPostRequest)
+
+Sözleşme iptal (void)
+
+Bekleyen bir sözleşmeyi iptal eder (status&#x3D;CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        ApiV1DemandsIdCancelPostRequest apiV1DemandsIdCancelPostRequest = new ApiV1DemandsIdCancelPostRequest(); // ApiV1DemandsIdCancelPostRequest | 
+        try {
+            ApiResponse<ApiV1DemandsIdCancelPost200Response> response = apiInstance.apiV1DemandsIdCancelPostWithHttpInfo(id, apiV1DemandsIdCancelPostRequest);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdCancelPost");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **apiV1DemandsIdCancelPostRequest** | [**ApiV1DemandsIdCancelPostRequest**](ApiV1DemandsIdCancelPostRequest.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**ApiV1DemandsIdCancelPost200Response**](ApiV1DemandsIdCancelPost200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | İptal edildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış/iptal edilmiş sözleşme |  -  |
+
+
+## apiV1DemandsIdCertificateGet
+
+> File apiV1DemandsIdCertificateGet(id, lang)
+
+Tamamlanma sertifikası (PAdES B-T)
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        String lang = "lang_example"; // String | tr | en
+        try {
+            File result = apiInstance.apiV1DemandsIdCertificateGet(id, lang);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdCertificateGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **lang** | **String**| tr | en | [optional] |
+
+### Return type
+
+[**File**](File.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/pdf, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Sertifika PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Sözleşme henüz tamamlanmadı |  -  |
+
+## apiV1DemandsIdCertificateGetWithHttpInfo
+
+> ApiResponse<File> apiV1DemandsIdCertificateGetWithHttpInfo(id, lang)
+
+Tamamlanma sertifikası (PAdES B-T)
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        String lang = "lang_example"; // String | tr | en
+        try {
+            ApiResponse<File> response = apiInstance.apiV1DemandsIdCertificateGetWithHttpInfo(id, lang);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdCertificateGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **lang** | **String**| tr | en | [optional] |
+
+### Return type
+
+ApiResponse<[**File**](File.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/pdf, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Sertifika PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Sözleşme henüz tamamlanmadı |  -  |
+
+
+## apiV1DemandsIdDelete
+
+> ApiV1TemplatesIdDelete200Response apiV1DemandsIdDelete(id)
+
+Sözleşme sil (yalnızca tamamlanmamış)
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            ApiV1TemplatesIdDelete200Response result = apiInstance.apiV1DemandsIdDelete(id);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdDelete");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Silindi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış sözleşme silinemez |  -  |
+
+## apiV1DemandsIdDeleteWithHttpInfo
+
+> ApiResponse<ApiV1TemplatesIdDelete200Response> apiV1DemandsIdDeleteWithHttpInfo(id)
+
+Sözleşme sil (yalnızca tamamlanmamış)
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            ApiResponse<ApiV1TemplatesIdDelete200Response> response = apiInstance.apiV1DemandsIdDeleteWithHttpInfo(id);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdDelete");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+ApiResponse<[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Silindi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış sözleşme silinemez |  -  |
 
 
 ## apiV1DemandsIdEmbedSessionPost
@@ -487,6 +1143,462 @@ ApiResponse<[**UpsertItemsResponse**](UpsertItemsResponse.md)>
 | **403** | &#x60;DEMAND_NOT_EDITABLE&#x60; — demand status ≠ &#x60;PENDING&#x60; (COMPLETED, EXPIRED, REJECTED edit edilemez).  |  -  |
 | **404** | &#x60;DEMAND_NOT_FOUND&#x60; — demand bu workspace&#39;te yok (cross-workspace IDOR koruması).  |  -  |
 | **409** | &#x60;DUPLICATE_SIGNATURE_FIELD&#x60; — aynı &#x60;(page_id, party_id, position_x, position_y)&#x60; tuple&#39;ında ikinci &#x60;signature&#x60; alanı yaratıldı. DB-level partial unique constraint engelledi. Pozisyonu değiştirip tekrar deneyin.  |  -  |
+
+
+## apiV1DemandsIdPartiesPartyIdResendPost
+
+> ApiV1DemandsIdPartiesPartyIdResendPost200Response apiV1DemandsIdPartiesPartyIdResendPost(id, partyId)
+
+Tekil tarafa imza davetini tekrar gönder
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        UUID partyId = UUID.randomUUID(); // UUID | 
+        try {
+            ApiV1DemandsIdPartiesPartyIdResendPost200Response result = apiInstance.apiV1DemandsIdPartiesPartyIdResendPost(id, partyId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdPartiesPartyIdResendPost");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **partyId** | **UUID**|  | |
+
+### Return type
+
+[**ApiV1DemandsIdPartiesPartyIdResendPost200Response**](ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Gönderildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | İmzalamış/reddetmiş/sıra-dışı taraf |  -  |
+
+## apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo
+
+> ApiResponse<ApiV1DemandsIdPartiesPartyIdResendPost200Response> apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo(id, partyId)
+
+Tekil tarafa imza davetini tekrar gönder
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        UUID partyId = UUID.randomUUID(); // UUID | 
+        try {
+            ApiResponse<ApiV1DemandsIdPartiesPartyIdResendPost200Response> response = apiInstance.apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo(id, partyId);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdPartiesPartyIdResendPost");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+| **partyId** | **UUID**|  | |
+
+### Return type
+
+ApiResponse<[**ApiV1DemandsIdPartiesPartyIdResendPost200Response**](ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Gönderildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | İmzalamış/reddetmiş/sıra-dışı taraf |  -  |
+
+
+## apiV1DemandsIdPdfGet
+
+> File apiV1DemandsIdPdfGet(id)
+
+İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+
+Tamamlanmış sözleşmenin imzalı PDF&#39;ini indirir. Public &#x60;/sonuc/{id}/pdf&#x60;&#39;in aksine API key ownership&#39;i zorunludur. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            File result = apiInstance.apiV1DemandsIdPdfGet(id);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdPdfGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+[**File**](File.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/pdf, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+## apiV1DemandsIdPdfGetWithHttpInfo
+
+> ApiResponse<File> apiV1DemandsIdPdfGetWithHttpInfo(id)
+
+İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+
+Tamamlanmış sözleşmenin imzalı PDF&#39;ini indirir. Public &#x60;/sonuc/{id}/pdf&#x60;&#39;in aksine API key ownership&#39;i zorunludur. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            ApiResponse<File> response = apiInstance.apiV1DemandsIdPdfGetWithHttpInfo(id);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdPdfGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+ApiResponse<[**File**](File.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/pdf, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+
+## apiV1DemandsIdTimelineGet
+
+> ApiV1DemandsIdTimelineGet200Response apiV1DemandsIdTimelineGet(id)
+
+İmza denetim izi (maskeli)
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP &#x60;ip_masked&#x60; (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            ApiV1DemandsIdTimelineGet200Response result = apiInstance.apiV1DemandsIdTimelineGet(id);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdTimelineGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+[**ApiV1DemandsIdTimelineGet200Response**](ApiV1DemandsIdTimelineGet200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+## apiV1DemandsIdTimelineGetWithHttpInfo
+
+> ApiResponse<ApiV1DemandsIdTimelineGet200Response> apiV1DemandsIdTimelineGetWithHttpInfo(id)
+
+İmza denetim izi (maskeli)
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP &#x60;ip_masked&#x60; (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.DemandsApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        DemandsApi apiInstance = new DemandsApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | 
+        try {
+            ApiResponse<ApiV1DemandsIdTimelineGet200Response> response = apiInstance.apiV1DemandsIdTimelineGetWithHttpInfo(id);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DemandsApi#apiV1DemandsIdTimelineGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**|  | |
+
+### Return type
+
+ApiResponse<[**ApiV1DemandsIdTimelineGet200Response**](ApiV1DemandsIdTimelineGet200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **404** | Kayıt bulunamadı |  -  |
 
 
 ## apiV1DemandsPost

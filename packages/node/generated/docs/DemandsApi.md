@@ -4,11 +4,257 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**apiV1DemandsGet**](#apiv1demandsget) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII\&#39;siz)|
+|[**apiV1DemandsIdCancelPost**](#apiv1demandsidcancelpost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)|
+|[**apiV1DemandsIdCertificateGet**](#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)|
+|[**apiV1DemandsIdDelete**](#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)|
 |[**apiV1DemandsIdEmbedSessionPost**](#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)|
 |[**apiV1DemandsIdGet**](#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi|
 |[**apiV1DemandsIdItemsPost**](#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)|
+|[**apiV1DemandsIdPartiesPartyIdResendPost**](#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder|
+|[**apiV1DemandsIdPdfGet**](#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF\&#39;i (auth\&#39;lu indirme)|
+|[**apiV1DemandsIdTimelineGet**](#apiv1demandsidtimelineget) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)|
 |[**apiV1DemandsPost**](#apiv1demandspost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)|
 |[**apiV1DemandsUploadPost**](#apiv1demandsuploadpost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)|
+
+# **apiV1DemandsGet**
+> ApiV1DemandsGet200Response apiV1DemandsGet()
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let status: 'DRAFT' | 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED'; // (optional) (default to undefined)
+let q: string; //Başlık araması (optional) (default to undefined)
+let from: string; // (optional) (default to undefined)
+let to: string; // (optional) (default to undefined)
+let templateId: string; // (optional) (default to undefined)
+let page: number; // (optional) (default to 1)
+let limit: number; //Sayfa boyutu (page_size ile aynı) (optional) (default to 20)
+let sort: string; //alan:yön (ör. createdAt:desc) (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsGet(
+    status,
+    q,
+    from,
+    to,
+    templateId,
+    page,
+    limit,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **status** | [**&#39;DRAFT&#39; | &#39;PENDING&#39; | &#39;COMPLETED&#39; | &#39;CANCELLED&#39; | &#39;EXPIRED&#39;**]**Array<&#39;DRAFT&#39; &#124; &#39;PENDING&#39; &#124; &#39;COMPLETED&#39; &#124; &#39;CANCELLED&#39; &#124; &#39;EXPIRED&#39;>** |  | (optional) defaults to undefined|
+| **q** | [**string**] | Başlık araması | (optional) defaults to undefined|
+| **from** | [**string**] |  | (optional) defaults to undefined|
+| **to** | [**string**] |  | (optional) defaults to undefined|
+| **templateId** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 1|
+| **limit** | [**number**] | Sayfa boyutu (page_size ile aynı) | (optional) defaults to 20|
+| **sort** | [**string**] | alan:yön (ör. createdAt:desc) | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsGet200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Başarılı |  -  |
+|**401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdCancelPost**
+> ApiV1DemandsIdCancelPost200Response apiV1DemandsIdCancelPost()
+
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration,
+    ApiV1DemandsIdCancelPostRequest
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1DemandsIdCancelPostRequest: ApiV1DemandsIdCancelPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1DemandsIdCancelPost(
+    id,
+    apiV1DemandsIdCancelPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1DemandsIdCancelPostRequest** | **ApiV1DemandsIdCancelPostRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdCancelPost200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | İptal edildi |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | Tamamlanmış/iptal edilmiş sözleşme |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdCertificateGet**
+> File apiV1DemandsIdCertificateGet()
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+let lang: string; //tr | en (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdCertificateGet(
+    id,
+    lang
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+| **lang** | [**string**] | tr | en | (optional) defaults to undefined|
+
+
+### Return type
+
+**File**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Sertifika PDF |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | Sözleşme henüz tamamlanmadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdDelete**
+> ApiV1TemplatesIdDelete200Response apiV1DemandsIdDelete()
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1TemplatesIdDelete200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Silindi |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | Tamamlanmış sözleşme silinemez |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1DemandsIdEmbedSessionPost**
 > ApiV1DemandsIdEmbedSessionPost200Response apiV1DemandsIdEmbedSessionPost(apiV1DemandsIdEmbedSessionPostRequest)
@@ -179,6 +425,166 @@ const { status, data } = await apiInstance.apiV1DemandsIdItemsPost(
 |**403** | &#x60;DEMAND_NOT_EDITABLE&#x60; — demand status ≠ &#x60;PENDING&#x60; (COMPLETED, EXPIRED, REJECTED edit edilemez).  |  -  |
 |**404** | &#x60;DEMAND_NOT_FOUND&#x60; — demand bu workspace\&#39;te yok (cross-workspace IDOR koruması).  |  -  |
 |**409** | &#x60;DUPLICATE_SIGNATURE_FIELD&#x60; — aynı &#x60;(page_id, party_id, position_x, position_y)&#x60; tuple\&#39;ında ikinci &#x60;signature&#x60; alanı yaratıldı. DB-level partial unique constraint engelledi. Pozisyonu değiştirip tekrar deneyin.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdPartiesPartyIdResendPost**
+> ApiV1DemandsIdPartiesPartyIdResendPost200Response apiV1DemandsIdPartiesPartyIdResendPost()
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+let partyId: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdPartiesPartyIdResendPost(
+    id,
+    partyId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+| **partyId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdPartiesPartyIdResendPost200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Gönderildi |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | İmzalamış/reddetmiş/sıra-dışı taraf |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdPdfGet**
+> File apiV1DemandsIdPdfGet()
+
+Tamamlanmış sözleşmenin imzalı PDF\'ini indirir. Public `/sonuc/{id}/pdf`\'in aksine API key ownership\'i zorunludur. 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdPdfGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**File**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | PDF |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdTimelineGet**
+> ApiV1DemandsIdTimelineGet200Response apiV1DemandsIdTimelineGet()
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdTimelineGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdTimelineGet200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Başarılı |  -  |
+|**404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template** | [**\Imzala\Client\Model\TemplateUsageTemplate**](TemplateUsageTemplate.md) |  | [optional]
+**template** | [**\Imzala\Client\Model\ApiV1TemplatesIdPatch200ResponseData**](ApiV1TemplatesIdPatch200ResponseData.md) |  | [optional]
 **endpoint** | [**\Imzala\Client\Model\TemplateUsageEndpoint**](TemplateUsageEndpoint.md) |  | [optional]
 **required_headers** | **array<string,string>** |  | [optional]
 **parties** | [**\Imzala\Client\Model\TemplateUsagePartiesInner[]**](TemplateUsagePartiesInner.md) |  | [optional]

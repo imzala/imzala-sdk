@@ -4,12 +4,373 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**api_v1_demands_get**](DemandsApi.md#api_v1_demands_get) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+[**api_v1_demands_id_cancel_post**](DemandsApi.md#api_v1_demands_id_cancel_post) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
+[**api_v1_demands_id_certificate_get**](DemandsApi.md#api_v1_demands_id_certificate_get) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
+[**api_v1_demands_id_delete**](DemandsApi.md#api_v1_demands_id_delete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 [**api_v1_demands_id_embed_session_post**](DemandsApi.md#api_v1_demands_id_embed_session_post) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 [**api_v1_demands_id_get**](DemandsApi.md#api_v1_demands_id_get) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 [**api_v1_demands_id_items_post**](DemandsApi.md#api_v1_demands_id_items_post) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
+[**api_v1_demands_id_parties_party_id_resend_post**](DemandsApi.md#api_v1_demands_id_parties_party_id_resend_post) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
+[**api_v1_demands_id_pdf_get**](DemandsApi.md#api_v1_demands_id_pdf_get) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+[**api_v1_demands_id_timeline_get**](DemandsApi.md#api_v1_demands_id_timeline_get) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
 [**api_v1_demands_post**](DemandsApi.md#api_v1_demands_post) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 [**api_v1_demands_upload_post**](DemandsApi.md#api_v1_demands_upload_post) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
 
+
+# **api_v1_demands_get**
+> ApiV1DemandsGet200Response api_v1_demands_get(status=status, q=q, var_from=var_from, to=to, template_id=template_id, page=page, limit=limit, sort=sort)
+
+Sözleşme listesi (counts-only, PII'siz)
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu:
+yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`,
+`parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ
+döndürülmez — taraf detayı için `GET /demands/{id}`.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_demands_get200_response import ApiV1DemandsGet200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    status = 'status_example' # str |  (optional)
+    q = 'q_example' # str | Başlık araması (optional)
+    var_from = '2013-10-20' # date |  (optional)
+    to = '2013-10-20' # date |  (optional)
+    template_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |  (optional)
+    page = 1 # int |  (optional) (default to 1)
+    limit = 20 # int | Sayfa boyutu (page_size ile aynı) (optional) (default to 20)
+    sort = 'sort_example' # str | alan:yön (ör. createdAt:desc) (optional)
+
+    try:
+        # Sözleşme listesi (counts-only, PII'siz)
+        api_response = api_instance.api_v1_demands_get(status=status, q=q, var_from=var_from, to=to, template_id=template_id, page=page, limit=limit, sort=sort)
+        print("The response of DemandsApi->api_v1_demands_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **status** | **str**|  | [optional] 
+ **q** | **str**| Başlık araması | [optional] 
+ **var_from** | **date**|  | [optional] 
+ **to** | **date**|  | [optional] 
+ **template_id** | **UUID**|  | [optional] 
+ **page** | **int**|  | [optional] [default to 1]
+ **limit** | **int**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20]
+ **sort** | **str**| alan:yön (ör. createdAt:desc) | [optional] 
+
+### Return type
+
+[**ApiV1DemandsGet200Response**](ApiV1DemandsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Başarılı |  -  |
+**401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_cancel_post**
+> ApiV1DemandsIdCancelPost200Response api_v1_demands_id_cancel_post(id, api_v1_demands_id_cancel_post_request=api_v1_demands_id_cancel_post_request)
+
+Sözleşme iptal (void)
+
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış
+(409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen
+hatırlatmalar iptal edilir.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_demands_id_cancel_post200_response import ApiV1DemandsIdCancelPost200Response
+from imzala_client.models.api_v1_demands_id_cancel_post_request import ApiV1DemandsIdCancelPostRequest
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    api_v1_demands_id_cancel_post_request = imzala_client.ApiV1DemandsIdCancelPostRequest() # ApiV1DemandsIdCancelPostRequest |  (optional)
+
+    try:
+        # Sözleşme iptal (void)
+        api_response = api_instance.api_v1_demands_id_cancel_post(id, api_v1_demands_id_cancel_post_request=api_v1_demands_id_cancel_post_request)
+        print("The response of DemandsApi->api_v1_demands_id_cancel_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_cancel_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+ **api_v1_demands_id_cancel_post_request** | [**ApiV1DemandsIdCancelPostRequest**](ApiV1DemandsIdCancelPostRequest.md)|  | [optional] 
+
+### Return type
+
+[**ApiV1DemandsIdCancelPost200Response**](ApiV1DemandsIdCancelPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | İptal edildi |  -  |
+**404** | Kayıt bulunamadı |  -  |
+**409** | Tamamlanmış/iptal edilmiş sözleşme |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_certificate_get**
+> bytes api_v1_demands_id_certificate_get(id, lang=lang)
+
+Tamamlanma sertifikası (PAdES B-T)
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman
+damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED
+sözleşmeler için üretilir (aksi 409).
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    lang = 'lang_example' # str | tr | en (optional)
+
+    try:
+        # Tamamlanma sertifikası (PAdES B-T)
+        api_response = api_instance.api_v1_demands_id_certificate_get(id, lang=lang)
+        print("The response of DemandsApi->api_v1_demands_id_certificate_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_certificate_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+ **lang** | **str**| tr | en | [optional] 
+
+### Return type
+
+**bytes**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Sertifika PDF |  -  |
+**404** | Kayıt bulunamadı |  -  |
+**409** | Sözleşme henüz tamamlanmadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_delete**
+> ApiV1TemplatesIdDelete200Response api_v1_demands_id_delete(id)
+
+Sözleşme sil (yalnızca tamamlanmamış)
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴
+Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge +
+denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_templates_id_delete200_response import ApiV1TemplatesIdDelete200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+
+    try:
+        # Sözleşme sil (yalnızca tamamlanmamış)
+        api_response = api_instance.api_v1_demands_id_delete(id)
+        print("The response of DemandsApi->api_v1_demands_id_delete:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_delete: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+
+### Return type
+
+[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Silindi |  -  |
+**404** | Kayıt bulunamadı |  -  |
+**409** | Tamamlanmış sözleşme silinemez |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **api_v1_demands_id_embed_session_post**
 > ApiV1DemandsIdEmbedSessionPost200Response api_v1_demands_id_embed_session_post(id, api_v1_demands_id_embed_session_post_request)
@@ -359,6 +720,256 @@ Name | Type | Description  | Notes
 **403** | &#x60;DEMAND_NOT_EDITABLE&#x60; — demand status ≠ &#x60;PENDING&#x60; (COMPLETED, EXPIRED, REJECTED edit edilemez).  |  -  |
 **404** | &#x60;DEMAND_NOT_FOUND&#x60; — demand bu workspace&#39;te yok (cross-workspace IDOR koruması).  |  -  |
 **409** | &#x60;DUPLICATE_SIGNATURE_FIELD&#x60; — aynı &#x60;(page_id, party_id, position_x, position_y)&#x60; tuple&#39;ında ikinci &#x60;signature&#x60; alanı yaratıldı. DB-level partial unique constraint engelledi. Pozisyonu değiştirip tekrar deneyin.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_parties_party_id_resend_post**
+> ApiV1DemandsIdPartiesPartyIdResendPost200Response api_v1_demands_id_parties_party_id_resend_post(id, party_id)
+
+Tekil tarafa imza davetini tekrar gönder
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme
+ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı
+imzada sırası gelmemiş tarafa gönderilemez (409).
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_demands_id_parties_party_id_resend_post200_response import ApiV1DemandsIdPartiesPartyIdResendPost200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    party_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+
+    try:
+        # Tekil tarafa imza davetini tekrar gönder
+        api_response = api_instance.api_v1_demands_id_parties_party_id_resend_post(id, party_id)
+        print("The response of DemandsApi->api_v1_demands_id_parties_party_id_resend_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_parties_party_id_resend_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+ **party_id** | **UUID**|  | 
+
+### Return type
+
+[**ApiV1DemandsIdPartiesPartyIdResendPost200Response**](ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Gönderildi |  -  |
+**404** | Kayıt bulunamadı |  -  |
+**409** | İmzalamış/reddetmiş/sıra-dışı taraf |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_pdf_get**
+> bytes api_v1_demands_id_pdf_get(id)
+
+İmzalı sözleşme PDF'i (auth'lu indirme)
+
+Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public
+`/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+
+    try:
+        # İmzalı sözleşme PDF'i (auth'lu indirme)
+        api_response = api_instance.api_v1_demands_id_pdf_get(id)
+        print("The response of DemandsApi->api_v1_demands_id_pdf_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_pdf_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+
+### Return type
+
+**bytes**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | PDF |  -  |
+**404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_demands_id_timeline_get**
+> ApiV1DemandsIdTimelineGet200Response api_v1_demands_id_timeline_get(id)
+
+İmza denetim izi (maskeli)
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner.
+KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham
+IP/cihaz asla döndürülmez.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_demands_id_timeline_get200_response import ApiV1DemandsIdTimelineGet200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+
+    try:
+        # İmza denetim izi (maskeli)
+        api_response = api_instance.api_v1_demands_id_timeline_get(id)
+        print("The response of DemandsApi->api_v1_demands_id_timeline_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_timeline_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+
+### Return type
+
+[**ApiV1DemandsIdTimelineGet200Response**](ApiV1DemandsIdTimelineGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Başarılı |  -  |
+**404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

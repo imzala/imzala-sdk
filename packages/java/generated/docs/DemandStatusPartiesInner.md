@@ -8,11 +8,12 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**partyId** | **UUID** |  |  [optional] |
-|**firstName** | **String** |  |  [optional] |
-|**lastName** | **String** |  |  [optional] |
-|**email** | **String** |  |  [optional] |
+|**name** | **String** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme |  [optional] |
+|**emailMasked** | **String** | Maskeli e-posta (ah***@x.com) |  [optional] |
 |**signed** | **Boolean** |  |  [optional] |
 |**signedAt** | **OffsetDateTime** |  |  [optional] |
+|**rejected** | **Boolean** |  |  [optional] |
+|**rejectedAt** | **OffsetDateTime** |  |  [optional] |
 |**signingUrl** | **URI** |  |  [optional] |
 
 

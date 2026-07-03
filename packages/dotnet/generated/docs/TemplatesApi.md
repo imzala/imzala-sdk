@@ -5,7 +5,9 @@ All URIs are relative to *https://api-prd.imzala.org*
 | Method | HTTP request | Description |
 |--------|--------------|-------------|
 | [**ApiV1TemplatesGet**](TemplatesApi.md#apiv1templatesget) | **GET** /api/v1/templates | Şablon listesi |
+| [**ApiV1TemplatesIdDelete**](TemplatesApi.md#apiv1templatesiddelete) | **DELETE** /api/v1/templates/{id} | Şablon sil |
 | [**ApiV1TemplatesIdGet**](TemplatesApi.md#apiv1templatesidget) | **GET** /api/v1/templates/{id} | Şablon detay |
+| [**ApiV1TemplatesIdPatch**](TemplatesApi.md#apiv1templatesidpatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle |
 | [**ApiV1TemplatesIdUsageGet**](TemplatesApi.md#apiv1templatesidusageget) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
 
 <a id="apiv1templatesget"></a>
@@ -111,6 +113,107 @@ catch (ApiException e)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+<a id="apiv1templatesiddelete"></a>
+# **ApiV1TemplatesIdDelete**
+> ApiV1TemplatesIdDelete200Response ApiV1TemplatesIdDelete (Guid id)
+
+Şablon sil
+
+Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1TemplatesIdDeleteExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TemplatesApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+
+            try
+            {
+                // Şablon sil
+                ApiV1TemplatesIdDelete200Response result = apiInstance.ApiV1TemplatesIdDelete(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TemplatesApi.ApiV1TemplatesIdDelete: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1TemplatesIdDeleteWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Şablon sil
+    ApiResponse<ApiV1TemplatesIdDelete200Response> response = apiInstance.ApiV1TemplatesIdDeleteWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TemplatesApi.ApiV1TemplatesIdDeleteWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+
+### Return type
+
+[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Silindi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 <a id="apiv1templatesidget"></a>
 # **ApiV1TemplatesIdGet**
 > ApiV1TemplatesIdGet200Response ApiV1TemplatesIdGet (Guid id)
@@ -208,6 +311,110 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1templatesidpatch"></a>
+# **ApiV1TemplatesIdPatch**
+> ApiV1TemplatesIdPatch200Response ApiV1TemplatesIdPatch (Guid id, ApiV1TemplatesIdPatchRequest apiV1TemplatesIdPatchRequest)
+
+Şablon metadata güncelle
+
+Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1TemplatesIdPatchExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TemplatesApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+            var apiV1TemplatesIdPatchRequest = new ApiV1TemplatesIdPatchRequest(); // ApiV1TemplatesIdPatchRequest | 
+
+            try
+            {
+                // Şablon metadata güncelle
+                ApiV1TemplatesIdPatch200Response result = apiInstance.ApiV1TemplatesIdPatch(id, apiV1TemplatesIdPatchRequest);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TemplatesApi.ApiV1TemplatesIdPatch: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1TemplatesIdPatchWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Şablon metadata güncelle
+    ApiResponse<ApiV1TemplatesIdPatch200Response> response = apiInstance.ApiV1TemplatesIdPatchWithHttpInfo(id, apiV1TemplatesIdPatchRequest);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TemplatesApi.ApiV1TemplatesIdPatchWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+| **apiV1TemplatesIdPatchRequest** | [**ApiV1TemplatesIdPatchRequest**](ApiV1TemplatesIdPatchRequest.md) |  |  |
+
+### Return type
+
+[**ApiV1TemplatesIdPatch200Response**](ApiV1TemplatesIdPatch200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Güncellendi |  -  |
+| **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  |  -  |
 | **404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

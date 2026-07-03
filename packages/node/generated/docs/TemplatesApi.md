@@ -5,7 +5,9 @@ All URIs are relative to *https://api-prd.imzala.org*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**apiV1TemplatesGet**](#apiv1templatesget) | **GET** /api/v1/templates | Şablon listesi|
+|[**apiV1TemplatesIdDelete**](#apiv1templatesiddelete) | **DELETE** /api/v1/templates/{id} | Şablon sil|
 |[**apiV1TemplatesIdGet**](#apiv1templatesidget) | **GET** /api/v1/templates/{id} | Şablon detay|
+|[**apiV1TemplatesIdPatch**](#apiv1templatesidpatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle|
 |[**apiV1TemplatesIdUsageGet**](#apiv1templatesidusageget) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)|
 
 # **apiV1TemplatesGet**
@@ -63,6 +65,58 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **apiV1TemplatesIdDelete**
+> ApiV1TemplatesIdDelete200Response apiV1TemplatesIdDelete()
+
+Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+
+### Example
+
+```typescript
+import {
+    TemplatesApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new TemplatesApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1TemplatesIdDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1TemplatesIdDelete200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Silindi |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **apiV1TemplatesIdGet**
 > ApiV1TemplatesIdGet200Response apiV1TemplatesIdGet()
 
@@ -111,6 +165,63 @@ const { status, data } = await apiInstance.apiV1TemplatesIdGet(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Başarılı |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1TemplatesIdPatch**
+> ApiV1TemplatesIdPatch200Response apiV1TemplatesIdPatch(apiV1TemplatesIdPatchRequest)
+
+Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint\'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+
+### Example
+
+```typescript
+import {
+    TemplatesApi,
+    Configuration,
+    ApiV1TemplatesIdPatchRequest
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new TemplatesApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1TemplatesIdPatchRequest: ApiV1TemplatesIdPatchRequest; //
+
+const { status, data } = await apiInstance.apiV1TemplatesIdPatch(
+    id,
+    apiV1TemplatesIdPatchRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1TemplatesIdPatchRequest** | **ApiV1TemplatesIdPatchRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1TemplatesIdPatch200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Güncellendi |  -  |
+|**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value\&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate\&#39;i bulundu: &lt;id&gt;\&quot;  |  -  |
 |**404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

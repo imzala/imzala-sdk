@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Template** | [**TemplateUsageTemplate**](TemplateUsageTemplate.md) |  | [optional] 
+**Template** | [**ApiV1TemplatesIdPatch200ResponseData**](ApiV1TemplatesIdPatch200ResponseData.md) |  | [optional] 
 **Endpoint** | [**TemplateUsageEndpoint**](TemplateUsageEndpoint.md) |  | [optional] 
 **RequiredHeaders** | **Dictionary&lt;string, string&gt;** |  | [optional] 
 **Parties** | [**List&lt;TemplateUsagePartiesInner&gt;**](TemplateUsagePartiesInner.md) |  | [optional] 

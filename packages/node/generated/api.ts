@@ -4,7 +4,7 @@
  * imzala External API
  * imzala.org dış API\'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.6.0 · **Son güncelleme:** 2026-06-30  ## Auth Tüm istekler `X-API-Key` header\'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız `X-Workspace-Id` header\'ı göndermeniz gerekir (organizasyon UUID\'si). Kişisel anahtarlar için bu header gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field\'lar) `POST /api/v1/demands` payload\'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field\'lar   (örn. Kira sözleşmesinde Kiraya Veren\'in `address`, `iban` field\'ları) - `variables` (root) — **partilerden bağımsız** field\'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item\'ın template_party_id\'si var ve o parti slug\'ı göndermişse → uygula 2. Yoksa root `variables`\'tan ara → varsa uygula 3. Yoksa atla  Dashboard\'daki **API Kullanımı** tab\'ı (`/sablonlar/<id>`) hangi field\'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint\'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array\'ı, gönderdiğiniz ama şablonda eşleşmeyen slug\'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log\'ta veya dashboard\'da kontrol edin.  ## Rate Limit - 60 istek/dakika per API key - Aşılırsa 429 döner  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard\'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta\'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker\'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body\'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default\'unu   ezer, sadece bu demand\'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint\'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response\'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility\'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d \'{}\'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d \'{\"channels\": [\"sms\"], \"force\": true}\' ```  Detay için **Reminders** tag\'i altındaki endpoint\'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL\'ye `POST` ile JSON payload gönderir. Webhook\'lar dashboard\'dan yönetilir: **Ayarlar -> Webhook\'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook\'u** (org workspace\'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event\'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace\'te) → sadece sizin kendi   event\'lerinizde tetiklenir  ### Olay tipleri (6) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti |  ### Header\'lar Her istekte aşağıdaki header\'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB\'de unique key). - `type` — yukarıdaki 6 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header\'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require(\'crypto\');  function verify(rawBody, header, secret) {   const expected = \'sha256=\' + crypto     .createHmac(\'sha256\', secret)     .update(rawBody, \'utf8\')     .digest(\'hex\');   return crypto.timingSafeEqual(     Buffer.from(header || \'\', \'utf8\'),     Buffer.from(expected, \'utf8\')   ); }  // Express app.post(\'/webhook\', express.raw({ type: \'application/json\' }), (req, res) => {   const sig = req.header(\'X-Imzala-Signature-256\');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send(\'invalid signature\');   }   const event = JSON.parse(req.body.toString(\'utf8\'));   // ... event\'i kuyruğa koy ve hemen 2xx dön   res.status(200).send(\'ok\'); }); ```  > **Önemli:** Body\'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware\'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard\'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint\'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB\'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix\'inden sonra kayıp event\'leri yakalamak) için bazı payload\'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow\'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send(\'replay accepted\'); } ```  ### Manuel yeniden gönderim Dashboard\'da `Ayarlar -> Webhook\'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5\'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`\'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn\'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload\'larda side-effect\'leri atla. 5. `X-Imzala-Delivery` UUID\'sini log\'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret\'i env var\'da sakla, koda gömme. 
  *
- * The version of the OpenAPI document: 1.6.0
+ * The version of the OpenAPI document: 1.7.0
  * Contact: destek@imzala.org
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -30,6 +30,51 @@ export interface ApiError {
     'success'?: boolean;
     'error'?: string;
     'message'?: string;
+}
+export interface ApiV1DemandsGet200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsGet200ResponseData;
+}
+export interface ApiV1DemandsGet200ResponseData {
+    'demands'?: Array<ApiV1DemandsGet200ResponseDataDemandsInner>;
+    'total'?: number;
+    'page'?: number;
+    'limit'?: number;
+}
+export interface ApiV1DemandsGet200ResponseDataDemandsInner {
+    'id'?: string;
+    'title'?: string | null;
+    'status'?: string;
+    'created_at'?: string;
+    'completed_at'?: string | null;
+    'parties_total'?: number;
+    'parties_signed'?: number;
+    /**
+     * COMPLETED ise imzalı PDF public URL\'i
+     */
+    'pdf_url'?: string | null;
+}
+export interface ApiV1DemandsIdCancelPost200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdCancelPost200ResponseData;
+}
+export interface ApiV1DemandsIdCancelPost200ResponseData {
+    'id'?: string;
+    'title'?: string | null;
+    'status'?: string;
+    'cancelled_at'?: string;
+    'cancellation_reason'?: string | null;
+}
+export interface ApiV1DemandsIdCancelPostRequest {
+    /**
+     * İptal nedeni (opsiyonel)
+     */
+    'reason'?: string;
+}
+export interface ApiV1DemandsIdDelete409Response {
+    'success'?: boolean;
+    'error'?: string;
+    'code'?: string;
 }
 export interface ApiV1DemandsIdEmbedSessionPost200Response {
     'success'?: boolean;
@@ -58,6 +103,16 @@ export interface ApiV1DemandsIdEmbedSessionPostRequest {
 export interface ApiV1DemandsIdGet200Response {
     'success'?: boolean;
     'data'?: DemandStatus;
+}
+export interface ApiV1DemandsIdPartiesPartyIdResendPost200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData;
+}
+export interface ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData {
+    /**
+     * Gönderilen kanallar (sms/email/whatsapp)
+     */
+    'sent'?: Array<string>;
 }
 export interface ApiV1DemandsIdRemindersPost200Response {
     'success'?: boolean;
@@ -110,6 +165,22 @@ export const ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = {
 
 export type ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum[keyof typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum];
 
+export interface ApiV1DemandsIdTimelineGet200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdTimelineGet200ResponseData;
+}
+export interface ApiV1DemandsIdTimelineGet200ResponseData {
+    'events'?: Array<ApiV1DemandsIdTimelineGet200ResponseDataEventsInner>;
+}
+export interface ApiV1DemandsIdTimelineGet200ResponseDataEventsInner {
+    'id'?: string;
+    'event_type'?: string;
+    'actor_label'?: string | null;
+    'ip_masked'?: string | null;
+    'device_label'?: string | null;
+    'comment_text'?: string | null;
+    'created_at'?: string;
+}
 export interface ApiV1DemandsPost201Response {
     'success'?: boolean;
     'data'?: CreatedDemand;
@@ -160,6 +231,14 @@ export interface ApiV1TemplatesGet401Response {
     'error'?: string;
     'message'?: string;
 }
+export interface ApiV1TemplatesIdDelete200Response {
+    'success'?: boolean;
+    'data'?: ApiV1TemplatesIdDelete200ResponseData;
+}
+export interface ApiV1TemplatesIdDelete200ResponseData {
+    'id'?: string;
+    'deleted'?: boolean;
+}
 export interface ApiV1TemplatesIdGet200Response {
     'success'?: boolean;
     'data'?: TemplateDetail;
@@ -167,6 +246,21 @@ export interface ApiV1TemplatesIdGet200Response {
 export interface ApiV1TemplatesIdGet404Response {
     'success'?: boolean;
     'error'?: string;
+}
+export interface ApiV1TemplatesIdPatch200Response {
+    'success'?: boolean;
+    'data'?: ApiV1TemplatesIdPatch200ResponseData;
+}
+export interface ApiV1TemplatesIdPatch200ResponseData {
+    'id'?: string;
+    'name'?: string;
+    'description'?: string | null;
+    'category'?: string | null;
+}
+export interface ApiV1TemplatesIdPatchRequest {
+    'name'?: string;
+    'description'?: string;
+    'category'?: string;
 }
 export interface ApiV1TemplatesIdUsageGet200Response {
     'success'?: boolean;
@@ -323,11 +417,18 @@ export type DemandStatusStatusEnum = typeof DemandStatusStatusEnum[keyof typeof 
 
 export interface DemandStatusPartiesInner {
     'party_id'?: string;
-    'first_name'?: string;
-    'last_name'?: string;
-    'email'?: string | null;
+    /**
+     * Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme
+     */
+    'name'?: string;
+    /**
+     * Maskeli e-posta (ah***@x.com)
+     */
+    'email_masked'?: string;
     'signed'?: boolean;
     'signed_at'?: string | null;
+    'rejected'?: boolean;
+    'rejected_at'?: string | null;
     'signing_url'?: string;
 }
 /**
@@ -508,7 +609,7 @@ export interface TemplateSummaryPartiesInner {
     'is_required'?: boolean;
 }
 export interface TemplateUsage {
-    'template'?: TemplateUsageTemplate;
+    'template'?: ApiV1TemplatesIdPatch200ResponseData;
     'endpoint'?: TemplateUsageEndpoint;
     'required_headers'?: { [key: string]: string; };
     'parties'?: Array<TemplateUsagePartiesInner>;
@@ -542,12 +643,6 @@ export interface TemplateUsagePartiesInnerSupportedFieldsInner {
     'required'?: boolean;
     'required_if'?: string;
     'default'?: any;
-}
-export interface TemplateUsageTemplate {
-    'id'?: string;
-    'name'?: string;
-    'description'?: string | null;
-    'category'?: string | null;
 }
 export interface TemplateUsageVariablesInner {
     'slug'?: string;
@@ -879,6 +974,202 @@ export class AccountApi extends BaseAPI {
 export const DemandsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+         * @summary Sözleşme listesi (counts-only, PII\'siz)
+         * @param {ApiV1DemandsGetStatusEnum} [status] 
+         * @param {string} [q] Başlık araması
+         * @param {string} [from] 
+         * @param {string} [to] 
+         * @param {string} [templateId] 
+         * @param {number} [page] 
+         * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
+         * @param {string} [sort] alan:yön (ör. createdAt:desc)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsGet: async (status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/demands`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (q !== undefined) {
+                localVarQueryParameter['q'] = q;
+            }
+
+            if (from !== undefined) {
+                localVarQueryParameter['from'] = (from as any instanceof Date) ?
+                    (from as any).toISOString().substring(0,10) :
+                    from;
+            }
+
+            if (to !== undefined) {
+                localVarQueryParameter['to'] = (to as any instanceof Date) ?
+                    (to as any).toISOString().substring(0,10) :
+                    to;
+            }
+
+            if (templateId !== undefined) {
+                localVarQueryParameter['template_id'] = templateId;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+         * @summary Sözleşme iptal (void)
+         * @param {string} id 
+         * @param {ApiV1DemandsIdCancelPostRequest} [apiV1DemandsIdCancelPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdCancelPost: async (id: string, apiV1DemandsIdCancelPostRequest?: ApiV1DemandsIdCancelPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdCancelPost', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/cancel`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1DemandsIdCancelPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+         * @summary Tamamlanma sertifikası (PAdES B-T)
+         * @param {string} id 
+         * @param {string} [lang] tr | en
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdCertificateGet: async (id: string, lang?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdCertificateGet', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/certificate`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            if (lang !== undefined) {
+                localVarQueryParameter['lang'] = lang;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/pdf,application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * @summary Sözleşme sil (yalnızca tamamlanmamış)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdDelete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdDelete', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {string} id Sözleşme (demand) ID
@@ -1000,6 +1291,121 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+         * @summary Tekil tarafa imza davetini tekrar gönder
+         * @param {string} id 
+         * @param {string} partyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdPartiesPartyIdResendPost: async (id: string, partyId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdPartiesPartyIdResendPost', 'id', id)
+            // verify required parameter 'partyId' is not null or undefined
+            assertParamExists('apiV1DemandsIdPartiesPartyIdResendPost', 'partyId', partyId)
+            const localVarPath = `/api/v1/demands/{id}/parties/{partyId}/resend`
+                .replace('{id}', encodeURIComponent(String(id)))
+                .replace('{partyId}', encodeURIComponent(String(partyId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Tamamlanmış sözleşmenin imzalı PDF\'ini indirir. Public `/sonuc/{id}/pdf`\'in aksine API key ownership\'i zorunludur. 
+         * @summary İmzalı sözleşme PDF\'i (auth\'lu indirme)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdPdfGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdPdfGet', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/pdf`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/pdf,application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+         * @summary İmza denetim izi (maskeli)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdTimelineGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdTimelineGet', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/timeline`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field\'ları `variables` payload\'undan doldurur ve imzalama URL\'lerini döner.  **Variable resolution:** - Item\'ın `template_party_id` non-null → `party_mapping[i].variables`\'ta   o slug var ise oradan uygulanır - Yoksa root `variables`\'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value\'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı 
          * @summary Sözleşme oluştur (şablondan)
          * @param {CreateDemandRequest} createDemandRequest 
@@ -1114,6 +1520,67 @@ export const DemandsApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DemandsApiAxiosParamCreator(configuration)
     return {
         /**
+         * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+         * @summary Sözleşme listesi (counts-only, PII\'siz)
+         * @param {ApiV1DemandsGetStatusEnum} [status] 
+         * @param {string} [q] Başlık araması
+         * @param {string} [from] 
+         * @param {string} [to] 
+         * @param {string} [templateId] 
+         * @param {number} [page] 
+         * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
+         * @param {string} [sort] alan:yön (ör. createdAt:desc)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsGet(status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+         * @summary Sözleşme iptal (void)
+         * @param {string} id 
+         * @param {ApiV1DemandsIdCancelPostRequest} [apiV1DemandsIdCancelPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdCancelPost(id: string, apiV1DemandsIdCancelPostRequest?: ApiV1DemandsIdCancelPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdCancelPost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdCancelPost(id, apiV1DemandsIdCancelPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdCancelPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+         * @summary Tamamlanma sertifikası (PAdES B-T)
+         * @param {string} id 
+         * @param {string} [lang] tr | en
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdCertificateGet(id: string, lang?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdCertificateGet(id, lang, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdCertificateGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * @summary Sözleşme sil (yalnızca tamamlanmamış)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdDelete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1TemplatesIdDelete200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {string} id Sözleşme (demand) ID
@@ -1152,6 +1619,46 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdItemsPost(id, upsertItemsRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdItemsPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+         * @summary Tekil tarafa imza davetini tekrar gönder
+         * @param {string} id 
+         * @param {string} partyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdPartiesPartyIdResendPost(id: string, partyId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdPartiesPartyIdResendPost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdPartiesPartyIdResendPost(id, partyId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdPartiesPartyIdResendPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Tamamlanmış sözleşmenin imzalı PDF\'ini indirir. Public `/sonuc/{id}/pdf`\'in aksine API key ownership\'i zorunludur. 
+         * @summary İmzalı sözleşme PDF\'i (auth\'lu indirme)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdPdfGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdPdfGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdPdfGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+         * @summary İmza denetim izi (maskeli)
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdTimelineGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdTimelineGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdTimelineGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdTimelineGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1194,6 +1701,46 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DemandsApiFp(configuration)
     return {
         /**
+         * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+         * @summary Sözleşme listesi (counts-only, PII\'siz)
+         * @param {DemandsApiApiV1DemandsGetRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsGet200Response> {
+            return localVarFp.apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+         * @summary Sözleşme iptal (void)
+         * @param {DemandsApiApiV1DemandsIdCancelPostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdCancelPost(requestParameters: DemandsApiApiV1DemandsIdCancelPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdCancelPost200Response> {
+            return localVarFp.apiV1DemandsIdCancelPost(requestParameters.id, requestParameters.apiV1DemandsIdCancelPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+         * @summary Tamamlanma sertifikası (PAdES B-T)
+         * @param {DemandsApiApiV1DemandsIdCertificateGetRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdCertificateGet(requestParameters: DemandsApiApiV1DemandsIdCertificateGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<File> {
+            return localVarFp.apiV1DemandsIdCertificateGet(requestParameters.id, requestParameters.lang, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * @summary Sözleşme sil (yalnızca tamamlanmamış)
+         * @param {DemandsApiApiV1DemandsIdDeleteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdDelete(requestParameters: DemandsApiApiV1DemandsIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1TemplatesIdDelete200Response> {
+            return localVarFp.apiV1DemandsIdDelete(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {DemandsApiApiV1DemandsIdEmbedSessionPostRequest} requestParameters Request parameters.
@@ -1224,6 +1771,36 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1DemandsIdItemsPost(requestParameters.id, requestParameters.upsertItemsRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+         * @summary Tekil tarafa imza davetini tekrar gönder
+         * @param {DemandsApiApiV1DemandsIdPartiesPartyIdResendPostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdPartiesPartyIdResendPost(requestParameters: DemandsApiApiV1DemandsIdPartiesPartyIdResendPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdPartiesPartyIdResendPost200Response> {
+            return localVarFp.apiV1DemandsIdPartiesPartyIdResendPost(requestParameters.id, requestParameters.partyId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Tamamlanmış sözleşmenin imzalı PDF\'ini indirir. Public `/sonuc/{id}/pdf`\'in aksine API key ownership\'i zorunludur. 
+         * @summary İmzalı sözleşme PDF\'i (auth\'lu indirme)
+         * @param {DemandsApiApiV1DemandsIdPdfGetRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdPdfGet(requestParameters: DemandsApiApiV1DemandsIdPdfGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<File> {
+            return localVarFp.apiV1DemandsIdPdfGet(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+         * @summary İmza denetim izi (maskeli)
+         * @param {DemandsApiApiV1DemandsIdTimelineGetRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdTimelineGet(requestParameters: DemandsApiApiV1DemandsIdTimelineGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdTimelineGet200Response> {
+            return localVarFp.apiV1DemandsIdTimelineGet(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field\'ları `variables` payload\'undan doldurur ve imzalama URL\'lerini döner.  **Variable resolution:** - Item\'ın `template_party_id` non-null → `party_mapping[i].variables`\'ta   o slug var ise oradan uygulanır - Yoksa root `variables`\'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value\'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı 
          * @summary Sözleşme oluştur (şablondan)
          * @param {DemandsApiApiV1DemandsPostRequest} requestParameters Request parameters.
@@ -1245,6 +1822,64 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
         },
     };
 };
+
+/**
+ * Request parameters for apiV1DemandsGet operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsGetRequest {
+    readonly status?: ApiV1DemandsGetStatusEnum
+
+    /**
+     * Başlık araması
+     */
+    readonly q?: string
+
+    readonly from?: string
+
+    readonly to?: string
+
+    readonly templateId?: string
+
+    readonly page?: number
+
+    /**
+     * Sayfa boyutu (page_size ile aynı)
+     */
+    readonly limit?: number
+
+    /**
+     * alan:yön (ör. createdAt:desc)
+     */
+    readonly sort?: string
+}
+
+/**
+ * Request parameters for apiV1DemandsIdCancelPost operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdCancelPostRequest {
+    readonly id: string
+
+    readonly apiV1DemandsIdCancelPostRequest?: ApiV1DemandsIdCancelPostRequest
+}
+
+/**
+ * Request parameters for apiV1DemandsIdCertificateGet operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdCertificateGetRequest {
+    readonly id: string
+
+    /**
+     * tr | en
+     */
+    readonly lang?: string
+}
+
+/**
+ * Request parameters for apiV1DemandsIdDelete operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdDeleteRequest {
+    readonly id: string
+}
 
 /**
  * Request parameters for apiV1DemandsIdEmbedSessionPost operation in DemandsApi.
@@ -1272,6 +1907,29 @@ export interface DemandsApiApiV1DemandsIdItemsPostRequest {
     readonly id: string
 
     readonly upsertItemsRequest: UpsertItemsRequest
+}
+
+/**
+ * Request parameters for apiV1DemandsIdPartiesPartyIdResendPost operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdPartiesPartyIdResendPostRequest {
+    readonly id: string
+
+    readonly partyId: string
+}
+
+/**
+ * Request parameters for apiV1DemandsIdPdfGet operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdPdfGetRequest {
+    readonly id: string
+}
+
+/**
+ * Request parameters for apiV1DemandsIdTimelineGet operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdTimelineGetRequest {
+    readonly id: string
 }
 
 /**
@@ -1310,6 +1968,50 @@ export interface DemandsApiApiV1DemandsUploadPostRequest {
  */
 export class DemandsApi extends BaseAPI {
     /**
+     * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+     * @summary Sözleşme listesi (counts-only, PII\'siz)
+     * @param {DemandsApiApiV1DemandsGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+     * @summary Sözleşme iptal (void)
+     * @param {DemandsApiApiV1DemandsIdCancelPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdCancelPost(requestParameters: DemandsApiApiV1DemandsIdCancelPostRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdCancelPost(requestParameters.id, requestParameters.apiV1DemandsIdCancelPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+     * @summary Tamamlanma sertifikası (PAdES B-T)
+     * @param {DemandsApiApiV1DemandsIdCertificateGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdCertificateGet(requestParameters: DemandsApiApiV1DemandsIdCertificateGetRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdCertificateGet(requestParameters.id, requestParameters.lang, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+     * @summary Sözleşme sil (yalnızca tamamlanmamış)
+     * @param {DemandsApiApiV1DemandsIdDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdDelete(requestParameters: DemandsApiApiV1DemandsIdDeleteRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdDelete(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). 
      * @summary Gömülü imza oturumu başlat (embed token mint)
      * @param {DemandsApiApiV1DemandsIdEmbedSessionPostRequest} requestParameters Request parameters.
@@ -1343,6 +2045,39 @@ export class DemandsApi extends BaseAPI {
     }
 
     /**
+     * Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+     * @summary Tekil tarafa imza davetini tekrar gönder
+     * @param {DemandsApiApiV1DemandsIdPartiesPartyIdResendPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdPartiesPartyIdResendPost(requestParameters: DemandsApiApiV1DemandsIdPartiesPartyIdResendPostRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdPartiesPartyIdResendPost(requestParameters.id, requestParameters.partyId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Tamamlanmış sözleşmenin imzalı PDF\'ini indirir. Public `/sonuc/{id}/pdf`\'in aksine API key ownership\'i zorunludur. 
+     * @summary İmzalı sözleşme PDF\'i (auth\'lu indirme)
+     * @param {DemandsApiApiV1DemandsIdPdfGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdPdfGet(requestParameters: DemandsApiApiV1DemandsIdPdfGetRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdPdfGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+     * @summary İmza denetim izi (maskeli)
+     * @param {DemandsApiApiV1DemandsIdTimelineGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdTimelineGet(requestParameters: DemandsApiApiV1DemandsIdTimelineGetRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdTimelineGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field\'ları `variables` payload\'undan doldurur ve imzalama URL\'lerini döner.  **Variable resolution:** - Item\'ın `template_party_id` non-null → `party_mapping[i].variables`\'ta   o slug var ise oradan uygulanır - Yoksa root `variables`\'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value\'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı 
      * @summary Sözleşme oluştur (şablondan)
      * @param {DemandsApiApiV1DemandsPostRequest} requestParameters Request parameters.
@@ -1365,6 +2100,14 @@ export class DemandsApi extends BaseAPI {
     }
 }
 
+export const ApiV1DemandsGetStatusEnum = {
+    Draft: 'DRAFT',
+    Pending: 'PENDING',
+    Completed: 'COMPLETED',
+    Cancelled: 'CANCELLED',
+    Expired: 'EXPIRED',
+} as const;
+export type ApiV1DemandsGetStatusEnum = typeof ApiV1DemandsGetStatusEnum[keyof typeof ApiV1DemandsGetStatusEnum];
 
 
 /**
@@ -1536,6 +2279,43 @@ export const TemplatesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
+         * Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+         * @summary Şablon sil
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdDelete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1TemplatesIdDelete', 'id', id)
+            const localVarPath = `/api/v1/templates/{id}`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
          * @summary Şablon detay
          * @param {string} id 
@@ -1566,6 +2346,48 @@ export const TemplatesApiAxiosParamCreator = function (configuration?: Configura
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint\'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+         * @summary Şablon metadata güncelle
+         * @param {string} id 
+         * @param {ApiV1TemplatesIdPatchRequest} apiV1TemplatesIdPatchRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdPatch: async (id: string, apiV1TemplatesIdPatchRequest: ApiV1TemplatesIdPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1TemplatesIdPatch', 'id', id)
+            // verify required parameter 'apiV1TemplatesIdPatchRequest' is not null or undefined
+            assertParamExists('apiV1TemplatesIdPatch', 'apiV1TemplatesIdPatchRequest', apiV1TemplatesIdPatchRequest)
+            const localVarPath = `/api/v1/templates/{id}`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1TemplatesIdPatchRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1633,6 +2455,19 @@ export const TemplatesApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+         * @summary Şablon sil
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1TemplatesIdDelete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1TemplatesIdDelete200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['TemplatesApi.apiV1TemplatesIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
          * @summary Şablon detay
          * @param {string} id 
@@ -1643,6 +2478,20 @@ export const TemplatesApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TemplatesApi.apiV1TemplatesIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint\'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+         * @summary Şablon metadata güncelle
+         * @param {string} id 
+         * @param {ApiV1TemplatesIdPatchRequest} apiV1TemplatesIdPatchRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1TemplatesIdPatch(id: string, apiV1TemplatesIdPatchRequest: ApiV1TemplatesIdPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1TemplatesIdPatch200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdPatch(id, apiV1TemplatesIdPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['TemplatesApi.apiV1TemplatesIdPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1678,6 +2527,16 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
             return localVarFp.apiV1TemplatesGet(requestParameters.page, requestParameters.limit, options).then((request) => request(axios, basePath));
         },
         /**
+         * Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+         * @summary Şablon sil
+         * @param {TemplatesApiApiV1TemplatesIdDeleteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdDelete(requestParameters: TemplatesApiApiV1TemplatesIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1TemplatesIdDelete200Response> {
+            return localVarFp.apiV1TemplatesIdDelete(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
          * @summary Şablon detay
          * @param {TemplatesApiApiV1TemplatesIdGetRequest} requestParameters Request parameters.
@@ -1686,6 +2545,16 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
          */
         apiV1TemplatesIdGet(requestParameters: TemplatesApiApiV1TemplatesIdGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1TemplatesIdGet200Response> {
             return localVarFp.apiV1TemplatesIdGet(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint\'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+         * @summary Şablon metadata güncelle
+         * @param {TemplatesApiApiV1TemplatesIdPatchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdPatch(requestParameters: TemplatesApiApiV1TemplatesIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1TemplatesIdPatch200Response> {
+            return localVarFp.apiV1TemplatesIdPatch(requestParameters.id, requestParameters.apiV1TemplatesIdPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Bu şablonu API üzerinden çağırmak için tam rehber döner: - `endpoint` (POST URL\'i) - `required_headers` (X-API-Key, X-Workspace-Id, Content-Type) - `parties` (her partinin desteklediği field listesi) - `variables` (her field için slug, label, item_type, is_required,   default_source, auto_filled, template_party_id) - `example_request` (tam curl + JSON örneği, gerçek slug\'larla)  Multi-party şablonlarda example.party_mapping[i].variables uygun slug\'larla doludur, root `variables` partisiz field\'lar için. 
@@ -1710,10 +2579,26 @@ export interface TemplatesApiApiV1TemplatesGetRequest {
 }
 
 /**
+ * Request parameters for apiV1TemplatesIdDelete operation in TemplatesApi.
+ */
+export interface TemplatesApiApiV1TemplatesIdDeleteRequest {
+    readonly id: string
+}
+
+/**
  * Request parameters for apiV1TemplatesIdGet operation in TemplatesApi.
  */
 export interface TemplatesApiApiV1TemplatesIdGetRequest {
     readonly id: string
+}
+
+/**
+ * Request parameters for apiV1TemplatesIdPatch operation in TemplatesApi.
+ */
+export interface TemplatesApiApiV1TemplatesIdPatchRequest {
+    readonly id: string
+
+    readonly apiV1TemplatesIdPatchRequest: ApiV1TemplatesIdPatchRequest
 }
 
 /**
@@ -1739,6 +2624,17 @@ export class TemplatesApi extends BaseAPI {
     }
 
     /**
+     * Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+     * @summary Şablon sil
+     * @param {TemplatesApiApiV1TemplatesIdDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1TemplatesIdDelete(requestParameters: TemplatesApiApiV1TemplatesIdDeleteRequest, options?: RawAxiosRequestConfig) {
+        return TemplatesApiFp(this.configuration).apiV1TemplatesIdDelete(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
      * @summary Şablon detay
      * @param {TemplatesApiApiV1TemplatesIdGetRequest} requestParameters Request parameters.
@@ -1747,6 +2643,17 @@ export class TemplatesApi extends BaseAPI {
      */
     public apiV1TemplatesIdGet(requestParameters: TemplatesApiApiV1TemplatesIdGetRequest, options?: RawAxiosRequestConfig) {
         return TemplatesApiFp(this.configuration).apiV1TemplatesIdGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint\'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+     * @summary Şablon metadata güncelle
+     * @param {TemplatesApiApiV1TemplatesIdPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1TemplatesIdPatch(requestParameters: TemplatesApiApiV1TemplatesIdPatchRequest, options?: RawAxiosRequestConfig) {
+        return TemplatesApiFp(this.configuration).apiV1TemplatesIdPatch(requestParameters.id, requestParameters.apiV1TemplatesIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -247,7 +247,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.6.0
+  version: 1.7.0
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -321,6 +321,36 @@ paths:
       x-accepts:
       - application/json
   /api/v1/templates/{id}:
+    delete:
+      description: Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__delete_200_response"
+          description: Silindi
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: Şablon sil
+      tags:
+      - Templates
+      x-required-scope: templates
+      x-accepts:
+      - application/json
     get:
       description: |
         Şablonun parties + variables bilgisini döner. variables array'ı
@@ -353,6 +383,61 @@ paths:
       tags:
       - Templates
       x-required-scope: templates
+      x-accepts:
+      - application/json
+    patch:
+      description: |
+        Şablonun yalnızca metadata alanlarını (name / description / category)
+        günceller. Sayfa/alan/taraf yapısı bu endpoint'ten DEĞİŞTİRİLEMEZ
+        (şablon içeriği panelden düzenlenir).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_api_v1_templates__id__patch_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__patch_200_response"
+          description: Güncellendi
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: |
+            Geçersiz istek. Örnek hatalar:
+            - "template_id gerekli"
+            - "party_mapping gerekli (en az 1 taraf)"
+            - "party_mapping[0].first_name ve last_name gerekli"
+            - "party_mapping[0].email veya phone gerekli"
+            - "party_mapping[0].variables object olmalı"
+            - "party_mapping[0].variables.adres value'su string|number|boolean|null olmali"
+            - "variables object olmalı"
+            - "template_party_id duplicate'i bulundu: <id>"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: Şablon metadata güncelle
+      tags:
+      - Templates
+      x-required-scope: templates
+      x-content-type: application/json
       x-accepts:
       - application/json
   /api/v1/templates/{id}/usage:
@@ -397,6 +482,102 @@ paths:
       x-accepts:
       - application/json
   /api/v1/demands:
+    get:
+      description: |
+        Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu:
+        yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`,
+        `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ
+        döndürülmez — taraf detayı için `GET /demands/{id}`.
+      parameters:
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - DRAFT
+          - PENDING
+          - COMPLETED
+          - CANCELLED
+          - EXPIRED
+          type: string
+        style: form
+      - description: Başlık araması
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: from
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: to
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: template_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          type: integer
+        style: form
+      - description: Sayfa boyutu (page_size ile aynı)
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          type: integer
+        style: form
+      - description: alan:yön (ör. createdAt:desc)
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands_get_200_response"
+          description: Başarılı
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates_get_401_response"
+          description: API key geçersiz veya eksik
+      summary: "Sözleşme listesi (counts-only, PII'siz)"
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
     post:
       description: |
         Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini
@@ -521,6 +702,45 @@ paths:
       x-accepts:
       - application/json
   /api/v1/demands/{id}:
+    delete:
+      description: |
+        Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴
+        Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge +
+        denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__delete_200_response"
+          description: Silindi
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__delete_409_response"
+          description: Tamamlanmış sözleşme silinemez
+      summary: Sözleşme sil (yalnızca tamamlanmamış)
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
     get:
       parameters:
       - explode: false
@@ -1006,6 +1226,208 @@ paths:
       x-content-type: application/json
       x-accepts:
       - application/json
+  /api/v1/demands/{id}/pdf:
+    get:
+      description: |
+        Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public
+        `/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                format: binary
+                type: string
+          description: PDF
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: İmzalı sözleşme PDF'i (auth'lu indirme)
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
+      - application/pdf
+  /api/v1/demands/{id}/certificate:
+    get:
+      description: |
+        Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman
+        damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED
+        sözleşmeler için üretilir (aksi 409).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      - description: tr | en
+        explode: true
+        in: query
+        name: lang
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                format: binary
+                type: string
+          description: Sertifika PDF
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          description: Sözleşme henüz tamamlanmadı
+      summary: Tamamlanma sertifikası (PAdES B-T)
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
+      - application/pdf
+  /api/v1/demands/{id}/timeline:
+    get:
+      description: |
+        Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner.
+        KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham
+        IP/cihaz asla döndürülmez.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__timeline_get_200_response"
+          description: Başarılı
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: İmza denetim izi (maskeli)
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
+  /api/v1/demands/{id}/cancel:
+    post:
+      description: |
+        Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış
+        (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen
+        hatırlatmalar iptal edilir.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_api_v1_demands__id__cancel_post_request"
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__cancel_post_200_response"
+          description: İptal edildi
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          description: Tamamlanmış/iptal edilmiş sözleşme
+      summary: Sözleşme iptal (void)
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/demands/{id}/parties/{partyId}/resend:
+    post:
+      description: |
+        Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme
+        ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı
+        imzada sırası gelmemiş tarafa gönderilemez (409).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: partyId
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__parties__partyId__resend_post_200_response"
+          description: Gönderildi
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          description: İmzalamış/reddetmiş/sıra-dışı taraf
+      summary: Tekil tarafa imza davetini tekrar gönder
+      tags:
+      - Demands
+      x-required-scope: demands
+      x-accepts:
+      - application/json
   /api/v1/me:
     get:
       description: |
@@ -1423,7 +1845,7 @@ components:
           json: "{}"
       properties:
         template:
-          $ref: "#/components/schemas/TemplateUsage_template"
+          $ref: "#/components/schemas/_api_v1_templates__id__patch_200_response_data"
         endpoint:
           $ref: "#/components/schemas/TemplateUsage_endpoint"
         required_headers:
@@ -2047,18 +2469,20 @@ components:
         completed_at: 2000-01-23T04:56:07.000+00:00
         parties:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          first_name: first_name
-          last_name: last_name
-          email: email
+          name: name
+          email_masked: email_masked
           signed: true
           signed_at: 2000-01-23T04:56:07.000+00:00
+          rejected: true
+          rejected_at: 2000-01-23T04:56:07.000+00:00
           signing_url: https://openapi-generator.tech
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          first_name: first_name
-          last_name: last_name
-          email: email
+          name: name
+          email_masked: email_masked
           signed: true
           signed_at: 2000-01-23T04:56:07.000+00:00
+          rejected: true
+          rejected_at: 2000-01-23T04:56:07.000+00:00
           signing_url: https://openapi-generator.tech
         result_url: https://openapi-generator.tech
         pdf_url: https://openapi-generator.tech
@@ -2471,6 +2895,71 @@ components:
           example: Şablon bulunamadı
           type: string
       type: object
+    _api_v1_templates__id__delete_200_response_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        deleted: true
+      properties:
+        id:
+          format: uuid
+          type: string
+        deleted:
+          type: boolean
+      type: object
+    _api_v1_templates__id__delete_200_response:
+      example:
+        success: true
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          deleted: true
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_templates__id__delete_200_response_data"
+      type: object
+    _api_v1_templates__id__patch_request:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+      type: object
+    _api_v1_templates__id__patch_200_response_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        description: description
+        category: category
+      properties:
+        id:
+          format: uuid
+          type: string
+        name:
+          type: string
+        description:
+          nullable: true
+          type: string
+        category:
+          nullable: true
+          type: string
+      type: object
+    _api_v1_templates__id__patch_200_response:
+      example:
+        success: true
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          description: description
+          category: category
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_templates__id__patch_200_response_data"
+      type: object
     _api_v1_templates__id__usage_get_200_response:
       example:
         success: true
@@ -2544,6 +3033,106 @@ components:
         data:
           $ref: "#/components/schemas/TemplateUsage"
       type: object
+    _api_v1_demands_get_200_response_data_demands_inner:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        title: title
+        status: status
+        created_at: 2000-01-23T04:56:07.000+00:00
+        completed_at: 2000-01-23T04:56:07.000+00:00
+        parties_total: 0
+        parties_signed: 6
+        pdf_url: https://openapi-generator.tech
+      properties:
+        id:
+          format: uuid
+          type: string
+        title:
+          nullable: true
+          type: string
+        status:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        completed_at:
+          format: date-time
+          nullable: true
+          type: string
+        parties_total:
+          type: integer
+        parties_signed:
+          type: integer
+        pdf_url:
+          description: COMPLETED ise imzalı PDF public URL'i
+          format: uri
+          nullable: true
+          type: string
+      type: object
+    _api_v1_demands_get_200_response_data:
+      example:
+        demands:
+        - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          title: title
+          status: status
+          created_at: 2000-01-23T04:56:07.000+00:00
+          completed_at: 2000-01-23T04:56:07.000+00:00
+          parties_total: 0
+          parties_signed: 6
+          pdf_url: https://openapi-generator.tech
+        - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          title: title
+          status: status
+          created_at: 2000-01-23T04:56:07.000+00:00
+          completed_at: 2000-01-23T04:56:07.000+00:00
+          parties_total: 0
+          parties_signed: 6
+          pdf_url: https://openapi-generator.tech
+        total: 1
+        page: 5
+        limit: 5
+      properties:
+        demands:
+          items:
+            $ref: "#/components/schemas/_api_v1_demands_get_200_response_data_demands_inner"
+          type: array
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      type: object
+    _api_v1_demands_get_200_response:
+      example:
+        success: true
+        data:
+          demands:
+          - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            title: title
+            status: status
+            created_at: 2000-01-23T04:56:07.000+00:00
+            completed_at: 2000-01-23T04:56:07.000+00:00
+            parties_total: 0
+            parties_signed: 6
+            pdf_url: https://openapi-generator.tech
+          - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            title: title
+            status: status
+            created_at: 2000-01-23T04:56:07.000+00:00
+            completed_at: 2000-01-23T04:56:07.000+00:00
+            parties_total: 0
+            parties_signed: 6
+            pdf_url: https://openapi-generator.tech
+          total: 1
+          page: 5
+          limit: 5
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands_get_200_response_data"
+      type: object
     _api_v1_demands_post_201_response:
       example:
         success: true
@@ -2597,18 +3186,20 @@ components:
           completed_at: 2000-01-23T04:56:07.000+00:00
           parties:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            first_name: first_name
-            last_name: last_name
-            email: email
+            name: name
+            email_masked: email_masked
             signed: true
             signed_at: 2000-01-23T04:56:07.000+00:00
+            rejected: true
+            rejected_at: 2000-01-23T04:56:07.000+00:00
             signing_url: https://openapi-generator.tech
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            first_name: first_name
-            last_name: last_name
-            email: email
+            name: name
+            email_masked: email_masked
             signed: true
             signed_at: 2000-01-23T04:56:07.000+00:00
+            rejected: true
+            rejected_at: 2000-01-23T04:56:07.000+00:00
             signing_url: https://openapi-generator.tech
           result_url: https://openapi-generator.tech
           pdf_url: https://openapi-generator.tech
@@ -2617,6 +3208,22 @@ components:
           type: boolean
         data:
           $ref: "#/components/schemas/DemandStatus"
+      type: object
+    _api_v1_demands__id__delete_409_response:
+      example:
+        success: false
+        error: Tamamlanmış sözleşme API üzerinden silinemez
+        code: DEMAND_COMPLETED
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          example: Tamamlanmış sözleşme API üzerinden silinemez
+          type: string
+        code:
+          example: DEMAND_COMPLETED
+          type: string
       type: object
     _api_v1_demands__id__reminders_post_200_response_data_dispatched_inner:
       example:
@@ -2864,6 +3471,154 @@ components:
         data:
           $ref: "#/components/schemas/_api_v1_demands__id__embed_session_post_200_response_data"
       type: object
+    _api_v1_demands__id__timeline_get_200_response_data_events_inner:
+      example:
+        id: id
+        event_type: event_type
+        actor_label: actor_label
+        ip_masked: ip_masked
+        device_label: device_label
+        comment_text: comment_text
+        created_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          type: string
+        event_type:
+          type: string
+        actor_label:
+          nullable: true
+          type: string
+        ip_masked:
+          nullable: true
+          type: string
+        device_label:
+          nullable: true
+          type: string
+        comment_text:
+          nullable: true
+          type: string
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    _api_v1_demands__id__timeline_get_200_response_data:
+      example:
+        events:
+        - id: id
+          event_type: event_type
+          actor_label: actor_label
+          ip_masked: ip_masked
+          device_label: device_label
+          comment_text: comment_text
+          created_at: 2000-01-23T04:56:07.000+00:00
+        - id: id
+          event_type: event_type
+          actor_label: actor_label
+          ip_masked: ip_masked
+          device_label: device_label
+          comment_text: comment_text
+          created_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        events:
+          items:
+            $ref: "#/components/schemas/_api_v1_demands__id__timeline_get_200_response_data_events_inner"
+          type: array
+      type: object
+    _api_v1_demands__id__timeline_get_200_response:
+      example:
+        success: true
+        data:
+          events:
+          - id: id
+            event_type: event_type
+            actor_label: actor_label
+            ip_masked: ip_masked
+            device_label: device_label
+            comment_text: comment_text
+            created_at: 2000-01-23T04:56:07.000+00:00
+          - id: id
+            event_type: event_type
+            actor_label: actor_label
+            ip_masked: ip_masked
+            device_label: device_label
+            comment_text: comment_text
+            created_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__timeline_get_200_response_data"
+      type: object
+    _api_v1_demands__id__cancel_post_request:
+      properties:
+        reason:
+          description: İptal nedeni (opsiyonel)
+          type: string
+      type: object
+    _api_v1_demands__id__cancel_post_200_response_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        title: title
+        status: CANCELLED
+        cancelled_at: 2000-01-23T04:56:07.000+00:00
+        cancellation_reason: cancellation_reason
+      properties:
+        id:
+          format: uuid
+          type: string
+        title:
+          nullable: true
+          type: string
+        status:
+          example: CANCELLED
+          type: string
+        cancelled_at:
+          format: date-time
+          type: string
+        cancellation_reason:
+          nullable: true
+          type: string
+      type: object
+    _api_v1_demands__id__cancel_post_200_response:
+      example:
+        success: true
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          title: title
+          status: CANCELLED
+          cancelled_at: 2000-01-23T04:56:07.000+00:00
+          cancellation_reason: cancellation_reason
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__cancel_post_200_response_data"
+      type: object
+    _api_v1_demands__id__parties__partyId__resend_post_200_response_data:
+      example:
+        sent:
+        - sent
+        - sent
+      properties:
+        sent:
+          description: Gönderilen kanallar (sms/email/whatsapp)
+          items:
+            type: string
+          type: array
+      type: object
+    _api_v1_demands__id__parties__partyId__resend_post_200_response:
+      example:
+        success: true
+        data:
+          sent:
+          - sent
+          - sent
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__parties__partyId__resend_post_200_response_data"
+      type: object
     _api_v1_me_get_200_response_data_workspace:
       example:
         type: personal
@@ -3010,25 +3765,6 @@ components:
           type: string
         is_required:
           type: boolean
-      type: object
-    TemplateUsage_template:
-      example:
-        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        name: name
-        description: description
-        category: category
-      properties:
-        id:
-          format: uuid
-          type: string
-        name:
-          type: string
-        description:
-          nullable: true
-          type: string
-        category:
-          nullable: true
-          type: string
       type: object
     TemplateUsage_endpoint:
       example:
@@ -3254,26 +3990,32 @@ components:
     DemandStatus_parties_inner:
       example:
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        first_name: first_name
-        last_name: last_name
-        email: email
+        name: name
+        email_masked: email_masked
         signed: true
         signed_at: 2000-01-23T04:56:07.000+00:00
+        rejected: true
+        rejected_at: 2000-01-23T04:56:07.000+00:00
         signing_url: https://openapi-generator.tech
       properties:
         party_id:
           format: uuid
           type: string
-        first_name:
+        name:
+          description: Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme
           type: string
-        last_name:
-          type: string
-        email:
-          nullable: true
+        email_masked:
+          description: Maskeli e-posta (ah***@x.com)
           type: string
         signed:
           type: boolean
         signed_at:
+          format: date-time
+          nullable: true
+          type: string
+        rejected:
+          type: boolean
+        rejected_at:
           format: date-time
           nullable: true
           type: string

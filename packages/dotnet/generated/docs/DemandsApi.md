@@ -4,11 +4,443 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 | Method | HTTP request | Description |
 |--------|--------------|-------------|
+| [**ApiV1DemandsGet**](DemandsApi.md#apiv1demandsget) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**ApiV1DemandsIdCancelPost**](DemandsApi.md#apiv1demandsidcancelpost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
+| [**ApiV1DemandsIdCertificateGet**](DemandsApi.md#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
+| [**ApiV1DemandsIdDelete**](DemandsApi.md#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
 | [**ApiV1DemandsIdEmbedSessionPost**](DemandsApi.md#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
 | [**ApiV1DemandsIdGet**](DemandsApi.md#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**ApiV1DemandsIdItemsPost**](DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
+| [**ApiV1DemandsIdPartiesPartyIdResendPost**](DemandsApi.md#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder |
+| [**ApiV1DemandsIdPdfGet**](DemandsApi.md#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme) |
+| [**ApiV1DemandsIdTimelineGet**](DemandsApi.md#apiv1demandsidtimelineget) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
 | [**ApiV1DemandsPost**](DemandsApi.md#apiv1demandspost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**ApiV1DemandsUploadPost**](DemandsApi.md#apiv1demandsuploadpost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
+
+<a id="apiv1demandsget"></a>
+# **ApiV1DemandsGet**
+> ApiV1DemandsGet200Response ApiV1DemandsGet (string? status = null, string? q = null, DateOnly? from = null, DateOnly? to = null, Guid? templateId = null, int? page = null, int? limit = null, string? sort = null)
+
+Sözleşme listesi (counts-only, PII'siz)
+
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var status = "DRAFT";  // string? |  (optional) 
+            var q = "q_example";  // string? | Başlık araması (optional) 
+            var from = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional) 
+            var to = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional) 
+            var templateId = "templateId_example";  // Guid? |  (optional) 
+            var page = 1;  // int? |  (optional)  (default to 1)
+            var limit = 20;  // int? | Sayfa boyutu (page_size ile aynı) (optional)  (default to 20)
+            var sort = "sort_example";  // string? | alan:yön (ör. createdAt:desc) (optional) 
+
+            try
+            {
+                // Sözleşme listesi (counts-only, PII'siz)
+                ApiV1DemandsGet200Response result = apiInstance.ApiV1DemandsGet(status, q, from, to, templateId, page, limit, sort);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Sözleşme listesi (counts-only, PII'siz)
+    ApiResponse<ApiV1DemandsGet200Response> response = apiInstance.ApiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **status** | **string?** |  | [optional]  |
+| **q** | **string?** | Başlık araması | [optional]  |
+| **from** | **DateOnly?** |  | [optional]  |
+| **to** | **DateOnly?** |  | [optional]  |
+| **templateId** | **Guid?** |  | [optional]  |
+| **page** | **int?** |  | [optional] [default to 1] |
+| **limit** | **int?** | Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
+| **sort** | **string?** | alan:yön (ör. createdAt:desc) | [optional]  |
+
+### Return type
+
+[**ApiV1DemandsGet200Response**](ApiV1DemandsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidcancelpost"></a>
+# **ApiV1DemandsIdCancelPost**
+> ApiV1DemandsIdCancelPost200Response ApiV1DemandsIdCancelPost (Guid id, ApiV1DemandsIdCancelPostRequest? apiV1DemandsIdCancelPostRequest = null)
+
+Sözleşme iptal (void)
+
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdCancelPostExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+            var apiV1DemandsIdCancelPostRequest = new ApiV1DemandsIdCancelPostRequest?(); // ApiV1DemandsIdCancelPostRequest? |  (optional) 
+
+            try
+            {
+                // Sözleşme iptal (void)
+                ApiV1DemandsIdCancelPost200Response result = apiInstance.ApiV1DemandsIdCancelPost(id, apiV1DemandsIdCancelPostRequest);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdCancelPost: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdCancelPostWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Sözleşme iptal (void)
+    ApiResponse<ApiV1DemandsIdCancelPost200Response> response = apiInstance.ApiV1DemandsIdCancelPostWithHttpInfo(id, apiV1DemandsIdCancelPostRequest);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdCancelPostWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+| **apiV1DemandsIdCancelPostRequest** | [**ApiV1DemandsIdCancelPostRequest?**](ApiV1DemandsIdCancelPostRequest?.md) |  | [optional]  |
+
+### Return type
+
+[**ApiV1DemandsIdCancelPost200Response**](ApiV1DemandsIdCancelPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | İptal edildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış/iptal edilmiş sözleşme |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidcertificateget"></a>
+# **ApiV1DemandsIdCertificateGet**
+> FileParameter ApiV1DemandsIdCertificateGet (Guid id, string? lang = null)
+
+Tamamlanma sertifikası (PAdES B-T)
+
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdCertificateGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+            var lang = "lang_example";  // string? | tr | en (optional) 
+
+            try
+            {
+                // Tamamlanma sertifikası (PAdES B-T)
+                FileParameter result = apiInstance.ApiV1DemandsIdCertificateGet(id, lang);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdCertificateGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdCertificateGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Tamamlanma sertifikası (PAdES B-T)
+    ApiResponse<FileParameter> response = apiInstance.ApiV1DemandsIdCertificateGetWithHttpInfo(id, lang);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdCertificateGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+| **lang** | **string?** | tr | en | [optional]  |
+
+### Return type
+
+[**FileParameter**](FileParameter.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Sertifika PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Sözleşme henüz tamamlanmadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsiddelete"></a>
+# **ApiV1DemandsIdDelete**
+> ApiV1TemplatesIdDelete200Response ApiV1DemandsIdDelete (Guid id)
+
+Sözleşme sil (yalnızca tamamlanmamış)
+
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdDeleteExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+
+            try
+            {
+                // Sözleşme sil (yalnızca tamamlanmamış)
+                ApiV1TemplatesIdDelete200Response result = apiInstance.ApiV1DemandsIdDelete(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdDelete: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdDeleteWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Sözleşme sil (yalnızca tamamlanmamış)
+    ApiResponse<ApiV1TemplatesIdDelete200Response> response = apiInstance.ApiV1DemandsIdDeleteWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdDeleteWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+
+### Return type
+
+[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Silindi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | Tamamlanmış sözleşme silinemez |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 <a id="apiv1demandsidembedsessionpost"></a>
 # **ApiV1DemandsIdEmbedSessionPost**
@@ -321,6 +753,312 @@ catch (ApiException e)
 | **403** | &#x60;DEMAND_NOT_EDITABLE&#x60; — demand status ≠ &#x60;PENDING&#x60; (COMPLETED, EXPIRED, REJECTED edit edilemez).  |  -  |
 | **404** | &#x60;DEMAND_NOT_FOUND&#x60; — demand bu workspace&#39;te yok (cross-workspace IDOR koruması).  |  -  |
 | **409** | &#x60;DUPLICATE_SIGNATURE_FIELD&#x60; — aynı &#x60;(page_id, party_id, position_x, position_y)&#x60; tuple&#39;ında ikinci &#x60;signature&#x60; alanı yaratıldı. DB-level partial unique constraint engelledi. Pozisyonu değiştirip tekrar deneyin.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidpartiespartyidresendpost"></a>
+# **ApiV1DemandsIdPartiesPartyIdResendPost**
+> ApiV1DemandsIdPartiesPartyIdResendPost200Response ApiV1DemandsIdPartiesPartyIdResendPost (Guid id, Guid partyId)
+
+Tekil tarafa imza davetini tekrar gönder
+
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdPartiesPartyIdResendPostExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+            var partyId = "partyId_example";  // Guid | 
+
+            try
+            {
+                // Tekil tarafa imza davetini tekrar gönder
+                ApiV1DemandsIdPartiesPartyIdResendPost200Response result = apiInstance.ApiV1DemandsIdPartiesPartyIdResendPost(id, partyId);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdPartiesPartyIdResendPost: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Tekil tarafa imza davetini tekrar gönder
+    ApiResponse<ApiV1DemandsIdPartiesPartyIdResendPost200Response> response = apiInstance.ApiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo(id, partyId);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+| **partyId** | **Guid** |  |  |
+
+### Return type
+
+[**ApiV1DemandsIdPartiesPartyIdResendPost200Response**](ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Gönderildi |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+| **409** | İmzalamış/reddetmiş/sıra-dışı taraf |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidpdfget"></a>
+# **ApiV1DemandsIdPdfGet**
+> FileParameter ApiV1DemandsIdPdfGet (Guid id)
+
+İmzalı sözleşme PDF'i (auth'lu indirme)
+
+Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public `/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdPdfGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+
+            try
+            {
+                // İmzalı sözleşme PDF'i (auth'lu indirme)
+                FileParameter result = apiInstance.ApiV1DemandsIdPdfGet(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdPdfGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdPdfGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // İmzalı sözleşme PDF'i (auth'lu indirme)
+    ApiResponse<FileParameter> response = apiInstance.ApiV1DemandsIdPdfGetWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdPdfGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+
+### Return type
+
+[**FileParameter**](FileParameter.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | PDF |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidtimelineget"></a>
+# **ApiV1DemandsIdTimelineGet**
+> ApiV1DemandsIdTimelineGet200Response ApiV1DemandsIdTimelineGet (Guid id)
+
+İmza denetim izi (maskeli)
+
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdTimelineGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+
+            try
+            {
+                // İmza denetim izi (maskeli)
+                ApiV1DemandsIdTimelineGet200Response result = apiInstance.ApiV1DemandsIdTimelineGet(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdTimelineGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdTimelineGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // İmza denetim izi (maskeli)
+    ApiResponse<ApiV1DemandsIdTimelineGet200Response> response = apiInstance.ApiV1DemandsIdTimelineGetWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdTimelineGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+
+### Return type
+
+[**ApiV1DemandsIdTimelineGet200Response**](ApiV1DemandsIdTimelineGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

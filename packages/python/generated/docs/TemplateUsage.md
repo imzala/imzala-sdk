@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template** | [**TemplateUsageTemplate**](TemplateUsageTemplate.md) |  | [optional] 
+**template** | [**ApiV1TemplatesIdPatch200ResponseData**](ApiV1TemplatesIdPatch200ResponseData.md) |  | [optional] 
 **endpoint** | [**TemplateUsageEndpoint**](TemplateUsageEndpoint.md) |  | [optional] 
 **required_headers** | **Dict[str, str]** |  | [optional] 
 **parties** | [**List[TemplateUsagePartiesInner]**](TemplateUsagePartiesInner.md) |  | [optional] 

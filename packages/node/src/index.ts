@@ -1,10 +1,18 @@
 import { Configuration } from '../generated/configuration';
 import { AccountApi, DemandsApi, RemindersApi, TemplatesApi, TimestampsApi } from '../generated/api';
 import type {
+  ApiV1DemandsGet200ResponseData,
+  ApiV1DemandsIdCancelPost200ResponseData,
+  ApiV1DemandsIdCancelPostRequest,
   ApiV1DemandsIdEmbedSessionPost200ResponseData,
+  ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData,
   ApiV1DemandsIdRemindersPost200ResponseData,
+  ApiV1DemandsIdTimelineGet200ResponseData,
   ApiV1MeGet200ResponseData,
   ApiV1TemplatesGet200ResponseData,
+  ApiV1TemplatesIdDelete200ResponseData,
+  ApiV1TemplatesIdPatch200ResponseData,
+  ApiV1TemplatesIdPatchRequest,
   CreateDemandRequest,
   CreatedDemand,
   CreatedDemandUpload,
@@ -76,6 +84,29 @@ export interface ListTemplatesParams {
   limit?: number;
 }
 
+export interface ListDemandsParams {
+  /** Filter by demand status (DRAFT / PENDING / COMPLETED / CANCELLED / EXPIRED). */
+  status?: string;
+  /** Title search. */
+  q?: string;
+  /** ISO date (YYYY-MM-DD) lower bound on creation. */
+  from?: string;
+  /** ISO date (YYYY-MM-DD) upper bound on creation. */
+  to?: string;
+  /** Only demands created from this template. */
+  templateId?: string;
+  page?: number;
+  limit?: number;
+  /** `field:direction`, e.g. `createdAt:desc`. */
+  sort?: string;
+}
+
+export interface UpdateTemplateParams {
+  name?: string;
+  description?: string;
+  category?: string;
+}
+
 class TemplatesResource {
   constructor(
     private readonly api: TemplatesApi,
@@ -140,6 +171,26 @@ class TemplatesResource {
       page = (result.page ?? page) + 1;
     }
   }
+
+  /**
+   * Updates a template's metadata (name / description / category). The page/
+   * field/party structure can't be changed via the API — edit that in the
+   * dashboard. PATCH — never auto-retried.
+   */
+  update(
+    id: string,
+    body: ApiV1TemplatesIdPatchRequest,
+  ): Promise<ApiV1TemplatesIdPatch200ResponseData> {
+    return unwrap(this.api.apiV1TemplatesIdPatch({ id, apiV1TemplatesIdPatchRequest: body }));
+  }
+
+  /**
+   * Deletes (soft-deletes) a template. Existing demands created from it are
+   * unaffected. DELETE — never auto-retried.
+   */
+  delete(id: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
+    return unwrap(this.api.apiV1TemplatesIdDelete({ id }));
+  }
 }
 
 class DemandsResource {
@@ -200,6 +251,96 @@ class DemandsResource {
     body: TriggerReminderRequest = {},
   ): Promise<ApiV1DemandsIdRemindersPost200ResponseData> {
     return unwrap(this.remindersApi.apiV1DemandsIdRemindersPost({ id, triggerReminderRequest: body }));
+  }
+
+  /**
+   * Lists your demands — counts-only (id/title/status/timestamps +
+   * `parties_total`/`parties_signed`, NO party names/emails/phones). Filter by
+   * status/date/template, paginate with page/limit. GET — safe to auto-retry.
+   * For per-party detail use `get(id)`.
+   */
+  list(params: ListDemandsParams = {}): Promise<ApiV1DemandsGet200ResponseData> {
+    return unwrapRetryableGet(
+      () =>
+        this.api.apiV1DemandsGet({
+          status: params.status as any,
+          q: params.q,
+          from: params.from,
+          to: params.to,
+          templateId: params.templateId,
+          page: params.page,
+          limit: params.limit,
+          sort: params.sort,
+        }),
+      this.retryConfig,
+    );
+  }
+
+  /**
+   * Downloads the signed contract PDF (only once `status === 'COMPLETED'`).
+   * Returns the raw bytes as a `Buffer` — write it to disk or stream it on.
+   * Requires the API key's owner to own the demand. GET — safe to auto-retry.
+   */
+  async getPdf(id: string): Promise<Buffer> {
+    const res = await this.api.apiV1DemandsIdPdfGet({ id }, { responseType: 'arraybuffer' });
+    return Buffer.from(res.data as unknown as ArrayBuffer);
+  }
+
+  /**
+   * Downloads the completion certificate (PAdES B-T sealed audit document) as
+   * a `Buffer`. Only produced for `COMPLETED` demands. Pass `{lang: 'en'}` for
+   * English. GET — safe to auto-retry.
+   */
+  async getCertificate(id: string, params: { lang?: string } = {}): Promise<Buffer> {
+    const res = await this.api.apiV1DemandsIdCertificateGet(
+      { id, lang: params.lang },
+      { responseType: 'arraybuffer' },
+    );
+    return Buffer.from(res.data as unknown as ArrayBuffer);
+  }
+
+  /**
+   * Returns the signing audit trail (view/sign/reject events). PII-masked:
+   * `ip_masked` (last octet hidden), actor name+email masked, no raw
+   * IP/device. GET — safe to auto-retry.
+   */
+  getTimeline(id: string): Promise<ApiV1DemandsIdTimelineGet200ResponseData> {
+    return unwrapRetryableGet(() => this.api.apiV1DemandsIdTimelineGet({ id }), this.retryConfig);
+  }
+
+  /**
+   * Cancels (voids) a pending demand — sets it to `CANCELLED` and stops any
+   * scheduled reminders. A `COMPLETED` (or already-cancelled) demand can't be
+   * cancelled (throws). POST — never auto-retried.
+   */
+  cancel(
+    id: string,
+    body: ApiV1DemandsIdCancelPostRequest = {},
+  ): Promise<ApiV1DemandsIdCancelPost200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdCancelPost({ id, apiV1DemandsIdCancelPostRequest: body }));
+  }
+
+  /**
+   * Re-sends the signing invitation to a single party (by `party_id` from the
+   * demand's create/get response). Can't resend to a party who has already
+   * signed or declined, or one whose turn hasn't come in ordered signing
+   * (throws). POST — never auto-retried.
+   */
+  resendParty(
+    id: string,
+    partyId: string,
+  ): Promise<ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdPartiesPartyIdResendPost({ id, partyId }));
+  }
+
+  /**
+   * Deletes a demand and all its data. Only NON-completed demands can be
+   * deleted via the API — a `COMPLETED` demand (signed document + audit trail)
+   * returns 409 and must be removed from the dashboard. DELETE — never
+   * auto-retried.
+   */
+  delete(id: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdDelete({ id }));
   }
 }
 

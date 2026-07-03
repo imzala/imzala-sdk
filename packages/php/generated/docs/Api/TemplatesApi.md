@@ -7,7 +7,9 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
 | [**apiV1TemplatesGet()**](TemplatesApi.md#apiV1TemplatesGet) | **GET** /api/v1/templates | Şablon listesi |
+| [**apiV1TemplatesIdDelete()**](TemplatesApi.md#apiV1TemplatesIdDelete) | **DELETE** /api/v1/templates/{id} | Şablon sil |
 | [**apiV1TemplatesIdGet()**](TemplatesApi.md#apiV1TemplatesIdGet) | **GET** /api/v1/templates/{id} | Şablon detay |
+| [**apiV1TemplatesIdPatch()**](TemplatesApi.md#apiV1TemplatesIdPatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle |
 | [**apiV1TemplatesIdUsageGet()**](TemplatesApi.md#apiV1TemplatesIdUsageGet) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
 
 
@@ -61,6 +63,68 @@ try {
 ### Return type
 
 [**\Imzala\Client\Model\ApiV1TemplatesGet200Response**](../Model/ApiV1TemplatesGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1TemplatesIdDelete()`
+
+```php
+apiV1TemplatesIdDelete($id): \Imzala\Client\Model\ApiV1TemplatesIdDelete200Response
+```
+
+Şablon sil
+
+Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\TemplatesApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1TemplatesIdDelete($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling TemplatesApi->apiV1TemplatesIdDelete: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1TemplatesIdDelete200Response**](../Model/ApiV1TemplatesIdDelete200Response.md)
 
 ### Authorization
 
@@ -131,6 +195,70 @@ try {
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1TemplatesIdPatch()`
+
+```php
+apiV1TemplatesIdPatch($id, $api_v1_templates_id_patch_request): \Imzala\Client\Model\ApiV1TemplatesIdPatch200Response
+```
+
+Şablon metadata güncelle
+
+Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint'ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\TemplatesApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$api_v1_templates_id_patch_request = new \Imzala\Client\Model\ApiV1TemplatesIdPatchRequest(); // \Imzala\Client\Model\ApiV1TemplatesIdPatchRequest
+
+try {
+    $result = $apiInstance->apiV1TemplatesIdPatch($id, $api_v1_templates_id_patch_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling TemplatesApi->apiV1TemplatesIdPatch: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **api_v1_templates_id_patch_request** | [**\Imzala\Client\Model\ApiV1TemplatesIdPatchRequest**](../Model/ApiV1TemplatesIdPatchRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1TemplatesIdPatch200Response**](../Model/ApiV1TemplatesIdPatch200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 [[Back to top]](#) [[Back to API list]](../../README.md#endpoints)

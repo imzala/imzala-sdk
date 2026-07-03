@@ -2,9 +2,9 @@
 
 imzala External API
 
-- API version: 1.6.0
+- API version: 1.7.0
 
-- Build date: 2026-07-01T14:50:26.407096+03:00[Europe/Istanbul]
+- Build date: 2026-07-03T05:18:13.896742+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
@@ -284,7 +284,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.6.0</version>
+  <version>1.7.0</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -294,7 +294,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.6.0"
+compile "org.imzala:imzala-client-generated:1.7.0"
 ```
 
 ### Others
@@ -307,7 +307,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.6.0.jar`
+- `target/imzala-client-generated-1.7.0.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -350,12 +350,26 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AccountApi* | [**apiV1MeGet**](docs/AccountApi.md#apiV1MeGet) | **GET** /api/v1/me | API key sahibi bilgisi
 *AccountApi* | [**apiV1MeGetWithHttpInfo**](docs/AccountApi.md#apiV1MeGetWithHttpInfo) | **GET** /api/v1/me | API key sahibi bilgisi
+*DemandsApi* | [**apiV1DemandsGet**](docs/DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+*DemandsApi* | [**apiV1DemandsGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsGetWithHttpInfo) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+*DemandsApi* | [**apiV1DemandsIdCancelPost**](docs/DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
+*DemandsApi* | [**apiV1DemandsIdCancelPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdCancelPostWithHttpInfo) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
+*DemandsApi* | [**apiV1DemandsIdCertificateGet**](docs/DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
+*DemandsApi* | [**apiV1DemandsIdCertificateGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdCertificateGetWithHttpInfo) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
+*DemandsApi* | [**apiV1DemandsIdDelete**](docs/DemandsApi.md#apiV1DemandsIdDelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
+*DemandsApi* | [**apiV1DemandsIdDeleteWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdDeleteWithHttpInfo) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPost**](docs/DemandsApi.md#apiV1DemandsIdEmbedSessionPost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdEmbedSessionPostWithHttpInfo) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdGetWithHttpInfo) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 *DemandsApi* | [**apiV1DemandsIdItemsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdItemsPostWithHttpInfo) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
+*DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPost**](docs/DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
+*DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
+*DemandsApi* | [**apiV1DemandsIdPdfGet**](docs/DemandsApi.md#apiV1DemandsIdPdfGet) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+*DemandsApi* | [**apiV1DemandsIdPdfGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdPdfGetWithHttpInfo) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+*DemandsApi* | [**apiV1DemandsIdTimelineGet**](docs/DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
+*DemandsApi* | [**apiV1DemandsIdTimelineGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdTimelineGetWithHttpInfo) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
 *DemandsApi* | [**apiV1DemandsPost**](docs/DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsPostWithHttpInfo) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsUploadPost**](docs/DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
@@ -364,8 +378,12 @@ Class | Method | HTTP request | Description
 *RemindersApi* | [**apiV1DemandsIdRemindersPostWithHttpInfo**](docs/RemindersApi.md#apiV1DemandsIdRemindersPostWithHttpInfo) | **POST** /api/v1/demands/{id}/reminders | Anlık hatırlatma tetikle (imzalanmamış taraflara)
 *TemplatesApi* | [**apiV1TemplatesGet**](docs/TemplatesApi.md#apiV1TemplatesGet) | **GET** /api/v1/templates | Şablon listesi
 *TemplatesApi* | [**apiV1TemplatesGetWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesGetWithHttpInfo) | **GET** /api/v1/templates | Şablon listesi
+*TemplatesApi* | [**apiV1TemplatesIdDelete**](docs/TemplatesApi.md#apiV1TemplatesIdDelete) | **DELETE** /api/v1/templates/{id} | Şablon sil
+*TemplatesApi* | [**apiV1TemplatesIdDeleteWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdDeleteWithHttpInfo) | **DELETE** /api/v1/templates/{id} | Şablon sil
 *TemplatesApi* | [**apiV1TemplatesIdGet**](docs/TemplatesApi.md#apiV1TemplatesIdGet) | **GET** /api/v1/templates/{id} | Şablon detay
 *TemplatesApi* | [**apiV1TemplatesIdGetWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdGetWithHttpInfo) | **GET** /api/v1/templates/{id} | Şablon detay
+*TemplatesApi* | [**apiV1TemplatesIdPatch**](docs/TemplatesApi.md#apiV1TemplatesIdPatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle
+*TemplatesApi* | [**apiV1TemplatesIdPatchWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdPatchWithHttpInfo) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle
 *TemplatesApi* | [**apiV1TemplatesIdUsageGet**](docs/TemplatesApi.md#apiV1TemplatesIdUsageGet) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
 *TemplatesApi* | [**apiV1TemplatesIdUsageGetWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdUsageGetWithHttpInfo) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
 *TimestampsApi* | [**apiV1TimestampsPost**](docs/TimestampsApi.md#apiV1TimestampsPost) | **POST** /api/v1/timestamps | Zaman damgası oluştur (eser tescil)
@@ -375,16 +393,28 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [ApiError](docs/ApiError.md)
+ - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
+ - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
+ - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+ - [ApiV1DemandsIdCancelPost200Response](docs/ApiV1DemandsIdCancelPost200Response.md)
+ - [ApiV1DemandsIdCancelPost200ResponseData](docs/ApiV1DemandsIdCancelPost200ResponseData.md)
+ - [ApiV1DemandsIdCancelPostRequest](docs/ApiV1DemandsIdCancelPostRequest.md)
+ - [ApiV1DemandsIdDelete409Response](docs/ApiV1DemandsIdDelete409Response.md)
  - [ApiV1DemandsIdEmbedSessionPost200Response](docs/ApiV1DemandsIdEmbedSessionPost200Response.md)
  - [ApiV1DemandsIdEmbedSessionPost200ResponseData](docs/ApiV1DemandsIdEmbedSessionPost200ResponseData.md)
  - [ApiV1DemandsIdEmbedSessionPostRequest](docs/ApiV1DemandsIdEmbedSessionPostRequest.md)
  - [ApiV1DemandsIdGet200Response](docs/ApiV1DemandsIdGet200Response.md)
+ - [ApiV1DemandsIdPartiesPartyIdResendPost200Response](docs/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+ - [ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData](docs/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md)
  - [ApiV1DemandsIdRemindersPost200Response](docs/ApiV1DemandsIdRemindersPost200Response.md)
  - [ApiV1DemandsIdRemindersPost200ResponseData](docs/ApiV1DemandsIdRemindersPost200ResponseData.md)
  - [ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner](docs/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md)
  - [ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner](docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md)
  - [ApiV1DemandsIdRemindersPost429Response](docs/ApiV1DemandsIdRemindersPost429Response.md)
  - [ApiV1DemandsIdRemindersPost429ResponseError](docs/ApiV1DemandsIdRemindersPost429ResponseError.md)
+ - [ApiV1DemandsIdTimelineGet200Response](docs/ApiV1DemandsIdTimelineGet200Response.md)
+ - [ApiV1DemandsIdTimelineGet200ResponseData](docs/ApiV1DemandsIdTimelineGet200ResponseData.md)
+ - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
  - [ApiV1MeGet200Response](docs/ApiV1MeGet200Response.md)
@@ -394,8 +424,13 @@ Class | Method | HTTP request | Description
  - [ApiV1TemplatesGet200Response](docs/ApiV1TemplatesGet200Response.md)
  - [ApiV1TemplatesGet200ResponseData](docs/ApiV1TemplatesGet200ResponseData.md)
  - [ApiV1TemplatesGet401Response](docs/ApiV1TemplatesGet401Response.md)
+ - [ApiV1TemplatesIdDelete200Response](docs/ApiV1TemplatesIdDelete200Response.md)
+ - [ApiV1TemplatesIdDelete200ResponseData](docs/ApiV1TemplatesIdDelete200ResponseData.md)
  - [ApiV1TemplatesIdGet200Response](docs/ApiV1TemplatesIdGet200Response.md)
  - [ApiV1TemplatesIdGet404Response](docs/ApiV1TemplatesIdGet404Response.md)
+ - [ApiV1TemplatesIdPatch200Response](docs/ApiV1TemplatesIdPatch200Response.md)
+ - [ApiV1TemplatesIdPatch200ResponseData](docs/ApiV1TemplatesIdPatch200ResponseData.md)
+ - [ApiV1TemplatesIdPatchRequest](docs/ApiV1TemplatesIdPatchRequest.md)
  - [ApiV1TemplatesIdUsageGet200Response](docs/ApiV1TemplatesIdUsageGet200Response.md)
  - [ApiV1TimestampsPost201Response](docs/ApiV1TimestampsPost201Response.md)
  - [ApiV1TimestampsPostRequest1](docs/ApiV1TimestampsPostRequest1.md)
@@ -421,7 +456,6 @@ Class | Method | HTTP request | Description
  - [TemplateUsageExampleRequest](docs/TemplateUsageExampleRequest.md)
  - [TemplateUsagePartiesInner](docs/TemplateUsagePartiesInner.md)
  - [TemplateUsagePartiesInnerSupportedFieldsInner](docs/TemplateUsagePartiesInnerSupportedFieldsInner.md)
- - [TemplateUsageTemplate](docs/TemplateUsageTemplate.md)
  - [TemplateUsageVariablesInner](docs/TemplateUsageVariablesInner.md)
  - [TemplateVariable](docs/TemplateVariable.md)
  - [TimestampRecord](docs/TimestampRecord.md)

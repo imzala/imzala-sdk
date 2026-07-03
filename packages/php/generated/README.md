@@ -317,30 +317,51 @@ All URIs are relative to *https://api-prd.imzala.org*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AccountApi* | [**apiV1MeGet**](docs/Api/AccountApi.md#apiv1meget) | **GET** /api/v1/me | API key sahibi bilgisi
+*DemandsApi* | [**apiV1DemandsGet**](docs/Api/DemandsApi.md#apiv1demandsget) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+*DemandsApi* | [**apiV1DemandsIdCancelPost**](docs/Api/DemandsApi.md#apiv1demandsidcancelpost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
+*DemandsApi* | [**apiV1DemandsIdCertificateGet**](docs/Api/DemandsApi.md#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
+*DemandsApi* | [**apiV1DemandsIdDelete**](docs/Api/DemandsApi.md#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPost**](docs/Api/DemandsApi.md#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/Api/DemandsApi.md#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/Api/DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
+*DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPost**](docs/Api/DemandsApi.md#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
+*DemandsApi* | [**apiV1DemandsIdPdfGet**](docs/Api/DemandsApi.md#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+*DemandsApi* | [**apiV1DemandsIdTimelineGet**](docs/Api/DemandsApi.md#apiv1demandsidtimelineget) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
 *DemandsApi* | [**apiV1DemandsPost**](docs/Api/DemandsApi.md#apiv1demandspost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsUploadPost**](docs/Api/DemandsApi.md#apiv1demandsuploadpost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
 *RemindersApi* | [**apiV1DemandsIdRemindersPost**](docs/Api/RemindersApi.md#apiv1demandsidreminderspost) | **POST** /api/v1/demands/{id}/reminders | Anlık hatırlatma tetikle (imzalanmamış taraflara)
 *TemplatesApi* | [**apiV1TemplatesGet**](docs/Api/TemplatesApi.md#apiv1templatesget) | **GET** /api/v1/templates | Şablon listesi
+*TemplatesApi* | [**apiV1TemplatesIdDelete**](docs/Api/TemplatesApi.md#apiv1templatesiddelete) | **DELETE** /api/v1/templates/{id} | Şablon sil
 *TemplatesApi* | [**apiV1TemplatesIdGet**](docs/Api/TemplatesApi.md#apiv1templatesidget) | **GET** /api/v1/templates/{id} | Şablon detay
+*TemplatesApi* | [**apiV1TemplatesIdPatch**](docs/Api/TemplatesApi.md#apiv1templatesidpatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle
 *TemplatesApi* | [**apiV1TemplatesIdUsageGet**](docs/Api/TemplatesApi.md#apiv1templatesidusageget) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
 *TimestampsApi* | [**apiV1TimestampsPost**](docs/Api/TimestampsApi.md#apiv1timestampspost) | **POST** /api/v1/timestamps | Zaman damgası oluştur (eser tescil)
 
 ## Models
 
 - [ApiError](docs/Model/ApiError.md)
+- [ApiV1DemandsGet200Response](docs/Model/ApiV1DemandsGet200Response.md)
+- [ApiV1DemandsGet200ResponseData](docs/Model/ApiV1DemandsGet200ResponseData.md)
+- [ApiV1DemandsGet200ResponseDataDemandsInner](docs/Model/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+- [ApiV1DemandsIdCancelPost200Response](docs/Model/ApiV1DemandsIdCancelPost200Response.md)
+- [ApiV1DemandsIdCancelPost200ResponseData](docs/Model/ApiV1DemandsIdCancelPost200ResponseData.md)
+- [ApiV1DemandsIdCancelPostRequest](docs/Model/ApiV1DemandsIdCancelPostRequest.md)
+- [ApiV1DemandsIdDelete409Response](docs/Model/ApiV1DemandsIdDelete409Response.md)
 - [ApiV1DemandsIdEmbedSessionPost200Response](docs/Model/ApiV1DemandsIdEmbedSessionPost200Response.md)
 - [ApiV1DemandsIdEmbedSessionPost200ResponseData](docs/Model/ApiV1DemandsIdEmbedSessionPost200ResponseData.md)
 - [ApiV1DemandsIdEmbedSessionPostRequest](docs/Model/ApiV1DemandsIdEmbedSessionPostRequest.md)
 - [ApiV1DemandsIdGet200Response](docs/Model/ApiV1DemandsIdGet200Response.md)
+- [ApiV1DemandsIdPartiesPartyIdResendPost200Response](docs/Model/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
+- [ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData](docs/Model/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md)
 - [ApiV1DemandsIdRemindersPost200Response](docs/Model/ApiV1DemandsIdRemindersPost200Response.md)
 - [ApiV1DemandsIdRemindersPost200ResponseData](docs/Model/ApiV1DemandsIdRemindersPost200ResponseData.md)
 - [ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner](docs/Model/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md)
 - [ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner](docs/Model/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md)
 - [ApiV1DemandsIdRemindersPost429Response](docs/Model/ApiV1DemandsIdRemindersPost429Response.md)
 - [ApiV1DemandsIdRemindersPost429ResponseError](docs/Model/ApiV1DemandsIdRemindersPost429ResponseError.md)
+- [ApiV1DemandsIdTimelineGet200Response](docs/Model/ApiV1DemandsIdTimelineGet200Response.md)
+- [ApiV1DemandsIdTimelineGet200ResponseData](docs/Model/ApiV1DemandsIdTimelineGet200ResponseData.md)
+- [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
 - [ApiV1DemandsPost201Response](docs/Model/ApiV1DemandsPost201Response.md)
 - [ApiV1DemandsUploadPost201Response](docs/Model/ApiV1DemandsUploadPost201Response.md)
 - [ApiV1MeGet200Response](docs/Model/ApiV1MeGet200Response.md)
@@ -350,8 +371,13 @@ Class | Method | HTTP request | Description
 - [ApiV1TemplatesGet200Response](docs/Model/ApiV1TemplatesGet200Response.md)
 - [ApiV1TemplatesGet200ResponseData](docs/Model/ApiV1TemplatesGet200ResponseData.md)
 - [ApiV1TemplatesGet401Response](docs/Model/ApiV1TemplatesGet401Response.md)
+- [ApiV1TemplatesIdDelete200Response](docs/Model/ApiV1TemplatesIdDelete200Response.md)
+- [ApiV1TemplatesIdDelete200ResponseData](docs/Model/ApiV1TemplatesIdDelete200ResponseData.md)
 - [ApiV1TemplatesIdGet200Response](docs/Model/ApiV1TemplatesIdGet200Response.md)
 - [ApiV1TemplatesIdGet404Response](docs/Model/ApiV1TemplatesIdGet404Response.md)
+- [ApiV1TemplatesIdPatch200Response](docs/Model/ApiV1TemplatesIdPatch200Response.md)
+- [ApiV1TemplatesIdPatch200ResponseData](docs/Model/ApiV1TemplatesIdPatch200ResponseData.md)
+- [ApiV1TemplatesIdPatchRequest](docs/Model/ApiV1TemplatesIdPatchRequest.md)
 - [ApiV1TemplatesIdUsageGet200Response](docs/Model/ApiV1TemplatesIdUsageGet200Response.md)
 - [ApiV1TimestampsPost201Response](docs/Model/ApiV1TimestampsPost201Response.md)
 - [ApiV1TimestampsPostRequest1](docs/Model/ApiV1TimestampsPostRequest1.md)
@@ -377,7 +403,6 @@ Class | Method | HTTP request | Description
 - [TemplateUsageExampleRequest](docs/Model/TemplateUsageExampleRequest.md)
 - [TemplateUsagePartiesInner](docs/Model/TemplateUsagePartiesInner.md)
 - [TemplateUsagePartiesInnerSupportedFieldsInner](docs/Model/TemplateUsagePartiesInnerSupportedFieldsInner.md)
-- [TemplateUsageTemplate](docs/Model/TemplateUsageTemplate.md)
 - [TemplateUsageVariablesInner](docs/Model/TemplateUsageVariablesInner.md)
 - [TemplateVariable](docs/Model/TemplateVariable.md)
 - [TimestampRecord](docs/Model/TimestampRecord.md)
@@ -424,6 +449,6 @@ destek@imzala.org
 
 This PHP package is automatically generated by the [OpenAPI Generator](https://openapi-generator.tech) project:
 
-- API version: `1.6.0`
+- API version: `1.7.0`
     - Generator version: `7.23.0`
 - Build package: `org.openapitools.codegen.languages.PhpClientCodegen`

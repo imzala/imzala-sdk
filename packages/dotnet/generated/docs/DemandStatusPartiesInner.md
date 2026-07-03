@@ -5,11 +5,12 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **PartyId** | **Guid** |  | [optional] 
-**FirstName** | **string** |  | [optional] 
-**LastName** | **string** |  | [optional] 
-**Email** | **string** |  | [optional] 
+**Name** | **string** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme | [optional] 
+**EmailMasked** | **string** | Maskeli e-posta (ah***@x.com) | [optional] 
 **Signed** | **bool** |  | [optional] 
 **SignedAt** | **DateTime?** |  | [optional] 
+**Rejected** | **bool** |  | [optional] 
+**RejectedAt** | **DateTime?** |  | [optional] 
 **SigningUrl** | **string** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

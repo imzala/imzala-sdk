@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template** | [**TemplateUsageTemplate**](TemplateUsageTemplate.md) |  | [optional] [default to undefined]
+**template** | [**ApiV1TemplatesIdPatch200ResponseData**](ApiV1TemplatesIdPatch200ResponseData.md) |  | [optional] [default to undefined]
 **endpoint** | [**TemplateUsageEndpoint**](TemplateUsageEndpoint.md) |  | [optional] [default to undefined]
 **required_headers** | **{ [key: string]: string; }** |  | [optional] [default to undefined]
 **parties** | [**Array&lt;TemplateUsagePartiesInner&gt;**](TemplateUsagePartiesInner.md) |  | [optional] [default to undefined]
