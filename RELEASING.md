@@ -80,7 +80,7 @@ karşılaştırılacak ayrı bir manifest sürümü yok).
 |---|---|---|
 | npm | Granular access token + **provenance** (OIDC attestation, token'ın YERİNE değil, YANINDA) | `NPM_TOKEN` |
 | PyPI | **Trusted Publishing (OIDC)** — token YOK | *(yok — sadece `id-token: write` izni)* |
-| NuGet | API key | `NUGET_API_KEY` |
+| NuGet | **Trusted Publishing (OIDC)** — `NuGet/login@v1`, saklı token YOK | *(yok — `id-token: write` + repo variable `NUGET_USER`)* |
 | Packagist | Yok (VCS-driven); opsiyonel re-index ping | `PACKAGIST_USERNAME`, `PACKAGIST_TOKEN` |
 | Maven Central | Sonatype Central Portal user token + GPG imza | `SONATYPE_USERNAME`, `SONATYPE_PASSWORD`, `MAVEN_GPG_PRIVATE_KEY`, `MAVEN_GPG_PASSPHRASE` |
 
@@ -108,10 +108,13 @@ registry/GitHub arayüzünde tek seferlik yapılır:
    "pending publisher" mekanizmasıyla ilk publish'ten ÖNCE de
    kaydedilebilir. GitHub repo **Environment** adı workflow'daki
    `environment: pypi` ile birebir eşleşmeli. Token GEREKMEZ.
-3. **🔴 NuGet** — nuget.org'da hesap oluştur/kullan, `Imzala` paket adı
-   için API key üret (scope: sadece bu paket, "Push new package and package
-   versions"). GitHub repo **Environment** `nuget` → Secret
-   `NUGET_API_KEY`.
+3. **🔴 NuGet — Trusted Publishing (OIDC, API key YOK).** nuget.org →
+   hesap → **Trusted Publishing** → policy ekle: GitHub owner `imzala`,
+   repo `imzala-sdk`, workflow `dotnet-publish.yml`, environment `nuget`.
+   GitHub repo **Environment** `nuget` (workflow'daki `environment: nuget`
+   ile birebir) + repo **Variable** (secret değil) `NUGET_USER` = nuget.org
+   kullanıcı adın. Saklı `NUGET_API_KEY` GEREKMEZ; `NuGet/login@v1` her
+   çalışmada kısa-ömürlü key üretir.
 4. **🔴 Packagist** — packagist.org'da hesap ile `github.com/imzala/imzala-sdk`
    reposunu **Submit** et. ⚠️ **Doğrula:** Packagist'in standart GitHub
    entegrasyonu `composer.json`'ı repo KÖKÜNDE bekler; bu repoda

@@ -46,6 +46,7 @@ jobs:
     environment: nuget
     permissions:
       contents: read
+      id-token: write # OIDC — NuGet Trusted Publishing (no stored API key)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,8 +84,18 @@ jobs:
         if: needs.resolve.outputs.dry_run == 'true'
         run: ls -la out/*.nupkg
 
+      # NuGet Trusted Publishing (OIDC): GitHub OIDC token'ı nuget.org'da
+      # kısa-ömürlü API key'e çevirir — saklı NUGET_API_KEY secret'ı YOK.
+      # Ön-koşul (bir kez, nuget.org'da): Trusted Publisher policy
+      # (GitHub owner=imzala, repo=imzala-sdk, workflow=dotnet-publish.yml,
+      # environment=nuget) + repo variable NUGET_USER (nuget.org kullanıcı adı).
+      - name: NuGet login (OIDC → short-lived key)
+        if: needs.resolve.outputs.dry_run != 'true'
+        id: nuget_login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
       - name: Push to NuGet.org
         if: needs.resolve.outputs.dry_run != 'true'
-        run: dotnet nuget push out/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push out/*.nupkg --api-key "${{ steps.nuget_login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
