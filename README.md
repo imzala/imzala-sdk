@@ -1,74 +1,80 @@
 # İmzala SDK
 
-İmzala dijital imza platformu için resmi SDK seti + gömülü imza (embedded signing).
+İmzala dijital imza platformunun resmi çok-dilli SDK seti + gömülü imza (embedded signing). Sözleşme oluşturma, imza takibi, imzalı PDF/sertifika indirme, denetim izi, şablon yönetimi ve zaman damgası işlemleri; 5 sunucu dili + 2 tarayıcı paketi.
 
-> ⚠️ Geliştirme aşamasında. Yayın öncesi avukat onayı + kapsam onayı tamamlanacaktır.
-> Sürüm yayınlama (registry publish CI, gerekli secret'lar, tek seferlik kayıt
-> adımları, `embed.createSession` kapsam kararı) için **[RELEASING.md](./RELEASING.md)**.
+[![npm](https://img.shields.io/npm/v/@imzala/node.svg?label=%40imzala%2Fnode)](https://www.npmjs.com/package/@imzala/node)
+[![PyPI](https://img.shields.io/pypi/v/imzala.svg?label=imzala)](https://pypi.org/project/imzala/)
+[![NuGet](https://img.shields.io/nuget/v/Imzala.svg?label=Imzala)](https://www.nuget.org/packages/Imzala/)
+[![Packagist](https://img.shields.io/packagist/v/imzala/imzala-php.svg?label=imzala%2Fimzala-php)](https://packagist.org/packages/imzala/imzala-php)
+[![Maven Central](https://img.shields.io/maven-central/v/org.imzala/imzala-java.svg?label=org.imzala%3Aimzala-java)](https://central.sonatype.com/artifact/org.imzala/imzala-java)
 
 ## Paketler
 
-Sunucu SDK'ları `demands` (oluştur/getir/döküman yükle/kalem ekle/hatırlatma
-gönder), `templates` (listele/getir/kullanım), `embed` (gömülü imza
-oturumu — bkz. RELEASING.md kapsam notu), `timestamps` (RFC 3161 zaman
-damgası) ve `me()` (hesap bilgisi) kaynaklarını + `verifyWebhook` yardımcı
-fonksiyonunu sağlar. Tarayıcı paketleri gömülü imza iframe widget'ıdır.
+| Paket | Registry | Kurulum |
+|---|---|---|
+| [`@imzala/node`](./packages/node/README.md) | npm | `npm install @imzala/node` |
+| [`imzala`](./packages/python/README.md) | PyPI | `pip install imzala` |
+| [`Imzala`](./packages/dotnet/README.md) | NuGet | `dotnet add package Imzala` |
+| [`imzala/imzala-php`](./packages/php/README.md) | Packagist | `composer require imzala/imzala-php` |
+| [`org.imzala:imzala-java`](./packages/java/README.md) | Maven Central | `<dependency>org.imzala:imzala-java</dependency>` |
+| [`@imzala/embed`](./packages/embed/README.md) | npm | `npm install @imzala/embed` (tarayıcı iframe) |
+| [`@imzala/embed-react`](./packages/embed-react/README.md) | npm | `npm install @imzala/embed-react` (React) |
 
-Her paketin kendi README'si kurulum + hızlı başlangıç + webhook doğrulama +
-hata yönetimi örneklerini o dilin idiomlarıyla, gerçek facade kaynak
-kodundan doğrulanmış olarak içerir:
+## Hızlı başlangıç (Node)
 
-| Paket | Registry | Kurulum | Tek satır kullanım |
-|---|---|---|---|
-| [`@imzala/node`](./packages/node/README.md) | npm | `npm install @imzala/node` | `import { Imzala } from '@imzala/node'; const imzala = new Imzala({ apiKey: process.env.IMZALA_API_KEY! });` |
-| [`imzala`](./packages/python/README.md) | PyPI | `pip install imzala` | `from imzala import Imzala; client = Imzala(api_key="imz_...")` |
-| [`Imzala`](./packages/dotnet/README.md) | NuGet | `dotnet add package Imzala` | `var imzala = new Imzala(Environment.GetEnvironmentVariable("IMZALA_API_KEY")!);` |
-| [`imzala/imzala-php`](./packages/php/README.md) | Packagist | `composer require imzala/imzala-php` | `$imzala = new \Imzala\ImzalaClient($apiKey);` |
-| [`org.imzala:imzala-java`](./packages/java/README.md) | Maven Central | `<dependency><groupId>org.imzala</groupId><artifactId>imzala-java</artifactId><version>X.Y.Z</version></dependency>` | `Imzala imzala = new Imzala(System.getenv("IMZALA_API_KEY"));` |
-| [`@imzala/embed`](./packages/embed/README.md) | npm | `npm install @imzala/embed` | `new ImzalaEmbed({ container }).open(embedToken)` (tarayıcı, iframe widget) |
-| [`@imzala/embed-react`](./packages/embed-react/README.md) | npm | `npm install @imzala/embed-react` | `<ImzalaSign token={embedToken} onComplete={...} />` |
+```ts
+import { Imzala } from '@imzala/node';
 
-Her sunucu SDK'sı aynı deseni izler: `new Imzala(apiKey)` → tipli
-kaynak nesneleri (`.demands`, `.templates`, `.embed`, `.timestamps`) →
-`{success,data}` zarfını otomatik açan metodlar → hata durumunda tipli
-istisna (`ImzalaError` / `ImzalaAuthError` / `ImzalaRateLimitError` /
-`ImzalaValidationError`) → 429/5xx için otomatik retry. API anahtarı
-Dashboard → Geliştirici → API Anahtarları'ndan alınır (`imz_<64 hex>`,
-sunucu tarafı — asla tarayıcı/mobil koduna gömülmez).
+const imzala = new Imzala({ apiKey: process.env.IMZALA_API_KEY! });
 
-Varsayılan base URL prod (`https://api-prd.imzala.org`); test ortamı için
-`https://test-api.imzala.org` geçilir (her SDK'nın `Imzala(...)`
-constructor'ı `baseUrl` parametresi kabul eder).
+// Şablondan sözleşme oluştur (imza daveti otomatik gider)
+const { templates } = await imzala.templates.list();
+const demand = await imzala.demands.create({
+  template_id: templates[0].id,
+  party_mapping: [{
+    template_party_id: templates[0].parties[0].id,
+    first_name: 'Ahmet', last_name: 'Yılmaz', email: 'ahmet@example.com',
+  }],
+});
+
+// Durumu takip et, tamamlanınca imzalı PDF'i indir
+const status = await imzala.demands.get(demand.id);
+if (status.status === 'COMPLETED') {
+  const pdf = await imzala.demands.getPdf(demand.id); // Buffer
+}
+```
+
+Diğer diller aynı deseni izler (kendi idiomlarıyla): `new Imzala(apiKey)` → tipli kaynak nesneleri (`demands`, `templates`, `embed`, `timestamps`) → `{success, data}` zarfını açan metodlar → tipli hata (`ImzalaError` + alt sınıflar) → GET'ler için otomatik retry. Tam örnekler: [`examples/`](./examples).
+
+## Ortak desen
+
+- **Kaynaklar:** `demands` (create · uploadDocument · **list · get · getPdf · getCertificate · getTimeline · cancel · resendParty · delete** · addItems · sendReminder) · `templates` (list · get · usage · **update · delete**) · `embed.createSession` · `timestamps.create` · `me()`
+- **Webhook:** `verifyWebhook(secret, rawBody, signatureHeader)` — HMAC-SHA256, timing-safe.
+- **Retry:** yalnızca idempotent GET (429/5xx, exp-backoff); POST/PATCH/DELETE asla otomatik denenmez.
+- **Base URL:** varsayılan prod (`https://api-prd.imzala.org`); test için `https://test-api.imzala.org` geçilir.
+- **API anahtarı:** Panel → Geliştirici → API Anahtarları (`imz_<64 hex>`, **sunucu tarafı** — tarayıcıya gömülmez; tarayıcı imzası için `@imzala/embed`).
+
+## İmza sınıfı
+
+İmzala **dijital imza (SES)** üretir; her imza zaman damgalıdır. Nitelikli/güvenli elektronik imza (QES) DEĞİLDİR. Gömülü imza da SES/AES üretir.
 
 ## Monorepo yapısı
 
 ```
 imzala-sdk/
-  spec/openapi.v1.yaml              # OpenAPI SSOT (imzala backend ile senkron)
-  packages/
-    node/          @imzala/node          — TS facade + generated/ (typescript-axios)
-    python/        imzala                — Python facade + generated/ (urllib3/pydantic)
-    dotnet/        Imzala                — C# facade + generated/ (csharp/httpclient)
-    php/           imzala/imzala-php     — PHP facade + generated/ (php)
-    java/          org.imzala:imzala-java — Java facade + generated/ (java/native)
-    embed/         @imzala/embed         — tarayıcı iframe widget
-    embed-react/   @imzala/embed-react   — React sarmalayıcı (@imzala/embed üzerine)
-  .github/workflows/
-    npm-publish.yml       # @imzala/node + @imzala/embed + @imzala/embed-react
-    python-publish.yml    # imzala (PyPI, Trusted Publishing/OIDC)
-    dotnet-publish.yml    # Imzala (NuGet)
-    php-publish.yml       # imzala/imzala-php (Packagist — validate/test + opsiyonel re-index ping)
-    java-publish.yml      # org.imzala:imzala-java (Maven Central, GPG-signed)
+  spec/openapi.v1.yaml    # OpenAPI SSOT (imzala backend ile senkron)
+  packages/{node,python,dotnet,php,java,embed,embed-react}/
+  examples/{node,python,dotnet,php,java}/   # çalışan uçtan uca örnekler
+  .github/workflows/       # per-paket publish CI (npm token, PyPI/NuGet OIDC,
+                           # Packagist VCS-webhook, Maven GPG+Sonatype)
 ```
 
-Her dilde aynı hand-written facade seti (vendored/generated openapi-generator
-çıktısının üzerinde ~8 metod) + `verifyWebhook`/`VerifyWebhook`/`verify_webhook`
-(HMAC-SHA256, timing-safe compare) — kaynak koduna dokunmadan üretilen ham
-istemciyi sarmalar.
+Her sunucu SDK'sı: vendored openapi-generator çıktısının üzerine elle yazılmış ergonomik facade + `verifyWebhook`. Kaynak koda dokunmadan üretilen ham istemciyi sarmalar.
 
-## Katkı / geliştirme
+## Daha fazla
 
-Bu README kullanım içindir; kod değişikliği / yeni sürüm çıkarma için
-**[RELEASING.md](./RELEASING.md)**'ye bakın (per-paket sürüm adımları,
-registry auth mekanizmaları, gerekli GitHub secret'ları, tek seferlik
-kayıt checklist'i).
+- Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
+- Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
+- Sürüm yayınlama + registry auth: [RELEASING.md](./RELEASING.md)
+
+> Gömülü imza (`@imzala/embed`) backend'i prod'da canlıdır; ilgili Geliştirici/API kullanım sözleşmesi metinleri hukuk onayındadır (kapsam: [RELEASING.md](./RELEASING.md)).
