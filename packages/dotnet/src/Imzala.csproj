@@ -22,8 +22,8 @@
     <Version>0.1.0</Version>
     <Authors>imzala.org</Authors>
     <Company>imzala.org</Company>
-    <Description>imzala.org server-side SDK — templates, demands, embedded signing, timestamps, webhook verification.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>imzala.org server-side SDK: templates, demands, embedded signing, timestamps, webhook verification.</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/imzala/imzala-sdk</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
@@ -38,6 +38,8 @@
          Only src/ImzalaApiClient/** (Api+Client+Model) — NOT the generator's
          own src/ImzalaApiClient.Test/** scaffold tests, which we don't ship. -->
     <Compile Include="../generated/src/ImzalaApiClient/**/*.cs" LinkBase="Generated" />
+    <None Include="../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../NOTICE" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>

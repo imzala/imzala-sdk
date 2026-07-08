@@ -1,0 +1,111 @@
+İMZALA SDK TESCİLLİ YAZILIM LİSANSI
+Copyright (c) 2026 Codeck Yazılım A.Ş. (İmzala.org). Tüm hakları saklıdır.
+
+Bu yazılım ve ilgili tüm dosyalar ("Yazılım") Codeck Yazılım A.Ş.'nin tescilli
+mülküdür. Yazılım açık kaynak DEĞİLDİR; kamuya açık bir paket kayıt defterinde
+(npm, PyPI, Packagist, NuGet, Maven Central vb.) yayımlanmış olması, aşağıda
+açıkça tanınanlar dışında herhangi bir kullanım, çoğaltma veya dağıtım hakkı
+vermez.
+
+1. SINIRLI KULLANIM HAKKI
+   Codeck Yazılım A.Ş. size, yalnızca İmzala.org hizmetine kendi geçerli
+   hesabınız ve API anahtarınızla erişmek ve bu hizmeti kendi uygulamalarınıza
+   entegre etmek amacıyla, devredilemez, münhasır olmayan ve Codeck Yazılım A.Ş.
+   tarafından geri alınabilir sınırlı bir kullanım hakkı tanır. Bu hak,
+   İmzala.org kullanım koşullarına ve geçerli aboneliğinize tabidir.
+
+   Bu kullanım hakkı; Yazılımı bağımlılık yöneticisi aracılığıyla indirmek,
+   kurmak, kendi uygulamanızın çalışması için gerekli ortamlara kopyalamak,
+   çalıştırmak, önbelleğe almak, yedeklemek ve kendi uygulamanızla birlikte
+   dağıtmak (bundling) dâhil olmak üzere, Yazılımın amacına uygun kullanımı için
+   teknik olarak zorunlu çoğaltmaları da kapsar. 2. maddedeki yasaklar bu teknik
+   olarak zorunlu çoğaltmaları kısıtlayacak biçimde yorumlanamaz.
+
+2. YASAKLAR
+   1. maddede tanınan kullanım hakkı saklı kalmak kaydıyla, Yazılımı;
+   (a) bağımsız olarak (kendi uygulamanıza entegre etmeksizin) veya üçüncü
+   kişilere yeniden dağıtamaz, yeniden yayımlayamaz ya da bir yazılım kayıt
+   defterine/deposuna yükleyemez, (b) değiştiremez veya türev eser
+   oluşturamaz, (c) alt lisanslayamaz, kiralayamaz, satamaz veya kullanım
+   hakkınızı üçüncü kişilere devredemez, (d) İmzala.org hizmeti dışında bir
+   amaçla ya da İmzala.org ile rekabet eden bir ürün/hizmet geliştirmek için
+   kullanamazsınız. Yazılım üzerindeki telif hakkı ve mülkiyet bildirimleri
+   kaldırılamaz veya değiştirilemez.
+
+   Tersine mühendislik, kaynak koda dönüştürme ve parçalarına ayırma yasaktır;
+   ancak 5846 sayılı Fikir ve Sanat Eserleri Kanunu'nun 38. maddesinin emredici
+   hükümlerinin izin verdiği ölçüde (özellikle bağımsız olarak yaratılmış bir
+   bilgisayar programı ile birlikte çalışabilirliği/interoperability sağlamak
+   için gereken ve başka yoldan elde edilemeyen bilgilerin edinilmesi amacıyla)
+   yapılan işlemler bu yasağın dışındadır ve bu kanuni haklarınız saklıdır.
+
+3. MÜLKİYET
+   Yazılıma ilişkin tüm hak, unvan ve menfaatler Codeck Yazılım A.Ş.'ye aittir.
+   Bu lisans, açıkça tanınanlar dışında hiçbir hak devretmez. "İmzala",
+   "İmzala.org" adları ile ilgili logo, marka ve alan adları Codeck Yazılım
+   A.Ş.'ye aittir; bu lisans size bu markaları kullanma hakkı vermez.
+
+4. ÜÇÜNCÜ TARAF BİLEŞENLERİ
+   Yazılım, ayrı ve kendi lisansları altında sağlanan üçüncü taraf açık kaynak
+   bileşenlerini içerebilir veya bunlara bağımlıdır (örneğin HTTP istemcileri,
+   JSON işleme kütüphaneleri ve OpenAPI'den üretilmiş istemci kodu; MIT,
+   Apache-2.0 vb.). Bu bileşenler kendi lisans koşullarına tabidir ve söz konusu
+   koşullar, ilgili bileşenler bakımından bu lisansın önüne geçer. Varsa NOTICE
+   dosyasına bakınız.
+
+5. GARANTİ VE SORUMLULUK REDDİ
+   YAZILIM "OLDUĞU GİBİ", HİÇBİR AÇIK VEYA ZIMNİ GARANTİ OLMAKSIZIN SUNULUR.
+   CODECK YAZILIM A.Ş., YASANIN İZİN VERDİĞİ AZAMİ ÖLÇÜDE, YAZILIMIN KULLANIMINDAN
+   DOĞAN HİÇBİR ZARARDAN SORUMLU DEĞİLDİR. Şu kadar ki; kast ve ağır kusur hâlleri
+   ile 6098 sayılı Türk Borçlar Kanunu'nun 115. maddesi ve tüketicinin korunması
+   mevzuatının emredici hükümleri saklıdır ve bu sorumluluk sınırlaması söz konusu
+   emredici hükümlerin bertaraf edilmesi biçiminde yorumlanamaz.
+
+6. FESİH
+   Bu lisans şartlarını ihlal etmeniz halinde kullanım hakkınız kendiliğinden
+   sona erer ve Yazılımın elinizdeki tüm kopyalarını (kendi uygulamanıza teknik
+   olarak gömülü olanlar dâhil, makul süre içinde) imha etmeniz gerekir.
+
+7. UYGULANACAK HUKUK VE YETKİ
+   Bu lisans Türkiye Cumhuriyeti hukukuna tabidir. Bu lisanstan doğan
+   uyuşmazlıklarda İstanbul (Çağlayan) Mahkemeleri ve İcra Daireleri yetkilidir;
+   tüketici sıfatını haiz kullanıcıların tüketici mahkemelerine/hakem heyetlerine
+   başvuru hakkına ilişkin emredici hükümler saklıdır.
+
+8. ESAS METİN
+   Bu lisansın Türkçe metni esastır. Aşağıdaki İngilizce çeviri yalnızca
+   bilgilendirme amaçlıdır; Türkçe metin ile çeviri arasında çelişki hâlinde
+   Türkçe metin geçerlidir.
+
+Codeck Yazılım A.Ş.
+İletişim: info@imzala.org
+
+---
+
+İMZALA SDK PROPRIETARY SOFTWARE LICENSE
+Copyright (c) 2026 Codeck Yazilim A.S. (İmzala.org). All rights reserved.
+
+This is an unofficial English translation provided for convenience only. The
+Turkish text above is the binding version; in case of any conflict, the Turkish
+text governs.
+
+This software is the proprietary property of Codeck Yazilim A.S. It is NOT open
+source. Publication on a public package registry (npm, PyPI, Packagist, NuGet,
+Maven Central, etc.) grants no rights beyond those expressly stated below. You
+are granted a limited, non-exclusive, non-transferable, revocable right to use
+this software solely to access the İmzala.org service through your own valid
+account and API key, and to integrate it into your own applications, subject to
+the İmzala.org Terms of Service. This right includes the reproductions that are
+technically necessary to download, install, run, cache, back up and bundle the
+software as part of your own application. You may NOT redistribute the software
+independently or to third parties, modify it, create derivative works, reverse-
+engineer it (except to the extent permitted by the mandatory provisions of the
+Turkish Intellectual and Artistic Works Act No. 5846, art. 38, e.g. for
+interoperability), sublicense, sell, or use it to build a competing product or
+service. The software may include or depend on third-party open-source
+components under their own licenses (e.g. MIT, Apache-2.0), which govern those
+components. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND;
+however, liability for willful misconduct and gross negligence, and mandatory
+consumer-protection rights, are reserved. Governed by the laws of the Republic
+of Turkey, with the courts of Istanbul (Caglayan) having jurisdiction.
+Contact: info@imzala.org

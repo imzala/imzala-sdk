@@ -2,7 +2,7 @@
     "name": "imzala/imzala-php",
     "description": "imzala.org server-side SDK — templates, demands, embedded signing, timestamps, webhook verification.",
     "type": "library",
-    "license": "MIT",
+    "license": "proprietary",
     "homepage": "https://github.com/imzala/imzala-sdk",
     "authors": [
         {

@@ -1,0 +1,42 @@
+İMZALA SDK: ÜÇÜNCÜ TARAF BİLEŞENLER / THIRD-PARTY COMPONENTS
+Copyright (c) 2026 Codeck Yazılım A.Ş. (İmzala.org)
+
+Bu SDK, aşağıdaki üçüncü taraf açık kaynak bileşenleri içerebilir veya bunlara
+bağımlıdır. Her bileşen kendi lisansı altında dağıtılır ve o bileşen bakımından
+kendi lisans koşulları geçerlidir. Aşağıdaki liste bilgilendirme amaçlıdır; her
+paketin bağımlılık bildirimi (package.json / composer.json / pyproject.toml /
+pom.xml / .csproj) nihai kaynaktır.
+
+This SDK may include or depend on the third-party open-source components listed
+below. Each is distributed under its own license, which governs that component.
+The list is informational; each package's dependency manifest is authoritative.
+
+Ortak / Common
+  - OpenAPI Generator çıktısı (istemci iskeleti): Apache-2.0
+    https://github.com/OpenAPITools/openapi-generator
+
+@imzala/node, @imzala/embed, @imzala/embed-react (npm)
+  - Node.js / TypeScript standart kütüphaneleri ve derleme araçları (tsup,
+    vitest, typescript): geliştirme bağımlılıkları, yayımlanan pakete dâhil
+    değildir.
+
+imzala (PyPI, Python)
+  - httpx / urllib3 sınıfı HTTP istemcisi ve pydantic: ilgili paketlerin
+    lisansları (MIT / BSD-3-Clause / Apache-2.0).
+
+imzala/imzala-php (Packagist, PHP)
+  - guzzlehttp/guzzle: MIT
+
+Imzala (NuGet, .NET)
+  - Newtonsoft.Json: MIT
+  - JsonSubTypes: MIT
+  - Polly: BSD-3-Clause
+
+org.imzala:imzala-java (Maven Central, Java)
+  - FasterXML Jackson (core / databind / annotations / jsr310): Apache-2.0
+  - jackson-databind-nullable (OpenAPITools): Apache-2.0
+  - Apache HttpComponents httpmime: Apache-2.0
+  - JSR-305 (findbugs) / jakarta.annotation-api: ilgili lisanslar
+
+Bu bileşenlerin lisans metinleri, ilgili paket kayıt defterlerinde ve kaynak
+depolarında bulunabilir.

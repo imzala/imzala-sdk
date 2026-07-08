@@ -2,6 +2,7 @@
   "name": "@imzala/node",
   "version": "0.2.0",
   "description": "Ergonomic server-side SDK for the imzala.org External API (typed facade over the generated typescript-axios client).",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -14,7 +15,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "engines": {
     "node": ">=18.13.0"
