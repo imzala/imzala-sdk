@@ -1,6 +1,6 @@
 {
   "name": "@imzala/node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Ergonomic server-side SDK for the imzala.org External API (typed facade over the generated typescript-axios client).",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

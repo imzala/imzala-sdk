@@ -19,7 +19,7 @@
     <RootNamespace>ImzalaSdk</RootNamespace>
 
     <PackageId>Imzala</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>imzala.org</Authors>
     <Company>imzala.org</Company>
     <Description>imzala.org server-side SDK: templates, demands, embedded signing, timestamps, webhook verification.</Description>
