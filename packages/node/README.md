@@ -34,7 +34,7 @@ npm install @imzala/node
 ## Gereksinimler
 
 - Node.js **18.13+** (LTS önerilir)
-- `imz_` ile başlayan bir API anahtarı — Panel → Geliştirici → API Anahtarları
+- `imz_` ile başlayan bir API anahtarı (Panel → Geliştirici → API Anahtarları)
 
 ## Hızlı başlangıç
 
@@ -86,7 +86,7 @@ const imzala = new Imzala({
 
 | Seçenek | Tip | Varsayılan | Açıklama |
 |---|---|---|---|
-| `apiKey` | `string` | — (zorunlu) | `imz_<64 hex>` |
+| `apiKey` | `string` | yok (zorunlu) | `imz_<64 hex>` |
 | `baseUrl` | `string` | `https://api-prd.imzala.org` | Test: `https://test-api.imzala.org` |
 | `timeoutMs` | `number` | `30000` | Axios istek zaman aşımı |
 | `maxRetries` | `number` | `2` | Yalnızca idempotent GET'ler; `0` kapatır |
@@ -104,8 +104,8 @@ Tüm metodlar `{ success, data }` zarfını açar ve `data`'yı döndürür; hat
 | `demands.uploadDocument({ files, parties, order?, title?, description? })` | Şablonsuz, dosya yükleyerek sözleşme (1 PDF/DOC ya da 1-20 görsel) | ❌ |
 | `demands.list({ status?, q?, from?, to?, templateId?, page?, limit?, sort? })` | Sözleşme listesi (counts-only, taraf PII'siz) | ✅ GET |
 | `demands.get(id)` | Sözleşme detayı + taraf imza durumu (maskeli) | ✅ GET |
-| `demands.getPdf(id)` | İmzalı sözleşme PDF'i → `Buffer` | ✅ GET |
-| `demands.getCertificate(id, { lang? })` | Tamamlanma sertifikası (PAdES B-T) → `Buffer` | ✅ GET |
+| `demands.getPdf(id)` | İmzalı sözleşme PDF'i → `Buffer` | GET (binary, retry yok) |
+| `demands.getCertificate(id, { lang? })` | Tamamlanma sertifikası (PAdES B-T) → `Buffer` | GET (binary, retry yok) |
 | `demands.getTimeline(id)` | İmza denetim izi (maskeli olaylar) | ✅ GET |
 | `demands.cancel(id, { reason? })` | Bekleyen sözleşmeyi iptal et | ❌ POST |
 | `demands.resendParty(id, partyId)` | Tekil tarafa daveti tekrar gönder | ❌ POST |
@@ -178,7 +178,7 @@ await writeFile('sertifika.pdf', cert);
 
 ## Otomatik yeniden deneme
 
-Yalnızca **GET (okuma)** uçları — `list/get/getPdf/getCertificate/getTimeline`, `templates.*` okuma, `me()` — 429 (`Retry-After`'a uyarak) veya 5xx aldığında jitter'lı exponential backoff ile yeniden denenir.
+Yalnızca **GET (okuma)** uçları (`list/get/getTimeline`, `templates.*` okuma, `me()`) 429 (`Retry-After`'a uyarak) veya 5xx aldığında jitter'lı exponential backoff ile yeniden denenir. (`getPdf`/`getCertificate` GET'tir ama binary tek-çağrı olduğu için retry edilmez.)
 
 **POST/PATCH/DELETE (yazma) uçları ASLA yeniden denenmez** ve bu yapılandırılamaz: bir `demands.create` tekrarı mükerrer sözleşme oluşturur. Retry mantığı yapısal olarak yalnızca GET'e bağlıdır.
 
@@ -216,7 +216,7 @@ app.post(
 );
 ```
 
-`verifyWebhook` exception fırlatmaz; geçersiz/eksik imzada `false` döner. Body'yi parse edip yeniden serialize etmeyin — imza byte-byte karşılaştırılır.
+`verifyWebhook` exception fırlatmaz; geçersiz/eksik imzada `false` döner. Body'yi parse edip yeniden serialize etmeyin; imza byte-byte karşılaştırılır.
 
 ## Hata yönetimi
 

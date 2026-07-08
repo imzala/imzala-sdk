@@ -1,4 +1,4 @@
-# İmzala SDK — Örnekler
+# İmzala SDK Örnekleri
 
 Bu klasör, İmzala API'sini SDK'larla uçtan uca kullanan çalışır örnekler içerir.
 Senaryo her dilde aynıdır: kimliğini doğrula, şablonları listele, sözleşmeleri

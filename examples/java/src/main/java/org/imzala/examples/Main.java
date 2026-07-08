@@ -16,18 +16,18 @@ import org.imzala.ListDemandsParams;
  *     mvn -q compile exec:java
  *
  * Salt-okuma işlemleri doğrudan çalışır. Veri değiştiren işlemler (create /
- * cancel / resendParty / delete) yorum satırıdır: gerçek kredi harcar / durum
- * değiştirir.
+ * uploadDocument / cancel / resendParty / delete / update / timestamps.create)
+ * yorum satırıdır: gerçek kredi harcar ya da durum değiştirir.
  *
  * İmzala sözleşmeleri varsayılan olarak dijital imza (SES) üretir; SDK imza
- * geçerliliği hakkında hukuki iddiada bulunmaz.
+ * geçerliliği hakkında hukuki bir iddiada bulunmaz.
  */
 public final class Main {
 
   public static void main(String[] args) {
     String apiKey = System.getenv("IMZALA_API_KEY");
     if (apiKey == null || apiKey.isEmpty()) {
-      System.err.println("IMZALA_API_KEY gerekli (imz_...). Panel, Geliştirici, API Anahtarlari.");
+      System.err.println("IMZALA_API_KEY gerekli (imz_...). Panel, Gelistirici, API Anahtarlari.");
       System.exit(1);
     }
     String baseUrl = System.getenv("IMZALA_BASE_URL");
@@ -39,11 +39,24 @@ public final class Main {
 
     try {
       // 1) Kimlik + kredi bakiyesi
-      System.out.println("\nKimlik: " + imzala.me());
+      var me = imzala.me();
+      System.out.println("\nKimlik: " + me.getEmail()
+          + "  |  workspace: " + (me.getWorkspace() != null ? me.getWorkspace().getType() : "-")
+          + "  |  kalan kredi: " + (me.getCredits() != null ? me.getCredits().getRemaining() : "-"));
 
-      // 2) Sablonlar (bir sayfa)
+      // 2) Sablonlar (tek sayfa)
       var templates = imzala.templates().list();
-      System.out.println("\nSablonlar: " + templates.getTotal());
+      System.out.println("\nSablon sayisi: " + templates.getTotal());
+      if (templates.getTemplates() != null) {
+        for (var t : templates.getTemplates()) {
+          System.out.println("   - " + t.getId() + "  " + t.getName());
+        }
+      }
+
+      // 2b) Tum sablonlari sayfa sayfa gezen iterator (salt-okuma):
+      //   for (var t : imzala.templates().listAll()) { ... }
+      // 2c) Bir sablonun API kullanim kilavuzu (ornek curl + JSON):
+      //   var usage = imzala.templates().usage(templateId);
 
       // 3) Sozlesme listesi (counts-only, taraf PII'si yok)
       var list = imzala.demands().list(new ListDemandsParams().limit(5).sort("createdAt:desc"));
@@ -56,40 +69,77 @@ public final class Main {
       }
 
       if (list.getDemands() == null || list.getDemands().isEmpty()) {
-        System.out.println("\n(Sozlesme yok, create ornegini acin.)");
+        System.out.println("\n(Sozlesme yok, asagidaki create ornegini acin.)");
         return;
       }
       var first = list.getDemands().get(0);
-      UUID firstId = UUID.fromString(first.getId());
+      UUID firstId = first.getId(); // getId() zaten UUID doner
 
       // 4) Sozlesme detay (imzaci adi kisaltilmis, e-posta maskeli, KVKK)
       var demand = imzala.demands().get(firstId);
-      System.out.println("\nDetay: " + demand);
+      System.out.println("\nDetay: " + firstId + "  [" + demand.getStatus() + "]");
+      if (demand.getParties() != null) {
+        for (var p : demand.getParties()) {
+          System.out.println("   - " + p.getName() + "  " + p.getEmailMasked()
+              + "  imzaladi=" + p.getSigned());
+        }
+      }
 
-      // 5) Imza denetim izi (maskeli)
+      // 5) Imza denetim izi (maskeli olaylar)
       var timeline = imzala.demands().getTimeline(firstId);
-      System.out.println("\nDenetim izi: " + timeline);
+      System.out.println("\nDenetim izi olay sayisi: "
+          + (timeline.getEvents() != null ? timeline.getEvents().size() : 0));
 
       // 6) Tamamlanmis sozlesmenin imzali PDF'ini indir (binary, byte[])
-      if ("COMPLETED".equals(String.valueOf(first.getStatus()))) {
+      if ("COMPLETED".equals(first.getStatus())) {
         byte[] pdf = imzala.demands().getPdf(firstId);
         Path out = Path.of("demand-" + firstId + ".pdf");
         Files.write(out, pdf);
         System.out.println("\nImzali PDF kaydedildi: " + out + " (" + pdf.length + " bayt)");
 
-        // Tamamlanma sertifikasi (PAdES B-T):
-        // byte[] cert = imzala.demands().getCertificate(firstId, "tr");
+        // Tamamlanma sertifikasi (PAdES B-T), tr/en:
+        //   byte[] cert = imzala.demands().getCertificate(firstId, "tr");
+        //   Files.write(Path.of("sertifika-" + firstId + ".pdf"), cert);
       }
 
-      // Veri degistiren islemler (bilerek yorumlu):
-      // imzala.demands().cancel(firstId);                 // iptal
-      // imzala.demands().resendParty(firstId, partyId);   // tekil davet tekrar
-      // imzala.demands().delete(firstId);                 // tamamlanmamis sil
-      // imzala.templates().update(templateId, patchBody); // sablon metadata
-      // imzala.templates().delete(templateId);            // sablon sil
+      // ---- Veri degistiren islemler (bilerek yorumlu) ------------------------
+      // Sablondan sozlesme olustur (imza daveti otomatik gider):
+      //   var body = new org.imzala.client.generated.model.CreateDemandRequest()
+      //       .templateId(templateId)
+      //       .partyMapping(java.util.List.of(
+      //           new org.imzala.client.generated.model.PartyMappingInput()
+      //               .templatePartyId(templatePartyId)
+      //               .firstName("Ahmet").lastName("Yilmaz").email("ahmet@example.com")));
+      //   var created = imzala.demands().create(body);
+      //   System.out.println(created.getSigningUrls());
+      //
+      // Sablonsuz, dosya yukleyerek sozlesme:
+      //   var params = new org.imzala.UploadDemandParams(
+      //       java.util.List.of(new org.imzala.FileInput(pdfBytes, "sozlesme.pdf", "application/pdf")),
+      //       java.util.List.of(new org.imzala.UploadPartyInput("Ada", "Lovelace", "ada@example.com", null)));
+      //   imzala.demands().uploadDocument(params);
+      //
+      // Hatirlatma / iptal / tekil davet tekrar / silme:
+      //   imzala.demands().sendReminder(firstId);
+      //   imzala.demands().cancel(firstId);
+      //   imzala.demands().resendParty(firstId, partyId);
+      //   imzala.demands().delete(firstId);       // yalnizca tamamlanmamis
+      //
+      // Sablon metadata guncelle / sil:
+      //   imzala.templates().update(templateId,
+      //       new org.imzala.client.generated.model.ApiV1TemplatesIdPatchRequest().name("Yeni Ad"));
+      //   imzala.templates().delete(templateId);
+      //
+      // Gomulu imza oturumu (tarayici iframe icin embed_url):
+      //   var session = imzala.embed().createSession(firstId, partyId);
+      //
+      // Zaman damgasi (RFC 3161, var-olma + degismezlik kaniti):
+      //   var ts = imzala.timestamps().create(
+      //       new org.imzala.CreateTimestampParams(fileBytes, "belge.pdf")
+      //           .idempotencyKey(UUID.randomUUID().toString()));
 
     } catch (ImzalaException e) {
-      System.err.println("\nImzalaException: " + e.getMessage());
+      System.err.println("\nImzalaException: " + e.getStatusCode() + " " + e.getMessage());
       System.exit(1);
     } catch (Exception e) {
       System.err.println("\nHata: " + e.getMessage());

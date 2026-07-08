@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>İmzala gömülü imza örneği (@imzala/embed)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 24px; color: #0f172a; background: #f8fafc; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p.desc { color: #475569; margin: 0 0 20px; max-width: 640px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    input { flex: 1 1 320px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+    button { padding: 8px 16px; border: none; border-radius: 8px; background: #1B84FF; color: #fff; font: inherit; cursor: pointer; }
+    button.secondary { background: #64748b; }
+    #imza-alani { min-height: 200px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; margin-bottom: 16px; }
+    #kayit { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 12px 14px; min-height: 80px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>İmzala gömülü imza (embedded signing) örneği</h1>
+  <p class="desc">
+    Bu sayfa, tek kullanımlık bir imza token'ıyla İmzala imza sayfasını bir iframe
+    içinde açar ve olayları aşağıdaki günlüğe yazar. Token'ı ASLA burada üretmeyin:
+    aşağıdaki backend notuna bakın.
+  </p>
+
+  <!--
+    AKIS (3 KATMAN)
+
+    1) SUNUCU (backend) tek kullanımlık imza oturumu üretir. Node.js ornegi:
+
+         import { Imzala } from '@imzala/node';
+         const imzala = new Imzala({ apiKey: process.env.IMZALA_API_KEY });
+         const session = await imzala.embed.createSession(demandId, { partyId });
+         // session = { embed_token, expires_at, embed_url }
+         res.json({ embedToken: session.embed_token });
+
+       API anahtari (imz_...) YALNIZCA sunucuda kalir, tarayiciya asla gonderilmez.
+       Tarayiciya sadece kisa omurlu session.embed_token iletilir.
+
+    2) AKTARIM: kendi backend'inizden (kimlik dogrulamali bir istekle) token'i cekin.
+
+    3) TARAYICI (bu sayfa): asagidaki EMBED_TOKEN yerine backend'den gelen token'i koyun.
+       Sayfanizin origin'i, API anahtarinizin embed_allowed_origins listesinde olmalidir;
+       yoksa iframe, sunucunun frame-ancestors politikasi geregi bloke edilir.
+  -->
+
+  <div class="row">
+    <input id="token" type="text" placeholder="embed_token (backend'den gelir)" value="REPLACE_WITH_EMBED_TOKEN" />
+    <button id="ac">İmzayı aç</button>
+    <button id="kapat" class="secondary">Kapat</button>
+  </div>
+
+  <!-- container verilirse iframe buraya gomulur; verilmezse tam ekran modal acilir -->
+  <div id="imza-alani"></div>
+
+  <div id="kayit">Olay günlüğü burada görünecek...</div>
+
+  <!--
+    Uretimde npm/CDN'den yukleyin ve surumu sabitleyip integrity (SRI) ekleyin:
+
+      <script
+        src="https://unpkg.com/@imzala/embed@0.1.0/dist/index.global.js"
+        integrity="sha384-<yayinlanan-dosyadan-hesaplanan-hash>"
+        crossorigin="anonymous"></script>
+
+    Bu ornekte, repo icinde derlenmis yerel IIFE build'i kullaniyoruz
+    (once: cd packages/embed && npm run build). Global "ImzalaEmbed" bir
+    namespace nesnesidir; sinif "ImzalaEmbed.ImzalaEmbed" altindadir.
+  -->
+  <script src="../../packages/embed/dist/index.global.js"></script>
+  <script>
+    var kayit = document.getElementById('kayit');
+    var satirlar = [];
+    function log(mesaj) {
+      satirlar.push(new Date().toLocaleTimeString('tr-TR') + '  ' + mesaj);
+      kayit.textContent = satirlar.join('\n');
+    }
+
+    var aktif = null;
+
+    document.getElementById('ac').addEventListener('click', function () {
+      var token = document.getElementById('token').value.trim();
+      if (!token || token === 'REPLACE_WITH_EMBED_TOKEN') {
+        log('Once backend\'den gercek bir embed_token alip yukaridaki alana yapistirin.');
+        return;
+      }
+
+      // Onceki widget acik kaldiysa temizle (open() zaten kendini korur, ama net olalim).
+      if (aktif) aktif.close();
+
+      aktif = new ImzalaEmbed.ImzalaEmbed({
+        container: document.getElementById('imza-alani'), // yoksa tam ekran modal
+        locale: 'tr',
+        onReady: function () { log('ready: imza sayfasi hazir'); },
+        onComplete: function (p) {
+          log('complete: imzalandi (demandId=' + p.demandId + ', partyId=' + p.partyId + ')');
+          // widget kendini otomatik kapatir; burada tesekkur/yonlendirme gosterin
+        },
+        onDecline: function (p) { log('decline: reddedildi (' + (p && p.reason || '-') + ')'); },
+        onCancel: function () { log('cancel: kullanici vazgecti (widget acik kaldi)'); },
+        onTimeout: function (p) { log('timeout: ' + (p && p.code || '-')); },
+        onError: function (p) { log('error: ' + (p && p.code || '-') + ' ' + (p && p.message || '')); },
+        onResize: function (p) { log('resize: ' + (p && p.height) + 'px'); }
+      });
+
+      aktif.open(token);
+      log('open: iframe mount edildi');
+    });
+
+    document.getElementById('kapat').addEventListener('click', function () {
+      if (aktif) { aktif.close(); aktif = null; log('close: widget kapatildi'); }
+    });
+  </script>
+</body>
+</html>

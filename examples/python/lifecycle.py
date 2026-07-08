@@ -52,8 +52,13 @@ def main() -> None:
     # 1) Kimlik + kredi bakiyesi
     me = imzala.me()
     credits = field(me, "credits")
-    if isinstance(credits, (Mapping, list)):
-        credits_str = json.dumps(credits, ensure_ascii=False)
+    # `credits` gerçek runtime'da pydantic modeli, testte düz dict olabilir;
+    # ikisini de okunur JSON'a çevir.
+    to_dict = getattr(credits, "to_dict", None)
+    if callable(to_dict):
+        credits_str = json.dumps(to_dict(), ensure_ascii=False, default=str)
+    elif isinstance(credits, (Mapping, list)):
+        credits_str = json.dumps(credits, ensure_ascii=False, default=str)
     else:
         credits_str = str(credits) if credits is not None else "?"
     print(f"\n👤 {field(me, 'email') or field(me, 'id')}, kredi: {credits_str}")

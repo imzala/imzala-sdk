@@ -49,10 +49,10 @@ Diğer diller aynı deseni izler (kendi idiomlarıyla): `new Imzala(apiKey)` →
 ## Ortak desen
 
 - **Kaynaklar:** `demands` (create · uploadDocument · **list · get · getPdf · getCertificate · getTimeline · cancel · resendParty · delete** · addItems · sendReminder) · `templates` (list · get · usage · **update · delete**) · `embed.createSession` · `timestamps.create` · `me()`
-- **Webhook:** `verifyWebhook(secret, rawBody, signatureHeader)` — HMAC-SHA256, timing-safe.
+- **Webhook:** `verifyWebhook(secret, rawBody, signatureHeader)` ile HMAC-SHA256, timing-safe.
 - **Retry:** yalnızca idempotent GET (429/5xx, exp-backoff); POST/PATCH/DELETE asla otomatik denenmez.
 - **Base URL:** varsayılan prod (`https://api-prd.imzala.org`); test için `https://test-api.imzala.org` geçilir.
-- **API anahtarı:** Panel → Geliştirici → API Anahtarları (`imz_<64 hex>`, **sunucu tarafı** — tarayıcıya gömülmez; tarayıcı imzası için `@imzala/embed`).
+- **API anahtarı:** Panel → Geliştirici → API Anahtarları (`imz_<64 hex>`, **sunucu tarafı**, tarayıcıya gömülmez; tarayıcı imzası için `@imzala/embed`).
 
 ## İmza sınıfı
 
