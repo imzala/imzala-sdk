@@ -21,10 +21,11 @@ const ENABLED = process.env.IMZALA_E2E === '1' && !!process.env.IMZALA_API_KEY;
 const d = ENABLED ? describe : describe.skip;
 
 d('e2e — canlı API (salt-okuma)', () => {
-  const imzala = new Imzala({
-    apiKey: process.env.IMZALA_API_KEY!,
-    baseUrl: process.env.IMZALA_BASE_URL,
-  });
+  // describe.skip'te bile bu callback çalışır (skipped test'leri toplamak için),
+  // o yüzden client'ı SADECE ENABLED iken kur — aksi halde apiKey'siz throw eder.
+  const imzala = ENABLED
+    ? new Imzala({ apiKey: process.env.IMZALA_API_KEY!, baseUrl: process.env.IMZALA_BASE_URL })
+    : (undefined as unknown as Imzala);
 
   it('me() sahibi + kredi döner', async () => {
     const me = await imzala.me();
