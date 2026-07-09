@@ -281,4 +281,4 @@ Tüm hatalar `ImzalaError`'dan türer (ortak alanlar: `status_code`, `body`, `co
 - Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
 - Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
 - Çalışan örnek: [`examples/python/lifecycle.py`](../../examples/python/lifecycle.py)
-- [Monorepo README](../../README.md) · [RELEASING.md](../../RELEASING.md): sürüm yayınlama, kapsam kararları
+- [Monorepo README](../../README.md)

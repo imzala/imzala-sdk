@@ -293,4 +293,4 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarınızı istemci-tarafl
 - Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
 - Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
 - Çalışan örnek: [`examples/dotnet`](../../examples/dotnet)
-- [Monorepo README](../../README.md) · [RELEASING.md](../../RELEASING.md)
+- [Monorepo README](../../README.md)

@@ -13,8 +13,6 @@ composer require imzala/imzala-php
 
 > **Sunucu-taraflı paket.** API anahtarınız hesabınızın tamamına erişir; tarayıcıya veya mobil uygulamaya gömmeyin. Tarayıcıda imza almak için [`@imzala/embed`](../embed) kullanın. Ayrıntı: [Sunucu-taraflı](#️-sunucu-taraflı) bölümü.
 
-> **Yayın durumu:** Paket Packagist'e yayın için hazırlanıyor (yayın ve kapsam kararları: [RELEASING.md](../../RELEASING.md)). SDK, canlı prod API'sine (`api-prd.imzala.org`) karşı çalışır.
-
 ## İçindekiler
 
 - [Gereksinimler](#gereksinimler)
@@ -326,4 +324,4 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarı sızarsa hesabınız
 - Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
 - Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
 - Çalışan örnek: [`examples/php/lifecycle.php`](../../examples/php/lifecycle.php)
-- [Monorepo README](../../README.md) · [RELEASING.md](../../RELEASING.md)
+- [Monorepo README](../../README.md)

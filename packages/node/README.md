@@ -260,4 +260,4 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarı sızarsa hesabınız
 - Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
 - Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
 - Çalışan örnekler: [`examples/node`](../../examples/node)
-- [Monorepo README](../../README.md) · [RELEASING.md](../../RELEASING.md)
+- [Monorepo README](../../README.md)

@@ -10,8 +10,6 @@
 npm install @imzala/embed-react
 ```
 
-> ⚠️ Geliştirme aşamasında, yayın öncesi avukat onayı bekliyor. Bu bileşenin dayandığı `embed.createSession()` backend ucu şu an yalnızca test ortamında çalışır. Ayrıntı: [Önizleme ve kapsam](#önizleme-ve-kapsam) ve kök [RELEASING.md](../../RELEASING.md).
-
 ## İçindekiler
 
 - [Gereksinimler](#gereksinimler)
@@ -24,7 +22,6 @@ npm install @imzala/embed-react
 - [Güvenlik](#güvenlik)
 - [Sunucu-taraflı olan kısım ayrı](#️-sunucu-taraflı-olan-kısım-ayrı)
 - [İmza sınıfı](#imza-sınıfı)
-- [Önizleme ve kapsam](#önizleme-ve-kapsam)
 
 ## Gereksinimler
 
@@ -169,13 +166,8 @@ Bu paket tarayıcı için tasarlanmıştır ve API anahtarı **içermez**. Embed
 
 Gömülü imza **dijital imza (SES/AES)** üretir; her imza zaman damgalıdır. Nitelikli veya güvenli elektronik imza (QES) **değildir**. İmza sınıfı sözleşme akışında belirlenir; bu bileşen imza geçerliliği hakkında ek hukuki iddiada bulunmaz.
 
-## Önizleme ve kapsam
-
-Bu bileşenin dayandığı `embed.createSession()` backend ucu şu an **yalnızca test ortamında** çalışır; gömülü imza özelliği henüz avukat onaylı prod-canlı değildir. Kapsam kararı [RELEASING.md](../../RELEASING.md)'de tutulur.
-
 ## Daha fazla
 
 - [`@imzala/embed`](../embed): altta kullanılan saf tarayıcı widget'ı (`EmbedOptions`, olay protokolü, hata kodları)
 - [`@imzala/node`](../node): backend'te embed token üretmek için server SDK
 - [Monorepo README](../../README.md): tüm paketler ve genel desen
-- [RELEASING.md](../../RELEASING.md): sürüm yayınlama ve kapsam kararları

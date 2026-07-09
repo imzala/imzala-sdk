@@ -75,6 +75,3 @@ Her sunucu SDK'sı: vendored openapi-generator çıktısının üzerine elle yaz
 
 - Tam API referansı: [api-docs.imzala.org](https://api-docs.imzala.org)
 - Kullanım kılavuzu: [imzala.org/docs/api-sozlesme-yasam-dongusu](https://imzala.org/docs/api-sozlesme-yasam-dongusu)
-- Sürüm yayınlama + registry auth: [RELEASING.md](./RELEASING.md)
-
-> Gömülü imza (`@imzala/embed`) backend'i prod'da canlıdır; ilgili Geliştirici/API kullanım sözleşmesi metinleri hukuk onayındadır (kapsam: [RELEASING.md](./RELEASING.md)).

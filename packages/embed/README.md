@@ -12,8 +12,6 @@ npm install @imzala/embed
 
 > **Tarayıcı paketi.** Bu paket API anahtarı **kullanmaz** ve **içermemelidir**. İmza oturumunu (embed token) her zaman **sunucunuzda** [`@imzala/node`](../node) (veya başka bir server SDK) ile üretir, yalnızca kısa ömürlü token'ı tarayıcıya geçirirsiniz. Ayrıntı: [Güvenlik (origin allowlist)](#güvenlik-origin-allowlist) bölümü.
 
-> ⚠️ Geliştirme aşamasında, yayın öncesi avukat onayı bekliyor. Dayandığı `embed.createSession()` backend endpoint'i şu an **yalnızca test ortamında** çalışır. Bkz. [Önizleme / test](#önizleme--test) ve kök [RELEASING.md](../../RELEASING.md).
-
 ## İçindekiler
 
 - [Gereksinimler](#gereksinimler)
@@ -28,7 +26,6 @@ npm install @imzala/embed
 - [Güvenlik (origin allowlist)](#güvenlik-origin-allowlist)
 - [React için](#react-için)
 - [İmza sınıfı](#imza-sınıfı)
-- [Önizleme / test](#önizleme--test)
 - [Daha fazla](#daha-fazla)
 
 ## Gereksinimler
@@ -204,13 +201,9 @@ React (özellikle Next.js App Router) kullanıyorsanız, bu widget'ı bir `<Imza
 
 İmzala **dijital imza** üretir; her imza zaman damgalıdır. Gömülü imza akışı yalnızca SES/AES sınıfındadır. Nitelikli/güvenli elektronik imza (QES) **değildir** ve bu widget böyle bir iddiada bulunmaz.
 
-## Önizleme / test
-
-Bu widget'ın dayandığı `embed.createSession()` backend endpoint'i şu an **yalnızca test ortamında** çalışır; gömülü imza özelliği henüz avukat onaylı prod-canlı değildir. `baseUrl` olarak test için `https://test-esign.imzala.org` ve backend'de test API'sini (`https://test-api.imzala.org`) kullanın. Kapsam kararı [RELEASING.md](../../RELEASING.md)'de.
-
 ## Daha fazla
 
 - [`@imzala/node`](../node): imza oturumunu (`embed.createSession`) üreten sunucu SDK'sı
 - [`@imzala/embed-react`](../embed-react): React sarmalayıcı bileşeni
 - Çalışan örnek: [`examples/embed`](../../examples/embed)
-- [Monorepo README](../../README.md) · [RELEASING.md](../../RELEASING.md)
+- [Monorepo README](../../README.md)
