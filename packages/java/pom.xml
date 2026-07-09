@@ -25,11 +25,11 @@
 
   <groupId>org.imzala</groupId>
   <artifactId>imzala-java</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <packaging>jar</packaging>
 
   <name>imzala-java</name>
-  <description>imzala.org server-side SDK — templates, demands, embedded signing, timestamps, webhook verification.</description>
+  <description>imzala.org server-side SDK: templates, demands, embedded signing, timestamps, webhook verification.</description>
   <url>https://github.com/imzala/imzala-sdk</url>
 
   <licenses>

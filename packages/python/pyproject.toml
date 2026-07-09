@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imzala"
-version = "0.1.1"
+version = "0.1.2"
 description = "Official server-side SDK for the imzala.org External API (typed facade over a generated urllib3/pydantic client)."
 requires-python = ">=3.9"
 license = { text = "Proprietary" }
