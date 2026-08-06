@@ -33,3 +33,7 @@ packages/php/composer.lock
 # Python bytecode
 __pycache__/
 *.pyc
+
+# İç ajan talimatları — public repo'ya ASLA girmemeli
+CLAUDE.md
+AGENTS.md
