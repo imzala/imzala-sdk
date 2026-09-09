@@ -257,7 +257,7 @@ final class ClientTest extends TestCase
         $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $fileInput = new FileInput('%PDF-1.4 fake bytes', 'sozlesme.pdf', 'application/pdf');
-        $party = new UploadPartyInput('Ada', 'Lovelace', 'ada@example.com', null);
+        $party = new UploadPartyInput('Ayşe', 'Lovelace', 'ayse@example.com', null);
         $params = (new UploadDemandParams([$fileInput], [$party]))->withOrder([0])->withTitle('Başlık');
 
         $result = $resource->uploadDocument($params);
@@ -271,8 +271,8 @@ final class ClientTest extends TestCase
         $this->assertDirectoryDoesNotExist(dirname($capturedTempPath));
 
         $decodedParties = json_decode($capturedParties, true);
-        $this->assertSame('Ada', $decodedParties[0]['first_name']);
-        $this->assertSame('ada@example.com', $decodedParties[0]['email']);
+        $this->assertSame('Ayşe', $decodedParties[0]['first_name']);
+        $this->assertSame('ayse@example.com', $decodedParties[0]['email']);
         $this->assertArrayNotHasKey('phone', $decodedParties[0]);
 
         $this->assertSame('[0]', $capturedOrder);
@@ -288,7 +288,7 @@ final class ClientTest extends TestCase
         $resource = new DemandsResource($api, $remindersApi, self::noRetry());
 
         $fileInput = new FileInput('bytes', 'a.pdf');
-        $party = new UploadPartyInput('Ada', 'Lovelace', 'ada@example.com', null);
+        $party = new UploadPartyInput('Ayşe', 'Lovelace', 'ayse@example.com', null);
         $params = new UploadDemandParams([$fileInput], [$party]);
 
         $tempPathHolder = null;
@@ -303,7 +303,7 @@ final class ClientTest extends TestCase
     public function testUploadDemandParamsRejectsEmptyFilesOrParties(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new UploadDemandParams([], [new UploadPartyInput('Ada', null, 'ada@example.com', null)]);
+        new UploadDemandParams([], [new UploadPartyInput('Ayşe', null, 'ayse@example.com', null)]);
     }
 
     public function testEmbedCreateSessionMapsPartyIdIntoRequestBody(): void
@@ -344,7 +344,7 @@ final class ClientTest extends TestCase
                 }),
                 'idem-1',
                 'desc',
-                'Ada',
+                'Ayşe',
                 'Lovelace',
             )
             ->willReturn([$envelope, 201, []]);
@@ -353,7 +353,7 @@ final class ClientTest extends TestCase
         $params = (new CreateTimestampParams('bytes', 'eser.pdf'))
             ->withIdempotencyKey('idem-1')
             ->withDescription('desc')
-            ->withOwnerFirstName('Ada')
+            ->withOwnerFirstName('Ayşe')
             ->withOwnerLastName('Lovelace');
 
         $result = $resource->create($params);

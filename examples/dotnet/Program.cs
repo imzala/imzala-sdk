@@ -96,8 +96,8 @@ try
     //     {
     //         new(
     //             templatePartyId: templates.Templates[0].Parties[0].Id,
-    //             firstName: "Ada", lastName: "Kalkan",
-    //             email: "ada@example.com", phone: "+905304636743"),
+    //             firstName: "Ayşe", lastName: "Yılmaz",
+    //             email: "ayse@example.com", phone: "+905551112233"),
     //     }));
     // Console.WriteLine($"İmza URL: {created.SigningUrls[0].SigningUrl}");
     //

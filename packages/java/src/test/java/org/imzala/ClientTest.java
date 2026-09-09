@@ -180,7 +180,7 @@ class ClientTest {
     CreatedDemandUpload result = resource.uploadDocument(
         new UploadDemandParams(
             List.of(new FileInput("hello".getBytes(), "a.pdf", "application/pdf")),
-            List.of(new UploadPartyInput("Ada", "Lovelace", "ada@example.com", null)))
+            List.of(new UploadPartyInput("Ayşe", "Lovelace", "ayse@example.com", null)))
             .order(List.of(0))
             .title("Test"));
 
@@ -192,7 +192,7 @@ class ClientTest {
     assertEquals(1, filesCaptor.getValue().size());
     assertEquals("a.pdf", filesCaptor.getValue().get(0).getName());
     assertEquals("""
-        [{"first_name":"Ada","last_name":"Lovelace","email":"ada@example.com"}]""", partiesCaptor.getValue());
+        [{"first_name":"Ayşe","last_name":"Lovelace","email":"ayse@example.com"}]""", partiesCaptor.getValue());
     assertEquals("[0]", orderCaptor.getValue());
     assertNotNull(result.getId());
 

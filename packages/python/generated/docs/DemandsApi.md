@@ -1028,7 +1028,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ada Kalkan","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ada","last_name":"Kalkan","email":"ada@example.com","phone":"+905304636743","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]} # CreateDemandRequest | 
+    create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]} # CreateDemandRequest | 
 
     try:
         # Sözleşme oluştur (şablondan)

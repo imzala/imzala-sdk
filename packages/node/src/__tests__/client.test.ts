@@ -92,7 +92,7 @@ describe('Imzala facade — envelope unwrap', () => {
     const imzala = new Imzala({ apiKey: 'imz_test' });
     const result = await imzala.demands.uploadDocument({
       files: [{ content: Buffer.from('hello'), filename: 'a.pdf', contentType: 'application/pdf' }],
-      parties: [{ first_name: 'Ada', last_name: 'Lovelace', email: 'ada@example.com' }],
+      parties: [{ first_name: 'Ayşe', last_name: 'Lovelace', email: 'ayse@example.com' }],
       order: [0],
       title: 'Test',
     });
@@ -102,7 +102,7 @@ describe('Imzala facade — envelope unwrap', () => {
     expect(callArgs.files).toHaveLength(1);
     expect(callArgs.files[0].name).toBe('a.pdf');
     expect(callArgs.files[0].type).toBe('application/pdf');
-    expect(callArgs.parties).toBe(JSON.stringify([{ first_name: 'Ada', last_name: 'Lovelace', email: 'ada@example.com' }]));
+    expect(callArgs.parties).toBe(JSON.stringify([{ first_name: 'Ayşe', last_name: 'Lovelace', email: 'ayse@example.com' }]));
     expect(callArgs.order).toBe(JSON.stringify([0]));
     expect(callArgs.title).toBe('Test');
     expect(result.id).toBe('d1');

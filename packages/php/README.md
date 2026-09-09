@@ -156,7 +156,7 @@ use Imzala\UploadPartyInput;
 
 $params = new UploadDemandParams(
     files: [new FileInput(file_get_contents('sozlesme.pdf'), 'sozlesme.pdf', 'application/pdf')],
-    parties: [new UploadPartyInput('Ada', 'Lovelace', 'ada@example.com', '+905551234567')],
+    parties: [new UploadPartyInput('Ayşe', 'Lovelace', 'ayse@example.com', '+905551234567')],
 );
 $demand = $imzala->demands()->uploadDocument($params->withTitle('Hizmet Sözleşmesi'));
 ```

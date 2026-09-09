@@ -126,8 +126,8 @@ def main() -> None:
     #     "template_id": "<template-id>",
     #     "party_mapping": [{
     #         "template_party_id": "<template-party-id>",
-    #         "first_name": "Ada", "last_name": "Kalkan",
-    #         "email": "ada@example.com", "phone": "+905304636743",
+    #         "first_name": "Ayşe", "last_name": "Yılmaz",
+    #         "email": "ayse@example.com", "phone": "+905551112233",
     #     }],
     #     "variables": {"adres": "Çankaya/Ankara", "tutar": "5.000 TL"},
     # })

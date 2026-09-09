@@ -164,7 +164,7 @@ imzala.demands().delete(id);
 ```java
 UploadDemandParams params = new UploadDemandParams(
         List.of(new FileInput(pdfBytes, "sozlesme.pdf", "application/pdf")),
-        List.of(new UploadPartyInput("Ada", "Lovelace", "ada@example.com", null)))
+        List.of(new UploadPartyInput("Ayşe", "Lovelace", "ayse@example.com", null)))
     .title("Kira Sözleşmesi");
 CreatedDemandUpload uploaded = imzala.demands().uploadDocument(params);
 ```

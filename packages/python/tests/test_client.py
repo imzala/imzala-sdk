@@ -93,14 +93,14 @@ class TestEnvelopeUnwrap:
             client = Imzala(api_key="imz_test")
             result = client.demands.upload_document(
                 files=[FileInput(content=b"hello", filename="a.pdf", content_type="application/pdf")],
-                parties=[UploadPartyInput(first_name="Ada", last_name="Lovelace", email="ada@example.com")],
+                parties=[UploadPartyInput(first_name="Ayşe", last_name="Lovelace", email="ayse@example.com")],
                 order=[0],
                 title="Test",
             )
 
         kwargs = mocked.call_args.kwargs
         assert kwargs["files"] == [("a.pdf", b"hello")]
-        assert kwargs["parties"] == '[{"first_name": "Ada", "last_name": "Lovelace", "email": "ada@example.com"}]'
+        assert kwargs["parties"] == '[{"first_name": "Ayşe", "last_name": "Lovelace", "email": "ayse@example.com"}]'
         assert kwargs["order"] == "[0]"
         assert kwargs["title"] == "Test"
         assert result["id"] == "d1"
@@ -114,11 +114,11 @@ class TestEnvelopeUnwrap:
             client = Imzala(api_key="imz_test")
             client.demands.upload_document(
                 files=[FileInput(content=b"x", filename="b.pdf")],
-                parties=[{"first_name": "Ada", "last_name": "Lovelace", "phone": "+905551234567"}],
+                parties=[{"first_name": "Ayşe", "last_name": "Lovelace", "phone": "+905551234567"}],
             )
 
         assert mocked.call_args.kwargs["parties"] == (
-            '[{"first_name": "Ada", "last_name": "Lovelace", "phone": "+905551234567"}]'
+            '[{"first_name": "Ayşe", "last_name": "Lovelace", "phone": "+905551234567"}]'
         )
         assert mocked.call_args.kwargs["order"] is None
 

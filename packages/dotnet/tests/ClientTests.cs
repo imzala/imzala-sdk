@@ -155,7 +155,7 @@ public class ClientTests
         var result = await resource.UploadDocumentAsync(new UploadDemandParams
         {
             Files = new[] { new FileInput { Content = "hello"u8.ToArray(), FileName = "a.pdf", ContentType = "application/pdf" } },
-            Parties = new[] { new UploadPartyInput { FirstName = "Ada", LastName = "Lovelace", Email = "ada@example.com" } },
+            Parties = new[] { new UploadPartyInput { FirstName = "Ayşe", LastName = "Lovelace", Email = "ayse@example.com" } },
             Order = new[] { 0 },
             Title = "Test",
         });
@@ -164,7 +164,7 @@ public class ClientTests
         Assert.Single(capturedFiles!);
         Assert.Equal("a.pdf", capturedFiles![0].Name);
         Assert.Equal("application/pdf", capturedFiles[0].ContentType);
-        Assert.Equal("""[{"first_name":"Ada","last_name":"Lovelace","email":"ada@example.com"}]""", capturedParties);
+        Assert.Equal("""[{"first_name":"Ayşe","last_name":"Lovelace","email":"ayse@example.com"}]""", capturedParties);
         Assert.Equal("[0]", capturedOrder);
         Assert.NotEqual(Guid.Empty, result.Id);
     }

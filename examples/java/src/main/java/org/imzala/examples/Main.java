@@ -116,7 +116,7 @@ public final class Main {
       // Sablonsuz, dosya yukleyerek sozlesme:
       //   var params = new org.imzala.UploadDemandParams(
       //       java.util.List.of(new org.imzala.FileInput(pdfBytes, "sozlesme.pdf", "application/pdf")),
-      //       java.util.List.of(new org.imzala.UploadPartyInput("Ada", "Lovelace", "ada@example.com", null)));
+      //       java.util.List.of(new org.imzala.UploadPartyInput("Ayşe", "Lovelace", "ayse@example.com", null)));
       //   imzala.demands().uploadDocument(params);
       //
       // Hatirlatma / iptal / tekil davet tekrar / silme:
