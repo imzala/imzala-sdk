@@ -7,6 +7,7 @@ import {
   fetchBackendLock,
   hashSpecBody,
   main,
+  parseArgs,
   resolveUpstreamBranch,
   verifyLocalSpec,
 } from '../upstream-check.mjs';
@@ -125,7 +126,7 @@ describe('resolveUpstreamBranch (yapılandırılabilir dal)', () => {
 describe('fetchBackendLock', () => {
   it('200 olmayan yanıt fırlatır (fail-closed)', async () => {
     const fake = vi.fn().mockResolvedValue({ ok: false, status: 404, text: async () => '' });
-    await expect(fetchBackendLock('https://example.invalid/lock.json', { fetchImpl: fake, token: 'x' })).rejects.toThrow(/404/);
+    await expect(fetchBackendLock('https://api.github.com/lock.json', { fetchImpl: fake, token: 'x' })).rejects.toThrow(/404/);
   });
 
   it('JSON gövdeyi ayrıştırır ve token\'ı Authorization başlığına koyar', async () => {
@@ -134,15 +135,29 @@ describe('fetchBackendLock', () => {
       status: 200,
       text: async () => JSON.stringify(REMOTE),
     });
-    await expect(fetchBackendLock('https://example.invalid/lock.json', { fetchImpl: fake, token: 'tkn' })).resolves.toEqual(REMOTE);
+    await expect(fetchBackendLock('https://api.github.com/lock.json', { fetchImpl: fake, token: 'tkn' })).resolves.toEqual(REMOTE);
     const [, init] = fake.mock.calls[0];
     expect(init.headers.authorization).toBe('Bearer tkn');
   });
 
   it('token yoksa ağa çıkmadan net hata verir (sessiz geçiş yok)', async () => {
     const fake = vi.fn();
-    await expect(fetchBackendLock('https://example.invalid/lock.json', { fetchImpl: fake, token: '' })).rejects.toThrow(/IMZALA_UPSTREAM_TOKEN|GITHUB_TOKEN/);
+    await expect(fetchBackendLock('https://api.github.com/lock.json', { fetchImpl: fake, token: '' })).rejects.toThrow(/IMZALA_UPSTREAM_TOKEN|GITHUB_TOKEN/);
     expect(fake).not.toHaveBeenCalled();
+  });
+
+  it('token yalnız GitHub host\'larına gider; yabancı host\'a Authorization başlığı EKLENMEZ', async () => {
+    const fake = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => JSON.stringify(REMOTE) });
+    await fetchBackendLock('https://example.invalid/lock.json', { fetchImpl: fake, token: 'tkn' });
+    const [, init] = fake.mock.calls[0];
+    expect(init.headers.authorization).toBeUndefined();
+    expect(Object.keys(init.headers).map((k) => k.toLowerCase())).not.toContain('authorization');
+  });
+
+  it('GitHub host\'una token gider', async () => {
+    const fake = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => JSON.stringify(REMOTE) });
+    await fetchBackendLock('https://api.github.com/repos/x/y/contents/lock.json?ref=test', { fetchImpl: fake, token: 'tkn' });
+    expect(fake.mock.calls[0][1].headers.authorization).toBe('Bearer tkn');
   });
 
   it('yerel dosya yolu verilirse ağa çıkmadan dosyayı okur', async () => {
@@ -155,7 +170,21 @@ describe('fetchBackendLock', () => {
   });
 });
 
+describe('parseArgs', () => {
+  it('değersiz --remote kullanım mesajıyla fırlatır', () => {
+    expect(() => parseArgs(['--remote'])).toThrow(/--remote needs a value[\s\S]*usage:/);
+    expect(() => parseArgs(['--remote', '--branch', 'main'])).toThrow(/--remote needs a value/);
+  });
+});
+
 describe('main', () => {
+  it('değersiz --remote ile 1 döner ve stack trace yerine kullanım mesajı basar', async () => {
+    const error = vi.fn();
+    const code = await main(['--remote'], { env: {}, log: () => {}, error });
+    expect(code).toBe(1);
+    expect(error.mock.calls[0][0]).toMatch(/BAD_ARGS.*--remote needs a value/);
+  });
+
   it('ağ hatasında 1 döner, asla 0', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('ENETUNREACH')));
     const code = await main(['--local', 'scripts/__tests__/fixtures/upstream.ok.json', '--spec', 'scripts/__tests__/fixtures/spec.ok.yaml'], {

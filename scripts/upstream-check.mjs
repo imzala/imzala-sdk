@@ -62,6 +62,8 @@ const DEFAULT_LOCK_PATH = 'openapi/openapi.v1.lock.json';
 const DEFAULT_BRANCH = 'test';
 
 const SHA256_RE = /^[0-9a-f]{64}$/;
+/** The token is only ever sent to GitHub; any other host gets an unauthenticated request. */
+const TOKEN_HOSTS = new Set(['api.github.com', 'raw.githubusercontent.com']);
 
 function isRecord(v) {
   return Boolean(v) && typeof v === 'object' && !Array.isArray(v);
@@ -193,19 +195,20 @@ export async function fetchBackendLock(target, { fetchImpl = globalThis.fetch, t
   if (!/^https?:\/\//.test(target)) {
     return JSON.parse(readFileSync(target, 'utf8'));
   }
-  if (!token) {
+  const host = new URL(target).hostname;
+  const sendToken = TOKEN_HOSTS.has(host);
+  if (sendToken && !token) {
     throw new Error(
       'No token for the backend repository. Set IMZALA_UPSTREAM_TOKEN (or GITHUB_TOKEN) with read access, ' +
       'or pass --remote <local copy of openapi.v1.lock.json>.',
     );
   }
-  const res = await fetchImpl(target, {
-    headers: {
-      accept: 'application/vnd.github.raw+json',
-      authorization: `Bearer ${token}`,
-      'user-agent': 'imzala-sdk upstream-check',
-    },
-  });
+  const headers = {
+    accept: 'application/vnd.github.raw+json',
+    'user-agent': 'imzala-sdk upstream-check',
+  };
+  if (sendToken) headers.authorization = `Bearer ${token}`;
+  const res = await fetchImpl(target, { headers });
   if (!res || res.ok !== true) {
     throw new Error(`Backend lock could not be downloaded (${target}): HTTP ${res ? res.status : 'no response'}`);
   }
@@ -228,19 +231,39 @@ function readYaml(file) {
   }
 }
 
-function parseArgs(argv) {
+const USAGE =
+  'usage: node scripts/upstream-check.mjs [--branch <name>] [--remote <url | local lock file>] ' +
+  '[--local <.upstream.json>] [--spec <openapi.v1.yaml>]';
+
+/** Returns parsed options, or throws with a usage message when a flag is missing its value. */
+export function parseArgs(argv) {
   const out = { local: DEFAULT_LOCAL, spec: DEFAULT_SPEC, remote: null };
+  const value = (i) => {
+    const v = argv[i + 1];
+    if (v === undefined || v.startsWith('--')) throw new Error(`${argv[i]} needs a value.\n${USAGE}`);
+    return v;
+  };
   for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === '--local') out.local = path.resolve(argv[i + 1]);
-    if (argv[i] === '--spec') out.spec = path.resolve(argv[i + 1]);
-    if (argv[i] === '--remote') out.remote = /^https?:\/\//.test(argv[i + 1]) ? argv[i + 1] : path.resolve(argv[i + 1]);
+    if (argv[i] === '--local') out.local = path.resolve(value(i));
+    if (argv[i] === '--spec') out.spec = path.resolve(value(i));
+    if (argv[i] === '--remote') {
+      const v = value(i);
+      out.remote = /^https?:\/\//.test(v) ? v : path.resolve(v);
+    }
+    if (argv[i] === '--branch') value(i);
   }
   return out;
 }
 
 /** CLI entry: returns 0 when both checks pass, 1 otherwise. */
 export async function main(argv = process.argv.slice(2), { env = process.env, log = console.log, error = console.error } = {}) {
-  const args = parseArgs(argv);
+  let args;
+  try {
+    args = parseArgs(argv);
+  } catch (err) {
+    error(`[upstream-check] RED (BAD_ARGS): ${err.message}`);
+    return 1;
+  }
   const local = readJson(args.local);
   const doc = readYaml(args.spec);
 
