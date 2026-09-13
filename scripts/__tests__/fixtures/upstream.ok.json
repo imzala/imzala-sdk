@@ -1,0 +1,12 @@
+{
+  "version": "1.8.5",
+  "upstream_ssot_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "public_sha256": "6e61d9e626c9a9e23e7f9656a1fd626794eb0f69a2f6065ed98bea6428d25956",
+  "fetched_at": "2026-09-13T00:00:00Z",
+  "source": {
+    "repo": "imzala/imzala-service",
+    "branch": "test",
+    "lock": "openapi/openapi.v1.lock.json",
+    "spec": "openapi/openapi.v1.public.yaml"
+  }
+}

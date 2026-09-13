@@ -2,5 +2,13 @@
   "name": "@imzala/sdk-workspace",
   "private": true,
   "workspaces": ["packages/*"],
-  "engines": { "node": ">=18" }
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "upstream:check": "node scripts/upstream-check.mjs",
+    "test:scripts": "vitest run scripts"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0",
+    "vitest": "^2"
+  }
 }
