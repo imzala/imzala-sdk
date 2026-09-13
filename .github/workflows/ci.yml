@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Consumer lock (layer 3): does spec/.upstream.json in this repo still match
+  # the version/hash the backend (imzala/imzala-service) publishes? If not,
+  # this job goes red and every language job below it is blocked from
+  # running, so the vendored spec can never drift from what the backend
+  # actually ships.
+  #
+  # The check needs a token with read access to that backend repository
+  # (it is private): IMZALA_UPSTREAM_TOKEN. GitHub Actions does not hand
+  # repository secrets to a workflow run triggered by a pull request from a
+  # fork, by design, so the lock step is skipped there and the run says so
+  # explicitly (see "Fork PR: spec lock skipped" below). On a push, on a
+  # pull request from a branch of this same repository, or on a manual
+  # workflow_dispatch run, the secret is available and the lock step always
+  # runs; if the secret has not actually been configured in the repository
+  # yet, the check fails with a clear error instead of silently passing.
+  upstream-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Spec coverage tests (local, no secret required)
+        run: npm run test:scripts
+      - name: Detect fork pull request
+        id: fork-check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ] && [ "$HEAD_REPO" != "$BASE_REPO" ]; then
+            echo "is_fork_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_fork_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: "Fork PR: spec lock skipped"
+        if: steps.fork-check.outputs.is_fork_pr == 'true'
+        run: |
+          echo "This pull request comes from a fork. GitHub does not pass repository secrets (including IMZALA_UPSTREAM_TOKEN) to workflow runs triggered from forks, for security reasons."
+          echo "The spec lock check cannot run in this job for that reason, so it is being skipped here on purpose, not silently."
+          echo "Before this pull request is merged, a maintainer must verify the lock: push the branch into this repository (not a fork), or re-run this workflow with workflow_dispatch, so the check runs with the token available."
+      - name: Spec lock (fail-closed)
+        if: steps.fork-check.outputs.is_fork_pr != 'true'
+        env:
+          IMZALA_UPSTREAM_TOKEN: ${{ secrets.IMZALA_UPSTREAM_TOKEN }}
+        run: npm run upstream:check
+
+  node:
+    needs: upstream-lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm test -w @imzala/node
+      - run: npm run build -w @imzala/embed
+      - run: npm test -w @imzala/embed
+      - run: npm test -w @imzala/embed-react
+
+  python:
+    needs: upstream-lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e "packages/python[dev]"
+      - run: python -m pytest packages/python/tests
+
+  php:
+    needs: upstream-lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - run: composer install --no-interaction --working-dir=packages/php
+      - run: packages/php/vendor/bin/phpunit -c packages/php/phpunit.xml.dist
+
+  java:
+    needs: upstream-lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: mvn -B -f packages/java/pom.xml test
+
+  dotnet:
+    needs: upstream-lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet test packages/dotnet/Imzala.sln -c Release
