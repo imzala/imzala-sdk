@@ -4,11 +4,218 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 | Method | HTTP request | Description |
 |--------|--------------|-------------|
+| [**ApiV1FieldTemplatesGet**](TemplatesApi.md#apiv1fieldtemplatesget) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler |
+| [**ApiV1FieldTemplatesIdGet**](TemplatesApi.md#apiv1fieldtemplatesidget) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları) |
 | [**ApiV1TemplatesGet**](TemplatesApi.md#apiv1templatesget) | **GET** /api/v1/templates | Şablon listesi |
 | [**ApiV1TemplatesIdDelete**](TemplatesApi.md#apiv1templatesiddelete) | **DELETE** /api/v1/templates/{id} | Şablon sil |
 | [**ApiV1TemplatesIdGet**](TemplatesApi.md#apiv1templatesidget) | **GET** /api/v1/templates/{id} | Şablon detay |
 | [**ApiV1TemplatesIdPatch**](TemplatesApi.md#apiv1templatesidpatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle |
 | [**ApiV1TemplatesIdUsageGet**](TemplatesApi.md#apiv1templatesidusageget) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
+
+<a id="apiv1fieldtemplatesget"></a>
+# **ApiV1FieldTemplatesGet**
+> ApiV1FieldTemplatesGet200Response ApiV1FieldTemplatesGet (int? page = null, int? limit = null)
+
+Alan Şablonlarını listeler
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (`kind: FIELD_LAYOUT`) döner.  ### Neden ayrı bir uç  `GET /api/v1/templates` Alan Şablonlarını bilerek listelemez ve `GET /api/v1/templates/{id}` onlara `404` döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen `id`, `POST /api/v1/demands/upload` çağrısındaki `field_template_id` ve `POST /api/v1/field-templates/{id}/preview-layout` için kullanılır.  `parties` dizisi taraf sırasına göre döner; upload gövdesindeki `parties` dizisini bu sırayla kurun. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1FieldTemplatesGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TemplatesApi(httpClient, config, httpClientHandler);
+            var page = 1;  // int? |  (optional)  (default to 1)
+            var limit = 20;  // int? |  (optional)  (default to 20)
+
+            try
+            {
+                // Alan Şablonlarını listeler
+                ApiV1FieldTemplatesGet200Response result = apiInstance.ApiV1FieldTemplatesGet(page, limit);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TemplatesApi.ApiV1FieldTemplatesGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1FieldTemplatesGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Alan Şablonlarını listeler
+    ApiResponse<ApiV1FieldTemplatesGet200Response> response = apiInstance.ApiV1FieldTemplatesGetWithHttpInfo(page, limit);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TemplatesApi.ApiV1FieldTemplatesGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **page** | **int?** |  | [optional] [default to 1] |
+| **limit** | **int?** |  | [optional] [default to 20] |
+
+### Return type
+
+[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu listesi |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1fieldtemplatesidget"></a>
+# **ApiV1FieldTemplatesIdGet**
+> ApiV1FieldTemplatesIdGet200Response ApiV1FieldTemplatesIdGet (Guid id)
+
+Alan Şablonu ayrıntısı (roller + alan sayıları)
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: `POST /api/v1/field-templates/{id}/preview-layout`.  Belgeli bir şablonun kimliği verilirse `404` döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1FieldTemplatesIdGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TemplatesApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | Alan Şablonu kimliği
+
+            try
+            {
+                // Alan Şablonu ayrıntısı (roller + alan sayıları)
+                ApiV1FieldTemplatesIdGet200Response result = apiInstance.ApiV1FieldTemplatesIdGet(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TemplatesApi.ApiV1FieldTemplatesIdGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1FieldTemplatesIdGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Alan Şablonu ayrıntısı (roller + alan sayıları)
+    ApiResponse<ApiV1FieldTemplatesIdGet200Response> response = apiInstance.ApiV1FieldTemplatesIdGetWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TemplatesApi.ApiV1FieldTemplatesIdGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** | Alan Şablonu kimliği |  |
+
+### Return type
+
+[**ApiV1FieldTemplatesIdGet200Response**](ApiV1FieldTemplatesIdGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu ayrıntısı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **404** | &#x60;TEMPLATE_NOT_FOUND&#x60; — şablon bulunamadı, size ait değil ya da Alan Şablonu değil.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 <a id="apiv1templatesget"></a>
 # **ApiV1TemplatesGet**
@@ -119,7 +326,7 @@ catch (ApiException e)
 
 Şablon sil
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 `TEMPLATE_IN_USE` döner. 
 
 ### Example
 ```csharp
@@ -211,6 +418,7 @@ catch (ApiException e)
 |-------------|-------------|------------------|
 | **200** | Silindi |  -  |
 | **404** | Kayıt bulunamadı |  -  |
+| **409** | &#x60;TEMPLATE_IN_USE&#x60;: şablonun aktif (DRAFT veya PENDING) sözleşmesi olduğu için silinemez. Önce o sözleşmeleri sonlandırın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

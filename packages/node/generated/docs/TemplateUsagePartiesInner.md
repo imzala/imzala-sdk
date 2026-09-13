@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **order** | **number** |  | [optional] [default to undefined]
 **label** | **string** |  | [optional] [default to undefined]
 **is_required** | **boolean** |  | [optional] [default to undefined]
+**field_count** | **number** | Rolün doldurduğu alan sayısı. Yalnız Alan Şablonu rehberinde döner, bu uçta bulunmaz.  | [optional] [default to undefined]
 **supported_fields** | [**Array&lt;TemplateUsagePartiesInnerSupportedFieldsInner&gt;**](TemplateUsagePartiesInnerSupportedFieldsInner.md) |  | [optional] [default to undefined]
 
 ## Example
@@ -21,6 +22,7 @@ const instance: TemplateUsagePartiesInner = {
     order,
     label,
     is_required,
+    field_count,
     supported_fields,
 };
 ```

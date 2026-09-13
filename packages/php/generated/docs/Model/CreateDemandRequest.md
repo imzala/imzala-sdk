@@ -7,6 +7,8 @@ Name | Type | Description | Notes
 **template_id** | **string** | GET /api/v1/templates listesinden veya dashboard&#39;dan kopyalayın |
 **title** | **string** | Sözleşme başlığı (yoksa template adı kullanılır) | [optional]
 **description** | **string** |  | [optional]
+**idempotency_key** | **string** | &#x60;Idempotency-Key&#x60; başlığının gövde karşılığı; başlık ekleyemeyen istemciler için. İkisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;. | [optional]
+**force** | **bool** | Kopya kapısını bilerek geç. Yalnız idempotency anahtarı GÖNDERİLMEYEN çağrılarda anlamlıdır: aynı şablondan aynı taraflara aynı başlık ve değişkenlerle 10 dakika içinde ikinci bir sözleşmeyi kasten göndermek için. | [optional]
 **party_mapping** | [**\Imzala\Client\Model\PartyMappingInput[]**](PartyMappingInput.md) |  |
 **variables** | [**array<string,\Imzala\Client\Model\PartyMappingInputVariablesValue>**](PartyMappingInputVariablesValue.md) | **Root scope** — partilerden bağımsız field&#39;lara gönderilen değerler. Item&#39;ın template_party_id&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field&#39;lar. | [optional]
 **has_timestamp** | **bool** | TÜBİTAK zaman damgası | [optional] [default to false]

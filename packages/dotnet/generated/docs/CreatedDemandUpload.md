@@ -10,6 +10,8 @@ Name | Type | Description | Notes
 **Pages** | [**List&lt;DemandPage&gt;**](DemandPage.md) | Oluşturulan sözleşmedeki her sayfanın &#x60;id&#x60; ve &#x60;order&#x60; bilgisi. &#x60;POST /api/v1/demands/{id}/items&#x60; endpoint&#39;ine alan yerleştirmek için &#x60;page_id&#x60; parametresi olarak kullanın.  | [optional] 
 **SigningUrls** | [**List&lt;CreatedDemandSigningUrlsInner&gt;**](CreatedDemandSigningUrlsInner.md) |  | [optional] 
 **ResultUrl** | **string** |  | [optional] 
+**Dispatch** | [**CreatedDemandUploadDispatch**](CreatedDemandUploadDispatch.md) |  | [optional] 
+**FieldLayout** | [**CreatedDemandUploadFieldLayout**](CreatedDemandUploadFieldLayout.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -4,11 +4,121 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**apiV1FieldTemplatesGet**](#apiv1fieldtemplatesget) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler|
+|[**apiV1FieldTemplatesIdGet**](#apiv1fieldtemplatesidget) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları)|
 |[**apiV1TemplatesGet**](#apiv1templatesget) | **GET** /api/v1/templates | Şablon listesi|
 |[**apiV1TemplatesIdDelete**](#apiv1templatesiddelete) | **DELETE** /api/v1/templates/{id} | Şablon sil|
 |[**apiV1TemplatesIdGet**](#apiv1templatesidget) | **GET** /api/v1/templates/{id} | Şablon detay|
 |[**apiV1TemplatesIdPatch**](#apiv1templatesidpatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle|
 |[**apiV1TemplatesIdUsageGet**](#apiv1templatesidusageget) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)|
+
+# **apiV1FieldTemplatesGet**
+> ApiV1FieldTemplatesGet200Response apiV1FieldTemplatesGet()
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (`kind: FIELD_LAYOUT`) döner.  ### Neden ayrı bir uç  `GET /api/v1/templates` Alan Şablonlarını bilerek listelemez ve `GET /api/v1/templates/{id}` onlara `404` döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen `id`, `POST /api/v1/demands/upload` çağrısındaki `field_template_id` ve `POST /api/v1/field-templates/{id}/preview-layout` için kullanılır.  `parties` dizisi taraf sırasına göre döner; upload gövdesindeki `parties` dizisini bu sırayla kurun. 
+
+### Example
+
+```typescript
+import {
+    TemplatesApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new TemplatesApi(configuration);
+
+let page: number; // (optional) (default to 1)
+let limit: number; // (optional) (default to 20)
+
+const { status, data } = await apiInstance.apiV1FieldTemplatesGet(
+    page,
+    limit
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] |  | (optional) defaults to 1|
+| **limit** | [**number**] |  | (optional) defaults to 20|
+
+
+### Return type
+
+**ApiV1FieldTemplatesGet200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Alan Şablonu listesi |  -  |
+|**401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1FieldTemplatesIdGet**
+> ApiV1FieldTemplatesIdGet200Response apiV1FieldTemplatesIdGet()
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: `POST /api/v1/field-templates/{id}/preview-layout`.  Belgeli bir şablonun kimliği verilirse `404` döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+
+### Example
+
+```typescript
+import {
+    TemplatesApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new TemplatesApi(configuration);
+
+let id: string; //Alan Şablonu kimliği (default to undefined)
+
+const { status, data } = await apiInstance.apiV1FieldTemplatesIdGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | Alan Şablonu kimliği | defaults to undefined|
+
+
+### Return type
+
+**ApiV1FieldTemplatesIdGet200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Alan Şablonu ayrıntısı |  -  |
+|**401** | API key geçersiz veya eksik |  -  |
+|**404** | &#x60;TEMPLATE_NOT_FOUND&#x60; — şablon bulunamadı, size ait değil ya da Alan Şablonu değil.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1TemplatesGet**
 > ApiV1TemplatesGet200Response apiV1TemplatesGet()
@@ -68,7 +178,7 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 # **apiV1TemplatesIdDelete**
 > ApiV1TemplatesIdDelete200Response apiV1TemplatesIdDelete()
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 `TEMPLATE_IN_USE` döner. 
 
 ### Example
 
@@ -114,6 +224,7 @@ const { status, data } = await apiInstance.apiV1TemplatesIdDelete(
 |-------------|-------------|------------------|
 |**200** | Silindi |  -  |
 |**404** | Kayıt bulunamadı |  -  |
+|**409** | &#x60;TEMPLATE_IN_USE&#x60;: şablonun aktif (DRAFT veya PENDING) sözleşmesi olduğu için silinemez. Önce o sözleşmeleri sonlandırın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

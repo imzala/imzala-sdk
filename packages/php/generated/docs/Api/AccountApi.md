@@ -17,7 +17,7 @@ apiV1MeGet(): \Imzala\Client\Model\ApiV1MeGet200Response
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key'in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. `timestamps` scope'u gerektirir; scope yoksa 403 `INSUFFICIENT_SCOPE` döner.
+Çağrıyı yapan API key'in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope'a sahip olursa olsun, ör. sadece `demands:read`) bu endpoint'i çağırabilir.
 
 ### Example
 

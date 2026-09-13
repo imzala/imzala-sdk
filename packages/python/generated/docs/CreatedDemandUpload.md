@@ -11,6 +11,8 @@ Name | Type | Description | Notes
 **pages** | [**List[DemandPage]**](DemandPage.md) | Oluşturulan sözleşmedeki her sayfanın &#x60;id&#x60; ve &#x60;order&#x60; bilgisi. &#x60;POST /api/v1/demands/{id}/items&#x60; endpoint&#39;ine alan yerleştirmek için &#x60;page_id&#x60; parametresi olarak kullanın.  | [optional] 
 **signing_urls** | [**List[CreatedDemandSigningUrlsInner]**](CreatedDemandSigningUrlsInner.md) |  | [optional] 
 **result_url** | **str** |  | [optional] 
+**dispatch** | [**CreatedDemandUploadDispatch**](CreatedDemandUploadDispatch.md) |  | [optional] 
+**field_layout** | [**CreatedDemandUploadFieldLayout**](CreatedDemandUploadFieldLayout.md) |  | [optional] 
 
 ## Example
 

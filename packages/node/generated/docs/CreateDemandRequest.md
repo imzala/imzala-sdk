@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **template_id** | **string** | GET /api/v1/templates listesinden veya dashboard\&#39;dan kopyalayın | [default to undefined]
 **title** | **string** | Sözleşme başlığı (yoksa template adı kullanılır) | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
+**idempotency_key** | **string** | &#x60;Idempotency-Key&#x60; başlığının gövde karşılığı; başlık ekleyemeyen istemciler için. İkisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  | [optional] [default to undefined]
+**force** | **boolean** | Kopya kapısını bilerek geç. Yalnız idempotency anahtarı GÖNDERİLMEYEN çağrılarda anlamlıdır: aynı şablondan aynı taraflara aynı başlık ve değişkenlerle 10 dakika içinde ikinci bir sözleşmeyi kasten göndermek için.  | [optional] [default to undefined]
 **party_mapping** | [**Array&lt;PartyMappingInput&gt;**](PartyMappingInput.md) |  | [default to undefined]
 **variables** | [**{ [key: string]: PartyMappingInputVariablesValue; }**](PartyMappingInputVariablesValue.md) | **Root scope** — partilerden bağımsız field\&#39;lara gönderilen değerler. Item\&#39;ın template_party_id\&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field\&#39;lar.  | [optional] [default to undefined]
 **has_timestamp** | **boolean** | TÜBİTAK zaman damgası | [optional] [default to false]
@@ -30,6 +32,8 @@ const instance: CreateDemandRequest = {
     template_id,
     title,
     description,
+    idempotency_key,
+    force,
     party_mapping,
     variables,
     has_timestamp,

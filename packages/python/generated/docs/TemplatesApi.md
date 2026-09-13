@@ -4,12 +4,204 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**api_v1_field_templates_get**](TemplatesApi.md#api_v1_field_templates_get) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler
+[**api_v1_field_templates_id_get**](TemplatesApi.md#api_v1_field_templates_id_get) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları)
 [**api_v1_templates_get**](TemplatesApi.md#api_v1_templates_get) | **GET** /api/v1/templates | Şablon listesi
 [**api_v1_templates_id_delete**](TemplatesApi.md#api_v1_templates_id_delete) | **DELETE** /api/v1/templates/{id} | Şablon sil
 [**api_v1_templates_id_get**](TemplatesApi.md#api_v1_templates_id_get) | **GET** /api/v1/templates/{id} | Şablon detay
 [**api_v1_templates_id_patch**](TemplatesApi.md#api_v1_templates_id_patch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle
 [**api_v1_templates_id_usage_get**](TemplatesApi.md#api_v1_templates_id_usage_get) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
 
+
+# **api_v1_field_templates_get**
+> ApiV1FieldTemplatesGet200Response api_v1_field_templates_get(page=page, limit=limit)
+
+Alan Şablonlarını listeler
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını**
+(`kind: FIELD_LAYOUT`) döner.
+
+### Neden ayrı bir uç
+
+`GET /api/v1/templates` Alan Şablonlarını bilerek listelemez ve
+`GET /api/v1/templates/{id}` onlara `404` döner. Alan Şablonunun
+referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon
+sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu.
+Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını
+görmek açık bir talep gerektirir.
+
+Döndürülen `id`, `POST /api/v1/demands/upload` çağrısındaki
+`field_template_id` ve `POST /api/v1/field-templates/{id}/preview-layout`
+için kullanılır.
+
+`parties` dizisi taraf sırasına göre döner; upload gövdesindeki
+`parties` dizisini bu sırayla kurun.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_field_templates_get200_response import ApiV1FieldTemplatesGet200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.TemplatesApi(api_client)
+    page = 1 # int |  (optional) (default to 1)
+    limit = 20 # int |  (optional) (default to 20)
+
+    try:
+        # Alan Şablonlarını listeler
+        api_response = api_instance.api_v1_field_templates_get(page=page, limit=limit)
+        print("The response of TemplatesApi->api_v1_field_templates_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling TemplatesApi->api_v1_field_templates_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **page** | **int**|  | [optional] [default to 1]
+ **limit** | **int**|  | [optional] [default to 20]
+
+### Return type
+
+[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Alan Şablonu listesi |  -  |
+**401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **api_v1_field_templates_id_get**
+> ApiV1FieldTemplatesIdGet200Response api_v1_field_templates_id_get(id)
+
+Alan Şablonu ayrıntısı (roller + alan sayıları)
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.
+
+🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl
+uygulanacağını görmek için kuru koşum ucunu kullanın:
+`POST /api/v1/field-templates/{id}/preview-layout`.
+
+Belgeli bir şablonun kimliği verilirse `404` döner; şablonun türü
+ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı
+alır.
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.api_v1_field_templates_id_get200_response import ApiV1FieldTemplatesIdGet200Response
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.TemplatesApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | Alan Şablonu kimliği
+
+    try:
+        # Alan Şablonu ayrıntısı (roller + alan sayıları)
+        api_response = api_instance.api_v1_field_templates_id_get(id)
+        print("The response of TemplatesApi->api_v1_field_templates_id_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling TemplatesApi->api_v1_field_templates_id_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**| Alan Şablonu kimliği | 
+
+### Return type
+
+[**ApiV1FieldTemplatesIdGet200Response**](ApiV1FieldTemplatesIdGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Alan Şablonu ayrıntısı |  -  |
+**401** | API key geçersiz veya eksik |  -  |
+**404** | &#x60;TEMPLATE_NOT_FOUND&#x60; — şablon bulunamadı, size ait değil ya da Alan Şablonu değil.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **api_v1_templates_get**
 > ApiV1TemplatesGet200Response api_v1_templates_get(page=page, limit=limit)
@@ -98,7 +290,12 @@ Name | Type | Description  | Notes
 
 Şablon sil
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda
+kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.
+
+Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez;
+409 `TEMPLATE_IN_USE` döner.
+
 
 ### Example
 
@@ -170,6 +367,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | Silindi |  -  |
 **404** | Kayıt bulunamadı |  -  |
+**409** | &#x60;TEMPLATE_IN_USE&#x60;: şablonun aktif (DRAFT veya PENDING) sözleşmesi olduğu için silinemez. Önce o sözleşmeleri sonlandırın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -14,7 +14,8 @@ API key sahibi bilgisi
 
 Çağrıyı yapan API key'in sahibi hakkında temel bilgileri döner:
 kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi.
-`timestamps` scope'u gerektirir; scope yoksa 403 `INSUFFICIENT_SCOPE` döner.
+Scope gerektirmez — geçerli herhangi bir API key (hangi scope'a sahip
+olursa olsun, ör. sadece `demands:read`) bu endpoint'i çağırabilir.
 
 
 ### Example
@@ -83,7 +84,6 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 **200** | Başarılı |  -  |
 **401** | API key geçersiz veya eksik |  -  |
-**403** | **INSUFFICIENT_SCOPE** — API key&#39;in &#x60;timestamps&#x60; scope&#39;u yok. Dashboard → Geliştirici → API Anahtarları sayfasından scope&#39;u güncelleyin.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

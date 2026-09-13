@@ -4,7 +4,225 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 | Method | HTTP request | Description |
 |--------|--------------|-------------|
+| [**ApiV1TimestampsGet**](TimestampsApi.md#apiv1timestampsget) | **GET** /api/v1/timestamps | Zaman damgası listesi |
+| [**ApiV1TimestampsIdGet**](TimestampsApi.md#apiv1timestampsidget) | **GET** /api/v1/timestamps/{id} | Zaman damgası detayı |
 | [**ApiV1TimestampsPost**](TimestampsApi.md#apiv1timestampspost) | **POST** /api/v1/timestamps | Zaman damgası oluştur (eser tescil) |
+
+<a id="apiv1timestampsget"></a>
+# **ApiV1TimestampsGet**
+> ApiV1TimestampsGet200Response ApiV1TimestampsGet (int? page = null, int? limit = null, string? q = null, string? status = null, DateOnly? from = null, DateOnly? to = null, string? sort = null)
+
+Zaman damgası listesi
+
+Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key'in kendi workspace'indeki kayıtlar döner (IDOR-safe).  `timestamp_file_url` doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir). 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1TimestampsGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TimestampsApi(httpClient, config, httpClientHandler);
+            var page = 1;  // int? |  (optional)  (default to 1)
+            var limit = 25;  // int? |  (optional)  (default to 25)
+            var q = "q_example";  // string? | Dosya adı / açıklamada arama (max 100 karakter) (optional) 
+            var status = "status_example";  // string? | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID (optional) 
+            var from = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü alt sınırı (YYYY-MM-DD) (optional) 
+            var to = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü üst sınırı (YYYY-MM-DD) (optional) 
+            var sort = "\"-createdAt\"";  // string? | Sıralama: createdAt | timestamp_date | original_file_name | original_file_size | status ('-' öneki azalan) (optional)  (default to "-createdAt")
+
+            try
+            {
+                // Zaman damgası listesi
+                ApiV1TimestampsGet200Response result = apiInstance.ApiV1TimestampsGet(page, limit, q, status, from, to, sort);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TimestampsApi.ApiV1TimestampsGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1TimestampsGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Zaman damgası listesi
+    ApiResponse<ApiV1TimestampsGet200Response> response = apiInstance.ApiV1TimestampsGetWithHttpInfo(page, limit, q, status, from, to, sort);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TimestampsApi.ApiV1TimestampsGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **page** | **int?** |  | [optional] [default to 1] |
+| **limit** | **int?** |  | [optional] [default to 25] |
+| **q** | **string?** | Dosya adı / açıklamada arama (max 100 karakter) | [optional]  |
+| **status** | **string?** | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID | [optional]  |
+| **from** | **DateOnly?** | Damga günü alt sınırı (YYYY-MM-DD) | [optional]  |
+| **to** | **DateOnly?** | Damga günü üst sınırı (YYYY-MM-DD) | [optional]  |
+| **sort** | **string?** | Sıralama: createdAt | timestamp_date | original_file_name | original_file_size | status (&#39;-&#39; öneki azalan) | [optional] [default to &quot;-createdAt&quot;] |
+
+### Return type
+
+[**ApiV1TimestampsGet200Response**](ApiV1TimestampsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **403** | INSUFFICIENT_SCOPE — API key&#39;de timestamps scope yok |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1timestampsidget"></a>
+# **ApiV1TimestampsIdGet**
+> ApiV1TimestampsIdGet200Response ApiV1TimestampsIdGet (Guid id)
+
+Zaman damgası detayı
+
+Tek bir zaman damgası kaydının detayını döner. Yalnızca API key'in kendi workspace'indeki kayıt getirilebilir (IDOR-safe); başka bir workspace'in kaydı 404 döner. 
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1TimestampsIdGetExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new TimestampsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid | 
+
+            try
+            {
+                // Zaman damgası detayı
+                ApiV1TimestampsIdGet200Response result = apiInstance.ApiV1TimestampsIdGet(id);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling TimestampsApi.ApiV1TimestampsIdGet: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1TimestampsIdGetWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Zaman damgası detayı
+    ApiResponse<ApiV1TimestampsIdGet200Response> response = apiInstance.ApiV1TimestampsIdGetWithHttpInfo(id);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling TimestampsApi.ApiV1TimestampsIdGetWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+
+### Return type
+
+[**ApiV1TimestampsIdGet200Response**](ApiV1TimestampsIdGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Başarılı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 <a id="apiv1timestampspost"></a>
 # **ApiV1TimestampsPost**
@@ -114,6 +332,7 @@ catch (ApiException e)
 | **401** | API key geçersiz veya eksik |  -  |
 | **402** | Yetersiz kredi (INSUFFICIENT_CREDITS) |  -  |
 | **403** | INSUFFICIENT_SCOPE — API key&#39;de timestamps scope yok |  -  |
+| **415** | UNSUPPORTED_MIME_TYPE — Yüklenen dosyanın MIME türü zaman damgası allowlist&#39;inde değil (belge/görsel/ses/video dışı ya da içeriksiz &#x60;application/octet-stream&#x60;). İstemci doğru content-type göndermeli.  |  -  |
 | **422** | İstek içeriği işlenemedi. Olası kodlar: - &#x60;BAD_BASE64&#x60; — &#x60;file_base64&#x60; geçerli standart Base64 değil - &#x60;STAMP_INVALID&#x60; — TSA yanıtı geçersiz zaman damgası döndü  |  -  |
 | **429** | Rate limit aşıldı (60 istek/dakika per API key) |  -  |
 | **500** | INDETERMINATE — Damga alındı ancak doğrulama sonucu belirsiz. Destek ekibiyle iletişime geçin.  |  -  |

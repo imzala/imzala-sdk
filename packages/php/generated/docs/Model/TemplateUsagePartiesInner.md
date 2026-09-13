@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **order** | **int** |  | [optional]
 **label** | **string** |  | [optional]
 **is_required** | **bool** |  | [optional]
+**field_count** | **int** | Rolün doldurduğu alan sayısı. Yalnız Alan Şablonu rehberinde döner, bu uçta bulunmaz. | [optional]
 **supported_fields** | [**\Imzala\Client\Model\TemplateUsagePartiesInnerSupportedFieldsInner[]**](TemplateUsagePartiesInnerSupportedFieldsInner.md) |  | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

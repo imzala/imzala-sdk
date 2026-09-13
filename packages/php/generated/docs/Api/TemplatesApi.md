@@ -6,12 +6,140 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**apiV1FieldTemplatesGet()**](TemplatesApi.md#apiV1FieldTemplatesGet) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler |
+| [**apiV1FieldTemplatesIdGet()**](TemplatesApi.md#apiV1FieldTemplatesIdGet) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları) |
 | [**apiV1TemplatesGet()**](TemplatesApi.md#apiV1TemplatesGet) | **GET** /api/v1/templates | Şablon listesi |
 | [**apiV1TemplatesIdDelete()**](TemplatesApi.md#apiV1TemplatesIdDelete) | **DELETE** /api/v1/templates/{id} | Şablon sil |
 | [**apiV1TemplatesIdGet()**](TemplatesApi.md#apiV1TemplatesIdGet) | **GET** /api/v1/templates/{id} | Şablon detay |
 | [**apiV1TemplatesIdPatch()**](TemplatesApi.md#apiV1TemplatesIdPatch) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle |
 | [**apiV1TemplatesIdUsageGet()**](TemplatesApi.md#apiV1TemplatesIdUsageGet) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
 
+
+## `apiV1FieldTemplatesGet()`
+
+```php
+apiV1FieldTemplatesGet($page, $limit): \Imzala\Client\Model\ApiV1FieldTemplatesGet200Response
+```
+
+Alan Şablonlarını listeler
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (`kind: FIELD_LAYOUT`) döner.  ### Neden ayrı bir uç  `GET /api/v1/templates` Alan Şablonlarını bilerek listelemez ve `GET /api/v1/templates/{id}` onlara `404` döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen `id`, `POST /api/v1/demands/upload` çağrısındaki `field_template_id` ve `POST /api/v1/field-templates/{id}/preview-layout` için kullanılır.  `parties` dizisi taraf sırasına göre döner; upload gövdesindeki `parties` dizisini bu sırayla kurun.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\TemplatesApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$page = 1; // int
+$limit = 20; // int
+
+try {
+    $result = $apiInstance->apiV1FieldTemplatesGet($page, $limit);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling TemplatesApi->apiV1FieldTemplatesGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **page** | **int**|  | [optional] [default to 1] |
+| **limit** | **int**|  | [optional] [default to 20] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1FieldTemplatesGet200Response**](../Model/ApiV1FieldTemplatesGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1FieldTemplatesIdGet()`
+
+```php
+apiV1FieldTemplatesIdGet($id): \Imzala\Client\Model\ApiV1FieldTemplatesIdGet200Response
+```
+
+Alan Şablonu ayrıntısı (roller + alan sayıları)
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: `POST /api/v1/field-templates/{id}/preview-layout`.  Belgeli bir şablonun kimliği verilirse `404` döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\TemplatesApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string | Alan Şablonu kimliği
+
+try {
+    $result = $apiInstance->apiV1FieldTemplatesIdGet($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling TemplatesApi->apiV1FieldTemplatesIdGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**| Alan Şablonu kimliği | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1FieldTemplatesIdGet200Response**](../Model/ApiV1FieldTemplatesIdGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
 
 ## `apiV1TemplatesGet()`
 
@@ -85,7 +213,7 @@ apiV1TemplatesIdDelete($id): \Imzala\Client\Model\ApiV1TemplatesIdDelete200Respo
 
 Şablon sil
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 `TEMPLATE_IN_USE` döner.
 
 ### Example
 

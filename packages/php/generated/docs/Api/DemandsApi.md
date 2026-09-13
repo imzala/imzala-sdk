@@ -6,7 +6,17 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**apiV1DemandsBulkPost()**](DemandsApi.md#apiV1DemandsBulkPost) | **POST** /api/v1/demands/bulk | Toplu sözleşme oluştur (tek şablondan N alıcı) |
+| [**apiV1DemandsDemandIdDispatchPost()**](DemandsApi.md#apiV1DemandsDemandIdDispatchPost) | **POST** /api/v1/demands/{demandId}/dispatch | Zarfı imzaya gönder (yayınla + davet) |
+| [**apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut) | **PUT** /api/v1/demands/{demandId}/documents/{docId}/assignments | Belgeye imzacı ata (tam-küme replace) |
+| [**apiV1DemandsDemandIdDocumentsDocIdDelete()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdDelete) | **DELETE** /api/v1/demands/{demandId}/documents/{docId} | Belgeyi zarftan sil |
+| [**apiV1DemandsDemandIdDocumentsDocIdPatch()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdPatch) | **PATCH** /api/v1/demands/{demandId}/documents/{docId} | Belge metadata güncelle |
+| [**apiV1DemandsDemandIdDocumentsGet()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsGet) | **GET** /api/v1/demands/{demandId}/documents | Zarf belge listesi |
+| [**apiV1DemandsDemandIdDocumentsOrderPut()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsOrderPut) | **PUT** /api/v1/demands/{demandId}/documents/order | Zarftaki belgelerin sırasını değiştir |
+| [**apiV1DemandsDemandIdDocumentsPost()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsPost) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle |
+| [**apiV1DemandsDemandIdDocumentsUploadPost()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsUploadPost) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya) |
 | [**apiV1DemandsGet()**](DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**apiV1DemandsIdBelgeDocumentIdPdfGet()**](DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGet) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf) |
 | [**apiV1DemandsIdCancelPost()**](DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
 | [**apiV1DemandsIdCertificateGet()**](DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
 | [**apiV1DemandsIdDelete()**](DemandsApi.md#apiV1DemandsIdDelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
@@ -18,7 +28,596 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 | [**apiV1DemandsIdTimelineGet()**](DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
 | [**apiV1DemandsPost()**](DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**apiV1DemandsUploadPost()**](DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
+| [**apiV1FieldTemplatesIdPreviewLayoutPost()**](DemandsApi.md#apiV1FieldTemplatesIdPreviewLayoutPost) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener |
 
+
+## `apiV1DemandsBulkPost()`
+
+```php
+apiV1DemandsBulkPost($api_v1_demands_bulk_post_request, $x_workspace_id): \Imzala\Client\Model\ApiV1DemandsBulkPost200Response
+```
+
+Toplu sözleşme oluştur (tek şablondan N alıcı)
+
+Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \"bulk send\" modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler   istemci tarafında 10'arlı parçalara bölünür. - Kredi: sabit \"1 satır = 1 kredi\" değildir, her satırın maliyeti   `POST /demands` ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; `eidas_timestamp` seçilirse   satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES'te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır `failed` (`error: \"INSUFFICIENT_CREDITS\"`)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine `failed` döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (`demand_id` response'ta bulunur, davet   gönderilmemiştir). - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace'in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar `failed` olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - `X-Workspace-Id` header'ı ile organizasyon workspace'i seçilebilir.  Rate limit: 5 istek/dakika (API key başına).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$api_v1_demands_bulk_post_request = new \Imzala\Client\Model\ApiV1DemandsBulkPostRequest(); // \Imzala\Client\Model\ApiV1DemandsBulkPostRequest
+$x_workspace_id = 'x_workspace_id_example'; // string | Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   `WORKSPACE_MISMATCH` döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (`Not a member of this organization`).
+
+try {
+    $result = $apiInstance->apiV1DemandsBulkPost($api_v1_demands_bulk_post_request, $x_workspace_id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsBulkPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **api_v1_demands_bulk_post_request** | [**\Imzala\Client\Model\ApiV1DemandsBulkPostRequest**](../Model/ApiV1DemandsBulkPostRequest.md)|  | |
+| **x_workspace_id** | **string**| Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;). | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsBulkPost200Response**](../Model/ApiV1DemandsBulkPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDispatchPost()`
+
+```php
+apiV1DemandsDemandIdDispatchPost($demand_id, $api_v1_demands_demand_id_dispatch_post_request): \Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPost200Response
+```
+
+Zarfı imzaya gönder (yayınla + davet)
+
+Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — `dispatch_notifications: false` ile oluşturulur, ardından `POST .../documents` / `POST .../documents/upload` ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations` gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir.  **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (`dispatched: false` döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. `v1ResendRateLimiter`, `/parties/{partyId}/resend` ile AYNI dakika-bazlı freni paylaşır).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$api_v1_demands_demand_id_dispatch_post_request = new \Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPostRequest(); // \Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPostRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDispatchPost($demand_id, $api_v1_demands_demand_id_dispatch_post_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDispatchPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **api_v1_demands_demand_id_dispatch_post_request** | [**\Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPostRequest**](../Model/ApiV1DemandsDemandIdDispatchPostRequest.md)|  | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPost200Response**](../Model/ApiV1DemandsDemandIdDispatchPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut()`
+
+```php
+apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut($demand_id, $doc_id, $api_v1_demands_demand_id_documents_doc_id_assignments_put_request): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response
+```
+
+Belgeye imzacı ata (tam-küme replace)
+
+Belgeye atanmış imzacı kümesini **tam olarak** `party_ids` ile değiştirir (eski atamalar silinir, yenileri yazılır). `party_ids` boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 `INVALID_PARTY_ID` — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 `ASSIGNMENT_HAS_DECISION`).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$doc_id = 'doc_id_example'; // string
+$api_v1_demands_demand_id_documents_doc_id_assignments_put_request = new \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest(); // \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut($demand_id, $doc_id, $api_v1_demands_demand_id_documents_doc_id_assignments_put_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **doc_id** | **string**|  | |
+| **api_v1_demands_demand_id_documents_doc_id_assignments_put_request** | [**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest**](../Model/ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response**](../Model/ApiV1DemandsDemandIdDocumentsPost201Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsDocIdDelete()`
+
+```php
+apiV1DemandsDemandIdDocumentsDocIdDelete($demand_id, $doc_id): \Imzala\Client\Model\ApiV1TemplatesIdDelete200Response
+```
+
+Belgeyi zarftan sil
+
+Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N'e yeniden sıralanır. **Zarftaki son belge silinemez** (400 `CANNOT_DELETE_LAST_DOCUMENT`) — zarf hiç boş kalamaz.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$doc_id = 'doc_id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsDocIdDelete($demand_id, $doc_id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsDocIdDelete: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **doc_id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1TemplatesIdDelete200Response**](../Model/ApiV1TemplatesIdDelete200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsDocIdPatch()`
+
+```php
+apiV1DemandsDemandIdDocumentsDocIdPatch($demand_id, $doc_id, $api_v1_demands_demand_id_documents_doc_id_patch_request): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response
+```
+
+Belge metadata güncelle
+
+Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (`PUT .../assignments`).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$doc_id = 'doc_id_example'; // string
+$api_v1_demands_demand_id_documents_doc_id_patch_request = new \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdPatchRequest(); // \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdPatchRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsDocIdPatch($demand_id, $doc_id, $api_v1_demands_demand_id_documents_doc_id_patch_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsDocIdPatch: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **doc_id** | **string**|  | |
+| **api_v1_demands_demand_id_documents_doc_id_patch_request** | [**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsDocIdPatchRequest**](../Model/ApiV1DemandsDemandIdDocumentsDocIdPatchRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response**](../Model/ApiV1DemandsDemandIdDocumentsPost201Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsGet()`
+
+```php
+apiV1DemandsDemandIdDocumentsGet($demand_id, $view): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsGet200Response
+```
+
+Zarf belge listesi
+
+Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm `/documents*` + `/documents/{docId}*` + `/documents/{docId}/assignments` uçları `ENVELOPE_DECISION_ENFORCE` bayrağı **arkasındadır**; bayrak kapalıyken **409 `ENVELOPE_MULTI_DOC_DISABLED`** döner. Bu, dashboard'un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca `POST /demands/{demandId}/dispatch` çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. `?view=wizard` verilirse tam şekil döner (`EnvelopeDocument` şemasındaki alan notlarına bakın).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$view = 'view_example'; // string | `wizard` → tam DTO (`assigned_party_ids` + `decision_count` dahil).
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsGet($demand_id, $view);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **view** | **string**| &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsGet200Response**](../Model/ApiV1DemandsDemandIdDocumentsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsOrderPut()`
+
+```php
+apiV1DemandsDemandIdDocumentsOrderPut($demand_id, $api_v1_demands_demand_id_documents_order_put_request): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsGet200Response
+```
+
+Zarftaki belgelerin sırasını değiştir
+
+Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. `document_ids` zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 `ORDER_SET_MISMATCH`** döner.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$api_v1_demands_demand_id_documents_order_put_request = new \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsOrderPutRequest(); // \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsOrderPutRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsOrderPut($demand_id, $api_v1_demands_demand_id_documents_order_put_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsOrderPut: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **api_v1_demands_demand_id_documents_order_put_request** | [**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsOrderPutRequest**](../Model/ApiV1DemandsDemandIdDocumentsOrderPutRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsGet200Response**](../Model/ApiV1DemandsDemandIdDocumentsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsPost()`
+
+```php
+apiV1DemandsDemandIdDocumentsPost($demand_id, $api_v1_demands_demand_id_documents_post_request): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response
+```
+
+Zarfa metadata-only belge ekle
+
+Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: `POST /demands/{demandId}/documents/upload`.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$api_v1_demands_demand_id_documents_post_request = new \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPostRequest(); // \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPostRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsPost($demand_id, $api_v1_demands_demand_id_documents_post_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **api_v1_demands_demand_id_documents_post_request** | [**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPostRequest**](../Model/ApiV1DemandsDemandIdDocumentsPostRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response**](../Model/ApiV1DemandsDemandIdDocumentsPost201Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsDemandIdDocumentsUploadPost()`
+
+```php
+apiV1DemandsDemandIdDocumentsUploadPost($demand_id, $file, $idempotency_key, $title, $doc_kind, $is_required): \Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response
+```
+
+Zarfa dosya yükle (belge başına tek dosya)
+
+Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  `idempotency_key` **zorunludur** (gövde alanı; `Idempotency-Key` HEADER'ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı `(demandId, idempotency_key)` çifti ile tekrar çağrı **409 `IDEMPOTENT_REPLAY`** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO'su döner.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$demand_id = 'demand_id_example'; // string
+$file = '/path/to/file.txt'; // \SplFileObject | PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya.
+$idempotency_key = 'idempotency_key_example'; // string | Zorunlu tekrar-koruma anahtarı.
+$title = 'title_example'; // string
+$doc_kind = 'OTHER'; // string
+$is_required = 'true'; // string | Multipart alanı — string olarak gönderilir.
+
+try {
+    $result = $apiInstance->apiV1DemandsDemandIdDocumentsUploadPost($demand_id, $file, $idempotency_key, $title, $doc_kind, $is_required);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsDemandIdDocumentsUploadPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **demand_id** | **string**|  | |
+| **file** | **\SplFileObject****\SplFileObject**| PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. | |
+| **idempotency_key** | **string**| Zorunlu tekrar-koruma anahtarı. | |
+| **title** | **string**|  | |
+| **doc_kind** | **string**|  | [optional] [default to &#39;OTHER&#39;] |
+| **is_required** | **string**| Multipart alanı — string olarak gönderilir. | [optional] [default to &#39;true&#39;] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201Response**](../Model/ApiV1DemandsDemandIdDocumentsPost201Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `multipart/form-data`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
 
 ## `apiV1DemandsGet()`
 
@@ -91,6 +690,70 @@ try {
 
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdBelgeDocumentIdPdfGet()`
+
+```php
+apiV1DemandsIdBelgeDocumentIdPdfGet($id, $document_id): \SplFileObject
+```
+
+Belge-özgü imzalı PDF (çok-belgeli zarf)
+
+Çok-belgeli zarfta TEK bir belgenin imzalı PDF'ini indirir. Zarf-geneli `/demands/{id}/pdf` ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND'lenir (başka zarfın belgesi istenirse 404).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$document_id = 'document_id_example'; // string | Zarftaki belgenin kimliği.
+
+try {
+    $result = $apiInstance->apiV1DemandsIdBelgeDocumentIdPdfGet($id, $document_id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdBelgeDocumentIdPdfGet: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **document_id** | **string**| Zarftaki belgenin kimliği. | |
+
+### Return type
+
+**\SplFileObject**
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/pdf`, `application/json`
 
 [[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
 [[Back to Model list]](../../README.md#models)
@@ -665,7 +1328,7 @@ try {
 ## `apiV1DemandsPost()`
 
 ```php
-apiV1DemandsPost($create_demand_request): \Imzala\Client\Model\ApiV1DemandsPost201Response
+apiV1DemandsPost($create_demand_request, $idempotency_key): \Imzala\Client\Model\ApiV1DemandsPost201Response
 ```
 
 Sözleşme oluştur (şablondan)
@@ -692,9 +1355,10 @@ $apiInstance = new Imzala\Client\Api\DemandsApi(
     $config
 );
 $create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]}; // \Imzala\Client\Model\CreateDemandRequest
+$idempotency_key = 'idempotency_key_example'; // string | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.
 
 try {
-    $result = $apiInstance->apiV1DemandsPost($create_demand_request);
+    $result = $apiInstance->apiV1DemandsPost($create_demand_request, $idempotency_key);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DemandsApi->apiV1DemandsPost: ', $e->getMessage(), PHP_EOL;
@@ -706,6 +1370,7 @@ try {
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **create_demand_request** | [**\Imzala\Client\Model\CreateDemandRequest**](../Model/CreateDemandRequest.md)|  | |
+| **idempotency_key** | **string**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII. | [optional] |
 
 ### Return type
 
@@ -727,7 +1392,7 @@ try {
 ## `apiV1DemandsUploadPost()`
 
 ```php
-apiV1DemandsUploadPost($files, $parties, $order, $title, $description): \Imzala\Client\Model\ApiV1DemandsUploadPost201Response
+apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $send_invitations, $on_anchor_miss): \Imzala\Client\Model\ApiV1DemandsUploadPost201Response
 ```
 
 Dosya upload ile sözleşme oluştur (şablonsuz)
@@ -754,13 +1419,18 @@ $apiInstance = new Imzala\Client\Api\DemandsApi(
     $config
 );
 $files = array('/path/to/file.txt'); // \SplFileObject[] | 1 belge VEYA 1-20 görsel
-$parties = 'parties_example'; // string | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).
+$parties = 'parties_example'; // string | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.
+$idempotency_key = 'idempotency_key_example'; // string | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.
 $order = 'order_example'; // string | Çoklu görsel sırası (JSON array of indices, örnek \\\"[0,2,1]\\\")
 $title = 'title_example'; // string
 $description = 'description_example'; // string
+$field_template_id = 'field_template_id_example'; // string | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.
+$force = 'force_example'; // string | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.
+$send_invitations = 'send_invitations_example'; // string | `\\\"true\\\"` (veya `\\\"1\\\"`) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca `POST /api/v1/demands/{id}/parties/{partyId}/resend` çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`   döner (fail-closed). - **Açık değerler:** `\\\"true\\\"`, `\\\"1\\\"`, `\\\"all\\\"`, `\\\"email\\\"`, `\\\"sms\\\"`. - **Kapalı değerler:** `\\\"false\\\"`, `\\\"0\\\"`, `\\\"off\\\"`, `\\\"no\\\"`,   `\\\"hayir\\\"`, `\\\"hayır\\\"`. - Ad bilerek `dispatch_notifications` **değildir**: o   parametre `POST /api/v1/demands` ve `/demands/bulk`   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın `send_sms`/`send_email` bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (`dispatch.error = DISPATCH_TOO_MANY`), tarafları   `resend` ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine `GET /api/v1/demands?...` ile sonucu doğrulayın.
+$on_anchor_miss = 'on_anchor_miss_example'; // string | Çapa bulunamadığında ne yapılacağı. Yalnız `field_template_id` ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır. - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`   ise uygulanır; aksi halde yok sayılır, `block` uygulanır   ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner. - İmza alanlarında `drop` hiçbir koşulda uygulanmaz. - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).  Yanıttaki `data.field_layout.on_anchor_miss` istenen değil, **uygulanan** değeri taşır.
 
 try {
-    $result = $apiInstance->apiV1DemandsUploadPost($files, $parties, $order, $title, $description);
+    $result = $apiInstance->apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $send_invitations, $on_anchor_miss);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DemandsApi->apiV1DemandsUploadPost: ', $e->getMessage(), PHP_EOL;
@@ -772,14 +1442,85 @@ try {
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **files** | **\SplFileObject[]**| 1 belge VEYA 1-20 görsel | |
-| **parties** | **string**| JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu). | |
+| **parties** | **string**| JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir. | |
+| **idempotency_key** | **string**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII. | [optional] |
 | **order** | **string**| Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) | [optional] |
 | **title** | **string**|  | [optional] |
 | **description** | **string**|  | [optional] |
+| **field_template_id** | **string**| Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;. | [optional] |
+| **force** | **string**| Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için. | [optional] |
+| **send_invitations** | **string**| &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın. | [optional] |
+| **on_anchor_miss** | **string**| Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır. | [optional] |
 
 ### Return type
 
 [**\Imzala\Client\Model\ApiV1DemandsUploadPost201Response**](../Model/ApiV1DemandsUploadPost201Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `multipart/form-data`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1FieldTemplatesIdPreviewLayoutPost()`
+
+```php
+apiV1FieldTemplatesIdPreviewLayoutPost($id, $files, $on_anchor_miss): \Imzala\Client\Model\ApiV1FieldTemplatesIdPreviewLayoutPost200Response
+```
+
+Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+
+Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string | Alan Şablonu (FIELD_LAYOUT) kimliği
+$files = array('/path/to/file.txt'); // \SplFileObject[] | Tek PDF belge
+$on_anchor_miss = 'on_anchor_miss_example'; // string | `POST /api/v1/demands/upload` ile aynı semantik (yalnız sıkılaştırır, gönderilmezse `block`).
+
+try {
+    $result = $apiInstance->apiV1FieldTemplatesIdPreviewLayoutPost($id, $files, $on_anchor_miss);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1FieldTemplatesIdPreviewLayoutPost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**| Alan Şablonu (FIELD_LAYOUT) kimliği | |
+| **files** | **\SplFileObject[]**| Tek PDF belge | |
+| **on_anchor_miss** | **string**| &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;). | [optional] |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1FieldTemplatesIdPreviewLayoutPost200Response**](../Model/ApiV1FieldTemplatesIdPreviewLayoutPost200Response.md)
 
 ### Authorization
 
