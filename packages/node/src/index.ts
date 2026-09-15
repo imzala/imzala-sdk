@@ -1,6 +1,17 @@
 import { Configuration } from '../generated/configuration';
-import { AccountApi, DemandsApi, RemindersApi, TemplatesApi, TimestampsApi } from '../generated/api';
+import { AccountApi, ContactsApi, DemandsApi, RemindersApi, ReportsApi, TemplatesApi, TimestampsApi } from '../generated/api';
 import type {
+  ApiV1ContactsGet200ResponseData,
+  ApiV1ContactsPostRequest,
+  ApiV1DemandsBulkPost200ResponseData,
+  ApiV1DemandsBulkPostRequest,
+  ApiV1FieldTemplatesGet200ResponseData,
+  ApiV1ReportsGet200ResponseData,
+  ApiV1TimestampsGet200ResponseData,
+  ContactSummary,
+  FieldLayoutPreview,
+  FieldTemplateDetail,
+  TimestampListItem,
   ApiV1DemandsGet200ResponseData,
   ApiV1DemandsIdCancelPost200ResponseData,
   ApiV1DemandsIdCancelPostRequest,
@@ -25,10 +36,10 @@ import type {
   UpsertItemsRequest,
   UpsertItemsResponseData,
 } from '../generated/api';
-import { unwrap, unwrapRetryableGet } from './http';
+import { unwrap, unwrapIdempotentWrite, unwrapRetryableGet } from './http';
 import type { RetryConfig } from './http';
 import { toUploadFile } from './files';
-import type { CreateTimestampParams, UploadDemandParams } from './files';
+import type { CreateTimestampParams, FileInput, UploadDemandParams } from './files';
 
 export * from './errors';
 export * from './errorCodes';
@@ -40,6 +51,22 @@ export type { FileInput, UploadDemandParams, UploadPartyInput, CreateTimestampPa
 // `@imzala/node/../generated` themselves (that path isn't part of the
 // public package export map).
 export type {
+  ApiV1ContactsGet200ResponseData as ContactList,
+  ApiV1ContactsPostRequest as CreateContactRequest,
+  ApiV1DemandsBulkPost200ResponseData as BulkCreateResult,
+  ApiV1DemandsBulkPostRequest as BulkCreateDemandsRequest,
+  ApiV1FieldTemplatesGet200ResponseData as FieldTemplateList,
+  ApiV1ReportsGet200ResponseData as ReportSummary,
+  ApiV1TimestampsGet200ResponseData as TimestampList,
+  ContactSummary,
+  FieldLayoutDiagnostic,
+  FieldLayoutPreview,
+  FieldLayoutUnresolved,
+  FieldLayoutWarning,
+  FieldTemplateDetail,
+  FieldTemplateListItem,
+  FieldTemplateParty,
+  TimestampListItem,
   ApiV1DemandsIdEmbedSessionPost200ResponseData as EmbedSession,
   ApiV1DemandsIdRemindersPost200ResponseData as ReminderDispatchResult,
   ApiV1MeGet200ResponseData as MeInfo,
@@ -73,7 +100,8 @@ export interface ImzalaOptions {
    * Max auto-retry attempts for safe, idempotent **GET** requests that fail
    * with 429 (rate limited) or 5xx (server error). Defaults to 2. Set to
    * `0` to disable. Writes (`demands.create`, `sendReminder`, ...) are
-   * never retried, regardless of this setting — see the SDK README.
+   * never retried by this setting. A write sent with an idempotency key is
+   * retried once after a 429, independently of it — see the SDK README.
    */
   maxRetries?: number;
   /** Base delay (ms) for the exponential backoff between retries. Defaults to 300. */
@@ -108,13 +136,58 @@ export interface UpdateTemplateParams {
   category?: string;
 }
 
+export interface ListFieldTemplatesParams {
+  page?: number;
+  /** 1 to 100; larger values are clamped, not rejected. */
+  limit?: number;
+}
+
+export interface PreviewLayoutParams {
+  /** The PDF to try the layout on. */
+  files: FileInput[];
+  /** See `UploadDemandParams.onAnchorMiss`. */
+  onAnchorMiss?: 'block' | 'drop';
+}
+
+export interface ListContactsParams {
+  q?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  companyId?: string;
+  archived?: boolean;
+}
+
+export interface ListTimestampsParams {
+  q?: string;
+  status?: string;
+  /** ISO date (YYYY-MM-DD) lower bound. */
+  from?: string;
+  /** ISO date (YYYY-MM-DD) upper bound. */
+  to?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+export interface WriteOptions {
+  /**
+   * Makes the request safe to retry: the server does not create a second
+   * record for a repeated key. With a key, one retry is made after a 429.
+   */
+  idempotencyKey?: string;
+}
+
 class TemplatesResource {
   constructor(
     private readonly api: TemplatesApi,
     private readonly retryConfig: RetryConfig,
   ) {}
 
-  /** Lists your active templates (one page). GET — safe to auto-retry. */
+  /**
+   * Lists your active templates (one page). `limit` is clamped to 1..100;
+   * `page` below 1 throws `INVALID_PAGE`. GET — safe to auto-retry.
+   */
   list(params: ListTemplatesParams = {}): Promise<ApiV1TemplatesGet200ResponseData> {
     return unwrapRetryableGet(
       () => this.api.apiV1TemplatesGet({ page: params.page, limit: params.limit }),
@@ -186,8 +259,10 @@ class TemplatesResource {
   }
 
   /**
-   * Deletes (soft-deletes) a template. Existing demands created from it are
-   * unaffected. DELETE — never auto-retried.
+   * Deletes a template. The record is not erased immediately: it is marked
+   * deleted and kept for 30 days. Existing demands created from it are
+   * unaffected. A template with active (draft or pending) demands cannot be
+   * deleted and throws `TEMPLATE_IN_USE`. DELETE — never auto-retried.
    */
   delete(id: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
     return unwrap(this.api.apiV1TemplatesIdDelete({ id }));
@@ -202,11 +277,33 @@ class DemandsResource {
   ) {}
 
   /**
-   * Creates a new demand (contract) from a template. POST — never
-   * auto-retried (a retried create would produce a duplicate demand).
+   * Creates a new demand (contract) from a template.
+   *
+   * Without `idempotencyKey` this is a single attempt: a retried create
+   * would produce a duplicate demand. With a key, a repeated request does
+   * not create a second demand, so one retry is made after a 429. A key
+   * reused with a different body throws `IDEMPOTENCY_KEY_REUSED`.
+   *
+   * An `expiry_date` that is not a real calendar day throws
+   * `INVALID_EXPIRY_DATE`.
    */
-  create(body: CreateDemandRequest): Promise<CreatedDemand> {
-    return unwrap(this.api.apiV1DemandsPost({ createDemandRequest: body }));
+  create(body: CreateDemandRequest, options: WriteOptions = {}): Promise<CreatedDemand> {
+    return unwrapIdempotentWrite(
+      () => this.api.apiV1DemandsPost({ createDemandRequest: body, idempotencyKey: options.idempotencyKey }),
+      { idempotencyKey: options.idempotencyKey, retryBaseDelayMs: this.retryConfig.retryBaseDelayMs },
+    );
+  }
+
+  /**
+   * Creates up to 10 demands from one template in a single request. Rows are
+   * created independently; check `failed` and each result's `status`.
+   *
+   * This endpoint has no idempotency key, so it is never retried: a retried
+   * batch would create the demands again. Split larger lists into batches
+   * of 10 yourself.
+   */
+  createBulk(body: ApiV1DemandsBulkPostRequest): Promise<ApiV1DemandsBulkPost200ResponseData> {
+    return unwrap(this.api.apiV1DemandsBulkPost({ apiV1DemandsBulkPostRequest: body }));
   }
 
   /** Returns a demand's status + per-party signing progress. GET — safe to auto-retry. */
@@ -217,6 +314,8 @@ class DemandsResource {
   /**
    * Places (replaces) signature/form fields on a demand's pages.
    * See `UpsertItemsRequest.page_ids` for full-replace vs per-page-replace semantics.
+   * Every item needs an integer `page_id` (`PAGE_ID_REQUIRED`); an unknown
+   * `item_type` throws `INVALID_ITEM_TYPE`.
    */
   addItems(id: string, body: UpsertItemsRequest): Promise<UpsertItemsResponseData> {
     return unwrap(this.api.apiV1DemandsIdItemsPost({ id, upsertItemsRequest: body }));
@@ -228,24 +327,33 @@ class DemandsResource {
    */
   uploadDocument(params: UploadDemandParams): Promise<CreatedDemandUpload> {
     const files = params.files.map(toUploadFile);
-    return unwrap(
-      this.api.apiV1DemandsUploadPost({
-        files,
-        parties: JSON.stringify(params.parties),
-        order: params.order ? JSON.stringify(params.order) : undefined,
-        title: params.title,
-        description: params.description,
-      }),
+    return unwrapIdempotentWrite(
+      () =>
+        this.api.apiV1DemandsUploadPost({
+          files,
+          parties: JSON.stringify(params.parties),
+          order: params.order ? JSON.stringify(params.order) : undefined,
+          title: params.title,
+          description: params.description,
+          idempotencyKey: params.idempotencyKey,
+          fieldTemplateId: params.fieldTemplateId,
+          onAnchorMiss: params.onAnchorMiss,
+          sendInvitations: params.sendInvitations,
+          force: params.force ? 'true' : undefined,
+        }),
+      { idempotencyKey: params.idempotencyKey, retryBaseDelayMs: this.retryConfig.retryBaseDelayMs },
     );
   }
 
   /**
    * Triggers an immediate SMS/email reminder to a demand's unsigned
    * parties. Independent of the template/demand's scheduled
-   * `reminder_settings`. Subject to a 5-minute anti-spam window (override
-   * with `{force: true}`) and a hard per-person cap of 3 reminders per
-   * channel (not overridable). POST — never auto-retried (a retried call
-   * could double-send).
+   * `reminder_settings`. Subject to a 5-minute anti-spam window (429
+   * `RATE_LIMITED`, override with `{force: true}`) and a hard per-person cap
+   * of 3 reminders per channel (not overridable). A draft, completed,
+   * cancelled or expired demand throws 409 (`DEMAND_NOT_DISPATCHED`,
+   * `DEMAND_NOT_DISPATCHABLE`, `DEMAND_EXPIRED`). POST — never auto-retried
+   * (a retried call could double-send).
    */
   sendReminder(
     id: string,
@@ -292,6 +400,15 @@ class DemandsResource {
    * a `Buffer`. Only produced for `COMPLETED` demands. Pass `{lang: 'en'}` for
    * English. GET — safe to auto-retry.
    */
+  /**
+   * Downloads the PDF of one document in a multi-document envelope as a
+   * `Buffer`. For the whole contract use `getPdf(id)`. GET.
+   */
+  async getDocumentPdf(id: string, documentId: string): Promise<Buffer> {
+    const res = await this.api.apiV1DemandsIdBelgeDocumentIdPdfGet({ id, documentId }, { responseType: 'arraybuffer' });
+    return Buffer.from(res.data as unknown as ArrayBuffer);
+  }
+
   async getCertificate(id: string, params: { lang?: string } = {}): Promise<Buffer> {
     const res = await this.api.apiV1DemandsIdCertificateGet(
       { id, lang: params.lang },
@@ -375,25 +492,169 @@ class EmbedResource {
 }
 
 class TimestampsResource {
-  constructor(private readonly api: TimestampsApi) {}
+  constructor(
+    private readonly api: TimestampsApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
 
   /**
    * RFC 3161-timestamps a file via TÜBİTAK KAMU SM TSA (existence +
    * integrity proof — not a signature; see `TimestampRecord` for details).
    * Pass `idempotencyKey` to make retries safe (5-minute window, no
-   * duplicate credit spend).
+   * duplicate credit spend); with a key, one retry is made after a 429.
    */
   create(params: CreateTimestampParams): Promise<TimestampRecord> {
     const file = toUploadFile(params);
+    return unwrapIdempotentWrite(
+      () =>
+        this.api.apiV1TimestampsPost({
+          file,
+          idempotencyKey: params.idempotencyKey,
+          description: params.description,
+          ownerFirstName: params.ownerFirstName,
+          ownerLastName: params.ownerLastName,
+        }),
+      { idempotencyKey: params.idempotencyKey, retryBaseDelayMs: this.retryConfig.retryBaseDelayMs },
+    );
+  }
+
+  /** Lists your timestamp records (one page). GET — safe to auto-retry. */
+  list(params: ListTimestampsParams = {}): Promise<ApiV1TimestampsGet200ResponseData> {
+    return unwrapRetryableGet(
+      () =>
+        this.api.apiV1TimestampsGet({
+          q: params.q,
+          status: params.status,
+          from: params.from,
+          to: params.to,
+          page: params.page,
+          limit: params.limit,
+          sort: params.sort,
+        }),
+      this.retryConfig,
+    );
+  }
+
+  /** Returns one timestamp record. GET — safe to auto-retry. */
+  get(id: string): Promise<TimestampListItem> {
+    return unwrapRetryableGet(() => this.api.apiV1TimestampsIdGet({ id }), this.retryConfig);
+  }
+}
+
+class FieldTemplatesResource {
+  constructor(
+    private readonly templatesApi: TemplatesApi,
+    private readonly demandsApi: DemandsApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
+
+  /**
+   * Lists your field templates. A field template is separate from a contract
+   * template: it describes where fields land on an uploaded PDF, located by
+   * anchor text. GET — safe to auto-retry.
+   */
+  list(params: ListFieldTemplatesParams = {}): Promise<ApiV1FieldTemplatesGet200ResponseData> {
+    return unwrapRetryableGet(
+      () => this.templatesApi.apiV1FieldTemplatesGet({ page: params.page, limit: params.limit }),
+      this.retryConfig,
+    );
+  }
+
+  /**
+   * Returns a field template's roles and field counts. A contract template
+   * id throws `TEMPLATE_NOT_FOUND`: the two are different kinds. GET — safe
+   * to auto-retry.
+   */
+  get(id: string): Promise<FieldTemplateDetail> {
+    return unwrapRetryableGet(() => this.templatesApi.apiV1FieldTemplatesIdGet({ id }), this.retryConfig);
+  }
+
+  /**
+   * Dry run: tries the field template's layout on a PDF without creating
+   * anything or spending credit, and reports resolved fields and unresolved
+   * anchors separately. The cheapest way to avoid surprises before
+   * `demands.uploadDocument({ fieldTemplateId })`. Rate limited per user.
+   * POST, but side-effect free.
+   */
+  previewLayout(id: string, params: PreviewLayoutParams): Promise<FieldLayoutPreview> {
     return unwrap(
-      this.api.apiV1TimestampsPost({
-        file,
-        idempotencyKey: params.idempotencyKey,
-        description: params.description,
-        ownerFirstName: params.ownerFirstName,
-        ownerLastName: params.ownerLastName,
+      this.demandsApi.apiV1FieldTemplatesIdPreviewLayoutPost({
+        id,
+        files: params.files.map(toUploadFile),
+        onAnchorMiss: params.onAnchorMiss,
       }),
     );
+  }
+}
+
+class ContactsResource {
+  constructor(
+    private readonly api: ContactsApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
+
+  /** Lists contacts in your workspace (one page). GET — safe to auto-retry. */
+  list(params: ListContactsParams = {}): Promise<ApiV1ContactsGet200ResponseData> {
+    return unwrapRetryableGet(
+      () =>
+        this.api.apiV1ContactsGet({
+          q: params.q,
+          archived: params.archived,
+          companyId: params.companyId,
+          sort: params.sort,
+          page: params.page,
+          limit: params.limit,
+        }),
+      this.retryConfig,
+    );
+  }
+
+  /** Walks every page of contacts, yielding one contact at a time. */
+  async *listAll(params: ListContactsParams = {}): AsyncGenerator<ContactSummary, void, undefined> {
+    const requestedLimit = params.limit;
+    let page = params.page ?? 1;
+    let yielded = 0;
+
+    for (;;) {
+      const result = await this.list({ ...params, page, limit: requestedLimit });
+      const contacts = result.contacts ?? [];
+      for (const contact of contacts) {
+        yield contact;
+      }
+      yielded += contacts.length;
+
+      if (contacts.length === 0) break;
+      const total = result.total;
+      if (typeof total === 'number' && yielded >= total) break;
+      const effectiveLimit = result.limit ?? requestedLimit;
+      if (typeof effectiveLimit === 'number' && contacts.length < effectiveLimit) break;
+      page = (result.page ?? page) + 1;
+    }
+  }
+
+  /**
+   * Adds a contact. An active contact with the same e-mail or phone throws
+   * `CONTACT_DUPLICATE`. This endpoint has no idempotency key, so it is
+   * never retried. POST.
+   */
+  create(body: ApiV1ContactsPostRequest): Promise<ContactSummary> {
+    return unwrap(this.api.apiV1ContactsPost({ apiV1ContactsPostRequest: body }));
+  }
+}
+
+class ReportsResource {
+  constructor(
+    private readonly api: ReportsApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
+
+  /**
+   * Returns aggregate demand counts for your workspace (pending, completed,
+   * cancelled, expired, created this month). Counts only, no personal data.
+   * GET — safe to auto-retry.
+   */
+  get(): Promise<ApiV1ReportsGet200ResponseData> {
+    return unwrapRetryableGet(() => this.api.apiV1ReportsGet(), this.retryConfig);
   }
 }
 
@@ -419,6 +680,9 @@ export class Imzala {
   readonly demands: DemandsResource;
   readonly embed: EmbedResource;
   readonly timestamps: TimestampsResource;
+  readonly fieldTemplates: FieldTemplatesResource;
+  readonly contacts: ContactsResource;
+  readonly reports: ReportsResource;
 
   private readonly accountApi: AccountApi;
   private readonly retryConfig: RetryConfig;
@@ -449,14 +713,19 @@ export class Imzala {
     const remindersApi = new RemindersApi(configuration);
     const templatesApi = new TemplatesApi(configuration);
     const timestampsApi = new TimestampsApi(configuration);
+    const contactsApi = new ContactsApi(configuration);
+    const reportsApi = new ReportsApi(configuration);
 
     this.templates = new TemplatesResource(templatesApi, this.retryConfig);
     this.demands = new DemandsResource(demandsApi, remindersApi, this.retryConfig);
     this.embed = new EmbedResource(demandsApi);
-    this.timestamps = new TimestampsResource(timestampsApi);
+    this.timestamps = new TimestampsResource(timestampsApi, this.retryConfig);
+    this.fieldTemplates = new FieldTemplatesResource(templatesApi, demandsApi, this.retryConfig);
+    this.contacts = new ContactsResource(contactsApi, this.retryConfig);
+    this.reports = new ReportsResource(reportsApi, this.retryConfig);
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the `timestamps` scope. GET — safe to auto-retry. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET — safe to auto-retry. */
   me(): Promise<ApiV1MeGet200ResponseData> {
     return unwrapRetryableGet(() => this.accountApi.apiV1MeGet(), this.retryConfig);
   }

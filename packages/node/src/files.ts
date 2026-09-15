@@ -48,6 +48,37 @@ export interface UploadDemandParams {
   order?: number[];
   title?: string;
   description?: string;
+  /**
+   * Makes the upload safe to retry: a second request with the same key does
+   * not create a second demand. With a key, one retry is made after a 429.
+   */
+  idempotencyKey?: string;
+  /**
+   * Field template (`kind: FIELD_LAYOUT`) whose layout is applied to the
+   * upload. The upload must then be a single PDF. The layout is resolved
+   * before the demand is created or credit is spent; a 422 creates nothing.
+   * Dry-run first with `fieldTemplates.previewLayout`.
+   */
+  fieldTemplateId?: string;
+  /**
+   * Only with `fieldTemplateId`. Can tighten the template, never relax it:
+   * omitted means `block`; `drop` applies only if every affected field is
+   * already set to drop in the template (otherwise `block` is used and the
+   * response carries an `ON_ANCHOR_MISS_NOT_RELAXED` warning). Signature
+   * fields are never dropped.
+   */
+  onAnchorMiss?: 'block' | 'drop';
+  /**
+   * Sends signing invitations in the same request. **Off by default on this
+   * endpoint.** `'true'` or `'all'` sends on every channel, `'email'` or
+   * `'sms'` limits it, `'false'` sends nothing.
+   */
+  sendInvitations?: 'true' | 'all' | 'email' | 'sms' | 'false';
+  /**
+   * Deliberately bypass the duplicate check (`DUPLICATE_SUSPECTED`). Only
+   * meaningful for calls without `idempotencyKey`.
+   */
+  force?: boolean;
 }
 
 export interface CreateTimestampParams extends FileInput {
