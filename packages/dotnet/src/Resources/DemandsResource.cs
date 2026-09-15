@@ -17,6 +17,9 @@ public sealed class DemandsResource
     private static readonly JsonSerializerOptions PartiesJsonOptions = new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        // Keep non-ASCII names readable (Ayşe, not Ay\u015fe) while still
+        // escaping HTML-sensitive characters, unlike UnsafeRelaxedJsonEscaping.
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All),
     };
 
     internal DemandsResource(IDemandsApi api, IRemindersApi remindersApi, RetryConfig retry)
@@ -31,7 +34,7 @@ public sealed class DemandsResource
     /// auto-retried (a retried create would produce a duplicate demand).
     /// </summary>
     public Task<CreatedDemand> CreateAsync(CreateDemandRequest body, CancellationToken cancellationToken = default) =>
-        Http.Unwrap(_api.ApiV1DemandsPostAsync(body, cancellationToken), r => r.Success, r => r.Data);
+        Http.Unwrap(_api.ApiV1DemandsPostAsync(body, idempotencyKey: null, cancellationToken: cancellationToken), r => r.Success, r => r.Data);
 
     /// <summary>Returns a demand's status + per-party signing progress. GET — safe to auto-retry.</summary>
     public Task<DemandStatus> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
@@ -55,7 +58,16 @@ public sealed class DemandsResource
         var orderJson = request.Order is not null ? JsonSerializer.Serialize(request.Order) : null;
 
         return Http.Unwrap(
-            _api.ApiV1DemandsUploadPostAsync(files, partiesJson, orderJson, request.Title, request.Description, cancellationToken),
+            // Named arguments: the generated signature puts idempotencyKey between
+            // parties and order, so positional arguments would shift every later slot.
+            _api.ApiV1DemandsUploadPostAsync(
+                files: files,
+                parties: partiesJson,
+                idempotencyKey: null,
+                order: orderJson,
+                title: request.Title,
+                description: request.Description,
+                cancellationToken: cancellationToken),
             r => r.Success,
             r => r.Data);
     }

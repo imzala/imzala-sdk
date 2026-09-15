@@ -1,8 +1,8 @@
 /*
  * imzala External API
- * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.6.0 · **Son güncelleme:** 2026-06-30  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız `X-Workspace-Id` header'ı göndermeniz gerekir (organizasyon UUID'si). Kişisel anahtarlar için bu header gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Rate Limit - 60 istek/dakika per API key - Aşılırsa 429 döner  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (6) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti |  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type` — yukarıdaki 6 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme. 
+ * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.8.6 · **Son güncelleme:** 2026-09-10  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız `X-Workspace-Id` header'ı göndermeniz gerekir (organizasyon UUID'si). Kişisel anahtarlar için bu header gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (8) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type` — yukarıdaki 8 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme. 
  *
- * The version of the OpenAPI document: 1.7.0
+ * The version of the OpenAPI document: 1.8.6
  * Contact: destek@imzala.org
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -19,6 +19,16 @@ import org.imzala.client.generated.Configuration;
 import org.imzala.client.generated.Pair;
 
 import org.imzala.client.generated.model.ApiError;
+import org.imzala.client.generated.model.ApiV1DemandsBulkPost200Response;
+import org.imzala.client.generated.model.ApiV1DemandsBulkPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPost200Response;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsDocIdPatchRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsGet200Response;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsOrderPutRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsPost201Response;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsPostRequest;
 import org.imzala.client.generated.model.ApiV1DemandsGet200Response;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPost200Response;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPostRequest;
@@ -30,10 +40,12 @@ import org.imzala.client.generated.model.ApiV1DemandsIdPartiesPartyIdResendPost2
 import org.imzala.client.generated.model.ApiV1DemandsIdTimelineGet200Response;
 import org.imzala.client.generated.model.ApiV1DemandsPost201Response;
 import org.imzala.client.generated.model.ApiV1DemandsUploadPost201Response;
+import org.imzala.client.generated.model.ApiV1FieldTemplatesIdPreviewLayoutPost200Response;
 import org.imzala.client.generated.model.ApiV1TemplatesGet401Response;
 import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200Response;
 import org.imzala.client.generated.model.ApiV1TemplatesIdGet404Response;
 import org.imzala.client.generated.model.CreateDemandRequest;
+import org.imzala.client.generated.model.FieldLayoutUnresolved;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -71,7 +83,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-07-03T05:18:13.896742+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T10:01:25.885782+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DemandsApi {
   /**
    * Utility class for extending HttpRequest.Builder functionality.
@@ -186,6 +198,1270 @@ public class DemandsApi {
       file.deleteOnExit(); // best effort cleanup
     }
     return file;
+  }
+
+  /**
+   * Toplu sözleşme oluştur (tek şablondan N alıcı)
+   * Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \&quot;bulk send\&quot; modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - &#x60;rows&#x60; en fazla 10 (aşarsa 400 &#x60;BULK_MAX_10&#x60;). Daha büyük listeler   istemci tarafında 10&#39;arlı parçalara bölünür. - Kredi: sabit \&quot;1 satır &#x3D; 1 kredi\&quot; değildir, her satırın maliyeti   &#x60;POST /demands&#x60; ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; &#x60;eidas_timestamp&#x60; seçilirse   satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES&#39;te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   &#x60;ocr_id&#x60; ve &#x60;liveness&#x60; +1 kredi, diğerleri 0&#39;dır. &#x60;options&#x60;   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır &#x60;failed&#x60; (&#x60;error: \&quot;INSUFFICIENT_CREDITS\&quot;&#x60;)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine &#x60;failed&#x60; döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (&#x60;demand_id&#x60; response&#39;ta bulunur, davet   gönderilmemiştir). - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace&#39;in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar &#x60;failed&#x60; olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - &#x60;X-Workspace-Id&#x60; header&#39;ı ile organizasyon workspace&#39;i seçilebilir.  Rate limit: 5 istek/dakika (API key başına). 
+   * @param apiV1DemandsBulkPostRequest  (required)
+   * @param xWorkspaceId Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  (optional)
+   * @return ApiV1DemandsBulkPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsBulkPost200Response apiV1DemandsBulkPost(@javax.annotation.Nonnull ApiV1DemandsBulkPostRequest apiV1DemandsBulkPostRequest, @javax.annotation.Nullable UUID xWorkspaceId) throws ApiException {
+    return apiV1DemandsBulkPost(apiV1DemandsBulkPostRequest, xWorkspaceId, null);
+  }
+
+  /**
+   * Toplu sözleşme oluştur (tek şablondan N alıcı)
+   * Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \&quot;bulk send\&quot; modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - &#x60;rows&#x60; en fazla 10 (aşarsa 400 &#x60;BULK_MAX_10&#x60;). Daha büyük listeler   istemci tarafında 10&#39;arlı parçalara bölünür. - Kredi: sabit \&quot;1 satır &#x3D; 1 kredi\&quot; değildir, her satırın maliyeti   &#x60;POST /demands&#x60; ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; &#x60;eidas_timestamp&#x60; seçilirse   satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES&#39;te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   &#x60;ocr_id&#x60; ve &#x60;liveness&#x60; +1 kredi, diğerleri 0&#39;dır. &#x60;options&#x60;   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır &#x60;failed&#x60; (&#x60;error: \&quot;INSUFFICIENT_CREDITS\&quot;&#x60;)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine &#x60;failed&#x60; döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (&#x60;demand_id&#x60; response&#39;ta bulunur, davet   gönderilmemiştir). - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace&#39;in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar &#x60;failed&#x60; olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - &#x60;X-Workspace-Id&#x60; header&#39;ı ile organizasyon workspace&#39;i seçilebilir.  Rate limit: 5 istek/dakika (API key başına). 
+   * @param apiV1DemandsBulkPostRequest  (required)
+   * @param xWorkspaceId Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsBulkPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsBulkPost200Response apiV1DemandsBulkPost(@javax.annotation.Nonnull ApiV1DemandsBulkPostRequest apiV1DemandsBulkPostRequest, @javax.annotation.Nullable UUID xWorkspaceId, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsBulkPost200Response> localVarResponse = apiV1DemandsBulkPostWithHttpInfo(apiV1DemandsBulkPostRequest, xWorkspaceId, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Toplu sözleşme oluştur (tek şablondan N alıcı)
+   * Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \&quot;bulk send\&quot; modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - &#x60;rows&#x60; en fazla 10 (aşarsa 400 &#x60;BULK_MAX_10&#x60;). Daha büyük listeler   istemci tarafında 10&#39;arlı parçalara bölünür. - Kredi: sabit \&quot;1 satır &#x3D; 1 kredi\&quot; değildir, her satırın maliyeti   &#x60;POST /demands&#x60; ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; &#x60;eidas_timestamp&#x60; seçilirse   satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES&#39;te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   &#x60;ocr_id&#x60; ve &#x60;liveness&#x60; +1 kredi, diğerleri 0&#39;dır. &#x60;options&#x60;   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır &#x60;failed&#x60; (&#x60;error: \&quot;INSUFFICIENT_CREDITS\&quot;&#x60;)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine &#x60;failed&#x60; döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (&#x60;demand_id&#x60; response&#39;ta bulunur, davet   gönderilmemiştir). - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace&#39;in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar &#x60;failed&#x60; olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - &#x60;X-Workspace-Id&#x60; header&#39;ı ile organizasyon workspace&#39;i seçilebilir.  Rate limit: 5 istek/dakika (API key başına). 
+   * @param apiV1DemandsBulkPostRequest  (required)
+   * @param xWorkspaceId Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  (optional)
+   * @return ApiResponse&lt;ApiV1DemandsBulkPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsBulkPost200Response> apiV1DemandsBulkPostWithHttpInfo(@javax.annotation.Nonnull ApiV1DemandsBulkPostRequest apiV1DemandsBulkPostRequest, @javax.annotation.Nullable UUID xWorkspaceId) throws ApiException {
+    return apiV1DemandsBulkPostWithHttpInfo(apiV1DemandsBulkPostRequest, xWorkspaceId, null);
+  }
+
+  /**
+   * Toplu sözleşme oluştur (tek şablondan N alıcı)
+   * Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \&quot;bulk send\&quot; modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - &#x60;rows&#x60; en fazla 10 (aşarsa 400 &#x60;BULK_MAX_10&#x60;). Daha büyük listeler   istemci tarafında 10&#39;arlı parçalara bölünür. - Kredi: sabit \&quot;1 satır &#x3D; 1 kredi\&quot; değildir, her satırın maliyeti   &#x60;POST /demands&#x60; ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; &#x60;eidas_timestamp&#x60; seçilirse   satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES&#39;te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   &#x60;ocr_id&#x60; ve &#x60;liveness&#x60; +1 kredi, diğerleri 0&#39;dır. &#x60;options&#x60;   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır &#x60;failed&#x60; (&#x60;error: \&quot;INSUFFICIENT_CREDITS\&quot;&#x60;)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine &#x60;failed&#x60; döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (&#x60;demand_id&#x60; response&#39;ta bulunur, davet   gönderilmemiştir). - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace&#39;in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar &#x60;failed&#x60; olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - &#x60;X-Workspace-Id&#x60; header&#39;ı ile organizasyon workspace&#39;i seçilebilir.  Rate limit: 5 istek/dakika (API key başına). 
+   * @param apiV1DemandsBulkPostRequest  (required)
+   * @param xWorkspaceId Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsBulkPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsBulkPost200Response> apiV1DemandsBulkPostWithHttpInfo(@javax.annotation.Nonnull ApiV1DemandsBulkPostRequest apiV1DemandsBulkPostRequest, @javax.annotation.Nullable UUID xWorkspaceId, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsBulkPostRequestBuilder(apiV1DemandsBulkPostRequest, xWorkspaceId, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsBulkPost", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsBulkPost200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsBulkPost200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsBulkPost200Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsBulkPost200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsBulkPostRequestBuilder(@javax.annotation.Nonnull ApiV1DemandsBulkPostRequest apiV1DemandsBulkPostRequest, @javax.annotation.Nullable UUID xWorkspaceId, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'apiV1DemandsBulkPostRequest' is set
+    if (apiV1DemandsBulkPostRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'apiV1DemandsBulkPostRequest' when calling apiV1DemandsBulkPost");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/bulk";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    if (xWorkspaceId != null) {
+      localVarRequestBuilder.header("X-Workspace-Id", xWorkspaceId.toString());
+    }
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsBulkPostRequest);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Zarfı imzaya gönder (yayınla + davet)
+   * Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, &#x60;DRAFT&#x60; ise sözleşmeyi &#x60;PENDING&#x60;&#39;e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki &#x60;/documents*&#x60; ailesinin bayrak kapısı (&#x60;ENVELOPE_DECISION_ENFORCE&#x60;) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — &#x60;dispatch_notifications: false&#x60; ile oluşturulur, ardından &#x60;POST .../documents&#x60; / &#x60;POST .../documents/upload&#x60; ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; &#x60;send_invitations&#x60; gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir.  **Kredi:** tek tahsilat noktası burasıdır (&#x60;reconcileDemandSigningCost&#x60;). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (&#x60;dispatched: false&#x60; döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. &#x60;v1ResendRateLimiter&#x60;, &#x60;/parties/{partyId}/resend&#x60; ile AYNI dakika-bazlı freni paylaşır). 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDispatchPostRequest  (optional)
+   * @return ApiV1DemandsDemandIdDispatchPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDispatchPost200Response apiV1DemandsDemandIdDispatchPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable ApiV1DemandsDemandIdDispatchPostRequest apiV1DemandsDemandIdDispatchPostRequest) throws ApiException {
+    return apiV1DemandsDemandIdDispatchPost(demandId, apiV1DemandsDemandIdDispatchPostRequest, null);
+  }
+
+  /**
+   * Zarfı imzaya gönder (yayınla + davet)
+   * Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, &#x60;DRAFT&#x60; ise sözleşmeyi &#x60;PENDING&#x60;&#39;e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki &#x60;/documents*&#x60; ailesinin bayrak kapısı (&#x60;ENVELOPE_DECISION_ENFORCE&#x60;) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — &#x60;dispatch_notifications: false&#x60; ile oluşturulur, ardından &#x60;POST .../documents&#x60; / &#x60;POST .../documents/upload&#x60; ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; &#x60;send_invitations&#x60; gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir.  **Kredi:** tek tahsilat noktası burasıdır (&#x60;reconcileDemandSigningCost&#x60;). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (&#x60;dispatched: false&#x60; döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. &#x60;v1ResendRateLimiter&#x60;, &#x60;/parties/{partyId}/resend&#x60; ile AYNI dakika-bazlı freni paylaşır). 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDispatchPostRequest  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDispatchPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDispatchPost200Response apiV1DemandsDemandIdDispatchPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable ApiV1DemandsDemandIdDispatchPostRequest apiV1DemandsDemandIdDispatchPostRequest, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDispatchPost200Response> localVarResponse = apiV1DemandsDemandIdDispatchPostWithHttpInfo(demandId, apiV1DemandsDemandIdDispatchPostRequest, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Zarfı imzaya gönder (yayınla + davet)
+   * Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, &#x60;DRAFT&#x60; ise sözleşmeyi &#x60;PENDING&#x60;&#39;e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki &#x60;/documents*&#x60; ailesinin bayrak kapısı (&#x60;ENVELOPE_DECISION_ENFORCE&#x60;) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — &#x60;dispatch_notifications: false&#x60; ile oluşturulur, ardından &#x60;POST .../documents&#x60; / &#x60;POST .../documents/upload&#x60; ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; &#x60;send_invitations&#x60; gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir.  **Kredi:** tek tahsilat noktası burasıdır (&#x60;reconcileDemandSigningCost&#x60;). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (&#x60;dispatched: false&#x60; döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. &#x60;v1ResendRateLimiter&#x60;, &#x60;/parties/{partyId}/resend&#x60; ile AYNI dakika-bazlı freni paylaşır). 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDispatchPostRequest  (optional)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDispatchPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDispatchPost200Response> apiV1DemandsDemandIdDispatchPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable ApiV1DemandsDemandIdDispatchPostRequest apiV1DemandsDemandIdDispatchPostRequest) throws ApiException {
+    return apiV1DemandsDemandIdDispatchPostWithHttpInfo(demandId, apiV1DemandsDemandIdDispatchPostRequest, null);
+  }
+
+  /**
+   * Zarfı imzaya gönder (yayınla + davet)
+   * Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, &#x60;DRAFT&#x60; ise sözleşmeyi &#x60;PENDING&#x60;&#39;e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki &#x60;/documents*&#x60; ailesinin bayrak kapısı (&#x60;ENVELOPE_DECISION_ENFORCE&#x60;) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — &#x60;dispatch_notifications: false&#x60; ile oluşturulur, ardından &#x60;POST .../documents&#x60; / &#x60;POST .../documents/upload&#x60; ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; &#x60;send_invitations&#x60; gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir.  **Kredi:** tek tahsilat noktası burasıdır (&#x60;reconcileDemandSigningCost&#x60;). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (&#x60;dispatched: false&#x60; döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. &#x60;v1ResendRateLimiter&#x60;, &#x60;/parties/{partyId}/resend&#x60; ile AYNI dakika-bazlı freni paylaşır). 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDispatchPostRequest  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDispatchPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDispatchPost200Response> apiV1DemandsDemandIdDispatchPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable ApiV1DemandsDemandIdDispatchPostRequest apiV1DemandsDemandIdDispatchPostRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDispatchPostRequestBuilder(demandId, apiV1DemandsDemandIdDispatchPostRequest, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDispatchPost", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDispatchPost200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDispatchPost200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDispatchPost200Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDispatchPost200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDispatchPostRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable ApiV1DemandsDemandIdDispatchPostRequest apiV1DemandsDemandIdDispatchPostRequest, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDispatchPost");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/dispatch"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsDemandIdDispatchPostRequest);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Belgeye imzacı ata (tam-küme replace)
+   * Belgeye atanmış imzacı kümesini **tam olarak** &#x60;party_ids&#x60; ile değiştirir (eski atamalar silinir, yenileri yazılır). &#x60;party_ids&#x60; boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 &#x60;INVALID_PARTY_ID&#x60; — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 &#x60;ASSIGNMENT_HAS_DECISION&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest  (required)
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, null);
+  }
+
+  /**
+   * Belgeye imzacı ata (tam-küme replace)
+   * Belgeye atanmış imzacı kümesini **tam olarak** &#x60;party_ids&#x60; ile değiştirir (eski atamalar silinir, yenileri yazılır). &#x60;party_ids&#x60; boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 &#x60;INVALID_PARTY_ID&#x60; — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 &#x60;ASSIGNMENT_HAS_DECISION&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> localVarResponse = apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Belgeye imzacı ata (tam-küme replace)
+   * Belgeye atanmış imzacı kümesini **tam olarak** &#x60;party_ids&#x60; ile değiştirir (eski atamalar silinir, yenileri yazılır). &#x60;party_ids&#x60; boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 &#x60;INVALID_PARTY_ID&#x60; — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 &#x60;ASSIGNMENT_HAS_DECISION&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest  (required)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, null);
+  }
+
+  /**
+   * Belgeye imzacı ata (tam-küme replace)
+   * Belgeye atanmış imzacı kümesini **tam olarak** &#x60;party_ids&#x60; ile değiştirir (eski atamalar silinir, yenileri yazılır). &#x60;party_ids&#x60; boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 &#x60;INVALID_PARTY_ID&#x60; — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 &#x60;ASSIGNMENT_HAS_DECISION&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequestBuilder(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsPost201Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsPost201Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut");
+    }
+    // verify the required parameter 'docId' is set
+    if (docId == null) {
+      throw new ApiException(400, "Missing the required parameter 'docId' when calling apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut");
+    }
+    // verify the required parameter 'apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest' is set
+    if (apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest' when calling apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents/{docId}/assignments"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()))
+        .replace("{docId}", ApiClient.urlEncode(docId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest);
+      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Belgeyi zarftan sil
+   * Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N&#39;e yeniden sıralanır. **Zarftaki son belge silinemez** (400 &#x60;CANNOT_DELETE_LAST_DOCUMENT&#x60;) — zarf hiç boş kalamaz. 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @return ApiV1TemplatesIdDelete200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1TemplatesIdDelete200Response apiV1DemandsDemandIdDocumentsDocIdDelete(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdDelete(demandId, docId, null);
+  }
+
+  /**
+   * Belgeyi zarftan sil
+   * Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N&#39;e yeniden sıralanır. **Zarftaki son belge silinemez** (400 &#x60;CANNOT_DELETE_LAST_DOCUMENT&#x60;) — zarf hiç boş kalamaz. 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1TemplatesIdDelete200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1TemplatesIdDelete200Response apiV1DemandsDemandIdDocumentsDocIdDelete(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1TemplatesIdDelete200Response> localVarResponse = apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo(demandId, docId, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Belgeyi zarftan sil
+   * Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N&#39;e yeniden sıralanır. **Zarftaki son belge silinemez** (400 &#x60;CANNOT_DELETE_LAST_DOCUMENT&#x60;) — zarf hiç boş kalamaz. 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @return ApiResponse&lt;ApiV1TemplatesIdDelete200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1TemplatesIdDelete200Response> apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo(demandId, docId, null);
+  }
+
+  /**
+   * Belgeyi zarftan sil
+   * Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N&#39;e yeniden sıralanır. **Zarftaki son belge silinemez** (400 &#x60;CANNOT_DELETE_LAST_DOCUMENT&#x60;) — zarf hiç boş kalamaz. 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1TemplatesIdDelete200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1TemplatesIdDelete200Response> apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsDocIdDeleteRequestBuilder(demandId, docId, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsDocIdDelete", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1TemplatesIdDelete200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1TemplatesIdDelete200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1TemplatesIdDelete200Response>() {});
+        
+
+        return new ApiResponse<ApiV1TemplatesIdDelete200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsDocIdDeleteRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsDocIdDelete");
+    }
+    // verify the required parameter 'docId' is set
+    if (docId == null) {
+      throw new ApiException(400, "Missing the required parameter 'docId' when calling apiV1DemandsDemandIdDocumentsDocIdDelete");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents/{docId}"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()))
+        .replace("{docId}", ApiClient.urlEncode(docId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Belge metadata güncelle
+   * Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (&#x60;PUT .../assignments&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdPatchRequest  (required)
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsDocIdPatch(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdPatchRequest apiV1DemandsDemandIdDocumentsDocIdPatchRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdPatch(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdPatchRequest, null);
+  }
+
+  /**
+   * Belge metadata güncelle
+   * Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (&#x60;PUT .../assignments&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdPatchRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsDocIdPatch(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdPatchRequest apiV1DemandsDemandIdDocumentsDocIdPatchRequest, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> localVarResponse = apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdPatchRequest, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Belge metadata güncelle
+   * Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (&#x60;PUT .../assignments&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdPatchRequest  (required)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdPatchRequest apiV1DemandsDemandIdDocumentsDocIdPatchRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdPatchRequest, null);
+  }
+
+  /**
+   * Belge metadata güncelle
+   * Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (&#x60;PUT .../assignments&#x60;). 
+   * @param demandId  (required)
+   * @param docId  (required)
+   * @param apiV1DemandsDemandIdDocumentsDocIdPatchRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdPatchRequest apiV1DemandsDemandIdDocumentsDocIdPatchRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsDocIdPatchRequestBuilder(demandId, docId, apiV1DemandsDemandIdDocumentsDocIdPatchRequest, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsDocIdPatch", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsPost201Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsPost201Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsDocIdPatchRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull UUID docId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsDocIdPatchRequest apiV1DemandsDemandIdDocumentsDocIdPatchRequest, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsDocIdPatch");
+    }
+    // verify the required parameter 'docId' is set
+    if (docId == null) {
+      throw new ApiException(400, "Missing the required parameter 'docId' when calling apiV1DemandsDemandIdDocumentsDocIdPatch");
+    }
+    // verify the required parameter 'apiV1DemandsDemandIdDocumentsDocIdPatchRequest' is set
+    if (apiV1DemandsDemandIdDocumentsDocIdPatchRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'apiV1DemandsDemandIdDocumentsDocIdPatchRequest' when calling apiV1DemandsDemandIdDocumentsDocIdPatch");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents/{docId}"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()))
+        .replace("{docId}", ApiClient.urlEncode(docId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsDemandIdDocumentsDocIdPatchRequest);
+      localVarRequestBuilder.method("PATCH", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Zarf belge listesi
+   * Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm &#x60;/documents*&#x60; + &#x60;/documents/{docId}*&#x60; + &#x60;/documents/{docId}/assignments&#x60; uçları &#x60;ENVELOPE_DECISION_ENFORCE&#x60; bayrağı **arkasındadır**; bayrak kapalıyken **409 &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60;** döner. Bu, dashboard&#39;un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca &#x60;POST /demands/{demandId}/dispatch&#x60; çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. &#x60;?view&#x3D;wizard&#x60; verilirse tam şekil döner (&#x60;EnvelopeDocument&#x60; şemasındaki alan notlarına bakın). 
+   * @param demandId  (required)
+   * @param view &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). (optional)
+   * @return ApiV1DemandsDemandIdDocumentsGet200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsGet200Response apiV1DemandsDemandIdDocumentsGet(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable String view) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsGet(demandId, view, null);
+  }
+
+  /**
+   * Zarf belge listesi
+   * Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm &#x60;/documents*&#x60; + &#x60;/documents/{docId}*&#x60; + &#x60;/documents/{docId}/assignments&#x60; uçları &#x60;ENVELOPE_DECISION_ENFORCE&#x60; bayrağı **arkasındadır**; bayrak kapalıyken **409 &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60;** döner. Bu, dashboard&#39;un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca &#x60;POST /demands/{demandId}/dispatch&#x60; çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. &#x60;?view&#x3D;wizard&#x60; verilirse tam şekil döner (&#x60;EnvelopeDocument&#x60; şemasındaki alan notlarına bakın). 
+   * @param demandId  (required)
+   * @param view &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsGet200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsGet200Response apiV1DemandsDemandIdDocumentsGet(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable String view, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> localVarResponse = apiV1DemandsDemandIdDocumentsGetWithHttpInfo(demandId, view, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Zarf belge listesi
+   * Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm &#x60;/documents*&#x60; + &#x60;/documents/{docId}*&#x60; + &#x60;/documents/{docId}/assignments&#x60; uçları &#x60;ENVELOPE_DECISION_ENFORCE&#x60; bayrağı **arkasındadır**; bayrak kapalıyken **409 &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60;** döner. Bu, dashboard&#39;un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca &#x60;POST /demands/{demandId}/dispatch&#x60; çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. &#x60;?view&#x3D;wizard&#x60; verilirse tam şekil döner (&#x60;EnvelopeDocument&#x60; şemasındaki alan notlarına bakın). 
+   * @param demandId  (required)
+   * @param view &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). (optional)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsGet200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> apiV1DemandsDemandIdDocumentsGetWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable String view) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsGetWithHttpInfo(demandId, view, null);
+  }
+
+  /**
+   * Zarf belge listesi
+   * Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm &#x60;/documents*&#x60; + &#x60;/documents/{docId}*&#x60; + &#x60;/documents/{docId}/assignments&#x60; uçları &#x60;ENVELOPE_DECISION_ENFORCE&#x60; bayrağı **arkasındadır**; bayrak kapalıyken **409 &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60;** döner. Bu, dashboard&#39;un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca &#x60;POST /demands/{demandId}/dispatch&#x60; çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. &#x60;?view&#x3D;wizard&#x60; verilirse tam şekil döner (&#x60;EnvelopeDocument&#x60; şemasındaki alan notlarına bakın). 
+   * @param demandId  (required)
+   * @param view &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsGet200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> apiV1DemandsDemandIdDocumentsGetWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable String view, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsGetRequestBuilder(demandId, view, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsGet", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsGet200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsGet200Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsGetRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nullable String view, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsGet");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()));
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "view";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("view", view));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Zarftaki belgelerin sırasını değiştir
+   * Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. &#x60;document_ids&#x60; zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 &#x60;ORDER_SET_MISMATCH&#x60;** döner. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsOrderPutRequest  (required)
+   * @return ApiV1DemandsDemandIdDocumentsGet200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsGet200Response apiV1DemandsDemandIdDocumentsOrderPut(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsOrderPutRequest apiV1DemandsDemandIdDocumentsOrderPutRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsOrderPut(demandId, apiV1DemandsDemandIdDocumentsOrderPutRequest, null);
+  }
+
+  /**
+   * Zarftaki belgelerin sırasını değiştir
+   * Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. &#x60;document_ids&#x60; zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 &#x60;ORDER_SET_MISMATCH&#x60;** döner. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsOrderPutRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsGet200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsGet200Response apiV1DemandsDemandIdDocumentsOrderPut(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsOrderPutRequest apiV1DemandsDemandIdDocumentsOrderPutRequest, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> localVarResponse = apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo(demandId, apiV1DemandsDemandIdDocumentsOrderPutRequest, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Zarftaki belgelerin sırasını değiştir
+   * Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. &#x60;document_ids&#x60; zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 &#x60;ORDER_SET_MISMATCH&#x60;** döner. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsOrderPutRequest  (required)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsGet200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsOrderPutRequest apiV1DemandsDemandIdDocumentsOrderPutRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo(demandId, apiV1DemandsDemandIdDocumentsOrderPutRequest, null);
+  }
+
+  /**
+   * Zarftaki belgelerin sırasını değiştir
+   * Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. &#x60;document_ids&#x60; zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 &#x60;ORDER_SET_MISMATCH&#x60;** döner. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsOrderPutRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsGet200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response> apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsOrderPutRequest apiV1DemandsDemandIdDocumentsOrderPutRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsOrderPutRequestBuilder(demandId, apiV1DemandsDemandIdDocumentsOrderPutRequest, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsOrderPut", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsGet200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsGet200Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsGet200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsOrderPutRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsOrderPutRequest apiV1DemandsDemandIdDocumentsOrderPutRequest, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsOrderPut");
+    }
+    // verify the required parameter 'apiV1DemandsDemandIdDocumentsOrderPutRequest' is set
+    if (apiV1DemandsDemandIdDocumentsOrderPutRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'apiV1DemandsDemandIdDocumentsOrderPutRequest' when calling apiV1DemandsDemandIdDocumentsOrderPut");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents/order"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsDemandIdDocumentsOrderPutRequest);
+      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Zarfa metadata-only belge ekle
+   * Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: &#x60;POST /demands/{demandId}/documents/upload&#x60;.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsPostRequest  (required)
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsPostRequest apiV1DemandsDemandIdDocumentsPostRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsPost(demandId, apiV1DemandsDemandIdDocumentsPostRequest, null);
+  }
+
+  /**
+   * Zarfa metadata-only belge ekle
+   * Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: &#x60;POST /demands/{demandId}/documents/upload&#x60;.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsPostRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsPostRequest apiV1DemandsDemandIdDocumentsPostRequest, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> localVarResponse = apiV1DemandsDemandIdDocumentsPostWithHttpInfo(demandId, apiV1DemandsDemandIdDocumentsPostRequest, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Zarfa metadata-only belge ekle
+   * Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: &#x60;POST /demands/{demandId}/documents/upload&#x60;.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsPostRequest  (required)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsPostRequest apiV1DemandsDemandIdDocumentsPostRequest) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsPostWithHttpInfo(demandId, apiV1DemandsDemandIdDocumentsPostRequest, null);
+  }
+
+  /**
+   * Zarfa metadata-only belge ekle
+   * Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: &#x60;POST /demands/{demandId}/documents/upload&#x60;.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param apiV1DemandsDemandIdDocumentsPostRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsPostRequest apiV1DemandsDemandIdDocumentsPostRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsPostRequestBuilder(demandId, apiV1DemandsDemandIdDocumentsPostRequest, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsPost", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsPost201Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsPost201Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsPostRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull ApiV1DemandsDemandIdDocumentsPostRequest apiV1DemandsDemandIdDocumentsPostRequest, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsPost");
+    }
+    // verify the required parameter 'apiV1DemandsDemandIdDocumentsPostRequest' is set
+    if (apiV1DemandsDemandIdDocumentsPostRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'apiV1DemandsDemandIdDocumentsPostRequest' when calling apiV1DemandsDemandIdDocumentsPost");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(apiV1DemandsDemandIdDocumentsPostRequest);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Zarfa dosya yükle (belge başına tek dosya)
+   * Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  &#x60;idempotency_key&#x60; **zorunludur** (gövde alanı; &#x60;Idempotency-Key&#x60; HEADER&#39;ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı &#x60;(demandId, idempotency_key)&#x60; çifti ile tekrar çağrı **409 &#x60;IDEMPOTENT_REPLAY&#x60;** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO&#39;su döner.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param _file PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. (required)
+   * @param idempotencyKey Zorunlu tekrar-koruma anahtarı. (required)
+   * @param title  (required)
+   * @param docKind  (optional, default to OTHER)
+   * @param isRequired Multipart alanı — string olarak gönderilir. (optional, default to true)
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsUploadPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull File _file, @javax.annotation.Nonnull String idempotencyKey, @javax.annotation.Nonnull String title, @javax.annotation.Nullable String docKind, @javax.annotation.Nullable String isRequired) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsUploadPost(demandId, _file, idempotencyKey, title, docKind, isRequired, null);
+  }
+
+  /**
+   * Zarfa dosya yükle (belge başına tek dosya)
+   * Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  &#x60;idempotency_key&#x60; **zorunludur** (gövde alanı; &#x60;Idempotency-Key&#x60; HEADER&#39;ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı &#x60;(demandId, idempotency_key)&#x60; çifti ile tekrar çağrı **409 &#x60;IDEMPOTENT_REPLAY&#x60;** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO&#39;su döner.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param _file PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. (required)
+   * @param idempotencyKey Zorunlu tekrar-koruma anahtarı. (required)
+   * @param title  (required)
+   * @param docKind  (optional, default to OTHER)
+   * @param isRequired Multipart alanı — string olarak gönderilir. (optional, default to true)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1DemandsDemandIdDocumentsPost201Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1DemandsDemandIdDocumentsPost201Response apiV1DemandsDemandIdDocumentsUploadPost(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull File _file, @javax.annotation.Nonnull String idempotencyKey, @javax.annotation.Nonnull String title, @javax.annotation.Nullable String docKind, @javax.annotation.Nullable String isRequired, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> localVarResponse = apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo(demandId, _file, idempotencyKey, title, docKind, isRequired, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Zarfa dosya yükle (belge başına tek dosya)
+   * Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  &#x60;idempotency_key&#x60; **zorunludur** (gövde alanı; &#x60;Idempotency-Key&#x60; HEADER&#39;ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı &#x60;(demandId, idempotency_key)&#x60; çifti ile tekrar çağrı **409 &#x60;IDEMPOTENT_REPLAY&#x60;** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO&#39;su döner.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param _file PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. (required)
+   * @param idempotencyKey Zorunlu tekrar-koruma anahtarı. (required)
+   * @param title  (required)
+   * @param docKind  (optional, default to OTHER)
+   * @param isRequired Multipart alanı — string olarak gönderilir. (optional, default to true)
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull File _file, @javax.annotation.Nonnull String idempotencyKey, @javax.annotation.Nonnull String title, @javax.annotation.Nullable String docKind, @javax.annotation.Nullable String isRequired) throws ApiException {
+    return apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo(demandId, _file, idempotencyKey, title, docKind, isRequired, null);
+  }
+
+  /**
+   * Zarfa dosya yükle (belge başına tek dosya)
+   * Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  &#x60;idempotency_key&#x60; **zorunludur** (gövde alanı; &#x60;Idempotency-Key&#x60; HEADER&#39;ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı &#x60;(demandId, idempotency_key)&#x60; çifti ile tekrar çağrı **409 &#x60;IDEMPOTENT_REPLAY&#x60;** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO&#39;su döner.  Belge uçları kredi düşmez; tahsilat &#x60;POST /dispatch&#x60;&#39;te yapılır. 
+   * @param demandId  (required)
+   * @param _file PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. (required)
+   * @param idempotencyKey Zorunlu tekrar-koruma anahtarı. (required)
+   * @param title  (required)
+   * @param docKind  (optional, default to OTHER)
+   * @param isRequired Multipart alanı — string olarak gönderilir. (optional, default to true)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1DemandsDemandIdDocumentsPost201Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response> apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull File _file, @javax.annotation.Nonnull String idempotencyKey, @javax.annotation.Nonnull String title, @javax.annotation.Nullable String docKind, @javax.annotation.Nullable String isRequired, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsDemandIdDocumentsUploadPostRequestBuilder(demandId, _file, idempotencyKey, title, docKind, isRequired, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsDemandIdDocumentsUploadPost", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1DemandsDemandIdDocumentsPost201Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1DemandsDemandIdDocumentsPost201Response>() {});
+        
+
+        return new ApiResponse<ApiV1DemandsDemandIdDocumentsPost201Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsDemandIdDocumentsUploadPostRequestBuilder(@javax.annotation.Nonnull UUID demandId, @javax.annotation.Nonnull File _file, @javax.annotation.Nonnull String idempotencyKey, @javax.annotation.Nonnull String title, @javax.annotation.Nullable String docKind, @javax.annotation.Nullable String isRequired, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'demandId' is set
+    if (demandId == null) {
+      throw new ApiException(400, "Missing the required parameter 'demandId' when calling apiV1DemandsDemandIdDocumentsUploadPost");
+    }
+    // verify the required parameter '_file' is set
+    if (_file == null) {
+      throw new ApiException(400, "Missing the required parameter '_file' when calling apiV1DemandsDemandIdDocumentsUploadPost");
+    }
+    // verify the required parameter 'idempotencyKey' is set
+    if (idempotencyKey == null) {
+      throw new ApiException(400, "Missing the required parameter 'idempotencyKey' when calling apiV1DemandsDemandIdDocumentsUploadPost");
+    }
+    // verify the required parameter 'title' is set
+    if (title == null) {
+      throw new ApiException(400, "Missing the required parameter 'title' when calling apiV1DemandsDemandIdDocumentsUploadPost");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{demandId}/documents/upload"
+        .replace("{demandId}", ApiClient.urlEncode(demandId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
+    boolean hasFiles = false;
+    multiPartBuilder.addBinaryBody("file", _file);
+    hasFiles = true;
+    if (idempotencyKey != null) {
+        multiPartBuilder.addTextBody("idempotency_key", idempotencyKey.toString());
+    }
+    if (title != null) {
+        multiPartBuilder.addTextBody("title", title.toString());
+    }
+    if (docKind != null) {
+        multiPartBuilder.addTextBody("doc_kind", docKind.toString());
+    }
+    if (isRequired != null) {
+        multiPartBuilder.addTextBody("is_required", isRequired.toString());
+    }
+    HttpEntity entity = multiPartBuilder.build();
+    HttpRequest.BodyPublisher formDataPublisher;
+    if (hasFiles) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+                entity.writeTo(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+    } else {
+        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(formOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataPublisher = HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formBytes));
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", formDataPublisher);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
   }
 
   /**
@@ -345,6 +1621,132 @@ public class DemandsApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Belge-özgü imzalı PDF (çok-belgeli zarf)
+   * Çok-belgeli zarfta TEK bir belgenin imzalı PDF&#39;ini indirir. Zarf-geneli &#x60;/demands/{id}/pdf&#x60; ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND&#39;lenir (başka zarfın belgesi istenirse 404). 
+   * @param id  (required)
+   * @param documentId Zarftaki belgenin kimliği. (required)
+   * @return File
+   * @throws ApiException if fails to make API call
+   */
+  public File apiV1DemandsIdBelgeDocumentIdPdfGet(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull UUID documentId) throws ApiException {
+    return apiV1DemandsIdBelgeDocumentIdPdfGet(id, documentId, null);
+  }
+
+  /**
+   * Belge-özgü imzalı PDF (çok-belgeli zarf)
+   * Çok-belgeli zarfta TEK bir belgenin imzalı PDF&#39;ini indirir. Zarf-geneli &#x60;/demands/{id}/pdf&#x60; ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND&#39;lenir (başka zarfın belgesi istenirse 404). 
+   * @param id  (required)
+   * @param documentId Zarftaki belgenin kimliği. (required)
+   * @param headers Optional headers to include in the request
+   * @return File
+   * @throws ApiException if fails to make API call
+   */
+  public File apiV1DemandsIdBelgeDocumentIdPdfGet(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull UUID documentId, Map<String, String> headers) throws ApiException {
+    ApiResponse<File> localVarResponse = apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo(id, documentId, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Belge-özgü imzalı PDF (çok-belgeli zarf)
+   * Çok-belgeli zarfta TEK bir belgenin imzalı PDF&#39;ini indirir. Zarf-geneli &#x60;/demands/{id}/pdf&#x60; ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND&#39;lenir (başka zarfın belgesi istenirse 404). 
+   * @param id  (required)
+   * @param documentId Zarftaki belgenin kimliği. (required)
+   * @return ApiResponse&lt;File&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<File> apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull UUID documentId) throws ApiException {
+    return apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo(id, documentId, null);
+  }
+
+  /**
+   * Belge-özgü imzalı PDF (çok-belgeli zarf)
+   * Çok-belgeli zarfta TEK bir belgenin imzalı PDF&#39;ini indirir. Zarf-geneli &#x60;/demands/{id}/pdf&#x60; ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND&#39;lenir (başka zarfın belgesi istenirse 404). 
+   * @param id  (required)
+   * @param documentId Zarftaki belgenin kimliği. (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;File&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<File> apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull UUID documentId, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsIdBelgeDocumentIdPdfGetRequestBuilder(id, documentId, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1DemandsIdBelgeDocumentIdPdfGet", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<File>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        // Handle file downloading.
+        File responseValue = downloadFileFromResponse(localVarResponse, localVarResponseBody);
+        
+
+        return new ApiResponse<File>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1DemandsIdBelgeDocumentIdPdfGetRequestBuilder(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull UUID documentId, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling apiV1DemandsIdBelgeDocumentIdPdfGet");
+    }
+    // verify the required parameter 'documentId' is set
+    if (documentId == null) {
+      throw new ApiException(400, "Missing the required parameter 'documentId' when calling apiV1DemandsIdBelgeDocumentIdPdfGet");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/demands/{id}/belge/{document_id}/pdf"
+        .replace("{id}", ApiClient.urlEncode(id.toString()))
+        .replace("{document_id}", ApiClient.urlEncode(documentId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/pdf, application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
@@ -1488,23 +2890,25 @@ public class DemandsApi {
    * Sözleşme oluştur (şablondan)
    * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field&#39;ları &#x60;variables&#x60; payload&#39;undan doldurur ve imzalama URL&#39;lerini döner.  **Variable resolution:** - Item&#39;ın &#x60;template_party_id&#x60; non-null → &#x60;party_mapping[i].variables&#x60;&#39;ta   o slug var ise oradan uygulanır - Yoksa root &#x60;variables&#x60;&#39;tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   &#x60;editable: true&#x60; ise)  **Validation:** - &#x60;party_mapping[i].variables&#x60; ve root &#x60;variables&#x60; object olmalı - Variable value&#39;ları &#x60;string | number | boolean | null&#x60; olmalı   (object/array reject) - &#x60;template_party_id&#x60; party_mapping içinde unique olmalı 
    * @param createDemandRequest  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @return ApiV1DemandsPost201Response
    * @throws ApiException if fails to make API call
    */
-  public ApiV1DemandsPost201Response apiV1DemandsPost(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest) throws ApiException {
-    return apiV1DemandsPost(createDemandRequest, null);
+  public ApiV1DemandsPost201Response apiV1DemandsPost(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+    return apiV1DemandsPost(createDemandRequest, idempotencyKey, null);
   }
 
   /**
    * Sözleşme oluştur (şablondan)
    * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field&#39;ları &#x60;variables&#x60; payload&#39;undan doldurur ve imzalama URL&#39;lerini döner.  **Variable resolution:** - Item&#39;ın &#x60;template_party_id&#x60; non-null → &#x60;party_mapping[i].variables&#x60;&#39;ta   o slug var ise oradan uygulanır - Yoksa root &#x60;variables&#x60;&#39;tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   &#x60;editable: true&#x60; ise)  **Validation:** - &#x60;party_mapping[i].variables&#x60; ve root &#x60;variables&#x60; object olmalı - Variable value&#39;ları &#x60;string | number | boolean | null&#x60; olmalı   (object/array reject) - &#x60;template_party_id&#x60; party_mapping içinde unique olmalı 
    * @param createDemandRequest  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param headers Optional headers to include in the request
    * @return ApiV1DemandsPost201Response
    * @throws ApiException if fails to make API call
    */
-  public ApiV1DemandsPost201Response apiV1DemandsPost(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, Map<String, String> headers) throws ApiException {
-    ApiResponse<ApiV1DemandsPost201Response> localVarResponse = apiV1DemandsPostWithHttpInfo(createDemandRequest, headers);
+  public ApiV1DemandsPost201Response apiV1DemandsPost(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, @javax.annotation.Nullable String idempotencyKey, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsPost201Response> localVarResponse = apiV1DemandsPostWithHttpInfo(createDemandRequest, idempotencyKey, headers);
     return localVarResponse.getData();
   }
 
@@ -1512,23 +2916,25 @@ public class DemandsApi {
    * Sözleşme oluştur (şablondan)
    * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field&#39;ları &#x60;variables&#x60; payload&#39;undan doldurur ve imzalama URL&#39;lerini döner.  **Variable resolution:** - Item&#39;ın &#x60;template_party_id&#x60; non-null → &#x60;party_mapping[i].variables&#x60;&#39;ta   o slug var ise oradan uygulanır - Yoksa root &#x60;variables&#x60;&#39;tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   &#x60;editable: true&#x60; ise)  **Validation:** - &#x60;party_mapping[i].variables&#x60; ve root &#x60;variables&#x60; object olmalı - Variable value&#39;ları &#x60;string | number | boolean | null&#x60; olmalı   (object/array reject) - &#x60;template_party_id&#x60; party_mapping içinde unique olmalı 
    * @param createDemandRequest  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @return ApiResponse&lt;ApiV1DemandsPost201Response&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<ApiV1DemandsPost201Response> apiV1DemandsPostWithHttpInfo(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest) throws ApiException {
-    return apiV1DemandsPostWithHttpInfo(createDemandRequest, null);
+  public ApiResponse<ApiV1DemandsPost201Response> apiV1DemandsPostWithHttpInfo(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, @javax.annotation.Nullable String idempotencyKey) throws ApiException {
+    return apiV1DemandsPostWithHttpInfo(createDemandRequest, idempotencyKey, null);
   }
 
   /**
    * Sözleşme oluştur (şablondan)
    * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field&#39;ları &#x60;variables&#x60; payload&#39;undan doldurur ve imzalama URL&#39;lerini döner.  **Variable resolution:** - Item&#39;ın &#x60;template_party_id&#x60; non-null → &#x60;party_mapping[i].variables&#x60;&#39;ta   o slug var ise oradan uygulanır - Yoksa root &#x60;variables&#x60;&#39;tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   &#x60;editable: true&#x60; ise)  **Validation:** - &#x60;party_mapping[i].variables&#x60; ve root &#x60;variables&#x60; object olmalı - Variable value&#39;ları &#x60;string | number | boolean | null&#x60; olmalı   (object/array reject) - &#x60;template_party_id&#x60; party_mapping içinde unique olmalı 
    * @param createDemandRequest  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param headers Optional headers to include in the request
    * @return ApiResponse&lt;ApiV1DemandsPost201Response&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<ApiV1DemandsPost201Response> apiV1DemandsPostWithHttpInfo(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, Map<String, String> headers) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsPostRequestBuilder(createDemandRequest, headers);
+  public ApiResponse<ApiV1DemandsPost201Response> apiV1DemandsPostWithHttpInfo(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, @javax.annotation.Nullable String idempotencyKey, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsPostRequestBuilder(createDemandRequest, idempotencyKey, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -1575,7 +2981,7 @@ public class DemandsApi {
     }
   }
 
-  private HttpRequest.Builder apiV1DemandsPostRequestBuilder(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, Map<String, String> headers) throws ApiException {
+  private HttpRequest.Builder apiV1DemandsPostRequestBuilder(@javax.annotation.Nonnull CreateDemandRequest createDemandRequest, @javax.annotation.Nullable String idempotencyKey, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'createDemandRequest' is set
     if (createDemandRequest == null) {
       throw new ApiException(400, "Missing the required parameter 'createDemandRequest' when calling apiV1DemandsPost");
@@ -1587,6 +2993,9 @@ public class DemandsApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
+    if (idempotencyKey != null) {
+      localVarRequestBuilder.header("Idempotency-Key", idempotencyKey.toString());
+    }
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
 
@@ -1611,31 +3020,41 @@ public class DemandsApi {
    * Dosya upload ile sözleşme oluştur (şablonsuz)
    * Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF&#39;e birleştirilir, office formatları LibreOffice ile PDF&#39;e çevrilir. 
    * @param files 1 belge VEYA 1-20 görsel (required)
-   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  (required)
+   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param order Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) (optional)
    * @param title  (optional)
    * @param description  (optional)
+   * @param fieldTemplateId Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  (optional)
+   * @param force Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+   * @param sendInvitations &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  (optional)
+   * @param onAnchorMiss Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  (optional)
    * @return ApiV1DemandsUploadPost201Response
    * @throws ApiException if fails to make API call
    */
-  public ApiV1DemandsUploadPost201Response apiV1DemandsUploadPost(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description) throws ApiException {
-    return apiV1DemandsUploadPost(files, parties, order, title, description, null);
+  public ApiV1DemandsUploadPost201Response apiV1DemandsUploadPost(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String idempotencyKey, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, @javax.annotation.Nullable UUID fieldTemplateId, @javax.annotation.Nullable String force, @javax.annotation.Nullable String sendInvitations, @javax.annotation.Nullable String onAnchorMiss) throws ApiException {
+    return apiV1DemandsUploadPost(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, null);
   }
 
   /**
    * Dosya upload ile sözleşme oluştur (şablonsuz)
    * Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF&#39;e birleştirilir, office formatları LibreOffice ile PDF&#39;e çevrilir. 
    * @param files 1 belge VEYA 1-20 görsel (required)
-   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  (required)
+   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param order Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) (optional)
    * @param title  (optional)
    * @param description  (optional)
+   * @param fieldTemplateId Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  (optional)
+   * @param force Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+   * @param sendInvitations &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  (optional)
+   * @param onAnchorMiss Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  (optional)
    * @param headers Optional headers to include in the request
    * @return ApiV1DemandsUploadPost201Response
    * @throws ApiException if fails to make API call
    */
-  public ApiV1DemandsUploadPost201Response apiV1DemandsUploadPost(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, Map<String, String> headers) throws ApiException {
-    ApiResponse<ApiV1DemandsUploadPost201Response> localVarResponse = apiV1DemandsUploadPostWithHttpInfo(files, parties, order, title, description, headers);
+  public ApiV1DemandsUploadPost201Response apiV1DemandsUploadPost(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String idempotencyKey, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, @javax.annotation.Nullable UUID fieldTemplateId, @javax.annotation.Nullable String force, @javax.annotation.Nullable String sendInvitations, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1DemandsUploadPost201Response> localVarResponse = apiV1DemandsUploadPostWithHttpInfo(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, headers);
     return localVarResponse.getData();
   }
 
@@ -1643,31 +3062,41 @@ public class DemandsApi {
    * Dosya upload ile sözleşme oluştur (şablonsuz)
    * Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF&#39;e birleştirilir, office formatları LibreOffice ile PDF&#39;e çevrilir. 
    * @param files 1 belge VEYA 1-20 görsel (required)
-   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  (required)
+   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param order Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) (optional)
    * @param title  (optional)
    * @param description  (optional)
+   * @param fieldTemplateId Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  (optional)
+   * @param force Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+   * @param sendInvitations &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  (optional)
+   * @param onAnchorMiss Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  (optional)
    * @return ApiResponse&lt;ApiV1DemandsUploadPost201Response&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<ApiV1DemandsUploadPost201Response> apiV1DemandsUploadPostWithHttpInfo(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description) throws ApiException {
-    return apiV1DemandsUploadPostWithHttpInfo(files, parties, order, title, description, null);
+  public ApiResponse<ApiV1DemandsUploadPost201Response> apiV1DemandsUploadPostWithHttpInfo(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String idempotencyKey, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, @javax.annotation.Nullable UUID fieldTemplateId, @javax.annotation.Nullable String force, @javax.annotation.Nullable String sendInvitations, @javax.annotation.Nullable String onAnchorMiss) throws ApiException {
+    return apiV1DemandsUploadPostWithHttpInfo(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, null);
   }
 
   /**
    * Dosya upload ile sözleşme oluştur (şablonsuz)
    * Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF&#39;e birleştirilir, office formatları LibreOffice ile PDF&#39;e çevrilir. 
    * @param files 1 belge VEYA 1-20 görsel (required)
-   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  (required)
+   * @param parties JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  (required)
+   * @param idempotencyKey Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
    * @param order Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) (optional)
    * @param title  (optional)
    * @param description  (optional)
+   * @param fieldTemplateId Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  (optional)
+   * @param force Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+   * @param sendInvitations &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Hangi kanalın gideceğini sözleşmenin bildirim ayarları   ve tarafın &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayrakları belirler.   Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:   pratikte **hem SMS hem e-posta** gider. Kanal seçimi   henüz yoktur. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency   anahtarı yoktur. İstemci zaman aşımında isteği körlemesine   tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci   bir davet seti** oluşur. Zaman aşımında yeniden göndermek   yerine &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  (optional)
+   * @param onAnchorMiss Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  (optional)
    * @param headers Optional headers to include in the request
    * @return ApiResponse&lt;ApiV1DemandsUploadPost201Response&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<ApiV1DemandsUploadPost201Response> apiV1DemandsUploadPostWithHttpInfo(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, Map<String, String> headers) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsUploadPostRequestBuilder(files, parties, order, title, description, headers);
+  public ApiResponse<ApiV1DemandsUploadPost201Response> apiV1DemandsUploadPostWithHttpInfo(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String idempotencyKey, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, @javax.annotation.Nullable UUID fieldTemplateId, @javax.annotation.Nullable String force, @javax.annotation.Nullable String sendInvitations, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1DemandsUploadPostRequestBuilder(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -1714,7 +3143,7 @@ public class DemandsApi {
     }
   }
 
-  private HttpRequest.Builder apiV1DemandsUploadPostRequestBuilder(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, Map<String, String> headers) throws ApiException {
+  private HttpRequest.Builder apiV1DemandsUploadPostRequestBuilder(@javax.annotation.Nonnull List<File> files, @javax.annotation.Nonnull String parties, @javax.annotation.Nullable String idempotencyKey, @javax.annotation.Nullable String order, @javax.annotation.Nullable String title, @javax.annotation.Nullable String description, @javax.annotation.Nullable UUID fieldTemplateId, @javax.annotation.Nullable String force, @javax.annotation.Nullable String sendInvitations, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'files' is set
     if (files == null) {
       throw new ApiException(400, "Missing the required parameter 'files' when calling apiV1DemandsUploadPost");
@@ -1730,6 +3159,9 @@ public class DemandsApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
+    if (idempotencyKey != null) {
+      localVarRequestBuilder.header("Idempotency-Key", idempotencyKey.toString());
+    }
     localVarRequestBuilder.header("Accept", "application/json");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
@@ -1749,6 +3181,187 @@ public class DemandsApi {
     }
     if (parties != null) {
         multiPartBuilder.addTextBody("parties", parties.toString());
+    }
+    if (fieldTemplateId != null) {
+        multiPartBuilder.addTextBody("field_template_id", fieldTemplateId.toString());
+    }
+    if (force != null) {
+        multiPartBuilder.addTextBody("force", force.toString());
+    }
+    if (sendInvitations != null) {
+        multiPartBuilder.addTextBody("send_invitations", sendInvitations.toString());
+    }
+    if (onAnchorMiss != null) {
+        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString());
+    }
+    HttpEntity entity = multiPartBuilder.build();
+    HttpRequest.BodyPublisher formDataPublisher;
+    if (hasFiles) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+                entity.writeTo(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+    } else {
+        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(formOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataPublisher = HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formBytes));
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", formDataPublisher);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+
+  /**
+   * Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+   * Bir Alan Şablonunun (&#x60;kind: FIELD_LAYOUT&#x60;) yüklediğiniz PDF&#39;e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  &#x60;POST /api/v1/demands/upload&#x60; + &#x60;field_template_id&#x60; çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API&#39;de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (&#x60;data.resolvable: false&#x60;) — kuru koşumun cevabı \&quot;uygulanamaz\&quot;dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 &#x60;RATE_LIMITED&#x60;). 
+   * @param id Alan Şablonu (FIELD_LAYOUT) kimliği (required)
+   * @param files Tek PDF belge (required)
+   * @param onAnchorMiss &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  (optional)
+   * @return ApiV1FieldTemplatesIdPreviewLayoutPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1FieldTemplatesIdPreviewLayoutPost200Response apiV1FieldTemplatesIdPreviewLayoutPost(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull List<File> files, @javax.annotation.Nullable String onAnchorMiss) throws ApiException {
+    return apiV1FieldTemplatesIdPreviewLayoutPost(id, files, onAnchorMiss, null);
+  }
+
+  /**
+   * Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+   * Bir Alan Şablonunun (&#x60;kind: FIELD_LAYOUT&#x60;) yüklediğiniz PDF&#39;e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  &#x60;POST /api/v1/demands/upload&#x60; + &#x60;field_template_id&#x60; çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API&#39;de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (&#x60;data.resolvable: false&#x60;) — kuru koşumun cevabı \&quot;uygulanamaz\&quot;dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 &#x60;RATE_LIMITED&#x60;). 
+   * @param id Alan Şablonu (FIELD_LAYOUT) kimliği (required)
+   * @param files Tek PDF belge (required)
+   * @param onAnchorMiss &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiV1FieldTemplatesIdPreviewLayoutPost200Response
+   * @throws ApiException if fails to make API call
+   */
+  public ApiV1FieldTemplatesIdPreviewLayoutPost200Response apiV1FieldTemplatesIdPreviewLayoutPost(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull List<File> files, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
+    ApiResponse<ApiV1FieldTemplatesIdPreviewLayoutPost200Response> localVarResponse = apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo(id, files, onAnchorMiss, headers);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+   * Bir Alan Şablonunun (&#x60;kind: FIELD_LAYOUT&#x60;) yüklediğiniz PDF&#39;e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  &#x60;POST /api/v1/demands/upload&#x60; + &#x60;field_template_id&#x60; çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API&#39;de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (&#x60;data.resolvable: false&#x60;) — kuru koşumun cevabı \&quot;uygulanamaz\&quot;dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 &#x60;RATE_LIMITED&#x60;). 
+   * @param id Alan Şablonu (FIELD_LAYOUT) kimliği (required)
+   * @param files Tek PDF belge (required)
+   * @param onAnchorMiss &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  (optional)
+   * @return ApiResponse&lt;ApiV1FieldTemplatesIdPreviewLayoutPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1FieldTemplatesIdPreviewLayoutPost200Response> apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull List<File> files, @javax.annotation.Nullable String onAnchorMiss) throws ApiException {
+    return apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo(id, files, onAnchorMiss, null);
+  }
+
+  /**
+   * Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+   * Bir Alan Şablonunun (&#x60;kind: FIELD_LAYOUT&#x60;) yüklediğiniz PDF&#39;e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  &#x60;POST /api/v1/demands/upload&#x60; + &#x60;field_template_id&#x60; çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API&#39;de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (&#x60;data.resolvable: false&#x60;) — kuru koşumun cevabı \&quot;uygulanamaz\&quot;dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 &#x60;RATE_LIMITED&#x60;). 
+   * @param id Alan Şablonu (FIELD_LAYOUT) kimliği (required)
+   * @param files Tek PDF belge (required)
+   * @param onAnchorMiss &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;ApiV1FieldTemplatesIdPreviewLayoutPost200Response&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<ApiV1FieldTemplatesIdPreviewLayoutPost200Response> apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull List<File> files, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1FieldTemplatesIdPreviewLayoutPostRequestBuilder(id, files, onAnchorMiss, headers);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      InputStream localVarResponseBody = null;
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("apiV1FieldTemplatesIdPreviewLayoutPost", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
+          return new ApiResponse<ApiV1FieldTemplatesIdPreviewLayoutPost200Response>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        ApiV1FieldTemplatesIdPreviewLayoutPost200Response responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<ApiV1FieldTemplatesIdPreviewLayoutPost200Response>() {});
+        
+
+        return new ApiResponse<ApiV1FieldTemplatesIdPreviewLayoutPost200Response>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseValue
+        );
+      } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder apiV1FieldTemplatesIdPreviewLayoutPostRequestBuilder(@javax.annotation.Nonnull UUID id, @javax.annotation.Nonnull List<File> files, @javax.annotation.Nullable String onAnchorMiss, Map<String, String> headers) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling apiV1FieldTemplatesIdPreviewLayoutPost");
+    }
+    // verify the required parameter 'files' is set
+    if (files == null) {
+      throw new ApiException(400, "Missing the required parameter 'files' when calling apiV1FieldTemplatesIdPreviewLayoutPost");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/field-templates/{id}/preview-layout"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
+    boolean hasFiles = false;
+    for (int i=0; i < files.size(); i++) {
+        multiPartBuilder.addBinaryBody("files", files.get(i));
+        hasFiles = true;
+    }
+    if (onAnchorMiss != null) {
+        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString());
     }
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;

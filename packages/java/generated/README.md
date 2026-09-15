@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.7.0
+- API version: 1.8.6
 
-- Build date: 2026-07-03T05:18:13.896742+03:00[Europe/Istanbul]
+- Build date: 2026-09-15T10:01:25.885782+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.6.0 · **Son güncelleme:** 2026-06-30
+**Sürüm:** 1.8.6 · **Son güncelleme:** 2026-09-10
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -45,8 +45,22 @@ ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatas
 yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
 
 ## Rate Limit
-- 60 istek/dakika per API key
-- Aşılırsa 429 döner
+- Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
+  gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur.
+- `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki
+  `retry_after_seconds` alanı aynı değeri taşır.
+- Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir
+  (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,
+  `RateLimit-Reset`, `RateLimit-Policy`.
+- Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın.
+- Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:
+
+  | Uç | Limit |
+  |----|-------|
+  | `POST /api/v1/timestamps` | 10 istek/dakika |
+  | `POST /api/v1/demands/bulk` | 5 istek/dakika |
+  | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |
+  | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |
 
 ## Hatalar
 Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki),
@@ -116,7 +130,7 @@ dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
 - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
   event'lerinizde tetiklenir
 
-### Olay tipleri (6)
+### Olay tipleri (8)
 | Olay | Tetikleyici |
 |------|-------------|
 | `demand.created` | Yeni sözleşme oluşturuldu |
@@ -125,6 +139,8 @@ dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
 | `party.signed` | Bir taraf imzaladı |
 | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı |
 | `party.rejected` | Bir taraf reddetti |
+| `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı |
+| `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |
 
 ### Header'lar
 Her istekte aşağıdaki header'lar gönderilir:
@@ -150,7 +166,7 @@ Tüm olaylar aynı zarfı kullanır:
 ```
 
 - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-- `type` — yukarıdaki 6 olay tipinden biri (lowercase).
+- `type` — yukarıdaki 8 olay tipinden biri (lowercase).
 - `created_at` — olay zamanı (ISO 8601 UTC).
 - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
@@ -284,7 +300,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.7.0</version>
+  <version>1.8.6</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -294,7 +310,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.7.0"
+compile "org.imzala:imzala-client-generated:1.8.6"
 ```
 
 ### Others
@@ -307,7 +323,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.7.0.jar`
+- `target/imzala-client-generated-1.8.6.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -350,8 +366,32 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AccountApi* | [**apiV1MeGet**](docs/AccountApi.md#apiV1MeGet) | **GET** /api/v1/me | API key sahibi bilgisi
 *AccountApi* | [**apiV1MeGetWithHttpInfo**](docs/AccountApi.md#apiV1MeGetWithHttpInfo) | **GET** /api/v1/me | API key sahibi bilgisi
+*ContactsApi* | [**apiV1ContactsGet**](docs/ContactsApi.md#apiV1ContactsGet) | **GET** /api/v1/contacts | Kişi listesi
+*ContactsApi* | [**apiV1ContactsGetWithHttpInfo**](docs/ContactsApi.md#apiV1ContactsGetWithHttpInfo) | **GET** /api/v1/contacts | Kişi listesi
+*ContactsApi* | [**apiV1ContactsPost**](docs/ContactsApi.md#apiV1ContactsPost) | **POST** /api/v1/contacts | Kişi oluştur
+*ContactsApi* | [**apiV1ContactsPostWithHttpInfo**](docs/ContactsApi.md#apiV1ContactsPostWithHttpInfo) | **POST** /api/v1/contacts | Kişi oluştur
+*DemandsApi* | [**apiV1DemandsBulkPost**](docs/DemandsApi.md#apiV1DemandsBulkPost) | **POST** /api/v1/demands/bulk | Toplu sözleşme oluştur (tek şablondan N alıcı)
+*DemandsApi* | [**apiV1DemandsBulkPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsBulkPostWithHttpInfo) | **POST** /api/v1/demands/bulk | Toplu sözleşme oluştur (tek şablondan N alıcı)
+*DemandsApi* | [**apiV1DemandsDemandIdDispatchPost**](docs/DemandsApi.md#apiV1DemandsDemandIdDispatchPost) | **POST** /api/v1/demands/{demandId}/dispatch | Zarfı imzaya gönder (yayınla + davet)
+*DemandsApi* | [**apiV1DemandsDemandIdDispatchPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDispatchPostWithHttpInfo) | **POST** /api/v1/demands/{demandId}/dispatch | Zarfı imzaya gönder (yayınla + davet)
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut) | **PUT** /api/v1/demands/{demandId}/documents/{docId}/assignments | Belgeye imzacı ata (tam-küme replace)
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutWithHttpInfo) | **PUT** /api/v1/demands/{demandId}/documents/{docId}/assignments | Belgeye imzacı ata (tam-küme replace)
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdDelete**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdDelete) | **DELETE** /api/v1/demands/{demandId}/documents/{docId} | Belgeyi zarftan sil
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdDeleteWithHttpInfo) | **DELETE** /api/v1/demands/{demandId}/documents/{docId} | Belgeyi zarftan sil
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdPatch**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdPatch) | **PATCH** /api/v1/demands/{demandId}/documents/{docId} | Belge metadata güncelle
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsDocIdPatchWithHttpInfo) | **PATCH** /api/v1/demands/{demandId}/documents/{docId} | Belge metadata güncelle
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsGet**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsGet) | **GET** /api/v1/demands/{demandId}/documents | Zarf belge listesi
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsGetWithHttpInfo) | **GET** /api/v1/demands/{demandId}/documents | Zarf belge listesi
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsOrderPut**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsOrderPut) | **PUT** /api/v1/demands/{demandId}/documents/order | Zarftaki belgelerin sırasını değiştir
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsOrderPutWithHttpInfo) | **PUT** /api/v1/demands/{demandId}/documents/order | Zarftaki belgelerin sırasını değiştir
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsPost**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsPost) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsPostWithHttpInfo) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsUploadPost**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsUploadPost) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya)
+*DemandsApi* | [**apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya)
 *DemandsApi* | [**apiV1DemandsGet**](docs/DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
 *DemandsApi* | [**apiV1DemandsGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsGetWithHttpInfo) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+*DemandsApi* | [**apiV1DemandsIdBelgeDocumentIdPdfGet**](docs/DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGet) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)
+*DemandsApi* | [**apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)
 *DemandsApi* | [**apiV1DemandsIdCancelPost**](docs/DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
 *DemandsApi* | [**apiV1DemandsIdCancelPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdCancelPostWithHttpInfo) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
 *DemandsApi* | [**apiV1DemandsIdCertificateGet**](docs/DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
@@ -374,8 +414,16 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsPostWithHttpInfo) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsUploadPost**](docs/DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
 *DemandsApi* | [**apiV1DemandsUploadPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsUploadPostWithHttpInfo) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
+*DemandsApi* | [**apiV1FieldTemplatesIdPreviewLayoutPost**](docs/DemandsApi.md#apiV1FieldTemplatesIdPreviewLayoutPost) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
+*DemandsApi* | [**apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo**](docs/DemandsApi.md#apiV1FieldTemplatesIdPreviewLayoutPostWithHttpInfo) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
 *RemindersApi* | [**apiV1DemandsIdRemindersPost**](docs/RemindersApi.md#apiV1DemandsIdRemindersPost) | **POST** /api/v1/demands/{id}/reminders | Anlık hatırlatma tetikle (imzalanmamış taraflara)
 *RemindersApi* | [**apiV1DemandsIdRemindersPostWithHttpInfo**](docs/RemindersApi.md#apiV1DemandsIdRemindersPostWithHttpInfo) | **POST** /api/v1/demands/{id}/reminders | Anlık hatırlatma tetikle (imzalanmamış taraflara)
+*ReportsApi* | [**apiV1ReportsGet**](docs/ReportsApi.md#apiV1ReportsGet) | **GET** /api/v1/reports | Rapor / özet (agrege sözleşme durum sayıları)
+*ReportsApi* | [**apiV1ReportsGetWithHttpInfo**](docs/ReportsApi.md#apiV1ReportsGetWithHttpInfo) | **GET** /api/v1/reports | Rapor / özet (agrege sözleşme durum sayıları)
+*TemplatesApi* | [**apiV1FieldTemplatesGet**](docs/TemplatesApi.md#apiV1FieldTemplatesGet) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler
+*TemplatesApi* | [**apiV1FieldTemplatesGetWithHttpInfo**](docs/TemplatesApi.md#apiV1FieldTemplatesGetWithHttpInfo) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler
+*TemplatesApi* | [**apiV1FieldTemplatesIdGet**](docs/TemplatesApi.md#apiV1FieldTemplatesIdGet) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları)
+*TemplatesApi* | [**apiV1FieldTemplatesIdGetWithHttpInfo**](docs/TemplatesApi.md#apiV1FieldTemplatesIdGetWithHttpInfo) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları)
 *TemplatesApi* | [**apiV1TemplatesGet**](docs/TemplatesApi.md#apiV1TemplatesGet) | **GET** /api/v1/templates | Şablon listesi
 *TemplatesApi* | [**apiV1TemplatesGetWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesGetWithHttpInfo) | **GET** /api/v1/templates | Şablon listesi
 *TemplatesApi* | [**apiV1TemplatesIdDelete**](docs/TemplatesApi.md#apiV1TemplatesIdDelete) | **DELETE** /api/v1/templates/{id} | Şablon sil
@@ -386,6 +434,10 @@ Class | Method | HTTP request | Description
 *TemplatesApi* | [**apiV1TemplatesIdPatchWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdPatchWithHttpInfo) | **PATCH** /api/v1/templates/{id} | Şablon metadata güncelle
 *TemplatesApi* | [**apiV1TemplatesIdUsageGet**](docs/TemplatesApi.md#apiV1TemplatesIdUsageGet) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
 *TemplatesApi* | [**apiV1TemplatesIdUsageGetWithHttpInfo**](docs/TemplatesApi.md#apiV1TemplatesIdUsageGetWithHttpInfo) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek)
+*TimestampsApi* | [**apiV1TimestampsGet**](docs/TimestampsApi.md#apiV1TimestampsGet) | **GET** /api/v1/timestamps | Zaman damgası listesi
+*TimestampsApi* | [**apiV1TimestampsGetWithHttpInfo**](docs/TimestampsApi.md#apiV1TimestampsGetWithHttpInfo) | **GET** /api/v1/timestamps | Zaman damgası listesi
+*TimestampsApi* | [**apiV1TimestampsIdGet**](docs/TimestampsApi.md#apiV1TimestampsIdGet) | **GET** /api/v1/timestamps/{id} | Zaman damgası detayı
+*TimestampsApi* | [**apiV1TimestampsIdGetWithHttpInfo**](docs/TimestampsApi.md#apiV1TimestampsIdGetWithHttpInfo) | **GET** /api/v1/timestamps/{id} | Zaman damgası detayı
 *TimestampsApi* | [**apiV1TimestampsPost**](docs/TimestampsApi.md#apiV1TimestampsPost) | **POST** /api/v1/timestamps | Zaman damgası oluştur (eser tescil)
 *TimestampsApi* | [**apiV1TimestampsPostWithHttpInfo**](docs/TimestampsApi.md#apiV1TimestampsPostWithHttpInfo) | **POST** /api/v1/timestamps | Zaman damgası oluştur (eser tescil)
 
@@ -393,6 +445,33 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [ApiError](docs/ApiError.md)
+ - [ApiV1ContactsGet200Response](docs/ApiV1ContactsGet200Response.md)
+ - [ApiV1ContactsGet200ResponseData](docs/ApiV1ContactsGet200ResponseData.md)
+ - [ApiV1ContactsPost201Response](docs/ApiV1ContactsPost201Response.md)
+ - [ApiV1ContactsPostRequest](docs/ApiV1ContactsPostRequest.md)
+ - [ApiV1DemandsBulkPost200Response](docs/ApiV1DemandsBulkPost200Response.md)
+ - [ApiV1DemandsBulkPost200ResponseData](docs/ApiV1DemandsBulkPost200ResponseData.md)
+ - [ApiV1DemandsBulkPost200ResponseDataResultsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md)
+ - [ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md)
+ - [ApiV1DemandsBulkPostRequest](docs/ApiV1DemandsBulkPostRequest.md)
+ - [ApiV1DemandsBulkPostRequestOptions](docs/ApiV1DemandsBulkPostRequestOptions.md)
+ - [ApiV1DemandsBulkPostRequestRowsInner](docs/ApiV1DemandsBulkPostRequestRowsInner.md)
+ - [ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner](docs/ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner.md)
+ - [ApiV1DemandsDemandIdDispatchPost200Response](docs/ApiV1DemandsDemandIdDispatchPost200Response.md)
+ - [ApiV1DemandsDemandIdDispatchPost200ResponseData](docs/ApiV1DemandsDemandIdDispatchPost200ResponseData.md)
+ - [ApiV1DemandsDemandIdDispatchPost200ResponseDataCredits](docs/ApiV1DemandsDemandIdDispatchPost200ResponseDataCredits.md)
+ - [ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations](docs/ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations.md)
+ - [ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner](docs/ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner.md)
+ - [ApiV1DemandsDemandIdDispatchPostRequest](docs/ApiV1DemandsDemandIdDispatchPostRequest.md)
+ - [ApiV1DemandsDemandIdDispatchPostRequestSendInvitations](docs/ApiV1DemandsDemandIdDispatchPostRequestSendInvitations.md)
+ - [ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest](docs/ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest.md)
+ - [ApiV1DemandsDemandIdDocumentsDocIdPatchRequest](docs/ApiV1DemandsDemandIdDocumentsDocIdPatchRequest.md)
+ - [ApiV1DemandsDemandIdDocumentsGet200Response](docs/ApiV1DemandsDemandIdDocumentsGet200Response.md)
+ - [ApiV1DemandsDemandIdDocumentsGet200ResponseData](docs/ApiV1DemandsDemandIdDocumentsGet200ResponseData.md)
+ - [ApiV1DemandsDemandIdDocumentsOrderPutRequest](docs/ApiV1DemandsDemandIdDocumentsOrderPutRequest.md)
+ - [ApiV1DemandsDemandIdDocumentsPost201Response](docs/ApiV1DemandsDemandIdDocumentsPost201Response.md)
+ - [ApiV1DemandsDemandIdDocumentsPost201ResponseData](docs/ApiV1DemandsDemandIdDocumentsPost201ResponseData.md)
+ - [ApiV1DemandsDemandIdDocumentsPostRequest](docs/ApiV1DemandsDemandIdDocumentsPostRequest.md)
  - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
  - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
  - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
@@ -417,10 +496,17 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
+ - [ApiV1FieldTemplatesGet200Response](docs/ApiV1FieldTemplatesGet200Response.md)
+ - [ApiV1FieldTemplatesGet200ResponseData](docs/ApiV1FieldTemplatesGet200ResponseData.md)
+ - [ApiV1FieldTemplatesIdGet200Response](docs/ApiV1FieldTemplatesIdGet200Response.md)
+ - [ApiV1FieldTemplatesIdPreviewLayoutPost200Response](docs/ApiV1FieldTemplatesIdPreviewLayoutPost200Response.md)
  - [ApiV1MeGet200Response](docs/ApiV1MeGet200Response.md)
  - [ApiV1MeGet200ResponseData](docs/ApiV1MeGet200ResponseData.md)
  - [ApiV1MeGet200ResponseDataCredits](docs/ApiV1MeGet200ResponseDataCredits.md)
  - [ApiV1MeGet200ResponseDataWorkspace](docs/ApiV1MeGet200ResponseDataWorkspace.md)
+ - [ApiV1ReportsGet200Response](docs/ApiV1ReportsGet200Response.md)
+ - [ApiV1ReportsGet200ResponseData](docs/ApiV1ReportsGet200ResponseData.md)
+ - [ApiV1ReportsGet200ResponseDataContracts](docs/ApiV1ReportsGet200ResponseDataContracts.md)
  - [ApiV1TemplatesGet200Response](docs/ApiV1TemplatesGet200Response.md)
  - [ApiV1TemplatesGet200ResponseData](docs/ApiV1TemplatesGet200ResponseData.md)
  - [ApiV1TemplatesGet401Response](docs/ApiV1TemplatesGet401Response.md)
@@ -432,15 +518,35 @@ Class | Method | HTTP request | Description
  - [ApiV1TemplatesIdPatch200ResponseData](docs/ApiV1TemplatesIdPatch200ResponseData.md)
  - [ApiV1TemplatesIdPatchRequest](docs/ApiV1TemplatesIdPatchRequest.md)
  - [ApiV1TemplatesIdUsageGet200Response](docs/ApiV1TemplatesIdUsageGet200Response.md)
+ - [ApiV1TimestampsGet200Response](docs/ApiV1TimestampsGet200Response.md)
+ - [ApiV1TimestampsGet200ResponseData](docs/ApiV1TimestampsGet200ResponseData.md)
+ - [ApiV1TimestampsIdGet200Response](docs/ApiV1TimestampsIdGet200Response.md)
  - [ApiV1TimestampsPost201Response](docs/ApiV1TimestampsPost201Response.md)
  - [ApiV1TimestampsPostRequest1](docs/ApiV1TimestampsPostRequest1.md)
+ - [ContactSummary](docs/ContactSummary.md)
+ - [ContactSummaryCompany](docs/ContactSummaryCompany.md)
  - [CreateDemandRequest](docs/CreateDemandRequest.md)
  - [CreatedDemand](docs/CreatedDemand.md)
  - [CreatedDemandSigningUrlsInner](docs/CreatedDemandSigningUrlsInner.md)
  - [CreatedDemandUpload](docs/CreatedDemandUpload.md)
+ - [CreatedDemandUploadDispatch](docs/CreatedDemandUploadDispatch.md)
+ - [CreatedDemandUploadDispatchResultsInner](docs/CreatedDemandUploadDispatchResultsInner.md)
+ - [CreatedDemandUploadFieldLayout](docs/CreatedDemandUploadFieldLayout.md)
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
+ - [EnvelopeDocument](docs/EnvelopeDocument.md)
+ - [FieldLayoutDiagnostic](docs/FieldLayoutDiagnostic.md)
+ - [FieldLayoutPreview](docs/FieldLayoutPreview.md)
+ - [FieldLayoutPreviewPlacementsSummary](docs/FieldLayoutPreviewPlacementsSummary.md)
+ - [FieldLayoutPreviewPlacementsSummaryByPageInner](docs/FieldLayoutPreviewPlacementsSummaryByPageInner.md)
+ - [FieldLayoutUnresolved](docs/FieldLayoutUnresolved.md)
+ - [FieldLayoutWarning](docs/FieldLayoutWarning.md)
+ - [FieldTemplateDetail](docs/FieldTemplateDetail.md)
+ - [FieldTemplateDetailPartiesInner](docs/FieldTemplateDetailPartiesInner.md)
+ - [FieldTemplateListItem](docs/FieldTemplateListItem.md)
+ - [FieldTemplateParty](docs/FieldTemplateParty.md)
+ - [KycWebhookEnvelope](docs/KycWebhookEnvelope.md)
  - [PageItem](docs/PageItem.md)
  - [PartyMappingInput](docs/PartyMappingInput.md)
  - [PartyMappingInputVariablesValue](docs/PartyMappingInputVariablesValue.md)
@@ -454,10 +560,12 @@ Class | Method | HTTP request | Description
  - [TemplateUsage](docs/TemplateUsage.md)
  - [TemplateUsageEndpoint](docs/TemplateUsageEndpoint.md)
  - [TemplateUsageExampleRequest](docs/TemplateUsageExampleRequest.md)
+ - [TemplateUsageFormFieldsInner](docs/TemplateUsageFormFieldsInner.md)
  - [TemplateUsagePartiesInner](docs/TemplateUsagePartiesInner.md)
  - [TemplateUsagePartiesInnerSupportedFieldsInner](docs/TemplateUsagePartiesInnerSupportedFieldsInner.md)
  - [TemplateUsageVariablesInner](docs/TemplateUsageVariablesInner.md)
  - [TemplateVariable](docs/TemplateVariable.md)
+ - [TimestampListItem](docs/TimestampListItem.md)
  - [TimestampRecord](docs/TimestampRecord.md)
  - [TriggerReminderRequest](docs/TriggerReminderRequest.md)
  - [UpsertItemsRequest](docs/UpsertItemsRequest.md)
@@ -469,6 +577,8 @@ Class | Method | HTTP request | Description
  - [WebhookDataDemandCreated](docs/WebhookDataDemandCreated.md)
  - [WebhookDataDemandExpired](docs/WebhookDataDemandExpired.md)
  - [WebhookDataDemandExpiredPartiesInner](docs/WebhookDataDemandExpiredPartiesInner.md)
+ - [WebhookDataKycTerminal](docs/WebhookDataKycTerminal.md)
+ - [WebhookDataKycTerminalStepsInner](docs/WebhookDataKycTerminalStepsInner.md)
  - [WebhookDataPartyRejected](docs/WebhookDataPartyRejected.md)
  - [WebhookDataPartyRejectedParty](docs/WebhookDataPartyRejectedParty.md)
  - [WebhookDataPartySigned](docs/WebhookDataPartySigned.md)

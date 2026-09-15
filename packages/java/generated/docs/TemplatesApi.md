@@ -4,6 +4,10 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**apiV1FieldTemplatesGet**](TemplatesApi.md#apiV1FieldTemplatesGet) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler |
+| [**apiV1FieldTemplatesGetWithHttpInfo**](TemplatesApi.md#apiV1FieldTemplatesGetWithHttpInfo) | **GET** /api/v1/field-templates | Alan Şablonlarını listeler |
+| [**apiV1FieldTemplatesIdGet**](TemplatesApi.md#apiV1FieldTemplatesIdGet) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları) |
+| [**apiV1FieldTemplatesIdGetWithHttpInfo**](TemplatesApi.md#apiV1FieldTemplatesIdGetWithHttpInfo) | **GET** /api/v1/field-templates/{id} | Alan Şablonu ayrıntısı (roller + alan sayıları) |
 | [**apiV1TemplatesGet**](TemplatesApi.md#apiV1TemplatesGet) | **GET** /api/v1/templates | Şablon listesi |
 | [**apiV1TemplatesGetWithHttpInfo**](TemplatesApi.md#apiV1TemplatesGetWithHttpInfo) | **GET** /api/v1/templates | Şablon listesi |
 | [**apiV1TemplatesIdDelete**](TemplatesApi.md#apiV1TemplatesIdDelete) | **DELETE** /api/v1/templates/{id} | Şablon sil |
@@ -15,6 +19,312 @@ All URIs are relative to *https://api-prd.imzala.org*
 | [**apiV1TemplatesIdUsageGet**](TemplatesApi.md#apiV1TemplatesIdUsageGet) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
 | [**apiV1TemplatesIdUsageGetWithHttpInfo**](TemplatesApi.md#apiV1TemplatesIdUsageGetWithHttpInfo) | **GET** /api/v1/templates/{id}/usage | Şablon kullanım kılavuzu (curl + JSON örnek) |
 
+
+
+## apiV1FieldTemplatesGet
+
+> ApiV1FieldTemplatesGet200Response apiV1FieldTemplatesGet(page, limit)
+
+Alan Şablonlarını listeler
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.TemplatesApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        TemplatesApi apiInstance = new TemplatesApi(defaultClient);
+        Integer page = 1; // Integer | 
+        Integer limit = 20; // Integer | 
+        try {
+            ApiV1FieldTemplatesGet200Response result = apiInstance.apiV1FieldTemplatesGet(page, limit);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling TemplatesApi#apiV1FieldTemplatesGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **page** | **Integer**|  | [optional] [default to 1] |
+| **limit** | **Integer**|  | [optional] [default to 20] |
+
+### Return type
+
+[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu listesi |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+## apiV1FieldTemplatesGetWithHttpInfo
+
+> ApiResponse<ApiV1FieldTemplatesGet200Response> apiV1FieldTemplatesGetWithHttpInfo(page, limit)
+
+Alan Şablonlarını listeler
+
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.TemplatesApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        TemplatesApi apiInstance = new TemplatesApi(defaultClient);
+        Integer page = 1; // Integer | 
+        Integer limit = 20; // Integer | 
+        try {
+            ApiResponse<ApiV1FieldTemplatesGet200Response> response = apiInstance.apiV1FieldTemplatesGetWithHttpInfo(page, limit);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling TemplatesApi#apiV1FieldTemplatesGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **page** | **Integer**|  | [optional] [default to 1] |
+| **limit** | **Integer**|  | [optional] [default to 20] |
+
+### Return type
+
+ApiResponse<[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu listesi |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+
+
+## apiV1FieldTemplatesIdGet
+
+> ApiV1FieldTemplatesIdGet200Response apiV1FieldTemplatesIdGet(id)
+
+Alan Şablonu ayrıntısı (roller + alan sayıları)
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.TemplatesApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        TemplatesApi apiInstance = new TemplatesApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | Alan Şablonu kimliği
+        try {
+            ApiV1FieldTemplatesIdGet200Response result = apiInstance.apiV1FieldTemplatesIdGet(id);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling TemplatesApi#apiV1FieldTemplatesIdGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**| Alan Şablonu kimliği | |
+
+### Return type
+
+[**ApiV1FieldTemplatesIdGet200Response**](ApiV1FieldTemplatesIdGet200Response.md)
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu ayrıntısı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **404** | &#x60;TEMPLATE_NOT_FOUND&#x60; — şablon bulunamadı, size ait değil ya da Alan Şablonu değil.  |  -  |
+
+## apiV1FieldTemplatesIdGetWithHttpInfo
+
+> ApiResponse<ApiV1FieldTemplatesIdGet200Response> apiV1FieldTemplatesIdGetWithHttpInfo(id)
+
+Alan Şablonu ayrıntısı (roller + alan sayıları)
+
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+
+### Example
+
+```java
+// Import classes:
+import org.imzala.client.generated.ApiClient;
+import org.imzala.client.generated.ApiException;
+import org.imzala.client.generated.ApiResponse;
+import org.imzala.client.generated.Configuration;
+import org.imzala.client.generated.auth.*;
+import org.imzala.client.generated.models.*;
+import org.imzala.client.generated.api.TemplatesApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://api-prd.imzala.org");
+        
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+        TemplatesApi apiInstance = new TemplatesApi(defaultClient);
+        UUID id = UUID.randomUUID(); // UUID | Alan Şablonu kimliği
+        try {
+            ApiResponse<ApiV1FieldTemplatesIdGet200Response> response = apiInstance.apiV1FieldTemplatesIdGetWithHttpInfo(id);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling TemplatesApi#apiV1FieldTemplatesIdGet");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **UUID**| Alan Şablonu kimliği | |
+
+### Return type
+
+ApiResponse<[**ApiV1FieldTemplatesIdGet200Response**](ApiV1FieldTemplatesIdGet200Response.md)>
+
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Alan Şablonu ayrıntısı |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **404** | &#x60;TEMPLATE_NOT_FOUND&#x60; — şablon bulunamadı, size ait değil ya da Alan Şablonu değil.  |  -  |
 
 
 ## apiV1TemplatesGet
@@ -177,7 +487,7 @@ ApiResponse<[**ApiV1TemplatesGet200Response**](ApiV1TemplatesGet200Response.md)>
 
 Şablon sil
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner. 
 
 ### Example
 
@@ -243,6 +553,7 @@ public class Example {
 |-------------|-------------|------------------|
 | **200** | Silindi |  -  |
 | **404** | Kayıt bulunamadı |  -  |
+| **409** | &#x60;TEMPLATE_IN_USE&#x60;: şablonun aktif (DRAFT veya PENDING) sözleşmesi olduğu için silinemez. Önce o sözleşmeleri sonlandırın.  |  -  |
 
 ## apiV1TemplatesIdDeleteWithHttpInfo
 
@@ -250,7 +561,7 @@ public class Example {
 
 Şablon sil
 
-Şablonu siler (soft delete). Mevcut sözleşmeler etkilenmez.
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner. 
 
 ### Example
 
@@ -319,6 +630,7 @@ ApiResponse<[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Res
 |-------------|-------------|------------------|
 | **200** | Silindi |  -  |
 | **404** | Kayıt bulunamadı |  -  |
+| **409** | &#x60;TEMPLATE_IN_USE&#x60;: şablonun aktif (DRAFT veya PENDING) sözleşmesi olduğu için silinemez. Önce o sözleşmeleri sonlandırın.  |  -  |
 
 
 ## apiV1TemplatesIdGet

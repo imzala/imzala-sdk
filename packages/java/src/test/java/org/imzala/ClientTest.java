@@ -173,7 +173,7 @@ class ClientTest {
   @Test
   @SuppressWarnings("unchecked") // ArgumentCaptor.forClass(List.class) — Mockito's standard raw-class-literal pattern for a generic captor type
   void demands_uploadDocument_JSON_encodes_parties_order_and_builds_temp_files() throws ApiException {
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any())).thenReturn(
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(
         new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload().id(UUID.randomUUID())));
 
     DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
@@ -187,7 +187,10 @@ class ClientTest {
     ArgumentCaptor<List<File>> filesCaptor = ArgumentCaptor.forClass(List.class);
     ArgumentCaptor<String> partiesCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> orderCaptor = ArgumentCaptor.forClass(String.class);
-    verify(demandsApi).apiV1DemandsUploadPost(filesCaptor.capture(), partiesCaptor.capture(), orderCaptor.capture(), eq("Test"), isNull());
+    // idempotencyKey (3rd slot) must stay null and order must land in its own
+    // slot: guards against positional drift when the generated signature grows.
+    verify(demandsApi).apiV1DemandsUploadPost(filesCaptor.capture(), partiesCaptor.capture(), isNull(),
+        orderCaptor.capture(), eq("Test"), isNull(), isNull(), isNull(), isNull(), isNull());
 
     assertEquals(1, filesCaptor.getValue().size());
     assertEquals("a.pdf", filesCaptor.getValue().get(0).getName());

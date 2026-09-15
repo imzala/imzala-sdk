@@ -113,7 +113,7 @@ public class RetryTests
     {
         var mockDemands = new Mock<IDemandsApi>();
         mockDemands
-            .Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(429, """{"success":false,"error":"RATE_LIMITED"}"""));
         var mockReminders = new Mock<IRemindersApi>();
 
@@ -123,7 +123,7 @@ public class RetryTests
         await Assert.ThrowsAsync<ImzalaRateLimitError>(() => resource.CreateAsync(body));
 
         // A retried demands.create would create a duplicate demand — must be called exactly once.
-        mockDemands.Verify(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        mockDemands.Verify(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class RetryTests
     {
         var mockDemands = new Mock<IDemandsApi>();
         mockDemands
-            .Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(503, """{"success":false,"error":"SERVER_ERROR"}"""));
         var mockReminders = new Mock<IRemindersApi>();
 
@@ -140,6 +140,6 @@ public class RetryTests
 
         await Assert.ThrowsAsync<ImzalaError>(() => resource.CreateAsync(body));
 
-        mockDemands.Verify(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        mockDemands.Verify(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -144,7 +144,7 @@ class RetryTest {
    */
   @Test
   void POST_create_returning_429_is_never_retried() throws ApiException {
-    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class)))
+    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class), any()))
         .thenThrow(fakeApiException(429, """
             {"success":false,"error":"RATE_LIMITED"}"""));
 
@@ -159,7 +159,7 @@ class RetryTest {
   /** SAFETY: same as above, but for a 503 — proves it's not just the 429 short-circuit, the write path has no retry loop at all. */
   @Test
   void POST_create_returning_5xx_is_never_retried() throws ApiException {
-    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class)))
+    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class), any()))
         .thenThrow(fakeApiException(503, """
             {"success":false,"error":"SERVICE_UNAVAILABLE"}"""));
 

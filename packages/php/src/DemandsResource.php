@@ -98,12 +98,16 @@ final class DemandsResource
             ));
             $orderJson = $params->getOrder() !== null ? (string) json_encode($params->getOrder()) : null;
 
+            // Named arguments: the generated signature puts idempotency_key
+            // between parties and order, so positional arguments would
+            // silently shift order/title/description one slot to the right.
             return Http::unwrap(fn () => $this->api->apiV1DemandsUploadPostWithHttpInfo(
-                $splFiles,
-                $partiesJson,
-                $orderJson,
-                $params->getTitle(),
-                $params->getDescription(),
+                files: $splFiles,
+                parties: $partiesJson,
+                idempotency_key: null,
+                order: $orderJson,
+                title: $params->getTitle(),
+                description: $params->getDescription(),
             ));
         } finally {
             unset($splFiles);

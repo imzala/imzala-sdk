@@ -316,7 +316,7 @@ class DemandsResource:
         template) — a single PDF/DOC/DOCX/ODT/RTF/TXT, or 1-20 images
         merged into one PDF."""
         file_tuples = [to_multipart_tuple(f) for f in files]
-        parties_json = json.dumps([_party_to_dict(p) for p in parties])
+        parties_json = json.dumps([_party_to_dict(p) for p in parties], ensure_ascii=False)
         order_json = json.dumps(list(order)) if order is not None else None
         return _unwrap(
             lambda: self._api.api_v1_demands_upload_post(

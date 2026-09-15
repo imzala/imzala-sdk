@@ -53,7 +53,7 @@ public final class DemandsResource {
    */
   public CreatedDemand create(CreateDemandRequest body) {
     return Http.unwrap(
-        () -> api.apiV1DemandsPost(body),
+        () -> api.apiV1DemandsPost(body, null),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData());
   }
@@ -104,7 +104,14 @@ public final class DemandsResource {
       String orderJson = params.getOrder() != null ? writeJson(params.getOrder()) : null;
 
       return Http.unwrap(
-          () -> api.apiV1DemandsUploadPost(files, partiesJson, orderJson, params.getTitle(), params.getDescription()),
+          // Named slots: idempotencyKey sits between parties and order in the
+          // generated signature, so positional reuse would silently misroute.
+          // New optional fields stay null -> server defaults apply.
+          () -> api.apiV1DemandsUploadPost(
+              files, partiesJson, /* idempotencyKey */ null, orderJson,
+              params.getTitle(), params.getDescription(),
+              /* fieldTemplateId */ null, /* force */ null,
+              /* sendInvitations */ null, /* onAnchorMiss */ null),
           r -> Boolean.TRUE.equals(r.getSuccess()),
           r -> r.getData());
     } finally {

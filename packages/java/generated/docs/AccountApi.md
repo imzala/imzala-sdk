@@ -15,7 +15,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. &#x60;timestamps&#x60; scope&#39;u gerektirir; scope yoksa 403 &#x60;INSUFFICIENT_SCOPE&#x60; döner. 
+Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir. 
 
 ### Example
 
@@ -77,7 +77,6 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
-| **403** | **INSUFFICIENT_SCOPE** — API key&#39;in &#x60;timestamps&#x60; scope&#39;u yok. Dashboard → Geliştirici → API Anahtarları sayfasından scope&#39;u güncelleyin.  |  -  |
 
 ## apiV1MeGetWithHttpInfo
 
@@ -85,7 +84,7 @@ This endpoint does not need any parameter.
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. &#x60;timestamps&#x60; scope&#39;u gerektirir; scope yoksa 403 &#x60;INSUFFICIENT_SCOPE&#x60; döner. 
+Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir. 
 
 ### Example
 
@@ -150,5 +149,4 @@ ApiResponse<[**ApiV1MeGet200Response**](ApiV1MeGet200Response.md)>
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
-| **403** | **INSUFFICIENT_SCOPE** — API key&#39;in &#x60;timestamps&#x60; scope&#39;u yok. Dashboard → Geliştirici → API Anahtarları sayfasından scope&#39;u güncelleyin.  |  -  |
 

@@ -134,6 +134,8 @@ public class ClientTests
         List<FileParameter>? capturedFiles = null;
         string? capturedParties = null;
         string? capturedOrder = null;
+        string? capturedIdempotencyKey = "unset";
+        string? capturedTitle = null;
 
         mockDemands
             .Setup(a => a.ApiV1DemandsUploadPostAsync(
@@ -142,12 +144,20 @@ public class ClientTests
                 It.IsAny<string?>(),
                 It.IsAny<string?>(),
                 It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<List<FileParameter>, string, string?, string?, string?, CancellationToken>((files, parties, order, title, description, ct) =>
+            .Callback<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, CancellationToken>(
+                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, ct) =>
             {
                 capturedFiles = files;
                 capturedParties = parties;
+                capturedIdempotencyKey = idempotencyKey;
                 capturedOrder = order;
+                capturedTitle = title;
             })
             .ReturnsAsync(new ApiV1DemandsUploadPost201Response(true, new CreatedDemandUpload(id: Guid.NewGuid())));
 
@@ -166,6 +176,9 @@ public class ClientTests
         Assert.Equal("application/pdf", capturedFiles[0].ContentType);
         Assert.Equal("""[{"first_name":"Ayşe","last_name":"Lovelace","email":"ayse@example.com"}]""", capturedParties);
         Assert.Equal("[0]", capturedOrder);
+        // Positional-drift guard: idempotencyKey stays empty, title lands in its own slot.
+        Assert.Null(capturedIdempotencyKey);
+        Assert.Equal("Test", capturedTitle);
         Assert.NotEqual(Guid.Empty, result.Id);
     }
 

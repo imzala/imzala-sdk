@@ -244,6 +244,9 @@ final class ClientTest extends TestCase
                     $capturedParties = $parties;
                     return is_string($parties);
                 }),
+                // idempotency_key slot must stay empty; order must land in its
+                // own slot (guards positional drift when the signature grows).
+                null,
                 $this->callback(function ($order) use (&$capturedOrder) {
                     $capturedOrder = $order;
                     return true;
