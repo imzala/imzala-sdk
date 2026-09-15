@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.8.9
+  version: 1.8.10
   description: >
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
 
-    **Sürüm:** 1.8.9 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.10 · **Son güncelleme:** 2026-09-15
 
 
     ## Auth
@@ -1721,20 +1721,25 @@ paths:
                       parametre `POST /api/v1/demands` ve `/demands/bulk`
                       uçlarında vardır ve orada varsayılanı **açıktır**.
                       Karıştırılırsa sessizce ters anlam üretir.
-                    - Hangi kanalın gideceğini sözleşmenin bildirim ayarları
-                      ve tarafın `send_sms`/`send_email` bayrakları belirler.
-                      Bu uçtan yaratılan sözleşmelerde ikisi de açık doğar:
-                      pratikte **hem SMS hem e-posta** gider. Kanal seçimi
-                      henüz yoktur.
+                    - Kanal: `"true"`, `"1"` ve `"all"` tüm kanalları kullanır;
+                      `"email"` yalnız e-posta, `"sms"` telefon kanalları (SMS
+                      ve WhatsApp) gönderir. Değer yalnız **daraltır**:
+                      sözleşmenin bildirim ayarlarında veya tarafın
+                      `send_sms`/`send_email` bayraklarında kapalı olan bir
+                      kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu
+                      ayarlar açık doğar.
                     - En çok **20 tarafa** davet gönderilir; üstünde sözleşme
                       yine oluşur ama davet gönderilmez
                       (`dispatch.error = DISPATCH_TOO_MANY`), tarafları
                       `resend` ile çağırın.
-                    - 🔴 **Tekrar denemeye dikkat:** bu ucun idempotency
-                      anahtarı yoktur. İstemci zaman aşımında isteği körlemesine
-                      tekrarlarsanız **yeni bir sözleşme, yeni kredi ve ikinci
-                      bir davet seti** oluşur. Zaman aşımında yeniden göndermek
-                      yerine `GET /api/v1/demands?...` ile sonucu doğrulayın.
+                    - 🔴 **Tekrar denemeye dikkat:** isteği `Idempotency-Key`
+                      olmadan zaman aşımında körlemesine tekrarlarsanız **yeni
+                      bir sözleşme, yeni kredi ve ikinci bir davet seti**
+                      oluşabilir (kopya kapısı `DUPLICATE_SUSPECTED` yalnız aynı
+                      içerikte ve 10 dakika içinde devreye girer). Tekrar
+                      edebileceğiniz her istekte `Idempotency-Key` gönderin;
+                      anahtar yoksa yeniden göndermek yerine
+                      `GET /api/v1/demands?...` ile sonucu doğrulayın.
                 on_anchor_miss:
                   type: string
                   enum:
