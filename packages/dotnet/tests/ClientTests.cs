@@ -48,13 +48,13 @@ public class ClientTests
         var mockAccount = new Mock<IAccountApi>();
         mockAccount
             .Setup(a => a.ApiV1MeGetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ApiV1MeGet200Response(true, new ApiV1MeGet200ResponseData(id: userId, email: "a@b.com")));
+            .ReturnsAsync(new ApiV1MeGet200Response(true, new ApiV1MeGet200ResponseData(id: userId, email: "a@example.com")));
 
         var account = new AccountResource(mockAccount.Object, DefaultRetry);
         var result = await account.MeAsync();
 
         Assert.Equal(userId, result.Id);
-        Assert.Equal("a@b.com", result.Email);
+        Assert.Equal("a@example.com", result.Email);
     }
 
     [Fact]

@@ -28,14 +28,14 @@ describe('Imzala facade — envelope unwrap', () => {
 
   it('me() calls AccountApi and unwraps', async () => {
     vi.spyOn(AccountApi.prototype, 'apiV1MeGet').mockResolvedValue({
-      data: { success: true, data: { id: 'u1', email: 'a@b.com' } },
+      data: { success: true, data: { id: 'u1', email: 'a@example.com' } },
       status: 200,
     } as any);
 
     const imzala = new Imzala({ apiKey: 'imz_test' });
     const result = await imzala.me();
 
-    expect(result).toEqual({ id: 'u1', email: 'a@b.com' });
+    expect(result).toEqual({ id: 'u1', email: 'a@example.com' });
   });
 
   it('templates.list() forwards page/limit and unwraps', async () => {

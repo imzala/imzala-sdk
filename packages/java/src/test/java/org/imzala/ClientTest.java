@@ -95,13 +95,13 @@ class ClientTest {
   void me_calls_accountApi_and_unwraps() throws ApiException {
     UUID userId = UUID.randomUUID();
     when(accountApi.apiV1MeGet()).thenReturn(
-        new ApiV1MeGet200Response().success(true).data(new ApiV1MeGet200ResponseData().id(userId).email("a@b.com")));
+        new ApiV1MeGet200Response().success(true).data(new ApiV1MeGet200ResponseData().id(userId).email("a@example.com")));
 
     AccountResource account = new AccountResource(accountApi, NO_RETRY);
     ApiV1MeGet200ResponseData result = account.me();
 
     assertEquals(userId, result.getId());
-    assertEquals("a@b.com", result.getEmail());
+    assertEquals("a@example.com", result.getEmail());
   }
 
   @Test

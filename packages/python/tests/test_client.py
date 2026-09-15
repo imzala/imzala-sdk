@@ -33,12 +33,12 @@ class TestEnvelopeUnwrap:
 
     def test_me_calls_account_api_and_unwraps(self):
         with patch.object(
-            AccountApi, "api_v1_me_get", return_value=envelope({"id": "u1", "email": "a@b.com"})
+            AccountApi, "api_v1_me_get", return_value=envelope({"id": "u1", "email": "a@example.com"})
         ) as mocked:
             client = Imzala(api_key="imz_test")
             result = client.me()
 
-        assert result == {"id": "u1", "email": "a@b.com"}
+        assert result == {"id": "u1", "email": "a@example.com"}
         mocked.assert_called_once()
 
     def test_templates_list_forwards_page_limit_and_unwraps(self):

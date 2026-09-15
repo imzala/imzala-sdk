@@ -114,10 +114,10 @@ try {
     //       'template_id'   => $templateId,
     //       'party_mapping' => [[
     //           'template_party_id' => $templatePartyId,
-    //           'first_name' => 'Ahmet',
+    //           'first_name' => 'Ayşe',
     //           'last_name'  => 'Yılmaz',
-    //           'email'      => 'ahmet@example.com',
-    //           'phone'      => '+905301112233',
+    //           'email'      => 'ayse@example.com',
+    //           'phone'      => '+905551112233',
     //       ]],
     //   ]);
     //   print_r($created->getSigningUrls());

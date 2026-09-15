@@ -55,10 +55,10 @@ var demand = await imzala.Demands.CreateAsync(new CreateDemandRequest(
     {
         new(
             templatePartyId: template.Parties[0].Id,
-            firstName: "Ahmet",
+            firstName: "Ayşe",
             lastName: "Yılmaz",
-            email: "ahmet@example.com",
-            phone: "+905301112233"),
+            email: "ayse@example.com",
+            phone: "+905551112233"),
     }));
 
 foreach (var url in demand.SigningUrls) // her taraf için imzalama linki

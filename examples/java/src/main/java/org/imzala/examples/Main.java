@@ -109,7 +109,7 @@ public final class Main {
       //       .partyMapping(java.util.List.of(
       //           new org.imzala.client.generated.model.PartyMappingInput()
       //               .templatePartyId(templatePartyId)
-      //               .firstName("Ahmet").lastName("Yilmaz").email("ahmet@example.com")));
+      //               .firstName("Ayşe").lastName("Yilmaz").email("ayse@example.com")));
       //   var created = imzala.demands().create(body);
       //   System.out.println(created.getSigningUrls());
       //

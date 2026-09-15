@@ -33,7 +33,7 @@ const demand = await imzala.demands.create({
   template_id: templates[0].id,
   party_mapping: [{
     template_party_id: templates[0].parties[0].id,
-    first_name: 'Ahmet', last_name: 'Yılmaz', email: 'ahmet@example.com',
+    first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com',
   }],
 });
 

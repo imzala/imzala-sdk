@@ -66,10 +66,10 @@ CreateDemandRequest body = new CreateDemandRequest()
     .partyMapping(List.of(
         new PartyMappingInput()
             .templatePartyId(template.getParties().get(0).getId())
-            .firstName("Ahmet")
+            .firstName("Ayşe")
             .lastName("Yılmaz")
-            .email("ahmet@example.com")
-            .phone("+905301112233")));
+            .email("ayse@example.com")
+            .phone("+905551112233")));
 
 CreatedDemand demand = imzala.demands().create(body);
 System.out.println(demand.getSigningUrls()); // her taraf için imzalama linki

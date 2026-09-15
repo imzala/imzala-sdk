@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
@@ -131,5 +132,53 @@ describe('public boundary', () => {
     const found = [...new Set(specText.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}/g) ?? [])];
     expect(found.length).toBeGreaterThan(0);
     for (const e of found) expect(FICTIONAL_EMAIL_DOMAINS).toContain(e.split('@')[1]);
+  });
+});
+
+// The same allow-lists apply to everything written by hand: READMEs, examples,
+// facades and their tests. Generated code and the vendored spec are covered by
+// the spec checks above; lockfiles carry no example data.
+const HAND_WRITTEN_EXCLUDE = [/(^|\/)generated\//, /^spec\//, /(^|\/)(package-lock\.json|composer\.lock)$/];
+// git@github.com appears in clone instructions; it is a host, not a person.
+const DOC_EMAIL_DOMAINS = [...FICTIONAL_EMAIL_DOMAINS, 'github.com'];
+
+function handWrittenFiles() {
+  return execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+    .split('\n')
+    .filter((f) => f && !HAND_WRITTEN_EXCLUDE.some((re) => re.test(f)));
+}
+
+describe('example data outside the spec', () => {
+  const files = handWrittenFiles().map((f) => {
+    try {
+      return [f, readFileSync(path.resolve(f), 'utf8')];
+    } catch {
+      return [f, ''];
+    }
+  });
+
+  it('scans a meaningful set of files', () => {
+    expect(files.length).toBeGreaterThan(50);
+    expect(files.map(([f]) => f)).toContain('README.md');
+  });
+
+  it('every Turkish mobile number is a known fictional one', () => {
+    const bad = [];
+    for (const [f, text] of files) {
+      for (const n of new Set(text.match(/\+?905[0-9]{9}/g) ?? [])) {
+        if (!FICTIONAL_PHONES.includes(n.startsWith('+') ? n : `+${n}`)) bad.push(`${f}: ${n}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('every e-mail address uses a reserved or company domain', () => {
+    const bad = [];
+    for (const [f, text] of files) {
+      for (const e of new Set(text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}/g) ?? [])) {
+        if (!DOC_EMAIL_DOMAINS.includes(e.split('@')[1])) bad.push(`${f}: ${e}`);
+      }
+    }
+    expect(bad).toEqual([]);
   });
 });
