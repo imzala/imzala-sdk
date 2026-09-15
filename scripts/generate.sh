@@ -112,6 +112,21 @@ for entry in "${LANG_TABLE[@]}"; do
     -o "$outdir" \
     --additional-properties="$extra_props"
 
+  if [ "$key" = "csharp" ]; then
+    # POST /api/v1/timestamps also accepts a JSON (base64) body. The C#
+    # generator's SelectHeaderContentType prefers application/json when both
+    # are declared, which drops the multipart fields and sends an empty body.
+    # The generated method has no way to choose, so keep only multipart for
+    # operations that declare both. Verified against a local listener.
+    perl -0pi -e 's/("multipart\/form-data",)[ \t]*\n\s*"application\/json"[ \t]*\n/$1\n/g' \
+      "$outdir/src/ImzalaApiClient/Api/TimestampsApi.cs"
+    n="$(grep -c '"multipart/form-data",' "$outdir/src/ImzalaApiClient/Api/TimestampsApi.cs")"
+    if grep -q '"application/json"' <(grep -A1 '"multipart/form-data",' "$outdir/src/ImzalaApiClient/Api/TimestampsApi.cs"); then
+      echo "[generate] ERROR: csharp timestamps content-type list still declares application/json" >&2; exit 1
+    fi
+    echo "[generate] csharp: $n timestamps content-type lists narrowed to multipart"
+  fi
+
   if [ "$key" = "java" ]; then
     # The java generator writes multipart text fields with httpmime's default
     # charset (ISO-8859-1): a title such as "Kira sözleşmesi" or a party name

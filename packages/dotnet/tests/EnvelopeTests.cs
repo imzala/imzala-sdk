@@ -471,4 +471,27 @@ public class EnvelopeTests : IDisposable
         Assert.Equal(409, err.StatusCode);
         Assert.Single(srv.Calls);
     }
+
+    // POST /api/v1/timestamps also declares a JSON (base64) body. The C#
+    // generator preferred application/json for such operations and sent an
+    // empty body; generate.sh narrows the list to multipart. Real client here.
+    [Fact]
+    public async Task Timestamps_create_sends_the_file_as_multipart()
+    {
+        var srv = Server(Ok(new { id = Guid.NewGuid(), file_sha256 = "abc" }));
+        await Client(srv).Timestamps.CreateAsync(new CreateTimestampParams
+        {
+            Content = Encoding.ASCII.GetBytes("%PDF-1.7 test"),
+            FileName = "eser.pdf",
+            ContentType = "application/pdf",
+            IdempotencyKey = "damga-1",
+        });
+        var call = srv.Calls[0];
+        Assert.Equal("/api/v1/timestamps", call.Uri);
+        Assert.StartsWith("multipart/form-data", call.Headers["Content-Type"]);
+        Assert.Matches("name=\"?file\"?", call.RawBody);
+        Assert.Matches("filename=\"?eser.pdf\"?", call.RawBody);
+        Assert.Contains("%PDF-1.7 test", call.RawBody);
+        Assert.Equal("damga-1", call.Headers["Idempotency-Key"]);
+    }
 }

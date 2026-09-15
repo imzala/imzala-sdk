@@ -886,7 +886,11 @@ class TimestampsResource:
         `FileInput`."""
         del content_type
         return _unwrap_idempotent_write(
+            # The endpoint also accepts a JSON (base64) body and the generated
+            # client prefers JSON when both are declared, which drops the
+            # multipart fields and sends an empty body. Force multipart.
             lambda: self._api.api_v1_timestamps_post(
+                _content_type="multipart/form-data",
                 file=(filename, bytes(content)),
                 idempotency_key=idempotency_key,
                 description=description,

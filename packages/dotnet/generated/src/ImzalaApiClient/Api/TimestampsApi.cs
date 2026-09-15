@@ -770,7 +770,6 @@ namespace ImzalaApiClient.Api
 
             string[] _contentTypes = new string[] {
                 "multipart/form-data",
-                "application/json"
             };
 
             // to determine the Accept header
@@ -858,8 +857,7 @@ namespace ImzalaApiClient.Api
             ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
 
             string[] _contentTypes = new string[] {
-                "multipart/form-data", 
-                "application/json"
+                "multipart/form-data",
             };
 
             // to determine the Accept header

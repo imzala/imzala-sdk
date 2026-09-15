@@ -337,3 +337,19 @@ class TestTransportDoesNotRetry:
         with pytest.raises(ImzalaError):
             client(srv).demands.documents.create(DEMAND, {"title": "Ek"})
         assert len(srv.calls) == 1
+
+
+class TestTimestampsWire:
+    """POST /api/v1/timestamps also declares a JSON (base64) body; the
+    generated client preferred it and sent an empty body. The facade forces
+    multipart. Real client, real server."""
+
+    def test_create_sends_the_file_as_multipart(self, serve):
+        srv = serve(ok({"id": DOC, "file_sha256": "abc"}, status=201))
+        client(srv).timestamps.create(content=b"%PDF-1.7 test", filename="eser.pdf", idempotency_key="damga-1")
+        call = srv.calls[0]
+        assert call["path"] == "/api/v1/timestamps"
+        assert call["headers"]["Content-Type"].startswith("multipart/form-data")
+        assert b'name="file"' in call["body"]
+        assert b"%PDF-1.7 test" in call["body"]
+        assert call["headers"]["Idempotency-Key"] == "damga-1"
