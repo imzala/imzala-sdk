@@ -31,6 +31,7 @@ import { toUploadFile } from './files';
 import type { CreateTimestampParams, UploadDemandParams } from './files';
 
 export * from './errors';
+export * from './errorCodes';
 export * from './webhook';
 export type { FileInput, UploadDemandParams, UploadPartyInput, CreateTimestampParams } from './files';
 

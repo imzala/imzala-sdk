@@ -1,5 +1,5 @@
 import type { AxiosPromise } from 'axios';
-import { ImzalaError, ImzalaRateLimitError, extractErrorMessage, mapAxiosError } from './errors';
+import { ImzalaError, ImzalaRateLimitError, extractErrorCode, extractErrorMessage, mapAxiosError } from './errors';
 
 /**
  * Every imzala.org API response uses the same envelope:
@@ -26,6 +26,7 @@ export async function unwrap<T>(
     throw new ImzalaError(extractErrorMessage(body) ?? 'imzala.org API request failed', {
       statusCode: response.status,
       body,
+      code: extractErrorCode(body),
     });
   }
 
@@ -93,5 +94,36 @@ export async function unwrapRetryableGet<T>(
       await sleep(computeDelayMs(mapped, attempt, retry.retryBaseDelayMs));
       attempt += 1;
     }
+  }
+}
+
+/**
+ * Bounded, safe retry for write calls.
+ *
+ * Writes are normally never retried: a repeated create produces a second
+ * demand. The one exception is a write sent with an `Idempotency-Key`. The
+ * server does not treat a second request with the same key as a new record,
+ * so after a 429 it is safe to wait for `Retry-After` and try exactly once
+ * more. A second 429, and any other error including 5xx, is thrown.
+ *
+ * Without a key this behaves exactly like `unwrap`.
+ */
+export async function unwrapIdempotentWrite<T>(
+  requestFn: () => AxiosPromise<{ success?: boolean; data?: T }>,
+  opts: { idempotencyKey?: string; retryBaseDelayMs: number },
+): Promise<T> {
+  try {
+    return await unwrap(requestFn());
+  } catch (err) {
+    const mapped = err instanceof ImzalaError ? err : mapAxiosError(err);
+    const replayable = Boolean(opts.idempotencyKey) && mapped.statusCode === 429;
+    if (!replayable) throw mapped;
+
+    const waitMs =
+      mapped instanceof ImzalaRateLimitError && typeof mapped.retryAfter === 'number'
+        ? Math.max(0, mapped.retryAfter * 1000)
+        : opts.retryBaseDelayMs;
+    await sleep(waitMs);
+    return unwrap(requestFn());
   }
 }

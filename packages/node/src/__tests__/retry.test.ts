@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DemandsApi, TemplatesApi } from '../../generated/api';
 import { Imzala } from '../index';
 import { ImzalaError, ImzalaRateLimitError } from '../errors';
+import { unwrapIdempotentWrite } from '../http';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -108,5 +109,69 @@ describe('safe auto-retry — SAFETY: writes are never retried', () => {
       imzala.demands.create({ template_id: 't1', party_mapping: [] } as any),
     ).rejects.toBeInstanceOf(ImzalaError);
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('unwrapIdempotentWrite — one safe retry for writes that carry an Idempotency-Key', () => {
+  function rateLimited(retryAfterSeconds: number) {
+    return {
+      isAxiosError: true,
+      message: 'Request failed with status code 429',
+      response: {
+        status: 429,
+        data: { success: false, error: 'Çok fazla istek', code: 'RATE_LIMIT_EXCEEDED', retry_after_seconds: retryAfterSeconds },
+        headers: { 'retry-after': String(retryAfterSeconds) },
+      },
+    };
+  }
+  const ok = (data: unknown) => ({ status: 200, data: { success: true, data } }) as any;
+
+  it('a write WITHOUT an Idempotency-Key is never retried on 429', async () => {
+    const call = vi.fn().mockRejectedValue(rateLimited(0));
+    await expect(unwrapIdempotentWrite(call, { retryBaseDelayMs: 1 })).rejects.toBeInstanceOf(ImzalaRateLimitError);
+    expect(call).toHaveBeenCalledTimes(1);
+  });
+
+  it('a write WITH an Idempotency-Key is retried exactly once on 429', async () => {
+    const call = vi.fn().mockRejectedValueOnce(rateLimited(0)).mockResolvedValueOnce(ok({ id: 'ok' }));
+    await expect(unwrapIdempotentWrite(call, { idempotencyKey: 'k-1', retryBaseDelayMs: 1 })).resolves.toEqual({ id: 'ok' });
+    expect(call).toHaveBeenCalledTimes(2);
+  });
+
+  it('a second 429 is thrown, not retried again', async () => {
+    const call = vi.fn().mockRejectedValue(rateLimited(0));
+    await expect(unwrapIdempotentWrite(call, { idempotencyKey: 'k-2', retryBaseDelayMs: 1 })).rejects.toBeInstanceOf(
+      ImzalaRateLimitError,
+    );
+    expect(call).toHaveBeenCalledTimes(2);
+  });
+
+  it('non-429 errors are not retried, even 5xx', async () => {
+    const conflict = vi.fn().mockRejectedValue(fakeAxiosError(409, { success: false, error: 'x', code: 'TEMPLATE_IN_USE' }));
+    await expect(unwrapIdempotentWrite(conflict, { idempotencyKey: 'k-3', retryBaseDelayMs: 1 })).rejects.toMatchObject({
+      code: 'TEMPLATE_IN_USE',
+    });
+    expect(conflict).toHaveBeenCalledTimes(1);
+
+    const serverError = vi.fn().mockRejectedValue(fakeAxiosError(503));
+    await expect(unwrapIdempotentWrite(serverError, { idempotencyKey: 'k-4', retryBaseDelayMs: 1 })).rejects.toBeInstanceOf(
+      ImzalaError,
+    );
+    expect(serverError).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for Retry-After before the retry', async () => {
+    vi.useFakeTimers();
+    try {
+      const call = vi.fn().mockRejectedValueOnce(rateLimited(2)).mockResolvedValueOnce(ok({ id: 'later' }));
+      const pending = unwrapIdempotentWrite(call, { idempotencyKey: 'k-5', retryBaseDelayMs: 1 });
+      await vi.advanceTimersByTimeAsync(1999);
+      expect(call).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      await expect(pending).resolves.toEqual({ id: 'later' });
+      expect(call).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { describeErrorCode, type ImzalaErrorCode } from './errorCodes';
 
 export interface ImzalaErrorOptions {
   /** HTTP status code, when the error originated from an HTTP response. */
@@ -23,7 +24,10 @@ export interface ImzalaErrorOptions {
 export class ImzalaError extends Error {
   readonly statusCode?: number;
   readonly body?: unknown;
-  readonly code?: string;
+  /** Machine-readable code, e.g. `TEMPLATE_IN_USE`. Undefined when the response carried none. */
+  readonly code?: ImzalaErrorCode | (string & {});
+  /** One-line explanation of `code` from the SDK's catalogue; undefined for codes it does not know. */
+  readonly codeDescription?: string;
 
   constructor(message: string, options: ImzalaErrorOptions = {}) {
     super(message, options.cause !== undefined ? { cause: options.cause } : undefined);
@@ -31,6 +35,7 @@ export class ImzalaError extends Error {
     this.statusCode = options.statusCode;
     this.body = options.body;
     this.code = options.code;
+    this.codeDescription = describeErrorCode(options.code);
     // Restore the prototype chain — down-leveled targets (e.g. ES5) break
     // `instanceof` for classes extending built-ins like Error otherwise.
     Object.setPrototypeOf(this, new.target.prototype);
@@ -46,14 +51,38 @@ export class ImzalaAuthError extends ImzalaError {
   }
 }
 
-/** Rate limited (429). `retryAfter` is seconds, when the server provided one. */
+/** Standard `RateLimit-*` response headers. The server does not send `X-RateLimit-*`. */
+export interface ImzalaRateLimitInfo {
+  /** `ratelimit-limit`: requests allowed per window. Defaults to 60 but can be lowered per API key, so read it rather than assuming. */
+  limit?: number;
+  /** `ratelimit-remaining`: requests left in the current window. */
+  remaining?: number;
+  /** `ratelimit-reset`: seconds until the window resets. */
+  reset?: number;
+  /** `ratelimit-policy`: raw policy string, e.g. `60;w=60`. */
+  policy?: string;
+}
+
+/**
+ * Rate limited (429). `retryAfter` is seconds, when the server provided one.
+ *
+ * Several different limits answer with 429 and each has its own `code`
+ * (`RATE_LIMIT_EXCEEDED`, `TOO_MANY_REQUESTS`, `RATE_LIMITED`,
+ * `MAX_SMS_REMINDERS_REACHED`), so branch on this class or on `statusCode`,
+ * not on one particular code.
+ */
 export class ImzalaRateLimitError extends ImzalaError {
   readonly retryAfter?: number;
+  readonly rateLimit?: ImzalaRateLimitInfo;
 
-  constructor(message: string, options: ImzalaErrorOptions & { retryAfter?: number } = {}) {
+  constructor(
+    message: string,
+    options: ImzalaErrorOptions & { retryAfter?: number; rateLimit?: ImzalaRateLimitInfo } = {},
+  ) {
     super(message, options);
     this.name = 'ImzalaRateLimitError';
     this.retryAfter = options.retryAfter;
+    this.rateLimit = options.rateLimit;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -68,10 +97,12 @@ export class ImzalaValidationError extends ImzalaError {
 }
 
 /**
- * imzala.org error envelopes are not fully uniform across endpoints: most
- * are `{success:false, error:"<code>", message:"<text>"}`, but some (e.g.
- * the reminders 429) nest a `{code, message, retry_after_seconds}` object
- * under `error` instead of a plain string. These helpers handle both shapes.
+ * imzala.org error envelopes come in three shapes:
+ * - `{success:false, error:"<CODE>", message:"<text>"}`
+ * - `{success:false, error:"<text>", code:"<CODE>"}` (rate limits, `CodedError`)
+ * - `{success:false, error:{code, message, retry_after_seconds}}` (reminders)
+ * and some errors carry only a human-readable `error` string with no code.
+ * These helpers handle all of them.
  */
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : undefined;
@@ -90,10 +121,15 @@ export function extractErrorMessage(body: unknown): string | undefined {
   return undefined;
 }
 
+const CODE_SHAPE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/;
+
 export function extractErrorCode(body: unknown): string | undefined {
   const b = asRecord(body);
   if (!b) return undefined;
-  if (typeof b.error === 'string') return b.error;
+  if (typeof b.code === 'string') return b.code;
+  // `error` holds either a code or a human-readable sentence; only the
+  // former is a code.
+  if (typeof b.error === 'string') return CODE_SHAPE.test(b.error) ? b.error : undefined;
   const nested = asRecord(b.error);
   if (nested && typeof nested.code === 'string') return nested.code;
   return undefined;
@@ -114,6 +150,25 @@ function extractRetryAfter(body: unknown, headers: unknown): number | undefined 
     if (!Number.isNaN(n)) return n;
   }
   return undefined;
+}
+
+function extractRateLimitInfo(headers: unknown): ImzalaRateLimitInfo | undefined {
+  const h = asRecord(headers);
+  if (!h) return undefined;
+  const num = (key: string): number | undefined => {
+    const raw = h[key];
+    if (raw === undefined || raw === null || raw === '') return undefined;
+    const n = Number(raw);
+    return Number.isNaN(n) ? undefined : n;
+  };
+  const info: ImzalaRateLimitInfo = {
+    limit: num('ratelimit-limit'),
+    remaining: num('ratelimit-remaining'),
+    reset: num('ratelimit-reset'),
+    policy: typeof h['ratelimit-policy'] === 'string' ? h['ratelimit-policy'] : undefined,
+  };
+  if (Object.values(info).every((v) => v === undefined)) return undefined;
+  return Object.fromEntries(Object.entries(info).filter(([, v]) => v !== undefined)) as ImzalaRateLimitInfo;
 }
 
 /**
@@ -137,6 +192,7 @@ export function mapAxiosError(err: unknown): ImzalaError {
         body,
         code,
         retryAfter: extractRetryAfter(body, headers),
+        rateLimit: extractRateLimitInfo(headers),
         cause: err,
       });
     }

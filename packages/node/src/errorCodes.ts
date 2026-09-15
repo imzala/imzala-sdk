@@ -1,0 +1,123 @@
+/**
+ * Machine-readable error codes returned by the imzala.org External API, each
+ * with a one-line Turkish explanation taken from the public API reference.
+ *
+ * `ImzalaError.code` carries the raw code and `ImzalaError.codeDescription`
+ * the matching line from here. A code that is not in this catalogue is still
+ * thrown unchanged, only without a description, so a newer server never
+ * breaks an older SDK.
+ *
+ * Source: spec/openapi.v1.yaml. `errorCodes.test.ts` fails when the spec gains
+ * a code this file does not list, or loses one it does.
+ */
+export const IMZALA_ERROR_CODES = {
+  // İstek limiti ve tekrar koruması
+  RATE_LIMIT_EXCEEDED:
+    'API anahtarının dakikalık istek sınırı aşıldı (varsayılan 60). Retry-After kadar bekleyip tekrar deneyin.',
+  TOO_MANY_REQUESTS: 'Belge yükleme ucunun API anahtarı başına dakikada 30 istek sınırı aşıldı.',
+  RATE_LIMITED:
+    'Uca özgü sıklık sınırı aşıldı (ör. aynı sözleşmeye 5 dakika içinde ikinci hatırlatma). Hatırlatmada force: true ile aşılabilir.',
+  RATE_LIMITER_UNAVAILABLE: 'İstek sınırlayıcı geçici olarak kullanılamıyor; kısa süre sonra tekrar deneyin.',
+  IDEMPOTENCY_KEY_REUSED:
+    'Aynı Idempotency-Key daha önce farklı bir içerikle kullanıldı. Yeni sözleşme için yeni bir anahtar gönderin.',
+  IDEMPOTENCY_UNVERIFIABLE:
+    'Bu Idempotency-Key daha önce bir sözleşme üretti ama isteğin aynı olduğu doğrulanamadı. Yeni anahtarla körlemesine denemeyin, gövdedeki demand_id ile durumu sorgulayın.',
+  INVALID_IDEMPOTENCY_KEY: 'Idempotency-Key biçimi geçersiz ya da başlık ile gövdedeki anahtar çelişiyor.',
+  DUPLICATE_SUSPECTED:
+    'Anahtarsız istek, son 10 dakikada aynı içerikle gönderilmiş bir sözleşmeyle eşleşti. Bilerek tekrarlamak için force gönderin.',
+  IDEMPOTENT_REPLAY:
+    'Aynı idempotency_key ile belge daha önce yüklenmiş; yeni belge oluşturulmadı, gövdede mevcut belge döner.',
+
+  // Yetki, çalışma alanı, kredi
+  UNAUTHORIZED: 'Kimlik doğrulama gerekli; API anahtarı eksik veya geçersiz.',
+  INSUFFICIENT_SCOPE: 'API anahtarında bu işlem için gereken yetki (scope) yok.',
+  WORKSPACE_MISMATCH: 'X-Workspace-Id, API anahtarının bağlı olduğu organizasyonla uyuşmuyor.',
+  SMS_CUSTOMIZATION_NOT_ALLOWED:
+    'sms_content yalnız uygun planda ve kendi SMS sağlayıcı ayarı tanımlı organizasyonlarda kullanılabilir.',
+  INSUFFICIENT_CREDITS: 'Hesabın veya organizasyonun kredisi bu işlem için yetmiyor.',
+  MEMBER_LIMIT_EXCEEDED: 'Organizasyon üyesinin aylık kredi limiti aşıldı (kredi havuzunda bakiye olsa bile).',
+
+  // Şablon ve alan şablonu
+  TEMPLATE_NOT_FOUND: 'Şablon bulunamadı, size ait değil ya da bir Alan Şablonu değil.',
+  TEMPLATE_IN_USE: 'Şablonun aktif (taslak veya imza bekleyen) sözleşmesi olduğu için silinemez.',
+  NOT_A_FIELD_LAYOUT_TEMPLATE: 'Verilen şablon bir Alan Şablonu değil.',
+  FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE: 'Verilen kimlik bir Alan Şablonuna ait; Alan Şablonundan doğrudan sözleşme gönderilemez.',
+  FIELD_TEMPLATE_CONFLICT: 'field_template_id ile template_id birlikte gönderilemez.',
+  FIELD_LAYOUT_UNRESOLVED:
+    'Alan yerleşimi bu belgeye uygulanamadı; sözleşme oluşturulmadı ve kredi düşülmedi.',
+  INVALID_ON_ANCHOR_MISS: 'on_anchor_miss değeri geçersiz.',
+
+  // Sözleşme durumu
+  DEMAND_NOT_FOUND: 'Sözleşme bu çalışma alanında bulunamadı.',
+  DEMAND_NOT_EDITABLE: 'Sözleşme düzenlemeye açık değil (tamamlanmış, iptal edilmiş veya süresi geçmiş).',
+  DEMAND_COMPLETED: 'Tamamlanmış sözleşme API üzerinden silinemez.',
+  DEMAND_NOT_DISPATCHED: 'Sözleşme henüz imzaya gönderilmedi (taslak).',
+  DEMAND_NOT_DISPATCHABLE: 'Sözleşme tamamlanmış veya iptal edilmiş; tekrar gönderilemez.',
+  DEMAND_EXPIRED: 'Sözleşmenin imza süresi geçmiş.',
+  ALREADY_COMPLETED: 'Tüm taraflar imzalamış; hatırlatılacak taraf yok.',
+  INVALID_EXPIRY_DATE: 'expiry_date çözümlenemiyor veya takvimde olmayan bir gün (ör. 2026-02-30).',
+  INVALID_PADES_LEVEL: 'options.qes_pades_level satın alınabilir seviyelerden biri değil.',
+  BULK_MAX_10: 'Toplu oluşturmada rows en fazla 10 satır olabilir.',
+
+  // Gönderim ve davet
+  DISPATCH_NO_PARTIES: 'Sözleşmede imzacı taraf yok; yayına alınmadı ve kredi düşülmedi.',
+  DISPATCH_TOO_MANY: 'Taraf sayısı 20 sınırını aşıyor; davetler gönderilmedi.',
+  INVALID_SEND_INVITATIONS: 'send_invitations değeri tanınmıyor.',
+  RECONCILE_FAILED: 'Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.',
+  INVALID_CHANNELS: 'channels boş ya da email/sms dışında bir değer içeriyor.',
+  MAX_SMS_REMINDERS_REACHED: 'Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.',
+
+  // Zarf belgeleri
+  ENVELOPE_MULTI_DOC_DISABLED: 'Çok belgeli zarf özelliği bu hesap için henüz açık değil.',
+  SIGNING_ALREADY_STARTED: 'İmza süreci başlamış zarfın belge listesi değiştirilemez.',
+  DOCUMENT_LIMIT_EXCEEDED: 'Zarf başına en fazla 20 belge eklenebilir.',
+  QES_NOT_SUPPORTED_MULTI_DOCUMENT: 'Nitelikli elektronik imza birden çok belge içeren zarflarda henüz desteklenmiyor.',
+  CANNOT_DELETE_LAST_DOCUMENT: 'Zarftaki son belge silinemez.',
+  DOCUMENT_HAS_SIGNED_CONTENT: 'İmza veya içerik girilmiş belge silinemez.',
+  DOCUMENT_HAS_DECISIONS: 'Bu belge için onay veya red kararı verilmiş; silinemez.',
+  ORDER_SET_MISMATCH: 'Gönderilen belge kimlikleri zarftaki belgelerle birebir eşleşmiyor.',
+  INVALID_DOC_KIND: 'doc_kind değeri geçersiz.',
+  CONSENT_CANNOT_BE_REQUIRED: 'KVKK açık rıza belgesi zorunlu olarak işaretlenemez; açık rıza reddedilebilir olmalıdır.',
+  PREINFO_MUST_BE_REQUIRED: 'Ön bilgilendirme belgesi zorunlu olarak işaretlenmelidir.',
+  ASSIGNMENT_EMPTY: 'party_ids eksik veya boş.',
+  ASSIGNMENT_HAS_DECISION: 'Karar vermiş bir imzacının ataması kaldırılamaz.',
+
+  // Alan yerleştirme
+  INVALID_ITEMS_BODY: 'items bir dizi değil.',
+  PAGE_ID_REQUIRED: 'Bir öğede tam sayı page_id yok.',
+  INVALID_PAGE_ID: 'page_id bu sözleşmeye ait değil.',
+  INVALID_PARTY_ID: 'party_id bu sözleşmeye ait değil.',
+  INVALID_ITEM_TYPE: 'item_type desteklenmiyor; hata mesajı izinli türleri listeler.',
+  DUPLICATE_SIGNATURE_FIELD: 'Aynı sayfa, taraf ve konumda ikinci bir imza alanı oluşturulamaz.',
+
+  // Kişiler
+  CONTACT_DUPLICATE: 'Çalışma alanında aynı e-posta veya telefona sahip aktif bir kişi zaten var.',
+
+  // Dosya ve zaman damgası
+  FILE_REQUIRED: 'İstekte dosya yok.',
+  FILE_TOO_LARGE: 'Dosya boyut sınırını aşıyor.',
+  UNSUPPORTED_FILE_TYPE: 'Dosya türü bu uçta desteklenmiyor.',
+  UNSUPPORTED_MIME_TYPE: 'Dosyanın MIME türü zaman damgası için izin verilenler arasında değil.',
+  ENCRYPTED_PDF: 'PDF parola korumalı; şifresiz bir kopya yükleyin.',
+  IMAGE_DECODE_FAILED: 'Görsel çözümlenemedi.',
+  TEXT_EXTRACTION_TIMEOUT: 'Belgeden metin çıkarma süre sınırını aştı.',
+  BAD_BASE64: 'file_base64 geçerli standart Base64 değil.',
+  STAMP_INVALID: 'Zaman damgası sunucusu geçersiz bir yanıt döndürdü.',
+  TSA_UNAVAILABLE: 'Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar deneyin.',
+
+  // Genel
+  VALIDATION_ERROR: 'İstek doğrulamadan geçmedi (ör. konum sınırları, slug biçimi, eksik taraf).',
+  VALIDATION_FAIL: 'Zorunlu bir alan eksik veya geçersiz (ör. boş başlık).',
+  INVALID_PAGE: 'page 1 veya daha büyük bir tam sayı değil; limit hata vermez, 1 ile 100 arasına kırpılır.',
+  INTERNAL_ERROR: 'Sunucu tarafında beklenmeyen bir hata oluştu.',
+} as const;
+
+export type ImzalaErrorCode = keyof typeof IMZALA_ERROR_CODES;
+
+export function isKnownErrorCode(code: string | undefined): code is ImzalaErrorCode {
+  return typeof code === 'string' && Object.prototype.hasOwnProperty.call(IMZALA_ERROR_CODES, code);
+}
+
+export function describeErrorCode(code: string | undefined): string | undefined {
+  return isKnownErrorCode(code) ? IMZALA_ERROR_CODES[code] : undefined;
+}
