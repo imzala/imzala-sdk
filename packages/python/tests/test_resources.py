@@ -204,6 +204,22 @@ class TestDemandsWriteOptions:
         assert kwargs["field_template_id"] is None
         assert kwargs["on_anchor_miss"] is None
 
+    def test_upload_document_typed_party_carries_template_party_id(self):
+        from imzala.files import UploadPartyInput
+
+        with patch_api(DemandsApi, "api_v1_demands_upload_post", return_value=ok({"id": "d2"})) as mocked:
+            client().demands.upload_document(
+                files=[PDF],
+                field_template_id=FT_ID,
+                parties=[
+                    UploadPartyInput(
+                        first_name="Ayşe", last_name="Yılmaz", email="ayse@example.com", template_party_id="role-1"
+                    )
+                ],
+            )
+        parties = json.loads(mocked.call_args.kwargs["parties"])
+        assert parties[0]["template_party_id"] == "role-1"
+
     def test_upload_document_with_a_key_is_retried_once_after_429(self):
         with patch_api(DemandsApi, "api_v1_demands_upload_post", side_effect=[rate_limited(), ok({"id": "d2"})]) as mocked:
             client().demands.upload_document(files=[PDF], parties=[PARTY], idempotency_key="up-2")

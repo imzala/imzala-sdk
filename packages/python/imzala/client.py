@@ -130,6 +130,14 @@ def _compute_delay_s(error: ImzalaError, attempt: int, base_delay_s: float) -> f
     return backoff + jitter
 
 
+def _retry_delay_s(error: ImzalaError, attempt: int, base_delay_s: float) -> Optional[float]:
+    """Delay before the next GET retry, or None when the server asks for a
+    longer wait than `MAX_IDEMPOTENT_RETRY_WAIT_S`: the error is then raised
+    instead of blocking the caller for a long, silent sleep."""
+    delay_s = _compute_delay_s(error, attempt, base_delay_s)
+    return None if delay_s > MAX_IDEMPOTENT_RETRY_WAIT_S else delay_s
+
+
 def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
     """Like `_unwrap`, but adds safe auto-retry for **GET-only, idempotent**
     facade methods (`templates.list/get/usage`, `demands.get`, `me()`).
@@ -156,7 +164,10 @@ def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
         except ImzalaError as err:
             if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
                 raise
-            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            delay_s = _retry_delay_s(err, attempt, retry.base_delay_s)
+            if delay_s is None:
+                raise
+            time.sleep(delay_s)
             attempt += 1
 
 
@@ -226,14 +237,20 @@ def _retryable_binary_get(call: Callable[[], Any], retry: _RetryConfig) -> bytes
         except ImzalaError as err:
             if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
                 raise
-            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            delay_s = _retry_delay_s(err, attempt, retry.base_delay_s)
+            if delay_s is None:
+                raise
+            time.sleep(delay_s)
             attempt += 1
             continue
         except Exception as exc:  # ApiException, urllib3/network errors, ...
             err = map_api_exception(exc)
             if attempt >= retry.max_retries or not _is_retryable_status(err.status_code):
                 raise err from exc
-            time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
+            delay_s = _retry_delay_s(err, attempt, retry.base_delay_s)
+            if delay_s is None:
+                raise err from exc
+            time.sleep(delay_s)
             attempt += 1
             continue
         return bytes(result)
@@ -256,6 +273,8 @@ def _party_to_dict(party: Union[UploadPartyInput, Mapping[str, Any]]) -> dict:
             data["email"] = party.email
         if party.phone is not None:
             data["phone"] = party.phone
+        if party.template_party_id is not None:
+            data["template_party_id"] = party.template_party_id
         return data
     return dict(party)
 
@@ -450,9 +469,11 @@ class DemandsResource:
                 and the response carries an `ON_ANCHOR_MISS_NOT_RELAXED`
                 warning). Signature fields are never dropped.
             send_invitations: sends signing invitations in the same request.
-                **Off by default on this endpoint.** `'true'` or `'all'` sends
-                on every channel, `'email'` or `'sms'` limits it, `'false'`
-                sends nothing.
+                **Off by default on this endpoint.** `'true'` or `'all'` uses
+                every channel, `'email'` limits it to e-mail, `'sms'` to phone
+                channels (SMS and WhatsApp), `'false'` sends nothing. It can
+                only narrow: a channel switched off in the demand's or party's
+                notification settings is not turned back on.
             force: `True` deliberately bypasses the duplicate check
                 (`DUPLICATE_SUSPECTED`). Only meaningful for calls without
                 `idempotency_key`.
@@ -753,7 +774,7 @@ class FieldTemplatesResource:
         files: Sequence[FileInput],
         on_anchor_miss: Optional[OnAnchorMiss] = None,
     ) -> Any:
-        """Dry run: tries the field template's layout on a PDF without
+        """Dry run: tries the field template's layout on exactly one PDF without
         creating anything or spending credit, and reports resolved fields and
         unresolved anchors separately. The cheapest way to avoid surprises
         before `demands.upload_document(field_template_id=...)`.
@@ -789,7 +810,8 @@ class ContactsResource:
         company_id: Optional[str] = None,
         archived: Optional[bool] = None,
     ) -> Any:
-        """Lists contacts in your workspace (one page). GET, safe to auto-retry."""
+        """Lists contacts in your workspace (one page). `limit` is 10 to 100,
+        default 25. GET, safe to auto-retry."""
         return _unwrap_retryable_get(
             lambda: self._api.api_v1_contacts_get(
                 page=page,

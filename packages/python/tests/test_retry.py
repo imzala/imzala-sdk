@@ -57,6 +57,18 @@ class TestSafeAutoRetryGetRequests:
         assert mocked.call_count == 3
         assert result["templates"] == [{"id": "t1"}]
 
+    def test_get_is_not_retried_when_retry_after_exceeds_the_cap(self, no_sleep):
+        with patch_api(
+            TemplatesApi,
+            "api_v1_templates_get",
+            side_effect=[api_exception(429, {"success": False, "code": "RATE_LIMIT_EXCEEDED", "retry_after_seconds": 3600})],
+        ) as mocked:
+            client = Imzala(api_key="imz_test", **FAST_RETRY)
+            with pytest.raises(ImzalaRateLimitError):
+                client.templates.list()
+        assert mocked.call_count == 1
+        no_sleep.assert_not_called()
+
     def test_retries_a_get_on_5xx_server_error_and_succeeds(self):
         with patch_api(
             DemandsApi,
