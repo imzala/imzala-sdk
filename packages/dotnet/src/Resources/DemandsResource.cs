@@ -27,6 +27,53 @@ public sealed class DemandsResource
         _api = api;
         _remindersApi = remindersApi;
         _retry = retry;
+        Documents = new EnvelopeDocumentsResource(api, retry);
+    }
+
+    /// <summary><c>imzala.Demands.Documents.ListAsync/CreateAsync/UploadAsync/UpdateAsync/DeleteAsync/ReorderAsync/SetAssignmentsAsync</c>: the documents of a multi-document envelope.</summary>
+    public EnvelopeDocumentsResource Documents { get; }
+
+    /// <summary>
+    /// Sends the demand for signing with the server default for invitations
+    /// (invitations on). See <see cref="DispatchAsync(Guid, string, CancellationToken)"/>.
+    /// </summary>
+    public Task<ApiV1DemandsDemandIdDispatchPost200ResponseData> DispatchAsync(Guid id, CancellationToken cancellationToken = default) =>
+        DispatchAsync(id, (ApiV1DemandsDemandIdDispatchPostRequestSendInvitations?)null, cancellationToken);
+
+    /// <summary>
+    /// Sends the demand for signing; <c>false</c> sends no invitations. See
+    /// <see cref="DispatchAsync(Guid, string, CancellationToken)"/>.
+    /// </summary>
+    public Task<ApiV1DemandsDemandIdDispatchPost200ResponseData> DispatchAsync(Guid id, bool sendInvitations, CancellationToken cancellationToken = default) =>
+        DispatchAsync(id, new ApiV1DemandsDemandIdDispatchPostRequestSendInvitations(sendInvitations), cancellationToken);
+
+    /// <summary>
+    /// Sends the demand for signing: reconciles credit, moves a <c>DRAFT</c> to
+    /// <c>PENDING</c> and sends invitations. This is where credit is charged; the
+    /// <see cref="Documents"/> methods charge nothing. Calling it again for a demand
+    /// that is already out charges nothing more (<c>Dispatched == false</c>). Throws
+    /// for <c>DISPATCH_NO_PARTIES</c>, <c>DISPATCH_TOO_MANY</c>,
+    /// <c>QES_NOT_SUPPORTED_MULTI_DOCUMENT</c>, <c>INSUFFICIENT_CREDITS</c> and
+    /// others. No idempotency key, so never retried, not even after a 429. POST.
+    /// </summary>
+    /// <param name="id">The demand.</param>
+    /// <param name="sendInvitations">
+    /// Narrows which channels invitations go out on. <c>"false"</c>, <c>"0"</c>,
+    /// <c>"off"</c>, <c>"no"</c>, <c>"hayir"</c>, <c>"hayır"</c> send no invitations;
+    /// <c>"email"</c> and <c>"sms"</c> limit the channel; <c>"true"</c>, <c>"1"</c>,
+    /// <c>"all"</c> keep them all. It can only narrow the demand's own notification
+    /// settings. An unknown value throws <c>INVALID_SEND_INVITATIONS</c>.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public Task<ApiV1DemandsDemandIdDispatchPost200ResponseData> DispatchAsync(Guid id, string sendInvitations, CancellationToken cancellationToken = default) =>
+        DispatchAsync(id, new ApiV1DemandsDemandIdDispatchPostRequestSendInvitations(sendInvitations), cancellationToken);
+
+    private Task<ApiV1DemandsDemandIdDispatchPost200ResponseData> DispatchAsync(Guid id, ApiV1DemandsDemandIdDispatchPostRequestSendInvitations? sendInvitations, CancellationToken cancellationToken)
+    {
+        // The generated oneOf wrapper serialises its actual instance (a bare
+        // boolean or string); a null wrapper leaves the field out of the body.
+        var body = new ApiV1DemandsDemandIdDispatchPostRequest { SendInvitations = sendInvitations! };
+        return Http.Unwrap(_api.ApiV1DemandsDemandIdDispatchPostAsync(id, body, cancellationToken), r => r.Success, r => r.Data);
     }
 
     /// <summary>

@@ -246,6 +246,21 @@ internal static class Http
     }
 
     /// <summary>
+    /// A required idempotency key sent as a body field: it must be a non-empty
+    /// printable ASCII string. Checked before the request is built.
+    /// </summary>
+    internal static void ValidateIdempotencyKey(string? value, string name)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            var inner = new ArgumentException($"{name} is required and must be a non-empty string.", nameof(value));
+            throw new ImzalaValidationError(inner.Message, null, null, null, inner);
+        }
+
+        ValidateHeaderValue(value, name);
+    }
+
+    /// <summary>
     /// Rejects a header value that is not printable ASCII before anything is sent.
     /// The generated client adds header values without validation: a line break
     /// would go on the wire and start a new header (so the server could see a

@@ -109,6 +109,29 @@ public sealed class UploadDemandParams
     public bool Force { get; init; }
 }
 
+/// <summary>Parameters for <c>Demands.Documents.UploadAsync</c>: one file as one document of a multi-document envelope.</summary>
+public sealed class UploadEnvelopeDocumentParams
+{
+    /// <summary>Exactly one file per document. Call <c>UploadAsync</c> again for each further document.</summary>
+    public required FileInput File { get; init; }
+
+    public required string Title { get; init; }
+
+    /// <summary>
+    /// Required. Sent as the <c>idempotency_key</c> multipart field (not as a
+    /// header). Printable ASCII only. Uploading again with the same key creates no
+    /// new document; the earlier document is returned instead. Checked by
+    /// <c>UploadAsync</c> before anything is sent.
+    /// </summary>
+    public required string IdempotencyKey { get; init; }
+
+    /// <summary>CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST or OTHER. Server default: OTHER.</summary>
+    public string? DocKind { get; init; }
+
+    /// <summary>Server default: <c>true</c>.</summary>
+    public bool? IsRequired { get; init; }
+}
+
 /// <summary>Parameters for <c>Timestamps.CreateAsync</c>.</summary>
 public sealed class CreateTimestampParams
 {
