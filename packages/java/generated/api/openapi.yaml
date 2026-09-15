@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.11 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.13 · **Son güncelleme:** 2026-09-15
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -263,7 +263,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.11
+  version: 1.8.13
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -3412,6 +3412,7 @@ components:
         variables:
           key: null
         has_timestamp: false
+        dispatch_notifications: true
         send_sms_notifications: true
         send_email_notifications: true
         sms_title: CODECK
@@ -3461,6 +3462,14 @@ components:
         has_timestamp:
           default: false
           description: TÜBİTAK zaman damgası
+          type: boolean
+        dispatch_notifications:
+          default: true
+          description: |
+            `false` verilirse sözleşme yalnız oluşturulur, davet gönderilmez;
+            daha sonra `POST /api/v1/demands/{demandId}/dispatch` ile gönderilir
+            (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan
+            açık: davetler oluşturma anında gider.
           type: boolean
         send_sms_notifications:
           default: true
@@ -4635,6 +4644,8 @@ components:
         success: false
         error: INSUFFICIENT_CREDITS
         message: Yeterli krediniz yok
+        code: RATE_LIMIT_EXCEEDED
+        retry_after_seconds: 60
       properties:
         success:
           example: false
@@ -4645,6 +4656,15 @@ components:
         message:
           example: Yeterli krediniz yok
           type: string
+        code:
+          description: İstek limiti yanıtlarında `error` ile aynı kodu taşır; diğer
+            yanıtlarda bulunmayabilir.
+          example: RATE_LIMIT_EXCEEDED
+          type: string
+        retry_after_seconds:
+          description: Yalnız 429 yanıtlarında; `Retry-After` başlığıyla aynı değer.
+          example: 60
+          type: integer
       type: object
     TimestampListItem:
       description: |

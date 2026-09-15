@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **party_mapping** | [**Array&lt;PartyMappingInput&gt;**](PartyMappingInput.md) |  | [default to undefined]
 **variables** | [**{ [key: string]: PartyMappingInputVariablesValue; }**](PartyMappingInputVariablesValue.md) | **Root scope** — partilerden bağımsız field\&#39;lara gönderilen değerler. Item\&#39;ın template_party_id\&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field\&#39;lar.  | [optional] [default to undefined]
 **has_timestamp** | **boolean** | TÜBİTAK zaman damgası | [optional] [default to false]
+**dispatch_notifications** | **boolean** | &#x60;false&#x60; verilirse sözleşme yalnız oluşturulur, davet gönderilmez; daha sonra &#x60;POST /api/v1/demands/{demandId}/dispatch&#x60; ile gönderilir (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan açık: davetler oluşturma anında gider.  | [optional] [default to true]
 **send_sms_notifications** | **boolean** |  | [optional] [default to true]
 **send_email_notifications** | **boolean** |  | [optional] [default to true]
 **sms_title** | **string** | SMS gönderici adı | [optional] [default to 'CODECK']
@@ -37,6 +38,7 @@ const instance: CreateDemandRequest = {
     party_mapping,
     variables,
     has_timestamp,
+    dispatch_notifications,
     send_sms_notifications,
     send_email_notifications,
     sms_title,

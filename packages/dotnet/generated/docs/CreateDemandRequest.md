@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **PartyMapping** | [**List&lt;PartyMappingInput&gt;**](PartyMappingInput.md) |  | 
 **Variables** | [**Dictionary&lt;string, PartyMappingInputVariablesValue&gt;**](PartyMappingInputVariablesValue.md) | **Root scope** — partilerden bağımsız field&#39;lara gönderilen değerler. Item&#39;ın template_party_id&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field&#39;lar.  | [optional] 
 **HasTimestamp** | **bool** | TÜBİTAK zaman damgası | [optional] [default to false]
+**DispatchNotifications** | **bool** | &#x60;false&#x60; verilirse sözleşme yalnız oluşturulur, davet gönderilmez; daha sonra &#x60;POST /api/v1/demands/{demandId}/dispatch&#x60; ile gönderilir (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan açık: davetler oluşturma anında gider.  | [optional] [default to true]
 **SendSmsNotifications** | **bool** |  | [optional] [default to true]
 **SendEmailNotifications** | **bool** |  | [optional] [default to true]
 **SmsTitle** | **string** | SMS gönderici adı | [optional] [default to "CODECK"]

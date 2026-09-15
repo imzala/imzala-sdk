@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.8.11
+  version: 1.8.13
   description: >
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
 
-    **Sürüm:** 1.8.11 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.13 · **Son güncelleme:** 2026-09-15
 
 
     ## Auth
@@ -4406,6 +4406,14 @@ components:
           type: boolean
           default: false
           description: TÜBİTAK zaman damgası
+        dispatch_notifications:
+          type: boolean
+          default: true
+          description: |
+            `false` verilirse sözleşme yalnız oluşturulur, davet gönderilmez;
+            daha sonra `POST /api/v1/demands/{demandId}/dispatch` ile gönderilir
+            (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan
+            açık: davetler oluşturma anında gider.
         send_sms_notifications:
           type: boolean
           default: true
@@ -5542,6 +5550,16 @@ components:
         message:
           type: string
           example: Yeterli krediniz yok
+        code:
+          type: string
+          example: RATE_LIMIT_EXCEEDED
+          description: >-
+            İstek limiti yanıtlarında `error` ile aynı kodu taşır; diğer
+            yanıtlarda bulunmayabilir.
+        retry_after_seconds:
+          type: integer
+          example: 60
+          description: Yalnız 429 yanıtlarında; `Retry-After` başlığıyla aynı değer.
     TimestampListItem:
       type: object
       description: |
