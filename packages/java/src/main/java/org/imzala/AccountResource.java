@@ -14,7 +14,7 @@ final class AccountResource {
     this.retryConfig = retryConfig;
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET, safe to auto-retry. */
   ApiV1MeGet200ResponseData me() {
     return Http.unwrapRetryableGet(
         api::apiV1MeGet,

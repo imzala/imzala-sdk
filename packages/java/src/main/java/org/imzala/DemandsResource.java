@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.imzala.client.generated.ApiException;
 import org.imzala.client.generated.api.DemandsApi;
 import org.imzala.client.generated.api.RemindersApi;
+import org.imzala.client.generated.model.ApiV1DemandsBulkPost200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsBulkPostRequest;
 import org.imzala.client.generated.model.ApiV1DemandsGet200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPostRequest;
@@ -48,12 +50,49 @@ public final class DemandsResource {
   }
 
   /**
-   * Creates a new demand (contract) from a template. POST — never
-   * auto-retried (a retried create would produce a duplicate demand).
+   * Creates a new demand (contract) from a template, without an idempotency
+   * key: a single attempt, never retried (a retried create would produce a
+   * duplicate demand). See {@link #create(CreateDemandRequest, String)}.
    */
   public CreatedDemand create(CreateDemandRequest body) {
+    return create(body, null);
+  }
+
+  /**
+   * Creates a new demand (contract) from a template.
+   *
+   * <p>Without {@code idempotencyKey} this is a single attempt: a retried
+   * create would produce a duplicate demand. With a key, a repeated request
+   * does not create a second demand, so one retry is made after a 429
+   * (waiting Retry-After, at most 60 s). A key reused with a different body
+   * throws {@code IDEMPOTENCY_KEY_REUSED}.
+   *
+   * <p>An {@code expiry_date} that is not a real calendar day throws {@code
+   * INVALID_EXPIRY_DATE}.
+   *
+   * @param idempotencyKey your own reference for this request (e.g. an order number); {@code null} for none
+   */
+  public CreatedDemand create(CreateDemandRequest body, String idempotencyKey) {
+    return Http.unwrapIdempotentWrite(
+        () -> api.apiV1DemandsPost(body, idempotencyKey),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData(),
+        idempotencyKey,
+        retryConfig);
+  }
+
+  /**
+   * Creates up to 10 demands from one template in a single request. Rows are
+   * created independently; check {@code failed} and each result's {@code
+   * status}.
+   *
+   * <p>This endpoint has no idempotency key, so it is never retried: a
+   * retried batch would create the demands again. Split larger lists into
+   * batches of 10 yourself. POST.
+   */
+  public ApiV1DemandsBulkPost200ResponseData createBulk(ApiV1DemandsBulkPostRequest body) {
     return Http.unwrap(
-        () -> api.apiV1DemandsPost(body, null),
+        () -> api.apiV1DemandsBulkPost(body, /* xWorkspaceId */ null),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData());
   }
@@ -70,7 +109,9 @@ public final class DemandsResource {
   /**
    * Places (replaces) signature/form fields on a demand's pages. See
    * {@code UpsertItemsRequest.getPageIds()} for full-replace vs
-   * per-page-replace semantics. POST — never auto-retried.
+   * per-page-replace semantics. Every item needs an integer {@code page_id}
+   * ({@code PAGE_ID_REQUIRED}); an unknown {@code item_type} throws {@code
+   * INVALID_ITEM_TYPE}. POST, never auto-retried.
    */
   public UpsertItemsResponseData addItems(UUID id, UpsertItemsRequest body) {
     return Http.unwrap(
@@ -87,8 +128,12 @@ public final class DemandsResource {
    * UploadDemandParams#getFiles()} to throwaway temp files — the vendored
    * generated client's multipart layer requires real {@code java.io.File}s.
    * Temp files (and their parent temp directories) are always deleted
-   * before this method returns, success or failure. POST — never
-   * auto-retried.
+   * before this method returns, success or failure.
+   *
+   * <p>Without {@link UploadDemandParams#idempotencyKey(String)} this is a
+   * single attempt. With a key, one retry is made after a 429 (waiting
+   * Retry-After, at most 60 s). Signing invitations are not sent unless
+   * {@link UploadDemandParams#sendInvitations(String)} asks for them. POST.
    */
   public CreatedDemandUpload uploadDocument(UploadDemandParams params) {
     List<File> tempFiles = new ArrayList<>(params.getFiles().size());
@@ -103,17 +148,27 @@ public final class DemandsResource {
       String partiesJson = writeJson(params.getParties());
       String orderJson = params.getOrder() != null ? writeJson(params.getOrder()) : null;
 
-      return Http.unwrap(
-          // Named slots: idempotencyKey sits between parties and order in the
-          // generated signature, so positional reuse would silently misroute.
-          // New optional fields stay null -> server defaults apply.
+      String idempotencyKey = params.getIdempotencyKey();
+      String force = params.getForce() ? "true" : null;
+      return Http.unwrapIdempotentWrite(
+          // Labelled slots: the generated signature inserts new optional
+          // parameters between existing ones and several share a type, so a
+          // shifted argument would still compile. ResourcesTest pins each slot.
           () -> api.apiV1DemandsUploadPost(
-              files, partiesJson, /* idempotencyKey */ null, orderJson,
-              params.getTitle(), params.getDescription(),
-              /* fieldTemplateId */ null, /* force */ null,
-              /* sendInvitations */ null, /* onAnchorMiss */ null),
+              /* files */ files,
+              /* parties */ partiesJson,
+              /* idempotencyKey */ idempotencyKey,
+              /* order */ orderJson,
+              /* title */ params.getTitle(),
+              /* description */ params.getDescription(),
+              /* fieldTemplateId */ params.getFieldTemplateId(),
+              /* force */ force,
+              /* sendInvitations */ params.getSendInvitations(),
+              /* onAnchorMiss */ params.getOnAnchorMiss()),
           r -> Boolean.TRUE.equals(r.getSuccess()),
-          r -> r.getData());
+          r -> r.getData(),
+          idempotencyKey,
+          retryConfig);
     } finally {
       cleanupTempFiles(tempFiles);
     }
@@ -132,7 +187,10 @@ public final class DemandsResource {
    * parties. Independent of the template/demand's scheduled {@code
    * reminder_settings}. Subject to a 5-minute anti-spam window (override
    * with {@code new TriggerReminderRequest().force(true)}) and a hard
-   * per-person cap of 3 reminders per channel (not overridable).
+   * per-person cap of 3 reminders per channel (not overridable). The
+   * anti-spam window answers 429 {@code RATE_LIMITED}. A draft, completed,
+   * cancelled or expired demand throws 409 ({@code DEMAND_NOT_DISPATCHED},
+   * {@code DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}).
    *
    * <p>Routes through the vendored generated {@code RemindersApi}, not
    * {@code DemandsApi} — the OpenAPI spec groups {@code POST
@@ -192,6 +250,18 @@ public final class DemandsResource {
    */
   public byte[] getPdf(UUID id) {
     return toBytes(() -> api.apiV1DemandsIdPdfGet(id));
+  }
+
+  /**
+   * Downloads the PDF of one document in a multi-document envelope as raw
+   * bytes. For the whole contract use {@link #getPdf(UUID)}. Same temp-file
+   * handling as {@link #getPdf(UUID)}. GET.
+   *
+   * @param id the demand (envelope)
+   * @param documentId the document inside it
+   */
+  public byte[] getDocumentPdf(UUID id, UUID documentId) {
+    return toBytes(() -> api.apiV1DemandsIdBelgeDocumentIdPdfGet(id, documentId));
   }
 
   /**

@@ -2,8 +2,10 @@ package org.imzala;
 
 import org.imzala.client.generated.ApiClient;
 import org.imzala.client.generated.api.AccountApi;
+import org.imzala.client.generated.api.ContactsApi;
 import org.imzala.client.generated.api.DemandsApi;
 import org.imzala.client.generated.api.RemindersApi;
+import org.imzala.client.generated.api.ReportsApi;
 import org.imzala.client.generated.api.TemplatesApi;
 import org.imzala.client.generated.api.TimestampsApi;
 import org.imzala.client.generated.model.ApiV1MeGet200ResponseData;
@@ -47,6 +49,9 @@ public final class Imzala {
   private final DemandsResource demands;
   private final EmbedResource embed;
   private final TimestampsResource timestamps;
+  private final FieldTemplatesResource fieldTemplates;
+  private final ContactsResource contacts;
+  private final ReportsResource reports;
 
   /** @param apiKey {@code imz_<64 hex>} — from Dashboard → Geliştirici → API Anahtarları, or Hesap Ayarları → API Anahtarları. */
   public Imzala(String apiKey) {
@@ -79,8 +84,9 @@ public final class Imzala {
    *     {@code demands().get}, {@code me()}) that fail with 429 (rate
    *     limited) or 5xx (server error). Defaults to 2. Clamped to
    *     {@code >= 0}; {@code 0} disables retry. Writes ({@code
-   *     demands().create}, {@code sendReminder}, ...) are never retried,
-   *     regardless of this setting — see the SDK README.
+   *     demands().create}, {@code sendReminder}, ...) are never retried by
+   *     this setting. A write sent with an idempotency key is retried once
+   *     after a 429, independently of it; see the SDK README.
    * @param retryBaseDelayMs base delay (ms) for the exponential backoff
    *     between retries. Defaults to 300. Clamped to {@code >= 0}.
    */
@@ -105,7 +111,10 @@ public final class Imzala {
     this.templates = new TemplatesResource(templatesApi, retryConfig);
     this.demands = new DemandsResource(demandsApi, remindersApi, retryConfig);
     this.embed = new EmbedResource(demandsApi);
-    this.timestamps = new TimestampsResource(timestampsApi);
+    this.timestamps = new TimestampsResource(timestampsApi, retryConfig);
+    this.fieldTemplates = new FieldTemplatesResource(templatesApi, demandsApi, retryConfig);
+    this.contacts = new ContactsResource(new ContactsApi(apiClient), retryConfig);
+    this.reports = new ReportsResource(new ReportsApi(apiClient), retryConfig);
   }
 
   /** {@code imzala.templates().list()/get(id)/usage(id)}. */
@@ -123,12 +132,27 @@ public final class Imzala {
     return embed;
   }
 
-  /** {@code imzala.timestamps().create(...)}. */
+  /** {@code imzala.timestamps().create(...)/list(...)/get(id)}. */
   public TimestampsResource timestamps() {
     return timestamps;
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
+  /** {@code imzala.fieldTemplates().list()/get(id)/previewLayout(id, files, onAnchorMiss)}. */
+  public FieldTemplatesResource fieldTemplates() {
+    return fieldTemplates;
+  }
+
+  /** {@code imzala.contacts().list(...)/listAll(...)/create(body)}. */
+  public ContactsResource contacts() {
+    return contacts;
+  }
+
+  /** {@code imzala.reports().get()}. */
+  public ReportsResource reports() {
+    return reports;
+  }
+
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET, safe to auto-retry. */
   public ApiV1MeGet200ResponseData me() {
     return account.me();
   }

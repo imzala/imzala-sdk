@@ -23,6 +23,7 @@ public class ImzalaException extends RuntimeException {
   private final Integer statusCode;
   private final String body;
   private final String code;
+  private final String codeDescription;
 
   public ImzalaException(String message) {
     this(message, null, null, null, null);
@@ -40,6 +41,7 @@ public class ImzalaException extends RuntimeException {
     this.statusCode = statusCode;
     this.body = body;
     this.code = code;
+    this.codeDescription = ErrorCodes.describe(code);
   }
 
   /** HTTP status code, when the error originated from an HTTP response. {@code null} otherwise (e.g. a network error). */
@@ -55,5 +57,13 @@ public class ImzalaException extends RuntimeException {
   /** Machine-readable error code from the response envelope, when present (e.g. {@code "INVALID_API_KEY"}). */
   public String getCode() {
     return code;
+  }
+
+  /**
+   * One-line Turkish explanation of {@link #getCode()} from {@link ErrorCodes}.
+   * {@code null} when there is no code or the SDK does not know it.
+   */
+  public String getCodeDescription() {
+    return codeDescription;
   }
 }

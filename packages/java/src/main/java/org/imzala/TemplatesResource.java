@@ -30,7 +30,11 @@ public final class TemplatesResource {
     return list(null, null);
   }
 
-  /** Lists your active templates (one page). GET — safe to auto-retry. */
+  /**
+   * Lists your active templates (one page). {@code limit} is clamped to
+   * 1..100; {@code page} below 1 throws {@code INVALID_PAGE}. GET, safe to
+   * auto-retry.
+   */
   public ApiV1TemplatesGet200ResponseData list(Integer page, Integer limit) {
     return Http.unwrapRetryableGet(
         () -> api.apiV1TemplatesGet(page, limit),
@@ -72,8 +76,10 @@ public final class TemplatesResource {
   }
 
   /**
-   * Deletes (soft-deletes) a template. Existing demands created from it are
-   * unaffected. DELETE — never auto-retried.
+   * Deletes a template. The record is not erased immediately: it is marked
+   * deleted and kept for 30 days. Existing demands created from it are
+   * unaffected. A template with active (draft or pending) demands cannot be
+   * deleted and throws {@code TEMPLATE_IN_USE}. DELETE, never auto-retried.
    */
   public ApiV1TemplatesIdDelete200ResponseData delete(UUID id) {
     return Http.unwrap(
