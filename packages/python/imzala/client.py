@@ -22,6 +22,12 @@ from imzala_client.api.reports_api import ReportsApi
 from imzala_client.api.templates_api import TemplatesApi
 from imzala_client.api.timestamps_api import TimestampsApi
 from imzala_client.api_client import ApiClient
+from imzala_client.models.api_v1_demands_demand_id_dispatch_post_request_send_invitations import (
+    ApiV1DemandsDemandIdDispatchPostRequestSendInvitations,
+)
+from imzala_client.models.api_v1_demands_demand_id_documents_post201_response_data import (
+    ApiV1DemandsDemandIdDocumentsPost201ResponseData,
+)
 from imzala_client.configuration import Configuration
 
 from .errors import (
@@ -52,6 +58,10 @@ MAX_IDEMPOTENT_RETRY_WAIT_S = 60.0
 
 SendInvitations = Literal["true", "all", "email", "sms", "false"]
 OnAnchorMiss = Literal["block", "drop"]
+EnvelopeDocumentKind = Literal["CONTRACT", "KVKK_NOTICE", "KVKK_CONSENT", "PREINFO", "PRICE_LIST", "OTHER"]
+DispatchSendInvitations = Union[
+    bool, Literal["true", "1", "all", "email", "sms", "false", "0", "off", "no", "hayir", "hayır"]
+]
 
 
 def _body_mapping(response: Any) -> Any:
@@ -183,6 +193,26 @@ def _assert_header_value(value: Optional[str], header_name: str) -> None:
         raise ImzalaValidationError(
             f"{header_name} may only contain printable ASCII characters (no line breaks, no non-ASCII letters)."
         )
+
+
+def _assert_idempotency_key(value: Any, name: str) -> None:
+    """A required idempotency key sent as a body field: a non-empty printable
+    ASCII string. Checked before the request is built."""
+    if not isinstance(value, str) or value == "":
+        raise ImzalaValidationError(f"{name} is required and must be a non-empty string.")
+    _assert_header_value(value, name)
+
+
+def _replayed_document(err: ImzalaError) -> Optional[Any]:
+    """The earlier document from a 409 `IDEMPOTENT_REPLAY` upload answer, as
+    the same generated model a successful upload returns; None otherwise."""
+    if err.status_code != 409 or err.code != "IDEMPOTENT_REPLAY":
+        return None
+    body = err.body if isinstance(err.body, Mapping) else None
+    data = body.get("data") if body else None
+    if not isinstance(data, Mapping) or not data.get("document"):
+        return None
+    return ApiV1DemandsDemandIdDocumentsPost201ResponseData.from_dict(dict(data))
 
 
 def _unwrap_idempotent_write(
@@ -388,6 +418,129 @@ class TemplatesResource:
         )
 
 
+class EnvelopeDocumentsResource:
+    """`imzala.demands.documents.*` — documents of a multi-document envelope.
+
+    While multi-document envelopes are not enabled for the account, every
+    method here raises `ENVELOPE_MULTI_DOC_DISABLED` (409), `list` included;
+    it never returns an empty list in that case. These methods spend no
+    credit: credit is charged on `demands.dispatch`.
+    """
+
+    def __init__(self, api: DemandsApi, timeout: float, retry: _RetryConfig) -> None:
+        self._api = api
+        self._timeout = timeout
+        self._retry = retry
+
+    def list(self, demand_id: str, *, view: Optional[Literal["wizard"]] = None) -> Any:
+        """Lists the envelope's documents. `view="wizard"` returns the full
+        shape (`assigned_party_ids`, `decision_count`). GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_demands_demand_id_documents_get(
+                demand_id=demand_id, view=view, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def create(self, demand_id: str, body: Mapping[str, Any]) -> Any:
+        """Adds a document without a file (metadata only: `title` required,
+        `doc_kind`, `is_required`, `signature_required`). No idempotency key,
+        so never retried. POST."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_documents_post(
+                demand_id=demand_id,
+                api_v1_demands_demand_id_documents_post_request=dict(body),
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def upload(
+        self,
+        demand_id: str,
+        *,
+        file: FileInput,
+        title: str,
+        idempotency_key: str,
+        doc_kind: Optional[EnvelopeDocumentKind] = None,
+        is_required: Optional[bool] = None,
+    ) -> Any:
+        """Uploads one file as one document.
+
+        `idempotency_key` is required and checked before anything is sent
+        (missing, empty, or not printable ASCII raises
+        `ImzalaValidationError`); it is sent as the `idempotency_key` form
+        field, not as a header. Because the server keeps the key, one retry is
+        made after a 429 (waiting at most 60 seconds). If a document was
+        already uploaded with the same key, the server answers 409
+        `IDEMPOTENT_REPLAY` with that document; it is returned as a normal
+        result. Any other 409 is raised.
+        """
+        _assert_idempotency_key(idempotency_key, "idempotency_key")
+        required = None if is_required is None else ("true" if is_required else "false")
+        try:
+            return _unwrap_idempotent_write(
+                lambda: self._api.api_v1_demands_demand_id_documents_upload_post(
+                    demand_id=demand_id,
+                    file=to_multipart_tuple(file),
+                    idempotency_key=idempotency_key,
+                    title=title,
+                    doc_kind=doc_kind,
+                    is_required=required,
+                    _request_timeout=self._timeout,
+                ),
+                idempotency_key=idempotency_key,
+                retry_base_delay_s=self._retry.base_delay_s,
+            )
+        except ImzalaError as err:
+            replayed = _replayed_document(err)
+            if replayed is None:
+                raise
+            return replayed
+
+    def update(self, demand_id: str, doc_id: str, body: Mapping[str, Any]) -> Any:
+        """Updates only the fields you send (`title`, `doc_kind`,
+        `is_required`, `signature_required`). Never retried. PATCH."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_documents_doc_id_patch(
+                demand_id=demand_id,
+                doc_id=doc_id,
+                api_v1_demands_demand_id_documents_doc_id_patch_request=dict(body),
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def delete(self, demand_id: str, doc_id: str) -> Any:
+        """Deletes a document. The last document of an envelope cannot be
+        deleted (`CANNOT_DELETE_LAST_DOCUMENT`). Never retried. DELETE."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_documents_doc_id_delete(
+                demand_id=demand_id, doc_id=doc_id, _request_timeout=self._timeout
+            )
+        )
+
+    def reorder(self, demand_id: str, document_ids: Sequence[str]) -> Any:
+        """Sets the order of all documents. `document_ids` must contain exactly
+        the envelope's documents (`ORDER_SET_MISMATCH`). Never retried. PUT."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_documents_order_put(
+                demand_id=demand_id,
+                api_v1_demands_demand_id_documents_order_put_request={"document_ids": list(document_ids)},
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def set_assignments(self, demand_id: str, doc_id: str, party_ids: Sequence[str]) -> Any:
+        """Replaces the set of parties assigned to a document. Never retried. PUT."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_documents_doc_id_assignments_put(
+                demand_id=demand_id,
+                doc_id=doc_id,
+                api_v1_demands_demand_id_documents_doc_id_assignments_put_request={"party_ids": list(party_ids)},
+                _request_timeout=self._timeout,
+            )
+        )
+
+
 class DemandsResource:
     """`imzala.demands.*` — create/inspect demands (contracts) and trigger reminders."""
 
@@ -396,6 +549,37 @@ class DemandsResource:
         self._reminders_api = reminders_api
         self._timeout = timeout
         self._retry = retry
+        self.documents = EnvelopeDocumentsResource(api, timeout, retry)
+
+    def dispatch(self, demand_id: str, *, send_invitations: Optional[DispatchSendInvitations] = None) -> Any:
+        """Sends the demand for signing: reconciles credit, moves a `DRAFT`
+        to `PENDING` and sends invitations. This is where credit is charged;
+        the `documents` methods charge nothing. Calling it again for a demand
+        that is already out charges nothing more (`dispatched` is false).
+
+        `send_invitations` narrows the channels; omitted means the server
+        default (invitations on). `False`, `"false"`, `"0"`, `"off"`, `"no"`,
+        `"hayir"`, `"hayır"` send none; `"email"` / `"sms"` limit the channel.
+        An unknown value raises `INVALID_SEND_INVITATIONS`.
+
+        Raises for `DISPATCH_NO_PARTIES`, `DISPATCH_TOO_MANY`,
+        `QES_NOT_SUPPORTED_MULTI_DOCUMENT`, `INSUFFICIENT_CREDITS` and
+        others. No idempotency key, so never retried, not even after a 429.
+        POST.
+        """
+        body: dict = {}
+        if send_invitations is not None:
+            # The generated model is a oneOf wrapper; a bare bool/str is rejected.
+            body["send_invitations"] = ApiV1DemandsDemandIdDispatchPostRequestSendInvitations(
+                actual_instance=send_invitations
+            )
+        return _unwrap(
+            lambda: self._api.api_v1_demands_demand_id_dispatch_post(
+                demand_id=demand_id,
+                api_v1_demands_demand_id_dispatch_post_request=body,
+                _request_timeout=self._timeout,
+            )
+        )
 
     def create(self, body: Mapping[str, Any], *, idempotency_key: Optional[str] = None) -> Any:
         """Creates a new demand (contract) from a template.
@@ -958,7 +1142,14 @@ class Imzala:
             base_delay_s=max(0.0, float(retry_base_delay)),
         )
 
-        configuration = Configuration(host=base_url, api_key={"ApiKeyAuth": api_key})
+        configuration = Configuration(
+            host=base_url,
+            api_key={"ApiKeyAuth": api_key},
+            # urllib3's default Retry honours Retry-After on 429/503 and silently
+            # repeats the request, writes included, before this SDK ever sees the
+            # error. Retrying is this SDK's decision (GETs, and keyed writes only).
+            retries=0,
+        )
         api_client = ApiClient(configuration)
 
         self._account_api = AccountApi(api_client)
