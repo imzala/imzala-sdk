@@ -91,7 +91,11 @@ export async function unwrapRetryableGet<T>(
       if (attempt >= retry.maxRetries || !isRetryableStatus(mapped.statusCode)) {
         throw mapped;
       }
-      await sleep(computeDelayMs(mapped, attempt, retry.retryBaseDelayMs));
+      const delayMs = computeDelayMs(mapped, attempt, retry.retryBaseDelayMs);
+      // A server asking for a longer wait than we are willing to block for
+      // gets the error back instead of a silent long sleep.
+      if (delayMs > MAX_IDEMPOTENT_RETRY_WAIT_MS) throw mapped;
+      await sleep(delayMs);
       attempt += 1;
     }
   }

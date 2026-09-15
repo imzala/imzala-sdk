@@ -38,6 +38,16 @@ describe('safe auto-retry — GET requests', () => {
     expect(result.templates).toEqual([{ id: 't1' }]);
   });
 
+  it('does not retry a GET when Retry-After exceeds the wait cap', async () => {
+    const spy = vi
+      .spyOn(TemplatesApi.prototype, 'apiV1TemplatesGet')
+      .mockRejectedValue(fakeAxiosError(429, { success: false, code: 'RATE_LIMIT_EXCEEDED', retry_after_seconds: 3600 }));
+
+    const imzala = new Imzala({ apiKey: 'imz_test', ...FAST_RETRY });
+    await expect(imzala.templates.list()).rejects.toBeInstanceOf(ImzalaRateLimitError);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   it('retries a GET on 5xx (server error) and succeeds', async () => {
     const spy = vi
       .spyOn(DemandsApi.prototype, 'apiV1DemandsIdGet')
