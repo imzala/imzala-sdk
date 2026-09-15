@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TimestampsApi {
   /**
    * Utility class for extending HttpRequest.Builder functionality.
@@ -587,13 +587,13 @@ public class TimestampsApi {
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
     if (description != null) {
-        multiPartBuilder.addTextBody("description", description.toString());
+        multiPartBuilder.addTextBody("description", description.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (ownerFirstName != null) {
-        multiPartBuilder.addTextBody("owner_first_name", ownerFirstName.toString());
+        multiPartBuilder.addTextBody("owner_first_name", ownerFirstName.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (ownerLastName != null) {
-        multiPartBuilder.addTextBody("owner_last_name", ownerLastName.toString());
+        multiPartBuilder.addTextBody("owner_last_name", ownerLastName.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;

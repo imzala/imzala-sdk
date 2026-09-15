@@ -52,7 +52,7 @@ import org.imzala.client.generated.ApiClient;
   TemplateUsage.JSON_PROPERTY_VARIABLES,
   TemplateUsage.JSON_PROPERTY_EXAMPLE_REQUEST
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TemplateUsage {
   /**
    * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır). 

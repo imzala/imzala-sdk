@@ -84,7 +84,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DemandsApi {
   /**
    * Utility class for extending HttpRequest.Builder functionality.
@@ -1412,16 +1412,16 @@ public class DemandsApi {
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
     if (idempotencyKey != null) {
-        multiPartBuilder.addTextBody("idempotency_key", idempotencyKey.toString());
+        multiPartBuilder.addTextBody("idempotency_key", idempotencyKey.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (title != null) {
-        multiPartBuilder.addTextBody("title", title.toString());
+        multiPartBuilder.addTextBody("title", title.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (docKind != null) {
-        multiPartBuilder.addTextBody("doc_kind", docKind.toString());
+        multiPartBuilder.addTextBody("doc_kind", docKind.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (isRequired != null) {
-        multiPartBuilder.addTextBody("is_required", isRequired.toString());
+        multiPartBuilder.addTextBody("is_required", isRequired.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;
@@ -3172,28 +3172,28 @@ public class DemandsApi {
         hasFiles = true;
     }
     if (order != null) {
-        multiPartBuilder.addTextBody("order", order.toString());
+        multiPartBuilder.addTextBody("order", order.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (title != null) {
-        multiPartBuilder.addTextBody("title", title.toString());
+        multiPartBuilder.addTextBody("title", title.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (description != null) {
-        multiPartBuilder.addTextBody("description", description.toString());
+        multiPartBuilder.addTextBody("description", description.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (parties != null) {
-        multiPartBuilder.addTextBody("parties", parties.toString());
+        multiPartBuilder.addTextBody("parties", parties.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (fieldTemplateId != null) {
-        multiPartBuilder.addTextBody("field_template_id", fieldTemplateId.toString());
+        multiPartBuilder.addTextBody("field_template_id", fieldTemplateId.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (force != null) {
-        multiPartBuilder.addTextBody("force", force.toString());
+        multiPartBuilder.addTextBody("force", force.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (sendInvitations != null) {
-        multiPartBuilder.addTextBody("send_invitations", sendInvitations.toString());
+        multiPartBuilder.addTextBody("send_invitations", sendInvitations.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     if (onAnchorMiss != null) {
-        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString());
+        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;
@@ -3362,7 +3362,7 @@ public class DemandsApi {
         hasFiles = true;
     }
     if (onAnchorMiss != null) {
-        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString());
+        multiPartBuilder.addTextBody("on_anchor_miss", onAnchorMiss.toString(), org.apache.http.entity.ContentType.create("text/plain", java.nio.charset.StandardCharsets.UTF_8));
     }
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;

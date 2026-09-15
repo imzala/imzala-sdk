@@ -42,7 +42,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsBulkPostRequest.JSON_PROPERTY_OPTIONS,
   ApiV1DemandsBulkPostRequest.JSON_PROPERTY_ROWS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsBulkPostRequest {
   public static final String JSON_PROPERTY_TEMPLATE_ID = "template_id";
   @javax.annotation.Nonnull

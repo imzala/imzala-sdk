@@ -93,7 +93,7 @@ class EnvelopeTest {
     LocalServer(List<Reply> replies) throws IOException {
       server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
       server.createContext("/", exchange -> {
-        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.ISO_8859_1);
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         calls.add(new Captured(exchange.getRequestMethod(), exchange.getRequestURI().toString(), exchange.getRequestHeaders(), body));
         Reply reply = replies.get(Math.min(calls.size() - 1, replies.size() - 1));
         byte[] bytes = JSON.writeValueAsBytes(reply.body);
@@ -286,6 +286,19 @@ class EnvelopeTest {
   }
 
   // --- upload ---------------------------------------------------------------
+
+  @Test
+  void uploadSendsTurkishTextFieldsAsUtf8() throws IOException {
+    // The generated client wrote multipart text with httpmime's ISO-8859-1
+    // default, so "ş" arrived as "?"; generate.sh now sets UTF-8. The server
+    // side of this test decodes the body as UTF-8, like the real API.
+    LocalServer srv = server(ok(Map.of("document", doc())));
+    client(srv).demands().documents().upload(DEMAND,
+        new UploadEnvelopeDocumentParams(pdf(), "Kira sözleşmesi", "siparis-43"));
+    Captured call = srv.calls.get(0);
+    assertEquals("Kira sözleşmesi", formField(call.body, "title"));
+    assertTrue(call.body.contains("charset=UTF-8"), "text parts must declare UTF-8");
+  }
 
   @Test
   void uploadSendsTheIdempotencyKeyAsTheIdempotencyKeyBodyFieldNotAsAHeader() throws IOException {

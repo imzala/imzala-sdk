@@ -48,7 +48,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.imzala.client.generated.ApiClient;
 import org.imzala.client.generated.JSON;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 @JsonDeserialize(using = PartyMappingInputVariablesValue.PartyMappingInputVariablesValueDeserializer.class)
 @JsonSerialize(using = PartyMappingInputVariablesValue.PartyMappingInputVariablesValueSerializer.class)
 public class PartyMappingInputVariablesValue extends AbstractOpenApiSchema {

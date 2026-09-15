@@ -42,7 +42,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.JSON_PROPERTY_PHONE,
   ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.JSON_PROPERTY_SIGNING_URL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T11:12:16.165550+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-15T13:26:27.530205+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nullable

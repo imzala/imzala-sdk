@@ -112,6 +112,17 @@ for entry in "${LANG_TABLE[@]}"; do
     -o "$outdir" \
     --additional-properties="$extra_props"
 
+  if [ "$key" = "java" ]; then
+    # The java generator writes multipart text fields with httpmime's default
+    # charset (ISO-8859-1): a title such as "Kira sözleşmesi" or a party name
+    # in the parties JSON reaches the server mangled. Send them as UTF-8.
+    # Verified against a local server; kept here so regeneration keeps it.
+    find "$outdir/src/main/java" -name '*.java' -exec perl -pi -e \
+      's/addTextBody\((("[a-z_]+"), ([A-Za-z]+\.toString\(\)))\)/addTextBody($2, $3, org.apache.http.entity.ContentType.create("text\/plain", java.nio.charset.StandardCharsets.UTF_8))/g' {} +
+    n="$(grep -rl 'addTextBody(' "$outdir/src/main/java" | xargs grep -c 'StandardCharsets.UTF_8' | awk -F: '{s+=$2} END{print s+0}')"
+    echo "[generate] java: $n multipart text fields set to UTF-8"
+  fi
+
   echo "[generate] === $key done ==="
 done
 
