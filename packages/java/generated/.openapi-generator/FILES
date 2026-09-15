@@ -86,6 +86,7 @@ docs/ApiV1TimestampsGet200ResponseData.md
 docs/ApiV1TimestampsIdGet200Response.md
 docs/ApiV1TimestampsPost201Response.md
 docs/ApiV1TimestampsPostRequest1.md
+docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
@@ -260,6 +261,7 @@ src/main/java/org/imzala/client/generated/model/ApiV1TimestampsGet200ResponseDat
 src/main/java/org/imzala/client/generated/model/ApiV1TimestampsIdGet200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1TimestampsPost201Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1.java
+src/main/java/org/imzala/client/generated/model/CodedError.java
 src/main/java/org/imzala/client/generated/model/ContactSummary.java
 src/main/java/org/imzala/client/generated/model/ContactSummaryCompany.java
 src/main/java/org/imzala/client/generated/model/CreateDemandRequest.java
@@ -407,6 +409,7 @@ src/test/java/org/imzala/client/generated/model/ApiV1TimestampsGet200ResponseTes
 src/test/java/org/imzala/client/generated/model/ApiV1TimestampsIdGet200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1TimestampsPost201ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1Test.java
+src/test/java/org/imzala/client/generated/model/CodedErrorTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryCompanyTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryTest.java
 src/test/java/org/imzala/client/generated/model/CreateDemandRequestTest.java

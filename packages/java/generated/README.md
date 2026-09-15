@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.8.6
+- API version: 1.8.8
 
-- Build date: 2026-09-15T10:01:25.885782+03:00[Europe/Istanbul]
+- Build date: 2026-09-15T10:36:56.694963+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.8.6 · **Son güncelleme:** 2026-09-10
+**Sürüm:** 1.8.8 · **Son güncelleme:** 2026-09-15
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -300,7 +300,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.8.6</version>
+  <version>1.8.8</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -310,7 +310,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.8.6"
+compile "org.imzala:imzala-client-generated:1.8.8"
 ```
 
 ### Others
@@ -323,7 +323,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.8.6.jar`
+- `target/imzala-client-generated-1.8.8.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -523,6 +523,7 @@ Class | Method | HTTP request | Description
  - [ApiV1TimestampsIdGet200Response](docs/ApiV1TimestampsIdGet200Response.md)
  - [ApiV1TimestampsPost201Response](docs/ApiV1TimestampsPost201Response.md)
  - [ApiV1TimestampsPostRequest1](docs/ApiV1TimestampsPostRequest1.md)
+ - [CodedError](docs/CodedError.md)
  - [ContactSummary](docs/ContactSummary.md)
  - [ContactSummaryCompany](docs/ContactSummaryCompany.md)
  - [CreateDemandRequest](docs/CreateDemandRequest.md)

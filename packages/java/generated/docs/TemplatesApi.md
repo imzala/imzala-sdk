@@ -94,6 +94,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Alan Şablonu listesi |  -  |
+| **400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 
 ## apiV1FieldTemplatesGetWithHttpInfo
@@ -172,6 +173,7 @@ ApiResponse<[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Res
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Alan Şablonu listesi |  -  |
+| **400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 
 
@@ -400,6 +402,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
+| **400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 
 ## apiV1TemplatesGetWithHttpInfo
@@ -478,6 +481,7 @@ ApiResponse<[**ApiV1TemplatesGet200Response**](ApiV1TemplatesGet200Response.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
+| **400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 
 

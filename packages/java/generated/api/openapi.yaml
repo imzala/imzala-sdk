@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.6 · **Son güncelleme:** 2026-09-10
+    **Sürüm:** 1.8.8 · **Son güncelleme:** 2026-09-15
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -263,7 +263,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.6
+  version: 1.8.8
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -329,6 +329,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/_api_v1_templates_get_200_response"
           description: Başarılı
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            `INVALID_PAGE`: `page` 1 veya daha büyük bir tam sayı değil.
+            `limit` hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse
+            varsayılan 20 kullanılır.
         "401":
           content:
             application/json:
@@ -725,7 +734,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+                $ref: "#/components/schemas/CodedError"
           description: |
             Geçersiz istek. Örnek hatalar:
             - "template_id gerekli"
@@ -736,6 +745,10 @@ paths:
             - "party_mapping[0].variables.adres value'su string|number|boolean|null olmali"
             - "variables object olmalı"
             - "template_party_id duplicate'i bulundu: <id>"
+
+            `INVALID_EXPIRY_DATE`: `expiry_date` çözümlenemiyor veya takvimde
+            olmayan bir gün (ör. `2026-02-30`). Bu hatada `error` insan-okur
+            mesajı, `code` alanı makinece okunur kodu taşır.
         "401":
           content:
             application/json:
@@ -760,12 +773,18 @@ paths:
             alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.
         "409":
           description: |
-            İki ayrı kod döner.
+            Üç ayrı kod döner.
 
             `IDEMPOTENCY_KEY_REUSED` — aynı `Idempotency-Key` daha önce FARKLI
             bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek
             "gönderdim sandım" kazası üretirdi; yeni sözleşme için yeni anahtar
             gönderin. Gövdede eski sözleşmenin `demand_id` alanı döner.
+
+            `IDEMPOTENCY_UNVERIFIABLE`: bu `Idempotency-Key` daha önce bir
+            sözleşme üretti, ancak bu isteğin aynı içerikte olduğu
+            doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki
+            `demand_id` ile durumu sorgulayın; yeni bir anahtarla körlemesine
+            tekrar denemek ikinci bir sözleşme oluşturur.
 
             `DUPLICATE_SUSPECTED` — idempotency anahtarı GÖNDERİLMEDİ ve aynı
             API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon +
@@ -1097,6 +1116,12 @@ paths:
           description: |
             **ALREADY_COMPLETED** — Tüm taraflar imzalamış. Hatırlatılacak
             imzalanmamış parti yok.
+
+            **DEMAND_NOT_DISPATCHED**: sözleşme henüz imzaya gönderilmedi (taslak).
+
+            **DEMAND_NOT_DISPATCHABLE**: sözleşme tamamlanmış veya iptal edilmiş.
+
+            **DEMAND_EXPIRED**: sözleşmenin imza süresi geçmiş.
         "429":
           content:
             application/json:
@@ -1224,12 +1249,18 @@ paths:
           description: Alan Şablonu bulunamadı (`TEMPLATE_NOT_FOUND`)
         "409":
           description: |
-            İki ayrı kod döner.
+            Üç ayrı kod döner.
 
             `IDEMPOTENCY_KEY_REUSED` — aynı `Idempotency-Key` daha önce FARKLI
             bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek
             "gönderdim sandım" kazası üretirdi; yeni sözleşme için yeni anahtar
             gönderin. Gövdede eski sözleşmenin `demand_id` alanı döner.
+
+            `IDEMPOTENCY_UNVERIFIABLE`: bu `Idempotency-Key` daha önce bir
+            sözleşme üretti, ancak bu isteğin aynı içerikte olduğu
+            doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki
+            `demand_id` ile durumu sorgulayın; yeni bir anahtarla körlemesine
+            tekrar denemek ikinci bir sözleşme oluşturur.
 
             `DUPLICATE_SUSPECTED` — idempotency anahtarı GÖNDERİLMEDİ ve aynı
             API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon +
@@ -1311,6 +1342,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/_api_v1_field_templates_get_200_response"
           description: Alan Şablonu listesi
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            `INVALID_PAGE`: `page` 1 veya daha büyük bir tam sayı değil.
+            `limit` hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse
+            varsayılan 20 kullanılır.
         "401":
           content:
             application/json:
@@ -1565,6 +1605,8 @@ paths:
             - `VALIDATION_ERROR` — position bounds, slug regex, party-required
             - `INVALID_PAGE_ID` — page_id demand'e ait değil veya page_ids'te yok
             - `INVALID_PARTY_ID` — party_id demand'e ait değil
+            - `PAGE_ID_REQUIRED`: bir öğede tam sayı `page_id` yok
+            - `INVALID_ITEM_TYPE`: desteklenmeyen `item_type` (mesaj izinli türleri listeler)
         "401":
           content:
             application/json:
@@ -1939,7 +1981,17 @@ paths:
                 $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
           description: Kayıt bulunamadı
         "409":
-          description: İmzalamış/reddetmiş/sıra-dışı taraf
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            Tekrar gönderim yapılamaz. `error` insan-okur mesajı taşır.
+            - İmzalamış, reddetmiş veya sıralı imzada sırası gelmemiş taraf
+              (`code` alanı yok)
+            - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
+            - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
+            - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
       summary: Tekil tarafa imza davetini tekrar gönder
       tags:
       - Demands
@@ -4478,6 +4530,26 @@ components:
       - methods
       - steps
       - verified
+      type: object
+    CodedError:
+      description: |
+        `error` alanında insan-okur mesaj, `code` alanında makinece okunur
+        hata kodu taşıyan hata gövdesi. Hangi kodların döndüğü ilgili yanıtın
+        açıklamasında listelenir.
+      example:
+        success: false
+        error: Geçersiz sayfa numarası (page >= 1 olmalı)
+        code: INVALID_PAGE
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          example: Geçersiz sayfa numarası (page >= 1 olmalı)
+          type: string
+        code:
+          example: INVALID_PAGE
+          type: string
       type: object
     StandardError:
       description: |
@@ -7686,6 +7758,9 @@ components:
           - ALREADY_COMPLETED
           - RATE_LIMITED
           - MAX_SMS_REMINDERS_REACHED
+          - DEMAND_NOT_DISPATCHED
+          - DEMAND_NOT_DISPATCHABLE
+          - DEMAND_EXPIRED
           - UNAUTHORIZED
           - INTERNAL_ERROR
           example: DEMAND_NOT_FOUND

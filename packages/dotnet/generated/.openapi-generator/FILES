@@ -84,6 +84,7 @@ docs/ApiV1TimestampsGet200ResponseData.md
 docs/ApiV1TimestampsIdGet200Response.md
 docs/ApiV1TimestampsPost201Response.md
 docs/ApiV1TimestampsPostRequest1.md
+docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
@@ -239,6 +240,7 @@ src/ImzalaApiClient.Test/Model/ApiV1TimestampsGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1TimestampsIdGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1TimestampsPost201ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1TimestampsPostRequest1Tests.cs
+src/ImzalaApiClient.Test/Model/CodedErrorTests.cs
 src/ImzalaApiClient.Test/Model/ContactSummaryCompanyTests.cs
 src/ImzalaApiClient.Test/Model/ContactSummaryTests.cs
 src/ImzalaApiClient.Test/Model/CreateDemandRequestTests.cs
@@ -405,6 +407,7 @@ src/ImzalaApiClient/Model/ApiV1TimestampsGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1TimestampsIdGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1TimestampsPost201Response.cs
 src/ImzalaApiClient/Model/ApiV1TimestampsPostRequest1.cs
+src/ImzalaApiClient/Model/CodedError.cs
 src/ImzalaApiClient/Model/ContactSummary.cs
 src/ImzalaApiClient/Model/ContactSummaryCompany.cs
 src/ImzalaApiClient/Model/CreateDemandRequest.cs

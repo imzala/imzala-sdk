@@ -90,6 +90,7 @@ docs/Model/ApiV1TimestampsGet200ResponseData.md
 docs/Model/ApiV1TimestampsIdGet200Response.md
 docs/Model/ApiV1TimestampsPost201Response.md
 docs/Model/ApiV1TimestampsPostRequest1.md
+docs/Model/CodedError.md
 docs/Model/ContactSummary.md
 docs/Model/ContactSummaryCompany.md
 docs/Model/CreateDemandRequest.md
@@ -242,6 +243,7 @@ lib/Model/ApiV1TimestampsGet200ResponseData.php
 lib/Model/ApiV1TimestampsIdGet200Response.php
 lib/Model/ApiV1TimestampsPost201Response.php
 lib/Model/ApiV1TimestampsPostRequest1.php
+lib/Model/CodedError.php
 lib/Model/ContactSummary.php
 lib/Model/ContactSummaryCompany.php
 lib/Model/CreateDemandRequest.php
@@ -392,6 +394,7 @@ test/Model/ApiV1TimestampsGet200ResponseTest.php
 test/Model/ApiV1TimestampsIdGet200ResponseTest.php
 test/Model/ApiV1TimestampsPost201ResponseTest.php
 test/Model/ApiV1TimestampsPostRequest1Test.php
+test/Model/CodedErrorTest.php
 test/Model/ContactSummaryCompanyTest.php
 test/Model/ContactSummaryTest.php
 test/Model/CreateDemandRequestTest.php

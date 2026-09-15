@@ -86,6 +86,7 @@ docs/ApiV1TimestampsGet200ResponseData.md
 docs/ApiV1TimestampsIdGet200Response.md
 docs/ApiV1TimestampsPost201Response.md
 docs/ApiV1TimestampsPostRequest1.md
+docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md

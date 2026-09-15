@@ -84,6 +84,7 @@ docs/ApiV1TimestampsGet200ResponseData.md
 docs/ApiV1TimestampsIdGet200Response.md
 docs/ApiV1TimestampsPost201Response.md
 docs/ApiV1TimestampsPostRequest1.md
+docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
@@ -245,6 +246,7 @@ imzala_client/models/api_v1_timestamps_get200_response_data.py
 imzala_client/models/api_v1_timestamps_id_get200_response.py
 imzala_client/models/api_v1_timestamps_post201_response.py
 imzala_client/models/api_v1_timestamps_post_request1.py
+imzala_client/models/coded_error.py
 imzala_client/models/contact_summary.py
 imzala_client/models/contact_summary_company.py
 imzala_client/models/create_demand_request.py
@@ -394,6 +396,7 @@ test/test_api_v1_timestamps_get200_response_data.py
 test/test_api_v1_timestamps_id_get200_response.py
 test/test_api_v1_timestamps_post201_response.py
 test/test_api_v1_timestamps_post_request1.py
+test/test_coded_error.py
 test/test_contact_summary.py
 test/test_contact_summary_company.py
 test/test_contacts_api.py

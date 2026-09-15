@@ -63,6 +63,7 @@ const { status, data } = await apiInstance.apiV1FieldTemplatesGet(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Alan Şablonu listesi |  -  |
+|**400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 |**401** | API key geçersiz veya eksik |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -171,6 +172,7 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Başarılı |  -  |
+|**400** | &#x60;INVALID_PAGE&#x60;: &#x60;page&#x60; 1 veya daha büyük bir tam sayı değil. &#x60;limit&#x60; hata üretmez: 1 ile 100 arasına kırpılır, sayı değilse varsayılan 20 kullanılır.  |  -  |
 |**401** | API key geçersiz veya eksik |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
