@@ -2,6 +2,11 @@ import { Configuration } from '../generated/configuration';
 import { AccountApi, ContactsApi, DemandsApi, RemindersApi, ReportsApi, TemplatesApi, TimestampsApi } from '../generated/api';
 import type {
   ApiV1ContactsGet200ResponseData,
+  ApiV1DemandsDemandIdDispatchPost200ResponseData,
+  ApiV1DemandsDemandIdDocumentsDocIdPatchRequest,
+  ApiV1DemandsDemandIdDocumentsGet200ResponseData,
+  ApiV1DemandsDemandIdDocumentsPost201ResponseData,
+  ApiV1DemandsDemandIdDocumentsPostRequest,
   ApiV1ContactsPostRequest,
   ApiV1DemandsBulkPost200ResponseData,
   ApiV1DemandsBulkPostRequest,
@@ -36,7 +41,8 @@ import type {
   UpsertItemsRequest,
   UpsertItemsResponseData,
 } from '../generated/api';
-import { unwrap, unwrapIdempotentWrite, unwrapRetryableGet } from './http';
+import { assertIdempotencyKey, unwrap, unwrapIdempotentWrite, unwrapRetryableGet } from './http';
+import { ImzalaError } from './errors';
 import type { RetryConfig } from './http';
 import { toUploadFile } from './files';
 import type { CreateTimestampParams, FileInput, UploadDemandParams } from './files';
@@ -52,6 +58,12 @@ export type { FileInput, UploadDemandParams, UploadPartyInput, CreateTimestampPa
 // public package export map).
 export type {
   ApiV1ContactsGet200ResponseData as ContactList,
+  ApiV1DemandsDemandIdDispatchPost200ResponseData as DispatchResult,
+  ApiV1DemandsDemandIdDocumentsDocIdPatchRequest as UpdateEnvelopeDocumentRequest,
+  ApiV1DemandsDemandIdDocumentsGet200ResponseData as EnvelopeDocumentList,
+  ApiV1DemandsDemandIdDocumentsPost201ResponseData as EnvelopeDocumentResult,
+  ApiV1DemandsDemandIdDocumentsPostRequest as CreateEnvelopeDocumentRequest,
+  EnvelopeDocument,
   ApiV1ContactsPostRequest as CreateContactRequest,
   ApiV1DemandsBulkPost200ResponseData as BulkCreateResult,
   ApiV1DemandsBulkPostRequest as BulkCreateDemandsRequest,
@@ -171,6 +183,51 @@ export interface ListTimestampsParams {
   sort?: string;
 }
 
+export type EnvelopeDocumentKind = 'CONTRACT' | 'KVKK_NOTICE' | 'KVKK_CONSENT' | 'PREINFO' | 'PRICE_LIST' | 'OTHER';
+
+export interface ListEnvelopeDocumentsParams {
+  /** `wizard` returns the full shape (`assigned_party_ids`, `decision_count`). */
+  view?: 'wizard';
+}
+
+export interface UploadEnvelopeDocumentParams {
+  /** Exactly one file per document. Call `upload` again for each further document. */
+  file: FileInput;
+  title: string;
+  /**
+   * Required. Sent as the `idempotency_key` form field (not as a header).
+   * Printable ASCII only. Uploading again with the same key creates no new
+   * document; the earlier document is returned instead.
+   */
+  idempotencyKey: string;
+  docKind?: EnvelopeDocumentKind;
+  /** Defaults to `true` on the server. */
+  isRequired?: boolean;
+}
+
+export interface DispatchParams {
+  /**
+   * Narrows which channels invitations go out on. Omitted means the server
+   * default (invitations on). `false`, `'false'`, `'0'`, `'off'`, `'no'`,
+   * `'hayir'`, `'hayır'` send no invitations; `'email'` and `'sms'` limit the
+   * channel. It can only narrow the demand's own notification settings. An
+   * unknown value throws `INVALID_SEND_INVITATIONS`.
+   */
+  sendInvitations?:
+    | boolean
+    | 'true'
+    | '1'
+    | 'all'
+    | 'email'
+    | 'sms'
+    | 'false'
+    | '0'
+    | 'off'
+    | 'no'
+    | 'hayir'
+    | 'hayır';
+}
+
 export interface WriteOptions {
   /**
    * Makes the request safe to retry: the server does not create a second
@@ -270,12 +327,138 @@ class TemplatesResource {
   }
 }
 
+class EnvelopeDocumentsResource {
+  constructor(
+    private readonly api: DemandsApi,
+    private readonly retryConfig: RetryConfig,
+  ) {}
+
+  /**
+   * Lists the documents of a multi-document envelope. While multi-document
+   * envelopes are not enabled for the account, this and every other
+   * `documents` method throws `ENVELOPE_MULTI_DOC_DISABLED` (409); it never
+   * returns an empty list in that case. GET, safe to auto-retry.
+   */
+  list(demandId: string, params: ListEnvelopeDocumentsParams = {}): Promise<ApiV1DemandsDemandIdDocumentsGet200ResponseData> {
+    return unwrapRetryableGet(
+      () => this.api.apiV1DemandsDemandIdDocumentsGet({ demandId, view: params.view }),
+      this.retryConfig,
+    );
+  }
+
+  /**
+   * Adds a document without a file (metadata only); its order is assigned
+   * automatically. Document methods spend no credit; credit is charged on
+   * `demands.dispatch`. No idempotency key, so never retried. POST.
+   */
+  create(demandId: string, body: ApiV1DemandsDemandIdDocumentsPostRequest): Promise<ApiV1DemandsDemandIdDocumentsPost201ResponseData> {
+    return unwrap(
+      this.api.apiV1DemandsDemandIdDocumentsPost({ demandId, apiV1DemandsDemandIdDocumentsPostRequest: body }),
+    );
+  }
+
+  /**
+   * Uploads one file as one document.
+   *
+   * `idempotencyKey` is required and checked before anything is sent (missing,
+   * empty, or not printable ASCII throws `ImzalaValidationError`). Because the
+   * server keeps the key, one retry is made after a 429 (waiting at most 60
+   * seconds). If a document was already uploaded with the same key, the
+   * server answers 409 `IDEMPOTENT_REPLAY` with that document; this method
+   * returns it as a normal result. Any other 409 is thrown. No credit is spent.
+   */
+  async upload(demandId: string, params: UploadEnvelopeDocumentParams): Promise<ApiV1DemandsDemandIdDocumentsPost201ResponseData> {
+    assertIdempotencyKey(params.idempotencyKey, 'idempotencyKey');
+    const isRequired = params.isRequired === undefined ? undefined : params.isRequired ? 'true' : 'false';
+    try {
+      return await unwrapIdempotentWrite(
+        () =>
+          this.api.apiV1DemandsDemandIdDocumentsUploadPost({
+            demandId,
+            file: toUploadFile(params.file),
+            idempotencyKey: params.idempotencyKey,
+            title: params.title,
+            docKind: params.docKind,
+            isRequired,
+          }),
+        { idempotencyKey: params.idempotencyKey, retryBaseDelayMs: this.retryConfig.retryBaseDelayMs },
+      );
+    } catch (err) {
+      const replayed = replayedDocument(err);
+      if (replayed) return replayed;
+      throw err;
+    }
+  }
+
+  /** Updates only the fields you send (title, doc_kind, is_required, signature_required). Never retried. PATCH. */
+  update(
+    demandId: string,
+    docId: string,
+    body: ApiV1DemandsDemandIdDocumentsDocIdPatchRequest,
+  ): Promise<ApiV1DemandsDemandIdDocumentsPost201ResponseData> {
+    return unwrap(
+      this.api.apiV1DemandsDemandIdDocumentsDocIdPatch({ demandId, docId, apiV1DemandsDemandIdDocumentsDocIdPatchRequest: body }),
+    );
+  }
+
+  /** Deletes a document; the last document of an envelope cannot be deleted (`CANNOT_DELETE_LAST_DOCUMENT`). Never retried. DELETE. */
+  delete(demandId: string, docId: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
+    return unwrap(this.api.apiV1DemandsDemandIdDocumentsDocIdDelete({ demandId, docId }));
+  }
+
+  /** Sets the order of all documents. `documentIds` must contain exactly the envelope's documents (`ORDER_SET_MISMATCH`). Never retried. PUT. */
+  reorder(demandId: string, documentIds: string[]): Promise<ApiV1DemandsDemandIdDocumentsGet200ResponseData> {
+    return unwrap(
+      this.api.apiV1DemandsDemandIdDocumentsOrderPut({
+        demandId,
+        apiV1DemandsDemandIdDocumentsOrderPutRequest: { document_ids: documentIds },
+      }),
+    );
+  }
+
+  /** Replaces the set of parties assigned to a document. Never retried. PUT. */
+  setAssignments(demandId: string, docId: string, partyIds: string[]): Promise<ApiV1DemandsDemandIdDocumentsPost201ResponseData> {
+    return unwrap(
+      this.api.apiV1DemandsDemandIdDocumentsDocIdAssignmentsPut({
+        demandId,
+        docId,
+        apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest: { party_ids: partyIds },
+      }),
+    );
+  }
+}
+
+/** The earlier document from a 409 `IDEMPOTENT_REPLAY` upload answer, or `undefined` for any other error. */
+function replayedDocument(err: unknown): ApiV1DemandsDemandIdDocumentsPost201ResponseData | undefined {
+  if (!(err instanceof ImzalaError) || err.statusCode !== 409 || err.code !== 'IDEMPOTENT_REPLAY') return undefined;
+  const data = (err.body as { data?: ApiV1DemandsDemandIdDocumentsPost201ResponseData } | undefined)?.data;
+  return data && data.document ? data : undefined;
+}
+
 class DemandsResource {
+  readonly documents: EnvelopeDocumentsResource;
+
   constructor(
     private readonly api: DemandsApi,
     private readonly remindersApi: RemindersApi,
     private readonly retryConfig: RetryConfig,
-  ) {}
+  ) {
+    this.documents = new EnvelopeDocumentsResource(api, retryConfig);
+  }
+
+  /**
+   * Sends the demand for signing: reconciles credit, moves a `DRAFT` to
+   * `PENDING` and sends invitations. This is where credit is charged; the
+   * `documents` methods charge nothing. Calling it again for a demand that is
+   * already out charges nothing more (`dispatched: false`). Throws for
+   * `DISPATCH_NO_PARTIES`, `DISPATCH_TOO_MANY`,
+   * `QES_NOT_SUPPORTED_MULTI_DOCUMENT`, `INSUFFICIENT_CREDITS` and others.
+   * No idempotency key, so never retried, not even after a 429. POST.
+   */
+  dispatch(demandId: string, params: DispatchParams = {}): Promise<ApiV1DemandsDemandIdDispatchPost200ResponseData> {
+    const body = params.sendInvitations === undefined ? {} : { send_invitations: params.sendInvitations };
+    return unwrap(this.api.apiV1DemandsDemandIdDispatchPost({ demandId, apiV1DemandsDemandIdDispatchPostRequest: body }));
+  }
 
   /**
    * Creates a new demand (contract) from a template.

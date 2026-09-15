@@ -135,6 +135,17 @@ export const MAX_IDEMPOTENT_RETRY_WAIT_MS = 60_000;
  * `sipariş-1` and `sipariç-1` could collapse into one and the second order be
  * answered with the first demand.
  */
+/**
+ * A required idempotency key sent as a body field: it must be a non-empty
+ * printable ASCII string. Checked before the request is built.
+ */
+export function assertIdempotencyKey(value: unknown, name: string): void {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new ImzalaValidationError(`${name} is required and must be a non-empty string.`);
+  }
+  assertHeaderValue(value, name);
+}
+
 function assertHeaderValue(value: string | undefined, headerName: string): void {
   if (value === undefined || value === null) return;
   for (let i = 0; i < value.length; i += 1) {
