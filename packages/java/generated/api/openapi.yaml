@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.8 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.9 · **Son güncelleme:** 2026-09-15
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -263,7 +263,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.8
+  version: 1.8.9
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -1992,6 +1992,15 @@ paths:
             - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
             - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
             - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
+        "429":
+          description: |
+            İki ayrı sınır vardır.
+
+            `TOO_MANY_REQUESTS`: API anahtarı başına saatte 300 istek (dispatch
+            ucuyla ortak sınır). Gövdede `retry_after_seconds` döner.
+
+            `RECIPIENT_RESEND_LIMIT`: aynı alıcıya saatte en fazla 3, günde en
+            fazla 10 davet tekrarı gönderilebilir.
       summary: Tekil tarafa imza davetini tekrar gönder
       tags:
       - Demands
@@ -2472,6 +2481,9 @@ paths:
           description: |
             Tekrar-gönderim hız sınırı aşıldı — bu uç
             `/parties/{partyId}/resend` ile AYNI anahtar-bazlı freni paylaşır.
+
+            `TOO_MANY_REQUESTS`: API anahtarı başına saatte 300 istek. Gövdede
+            `retry_after_seconds` döner.
         "500":
           description: |
             `RECONCILE_FAILED` — kredi mutabakatı beklenmedik bir hatayla
@@ -2701,7 +2713,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-          description: Rate limit aşıldı (60 istek/dakika per API key)
+          description: "`RATE_LIMIT_EXCEEDED`: API anahtarı başına dakikada 10 zaman\
+            \ damgası isteği sınırı aşıldı. Genel dakikada 60 istek sınırı da ayrı\
+            ca geçerlidir."
         "500":
           content:
             application/json:

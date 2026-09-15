@@ -240,7 +240,7 @@ catch (ApiException e)
 | **402** | Kredi mutabakatı başarısız — sözleşme yayına GEÇMEZ, davet gönderilmez. &#x60;INSUFFICIENT_CREDITS&#x60; — hesabın/organizasyonun kredisi yetmiyor. &#x60;MEMBER_LIMIT_EXCEEDED&#x60; — organizasyon üyesinin aylık kredi limiti aşıldı (kredi havuzunda bakiye olsa bile).  |  -  |
 | **404** | Kayıt bulunamadı |  -  |
 | **409** | &#x60;DEMAND_EXPIRED&#x60; — sözleşmenin imza süresi geçmiş. &#x60;DEMAND_NOT_DISPATCHABLE&#x60; — tamamlanmış/iptal edilmiş sözleşme tekrar yayınlanamaz. &#x60;DISPATCH_NO_PARTIES&#x60; — sözleşmede hiç imzacı taraf yok. Zarf tamamlanamayacağı için yayına ALINMAZ; kredi dokunulmaz, statü değişmez, &#x60;demand.dispatched&#x60; olayı yayılmaz. Önce &#x60;POST /demands/{demandId}/parties&#x60; ile taraf ekleyin. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20&#39;yi aşıyor. İstek hiçbir yan etki bırakmadan reddedilir (kredi düşmez, sözleşme yayına geçmez); sözleşmeyi tarafları azaltarak gönderin veya davetleri &#x60;/parties/{partyId}/resend&#x60; ile tek tek yollayın.  |  -  |
-| **429** | Tekrar-gönderim hız sınırı aşıldı — bu uç &#x60;/parties/{partyId}/resend&#x60; ile AYNI anahtar-bazlı freni paylaşır.  |  -  |
+| **429** | Tekrar-gönderim hız sınırı aşıldı — bu uç &#x60;/parties/{partyId}/resend&#x60; ile AYNI anahtar-bazlı freni paylaşır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek. Gövdede &#x60;retry_after_seconds&#x60; döner.  |  -  |
 | **500** | &#x60;RECONCILE_FAILED&#x60; — kredi mutabakatı beklenmedik bir hatayla düştü. Sözleşme yayına GEÇMEZ ve davet gönderilmez; istek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1937,6 +1937,7 @@ catch (ApiException e)
 | **200** | Gönderildi |  -  |
 | **404** | Kayıt bulunamadı |  -  |
 | **409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş veya sıralı imzada sırası gelmemiş taraf   (&#x60;code&#x60; alanı yok) - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş  |  -  |
+| **429** | İki ayrı sınır vardır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek (dispatch ucuyla ortak sınır). Gövdede &#x60;retry_after_seconds&#x60; döner.  &#x60;RECIPIENT_RESEND_LIMIT&#x60;: aynı alıcıya saatte en fazla 3, günde en fazla 10 davet tekrarı gönderilebilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

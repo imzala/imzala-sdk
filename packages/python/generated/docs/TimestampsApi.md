@@ -305,7 +305,7 @@ Name | Type | Description  | Notes
 **403** | INSUFFICIENT_SCOPE — API key&#39;de timestamps scope yok |  -  |
 **415** | UNSUPPORTED_MIME_TYPE — Yüklenen dosyanın MIME türü zaman damgası allowlist&#39;inde değil (belge/görsel/ses/video dışı ya da içeriksiz &#x60;application/octet-stream&#x60;). İstemci doğru content-type göndermeli.  |  -  |
 **422** | İstek içeriği işlenemedi. Olası kodlar: - &#x60;BAD_BASE64&#x60; — &#x60;file_base64&#x60; geçerli standart Base64 değil - &#x60;STAMP_INVALID&#x60; — TSA yanıtı geçersiz zaman damgası döndü  |  -  |
-**429** | Rate limit aşıldı (60 istek/dakika per API key) |  -  |
+**429** | &#x60;RATE_LIMIT_EXCEEDED&#x60;: API anahtarı başına dakikada 10 zaman damgası isteği sınırı aşıldı. Genel dakikada 60 istek sınırı da ayrıca geçerlidir. |  -  |
 **500** | INDETERMINATE — Damga alındı ancak doğrulama sonucu belirsiz. Destek ekibiyle iletişime geçin.  |  -  |
 **503** | TSA_UNAVAILABLE — TÜBİTAK KAMU SM zaman damgası servisi geçici olarak erişilemiyor. Kısa süre sonra tekrar deneyin.  |  -  |
 
