@@ -4,7 +4,7 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ## 1.0.0
 
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.13`.
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.14`.
 
 **0.x'ten yükseltme, facade (`ImzalaClient` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
 
@@ -41,4 +41,4 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ### Üretilmiş istemciyi doğrudan kullananlar için
 
-Bu sürümde `Imzala\Client\Api` ve `Imzala\Client\Model` altındaki üretilmiş sınıflar API `1.8.13` spesifikasyonundan yeniden üretildi. Sözleşme oluşturma ve belge yükleme uçlarına eklenen opsiyonel `Idempotency-Key` parametresi, üretilen metod imzalarında mevcut parametrelerin **arasına** girer (yükleme: `$files`, `$parties`, `$idempotency_key`, `$order`, ...). Üretilmiş `apiV1DemandsUploadPost...` metodunu **konumsal** argümanlarla çağıran kod derlenmeye devam eder ama argümanlar bir kaydırılır: `order` anahtar, `title` sıra, `description` başlık olarak gider. İsimli argümanlara geçin ya da facade kullanın; facade isimli argümanlarla çağırır ve her yuva testle kilitlidir.
+Bu sürümde `Imzala\Client\Api` ve `Imzala\Client\Model` altındaki üretilmiş sınıflar API `1.8.14` spesifikasyonundan yeniden üretildi. Sözleşme oluşturma ve belge yükleme uçlarına eklenen opsiyonel `Idempotency-Key` parametresi, üretilen metod imzalarında mevcut parametrelerin **arasına** girer (yükleme: `$files`, `$parties`, `$idempotency_key`, `$order`, ...). Üretilmiş `apiV1DemandsUploadPost...` metodunu **konumsal** argümanlarla çağıran kod derlenmeye devam eder ama argümanlar bir kaydırılır: `order` anahtar, `title` sıra, `description` başlık olarak gider. İsimli argümanlara geçin ya da facade kullanın; facade isimli argümanlarla çağırır ve her yuva testle kilitlidir.

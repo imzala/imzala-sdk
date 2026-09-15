@@ -4,7 +4,7 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ## 1.0.0
 
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.13`.
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.14`.
 
 **0.x'ten yükseltme kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir.
 
