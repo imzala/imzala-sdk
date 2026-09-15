@@ -5,11 +5,11 @@
 openapi: 3.1.0
 info:
   title: imzala External API
-  version: 1.8.5
+  version: 1.8.6
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.5 · **Son güncelleme:** 2026-09-10
+    **Sürüm:** 1.8.6 · **Son güncelleme:** 2026-09-10
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -2805,6 +2805,7 @@ paths:
                 send_invitations:
                   oneOf:
                     - type: boolean
+                      default: true
                     - type: string
                       enum:
                         - 'true'
@@ -2818,7 +2819,6 @@ paths:
                         - 'no'
                         - hayir
                         - hayır
-                  default: true
                   description: |
                     Hangi kanaldan davet gideceğini **daraltır** (sözleşmenin
                     kendi bildirim ayarlarını AÇAMAZ, yalnız kapatabilir).
