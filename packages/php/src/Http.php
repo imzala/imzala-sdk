@@ -223,6 +223,18 @@ final class Http
      * @param (callable(float):void)|null $sleepMs waits the given milliseconds; defaults to {@see usleep()}. Injectable for tests.
      */
     /**
+     * A required idempotency key sent as a body field: it must be a non-empty
+     * printable ASCII string. Checked before the request is built.
+     */
+    public static function assertIdempotencyKey(string $value, string $name): void
+    {
+        if ($value === '') {
+            throw new ImzalaValidationException($name . ' is required and must be a non-empty string.');
+        }
+        self::assertHeaderValue($value, $name);
+    }
+
+    /**
      * Rejects a header value that is not printable ASCII before anything is
      * sent, as the same ImzalaValidationException in every SDK language.
      */

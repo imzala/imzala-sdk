@@ -8,6 +8,8 @@ use Imzala\Client\Api\DemandsApi;
 use Imzala\Client\Api\RemindersApi;
 use Imzala\Client\Model\ApiV1DemandsBulkPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsBulkPostRequest;
+use Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPost200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPostRequest;
 use Imzala\Client\Model\ApiV1DemandsGet200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest;
@@ -30,11 +32,46 @@ use SplFileObject;
  */
 final class DemandsResource
 {
+    private readonly EnvelopeDocumentsResource $documents;
+
     public function __construct(
         private readonly DemandsApi $api,
         private readonly RemindersApi $remindersApi,
         private readonly RetryConfig $retryConfig,
     ) {
+        $this->documents = new EnvelopeDocumentsResource($api, $retryConfig);
+    }
+
+    /** {@code $imzala->demands()->documents()->list($demandId)/create(...)/upload(...)/update(...)/delete(...)/reorder(...)/setAssignments(...)}: the documents of a multi-document envelope. */
+    public function documents(): EnvelopeDocumentsResource
+    {
+        return $this->documents;
+    }
+
+    /**
+     * Sends the demand for signing: reconciles credit, moves a {@code DRAFT}
+     * to {@code PENDING} and sends invitations. This is where credit is
+     * charged; the {@see self::documents()} methods charge nothing. Calling
+     * it again for a demand that is already out charges nothing more
+     * ({@code dispatched: false}). Throws for {@code DISPATCH_NO_PARTIES},
+     * {@code DISPATCH_TOO_MANY}, {@code QES_NOT_SUPPORTED_MULTI_DOCUMENT},
+     * {@code INSUFFICIENT_CREDITS} and others. No idempotency key, so never
+     * retried, not even after a 429. POST.
+     *
+     * @param bool|string|null $sendInvitations narrows which channels
+     *     invitations go out on. {@code null} (default) means the server
+     *     default (invitations on). {@code false}, {@code 'false'}, {@code '0'},
+     *     {@code 'off'}, {@code 'no'}, {@code 'hayir'}, {@code 'hayır'} send no
+     *     invitations; {@code 'email'} and {@code 'sms'} limit the channel. It
+     *     can only narrow the demand's own notification settings. An unknown
+     *     value throws {@code INVALID_SEND_INVITATIONS}.
+     */
+    public function dispatch(string $id, bool|string|null $sendInvitations = null): ApiV1DemandsDemandIdDispatchPost200ResponseData
+    {
+        $request = new ApiV1DemandsDemandIdDispatchPostRequest(
+            $sendInvitations === null ? [] : ['send_invitations' => $sendInvitations]
+        );
+        return Http::unwrap(fn () => $this->api->apiV1DemandsDemandIdDispatchPostWithHttpInfo($id, $request));
     }
 
     /**
