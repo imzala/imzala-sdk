@@ -153,7 +153,7 @@ Her callback, imza yüzeyinden gelen olayın payload'ını alır:
 
 | @imzala/embed-react | @imzala/embed | Konuştuğu API | Not |
 |---|---|---|---|
-| 1.0.0 | 1.0.0 | v1 (1.8.11) | React bileşeni `@imzala/embed` üzerine ince bir sarmalayıcıdır |
+| 1.0.0 | 1.0.0 | v1 (1.8.13) | React bileşeni `@imzala/embed` üzerine ince bir sarmalayıcıdır |
 
 İmza oturumu yine **sunucuda** üretilir; bileşene yalnız kısa ömürlü, tek kullanımlık `token` verilir. API anahtarı hiçbir koşulda tarayıcıya konmaz.
 
@@ -179,4 +179,5 @@ Gömülü imza **dijital imza (SES/AES)** üretir; her imza zaman damgalıdır. 
 
 - [`@imzala/embed`](../embed): altta kullanılan saf tarayıcı widget'ı (`EmbedOptions`, olay protokolü, hata kodları)
 - [`@imzala/node`](../node): backend'te embed token üretmek için server SDK
+- Değişiklik günlüğü: [CHANGELOG.md](./CHANGELOG.md)
 - [Monorepo README](../../README.md): tüm paketler ve genel desen

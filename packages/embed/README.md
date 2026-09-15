@@ -189,7 +189,7 @@ Varsayılan olarak (`autoResize: true`) iframe başlangıçta `600px`'tir; imza 
 
 | @imzala/embed | Konuştuğu API | Not |
 |---|---|---|
-| 1.0.0 | v1 (1.8.11) | Gömülü imza oturumu sunucuda `@imzala/node` (veya diğer sunucu SDK'ları) ile üretilir |
+| 1.0.0 | v1 (1.8.13) | Gömülü imza oturumu sunucuda `@imzala/node` (veya diğer sunucu SDK'ları) ile üretilir |
 
 Bu paketin yüzeyi (iframe ve `postMessage` olayları) API sürümünden bağımsızdır; tarayıcıya yalnız kısa ömürlü, tek kullanımlık embed token'ı iner. API anahtarı hiçbir koşulda tarayıcıya konmaz.
 
@@ -215,4 +215,5 @@ React (özellikle Next.js App Router) kullanıyorsanız, bu widget'ı bir `<Imza
 - [`@imzala/node`](../node): imza oturumunu (`embed.createSession`) üreten sunucu SDK'sı
 - [`@imzala/embed-react`](../embed-react): React sarmalayıcı bileşeni
 - Çalışan örnek: [`examples/embed`](../../examples/embed)
+- Değişiklik günlüğü: [CHANGELOG.md](./CHANGELOG.md)
 - [Monorepo README](../../README.md)
