@@ -116,3 +116,22 @@ for entry in "${LANG_TABLE[@]}"; do
 done
 
 echo "[generate] all requested targets complete"
+
+# Each output dir is wiped and regenerated, so a model the generator no
+# longer emits simply disappears. For anyone calling the generated client
+# directly that is a breaking change, and it can come from an innocent spec
+# edit: the generator merges structurally identical inline schemas and names
+# the result after the first endpoint it meets, so an existing model can be
+# renamed (removed + added) without any schema of its own changing. Stop
+# here so the spec gets fixed (usually: give the schema a name), unless the
+# removal is intended.
+removed="$(git -C "$REPO_ROOT" ls-files --deleted -- 'packages/*/generated/*' 2>/dev/null || true)"
+if [ -n "$removed" ]; then
+  echo "[generate] ERROR: tracked generated files were not regenerated:" >&2
+  echo "$removed" | sed 's/^/  /' >&2
+  echo "[generate] Removing or renaming a generated model breaks callers of the generated client." >&2
+  echo "[generate] Fix the spec, or re-run with ALLOW_GENERATED_REMOVALS=1 if the removal is intended." >&2
+  if [ "${ALLOW_GENERATED_REMOVALS:-}" != "1" ]; then
+    exit 1
+  fi
+fi
