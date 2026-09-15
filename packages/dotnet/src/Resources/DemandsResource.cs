@@ -30,19 +30,58 @@ public sealed class DemandsResource
     }
 
     /// <summary>
-    /// Creates a new demand (contract) from a template. POST — never
-    /// auto-retried (a retried create would produce a duplicate demand).
+    /// Creates a new demand (contract) from a template, without an idempotency
+    /// key: a single attempt, never retried (a retried create would produce a
+    /// duplicate demand). See <see cref="CreateAsync(CreateDemandRequest, string?, CancellationToken)"/>.
     /// </summary>
     public Task<CreatedDemand> CreateAsync(CreateDemandRequest body, CancellationToken cancellationToken = default) =>
-        Http.Unwrap(_api.ApiV1DemandsPostAsync(body, idempotencyKey: null, cancellationToken: cancellationToken), r => r.Success, r => r.Data);
+        CreateAsync(body, idempotencyKey: null, cancellationToken);
+
+    /// <summary>
+    /// Creates a new demand (contract) from a template.
+    ///
+    /// Without <paramref name="idempotencyKey"/> this is a single attempt: a
+    /// retried create would produce a duplicate demand. With a key, a repeated
+    /// request does not create a second demand, so one retry is made after a 429
+    /// (waiting Retry-After, at most 60 s). A key reused with a different body
+    /// throws <c>IDEMPOTENCY_KEY_REUSED</c>. An <c>expiry_date</c> that is not a
+    /// real calendar day throws <c>INVALID_EXPIRY_DATE</c>.
+    /// </summary>
+    /// <param name="body">The demand to create.</param>
+    /// <param name="idempotencyKey">Your own reference for this request (e.g. an order number), sent as the <c>Idempotency-Key</c> header; <c>null</c> for none.</param>
+    /// <param name="cancellationToken">Cancellation token, also honoured while waiting for the retry.</param>
+    public Task<CreatedDemand> CreateAsync(CreateDemandRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        Http.UnwrapIdempotentWrite(
+            () => _api.ApiV1DemandsPostAsync(createDemandRequest: body, idempotencyKey: idempotencyKey, cancellationToken: cancellationToken),
+            r => r.Success,
+            r => r.Data,
+            idempotencyKey,
+            _retry,
+            cancellationToken);
+
+    /// <summary>
+    /// Creates up to 10 demands from one template in a single request. Rows are
+    /// created independently; check <c>Failed</c> and each result's <c>Status</c>.
+    /// More than 10 rows throws <c>BULK_MAX_10</c>: split larger lists yourself.
+    ///
+    /// This endpoint has no idempotency key, so it is never retried: a retried
+    /// batch would create the demands again. POST.
+    /// </summary>
+    public Task<ApiV1DemandsBulkPost200ResponseData> CreateBulkAsync(ApiV1DemandsBulkPostRequest body, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(
+            _api.ApiV1DemandsBulkPostAsync(apiV1DemandsBulkPostRequest: body, xWorkspaceId: null, cancellationToken: cancellationToken),
+            r => r.Success,
+            r => r.Data);
 
     /// <summary>Returns a demand's status + per-party signing progress. GET — safe to auto-retry.</summary>
     public Task<DemandStatus> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.UnwrapRetryableGet(() => _api.ApiV1DemandsIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry);
+        Http.UnwrapRetryableGet(() => _api.ApiV1DemandsIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
 
     /// <summary>
     /// Places (replaces) signature/form fields on a demand's pages.
     /// See <see cref="UpsertItemsRequest.PageIds"/> for full-replace vs per-page-replace semantics.
+    /// Every item needs an integer <c>page_id</c> (<c>PAGE_ID_REQUIRED</c>); an
+    /// unknown <c>item_type</c> throws <c>INVALID_ITEM_TYPE</c>. POST, never auto-retried.
     /// </summary>
     public Task<UpsertItemsResponseData> AddItemsAsync(Guid id, UpsertItemsRequest body, CancellationToken cancellationToken = default) =>
         Http.Unwrap(_api.ApiV1DemandsIdItemsPostAsync(id, body, cancellationToken), r => r.Success, r => r.Data);
@@ -50,26 +89,41 @@ public sealed class DemandsResource
     /// <summary>
     /// Creates a demand directly from an uploaded document (no template) — a
     /// single PDF/DOC/DOCX/ODT/RTF/TXT, or 1-20 images merged into one PDF.
+    ///
+    /// Without <see cref="UploadDemandParams.IdempotencyKey"/> this is a single
+    /// attempt. With a key, one retry is made after a 429 (waiting Retry-After, at
+    /// most 60 s). Signing invitations are not sent unless
+    /// <see cref="UploadDemandParams.SendInvitations"/> asks for them. POST.
     /// </summary>
     public Task<CreatedDemandUpload> UploadDocumentAsync(UploadDemandParams request, CancellationToken cancellationToken = default)
     {
-        var files = request.Files.Select(f => f.ToFileParameter()).ToList();
         var partiesJson = JsonSerializer.Serialize(request.Parties, PartiesJsonOptions);
         var orderJson = request.Order is not null ? JsonSerializer.Serialize(request.Order) : null;
+        var force = request.Force ? "true" : null;
 
-        return Http.Unwrap(
-            // Named arguments: the generated signature puts idempotencyKey between
-            // parties and order, so positional arguments would shift every later slot.
-            _api.ApiV1DemandsUploadPostAsync(
-                files: files,
+        return Http.UnwrapIdempotentWrite(
+            // Named arguments: the generated signature inserts new optional
+            // parameters between existing ones and several share a type, so a
+            // shifted positional argument would still compile. The file streams
+            // are rebuilt on every attempt: a retry cannot resend a stream the
+            // first attempt already read.
+            () => _api.ApiV1DemandsUploadPostAsync(
+                files: request.Files.Select(f => f.ToFileParameter()).ToList(),
                 parties: partiesJson,
-                idempotencyKey: null,
+                idempotencyKey: request.IdempotencyKey,
                 order: orderJson,
                 title: request.Title,
                 description: request.Description,
+                fieldTemplateId: request.FieldTemplateId,
+                force: force,
+                sendInvitations: request.SendInvitations,
+                onAnchorMiss: request.OnAnchorMiss,
                 cancellationToken: cancellationToken),
             r => r.Success,
-            r => r.Data);
+            r => r.Data,
+            request.IdempotencyKey,
+            _retry,
+            cancellationToken);
     }
 
     /// <summary>
@@ -77,6 +131,9 @@ public sealed class DemandsResource
     /// Independent of the template/demand's scheduled <c>reminder_settings</c>.
     /// Subject to a 5-minute anti-spam window (override with <c>Force = true</c>)
     /// and a hard per-person cap of 3 reminders per channel (not overridable).
+    /// The anti-spam window answers 429 <c>RATE_LIMITED</c>. A draft, completed,
+    /// cancelled or expired demand throws 409 (<c>DEMAND_NOT_DISPATCHED</c>,
+    /// <c>DEMAND_NOT_DISPATCHABLE</c>, <c>DEMAND_EXPIRED</c>). POST, never auto-retried.
     ///
     /// Routes through <c>RemindersApi</c>, not <c>DemandsApi</c> — the OpenAPI
     /// spec groups <c>POST /api/v1/demands/{id}/reminders</c> under a
@@ -116,10 +173,11 @@ public sealed class DemandsResource
         string? sort = null,
         CancellationToken cancellationToken = default) =>
         Http.UnwrapRetryableGet(
-            () => _api.ApiV1DemandsGetAsync(status, q, from, to, templateId, page, limit, sort, cancellationToken),
+            () => _api.ApiV1DemandsGetAsync(status: status, q: q, from: from, to: to, templateId: templateId, page: page, limit: limit, sort: sort, cancellationToken: cancellationToken),
             r => r.Success,
             r => r.Data,
-            _retry);
+            _retry,
+            cancellationToken);
 
     /// <summary>
     /// Downloads the signed contract PDF (only once <c>Status == COMPLETED</c>) as
@@ -128,6 +186,16 @@ public sealed class DemandsResource
     /// </summary>
     public Task<byte[]> GetPdfAsync(Guid id, CancellationToken cancellationToken = default) =>
         Http.UnwrapBinary(_api.ApiV1DemandsIdPdfGetAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Downloads the PDF of one document in a multi-document envelope as raw
+    /// bytes. For the whole contract use <see cref="GetPdfAsync"/>. GET.
+    /// </summary>
+    /// <param name="id">The demand (envelope).</param>
+    /// <param name="documentId">The document inside it.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public Task<byte[]> GetDocumentPdfAsync(Guid id, Guid documentId, CancellationToken cancellationToken = default) =>
+        Http.UnwrapBinary(_api.ApiV1DemandsIdBelgeDocumentIdPdfGetAsync(id: id, documentId: documentId, cancellationToken: cancellationToken));
 
     /// <summary>
     /// Downloads the completion certificate (PAdES B-T sealed audit document) as
@@ -143,7 +211,7 @@ public sealed class DemandsResource
     /// IP/device. GET — safe to auto-retry.
     /// </summary>
     public Task<ApiV1DemandsIdTimelineGet200ResponseData> GetTimelineAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.UnwrapRetryableGet(() => _api.ApiV1DemandsIdTimelineGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry);
+        Http.UnwrapRetryableGet(() => _api.ApiV1DemandsIdTimelineGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
 
     /// <summary>
     /// Cancels (voids) a pending demand — sets it to <c>CANCELLED</c> and stops any

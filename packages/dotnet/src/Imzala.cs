@@ -21,7 +21,7 @@ namespace ImzalaSdk;
 /// <example>
 /// <code>
 /// var imzala = new Imzala(Environment.GetEnvironmentVariable("IMZALA_API_KEY")!);
-/// var demand = await imzala.Demands.CreateAsync(new CreateDemandRequest(templateId, partyMapping));
+/// var demand = await imzala.Demands.CreateAsync(new CreateDemandRequest(templateId: templateId, partyMapping: partyMapping));
 /// </code>
 /// </example>
 /// </summary>
@@ -41,8 +41,17 @@ public sealed class Imzala
     /// <summary><c>imzala.Embed.*</c> — embedded (iframe) signing session minting.</summary>
     public EmbedResource Embed { get; }
 
-    /// <summary><c>imzala.Timestamps.*</c> — RFC 3161 timestamping.</summary>
+    /// <summary><c>imzala.Timestamps.*</c>: RFC 3161 timestamping, listing and lookup.</summary>
     public TimestampsResource Timestamps { get; }
+
+    /// <summary><c>imzala.FieldTemplates.*</c>: list/get/previewLayout.</summary>
+    public FieldTemplatesResource FieldTemplates { get; }
+
+    /// <summary><c>imzala.Contacts.*</c>: list/listAll/create.</summary>
+    public ContactsResource Contacts { get; }
+
+    /// <summary><c>imzala.Reports.*</c>: aggregate demand counts.</summary>
+    public ReportsResource Reports { get; }
 
     private readonly AccountResource _account;
 
@@ -52,8 +61,9 @@ public sealed class Imzala
     /// <param name="maxRetries">
     /// Max auto-retry attempts for safe, idempotent <b>GET</b> requests that fail with 429
     /// (rate limited) or 5xx (server error). Defaults to 2. Set to <c>0</c> to disable.
-    /// Writes (<c>Demands.CreateAsync</c>, <c>SendReminderAsync</c>, ...) are never retried,
-    /// regardless of this setting — see the SDK README.
+    /// Writes (<c>Demands.CreateAsync</c>, <c>SendReminderAsync</c>, ...) are never retried by
+    /// this setting. A write sent with an idempotency key is retried once after a 429,
+    /// independently of it; see the SDK README.
     /// </param>
     /// <param name="retryBaseDelayMs">Base delay (ms) for the exponential backoff between retries. Defaults to 300.</param>
     public Imzala(
@@ -90,10 +100,13 @@ public sealed class Imzala
         Templates = new TemplatesResource(templatesApi, retryConfig);
         Demands = new DemandsResource(demandsApi, remindersApi, retryConfig);
         Embed = new EmbedResource(demandsApi);
-        Timestamps = new TimestampsResource(timestampsApi);
+        Timestamps = new TimestampsResource(timestampsApi, retryConfig);
+        FieldTemplates = new FieldTemplatesResource(templatesApi, demandsApi, retryConfig);
+        Contacts = new ContactsResource(new ContactsApi(configuration), retryConfig);
+        Reports = new ReportsResource(new ReportsApi(configuration), retryConfig);
     }
 
-    /// <summary>Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the <c>timestamps</c> scope.</summary>
+    /// <summary>Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required.</summary>
     public Task<ApiV1MeGet200ResponseData> MeAsync(CancellationToken cancellationToken = default) =>
         _account.MeAsync(cancellationToken);
 

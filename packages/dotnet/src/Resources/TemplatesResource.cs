@@ -16,21 +16,25 @@ public sealed class TemplatesResource
         _retry = retry;
     }
 
-    /// <summary>Lists your active templates (one page). GET — safe to auto-retry.</summary>
+    /// <summary>
+    /// Lists your active templates (one page). <paramref name="limit"/> is clamped to
+    /// 1..100; <paramref name="page"/> below 1 throws <c>INVALID_PAGE</c>. GET, safe to auto-retry.
+    /// </summary>
     public Task<ApiV1TemplatesGet200ResponseData> ListAsync(int? page = null, int? limit = null, CancellationToken cancellationToken = default) =>
         Http.UnwrapRetryableGet(
             () => _api.ApiV1TemplatesGetAsync(page, limit, cancellationToken),
             r => r.Success,
             r => r.Data,
-            _retry);
+            _retry,
+            cancellationToken);
 
     /// <summary>Returns a template's parties + fillable variables. GET — safe to auto-retry.</summary>
     public Task<TemplateDetail> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry);
+        Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
 
     /// <summary>Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. GET — safe to auto-retry.</summary>
     public Task<TemplateUsage> UsageAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdUsageGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry);
+        Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdUsageGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
 
     /// <summary>
     /// Walks every page of your active templates, transparently, yielding one
@@ -106,8 +110,10 @@ public sealed class TemplatesResource
             r => r.Data);
 
     /// <summary>
-    /// Deletes (soft-deletes) a template. Existing demands created from it are
-    /// unaffected. DELETE — never auto-retried.
+    /// Deletes a template. The record is not erased immediately: it is marked
+    /// deleted and kept for 30 days. Existing demands created from it are
+    /// unaffected. A template with active (draft or pending) demands cannot be
+    /// deleted and throws <c>TEMPLATE_IN_USE</c>. DELETE, never auto-retried.
     /// </summary>
     public Task<ApiV1TemplatesIdDelete200ResponseData> DeleteAsync(Guid id, CancellationToken cancellationToken = default) =>
         Http.Unwrap(_api.ApiV1TemplatesIdDeleteAsync(id, cancellationToken), r => r.Success, r => r.Data);

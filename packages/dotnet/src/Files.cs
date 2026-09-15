@@ -44,6 +44,14 @@ public sealed class UploadPartyInput
     /// <summary>E.164 format (e.g. <c>"+905551234567"</c>).</summary>
     [JsonPropertyName("phone")]
     public string? Phone { get; init; }
+
+    /// <summary>
+    /// Field template role for this party, sent as <c>template_party_id</c>. Required on
+    /// every party when <see cref="UploadDemandParams.FieldTemplateId"/> is set; each role
+    /// of the template must be mapped exactly once.
+    /// </summary>
+    [JsonPropertyName("template_party_id")]
+    public Guid? TemplatePartyId { get; init; }
 }
 
 /// <summary>Parameters for <c>Demands.UploadDocumentAsync</c> — creates a demand directly from an uploaded document (no template).</summary>
@@ -60,6 +68,45 @@ public sealed class UploadDemandParams
     public string? Title { get; init; }
 
     public string? Description { get; init; }
+
+    /// <summary>
+    /// Makes the upload safe to retry: a second request with the same key does not
+    /// create a second demand. With a key, one retry is made after a 429.
+    /// </summary>
+    public string? IdempotencyKey { get; init; }
+
+    /// <summary>
+    /// Field template (<c>kind: FIELD_LAYOUT</c>) whose layout is applied to the upload.
+    /// The upload must then be a single PDF, and every party needs
+    /// <see cref="UploadPartyInput.TemplatePartyId"/>. The layout is resolved before the
+    /// demand is created or credit is spent; a 422 creates nothing. Dry-run first with
+    /// <c>FieldTemplates.PreviewLayoutAsync</c>.
+    /// </summary>
+    public Guid? FieldTemplateId { get; init; }
+
+    /// <summary>
+    /// <c>"block"</c> or <c>"drop"</c>; only with a field template. Can tighten the
+    /// template, never relax it: omitted means <c>block</c>; <c>drop</c> applies only if
+    /// every affected field is already set to drop in the template (otherwise
+    /// <c>block</c> is used and the response carries an <c>ON_ANCHOR_MISS_NOT_RELAXED</c>
+    /// warning). Signature fields are never dropped.
+    /// </summary>
+    public string? OnAnchorMiss { get; init; }
+
+    /// <summary>
+    /// Sends signing invitations in the same request. <b>Off by default on this
+    /// endpoint.</b> <c>"true"</c> or <c>"all"</c> uses every channel, <c>"email"</c>
+    /// limits it to e-mail, <c>"sms"</c> to phone channels (SMS and WhatsApp),
+    /// <c>"false"</c> sends nothing. It can only narrow: a channel switched off in the
+    /// demand's or party's notification settings is not turned back on.
+    /// </summary>
+    public string? SendInvitations { get; init; }
+
+    /// <summary>
+    /// Deliberately bypass the duplicate check (<c>DUPLICATE_SUSPECTED</c>). Only
+    /// meaningful for calls without an idempotency key.
+    /// </summary>
+    public bool Force { get; init; }
 }
 
 /// <summary>Parameters for <c>Timestamps.CreateAsync</c>.</summary>
