@@ -6,7 +6,7 @@ declare(strict_types=1);
 // zaman damgası hizmeti: damga al, damgaları listele, tek kaydı getir.
 // Kapsam: timestamps. Damga almak kredi harcar (yorumda); liste ve getirme harcamaz.
 //
-// Damga elektronik imza DEĞİLDİR: dosyayı kimin yazdığını ya da kimin sahiplendiğini
+// Damga dijital imza DEĞİLDİR: dosyayı kimin yazdığını ya da kimin sahiplendiğini
 // kanıtlamaz; yalnız var olma ve değişmezlik kanıtıdır. owner alanları bilgilendirme
 // amaçlıdır ve API tarafından doğrulanmaz.
 

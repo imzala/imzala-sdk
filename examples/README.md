@@ -12,11 +12,11 @@ kapsamları (`scope`) ister, ne harcar.
 | `IMZALA_BASE_URL` | Varsayılan `https://api-prd.imzala.org`. Test için `https://test-api.imzala.org` |
 | `IMZALA_WEBHOOK_SECRET` | Senaryo 01: webhook imza doğrulaması için `whsec_...` gizli anahtarı (isteğe bağlı) |
 | `IMZALA_WEBHOOK_SIGNATURE` | Senaryo 01: doğrulanacak `X-Imzala-Signature-256` başlık değeri (isteğe bağlı) |
-| `IMZALA_TEMPLATE_ID` | Senaryo 01 ve 05: kullanılacak şablon (verilmezse listedeki ilk şablon) |
+| `IMZALA_TEMPLATE_ID` | Senaryo 01 ve 05: kullanılacak şablon (verilmezse listedeki ilk şablon); Senaryo 06: taslak oluşturma adımının şablonu |
 | `IMZALA_FIELD_TEMPLATE_ID` | Senaryo 02: kullanılacak Alan Şablonu (verilmezse listedeki ilk kayıt) |
 | `IMZALA_PDF_PATH` | Senaryo 02 ve 03: kuru koşum ve damga için PDF dosyası (varsayılan `ornek-sozlesme.pdf`) |
 | `IMZALA_TIMESTAMP_ID` | Senaryo 03: getirilecek damga kaydı (verilmezse listedeki ilk kayıt) |
-| `IMZALA_DEMAND_ID` | Senaryo 06: zarf olarak incelenecek sözleşme (verilmezse listedeki ilk sözleşme) |
+| `IMZALA_DEMAND_ID` | Senaryo 06: zarf olarak incelenecek sözleşme (verilmezse listedeki ilk sözleşme); panelden oluşturduğunuz taslağı da bu değişkenle verebilirsiniz |
 
 Tüm kimlikler UUID biçimindedir; panelden ya da liste yanıtlarından kopyalayın.
 
@@ -29,7 +29,7 @@ Tüm kimlikler UUID biçimindedir; panelden ya da liste yanıtlarından kopyalay
 | 03 | Zaman damgası | Dosyanın var olma ve değişmezlik kanıtı olarak damga al, damgaları listele, tek kaydı getir | `timestamps` | Evet (yorumda) |
 | 04 | Kişiler ve raporlar | Adres defterini sayfalı gez, kişi oluştur (`CONTACT_DUPLICATE` yakala), durum sayımlarını al | `contacts:read`, `contacts:write`, `demands:read` | Hayır |
 | 05 | Toplu ve tekrar koruma | 10'arlı parçalarla toplu oluşturma, `Idempotency-Key`, istek limiti (429) davranışı | `templates:read`, `demands:write` | Evet (yorumda) |
-| 06 | Zarf | Çok belgeli zarf: taslak, sözleşme + KVKK belgeleri, atama, sıralama, gönderim, belge PDF'i | `demands:write`, `demands:read` | Evet (yalnız gönderim adımında, yorumda) |
+| 06 | Zarf | Çok belgeli zarf: taslak, sözleşme + KVKK belgeleri, atama, sıralama, gönderim, belge PDF'i | `demands:write`, `demands:read` | Evet (taslak oluşturma ve gönderim adımlarında, yorumda; belge uçları harcamaz) |
 
 ## Diller
 

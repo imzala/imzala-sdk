@@ -17,16 +17,23 @@ $imzala = $baseUrl
     ? new ImzalaClient((string) getenv('IMZALA_API_KEY'), $baseUrl)
     : new ImzalaClient((string) getenv('IMZALA_API_KEY'));
 
-// 1) Davet göndermeden taslak sözleşme oluştur. Davetlerin oluşturma anında
-//    ÇIKMAMASI için gövdede dispatch_notifications: false gönderilir; her şey hazır
-//    olunca 6. adımdaki dispatch ile tek seferde gönderilir. Bu alan dispatch ucunun
-//    belgelerinde anlatılır; bu sürümün tipli CreateDemandRequest modeli alanı henüz
-//    taşımadığından (dizi geçilse de düşer) taslağı panelden ya da doğrudan HTTP ile
-//    oluşturup kimliğini IMZALA_DEMAND_ID ile verin. Aşağıdaki adımlar o taslak
-//    üzerinde aynen çalışır. Kişiler kurgusaldır.
+// 1) Davet göndermeden taslak sözleşme oluştur. dispatch_notifications: false ile
+//    davetler oluşturma anında ÇIKMAZ; her şey hazır olunca 6. adımdaki dispatch
+//    ile tek seferde gönderilir. Kişiler kurgusaldır; rol id'si şablon detayından
+//    (templates()->get()) gelir. Taslağı panelden oluşturduysanız bu adımı atlayıp
+//    kimliğini IMZALA_DEMAND_ID ile verebilirsiniz.
 //
-// $zarfId = (string) getenv('IMZALA_DEMAND_ID');
-// $partyId = ($imzala->demands()->get($zarfId)->getParties()[0] ?? null)?->getPartyId();
+// $taslak = $imzala->demands()->create(
+//     [
+//         'template_id' => (string) getenv('IMZALA_TEMPLATE_ID'),
+//         'title' => 'Üyelik sözleşmesi ve KVKK belgeleri',
+//         'dispatch_notifications' => false,
+//         'party_mapping' => [['template_party_id' => '<şablon detayından rol id>', 'first_name' => 'Ayşe', 'last_name' => 'Yılmaz', 'email' => 'ayse@example.com', 'phone' => '+905551112233']],
+//     ],
+//     bin2hex(random_bytes(16)),
+// );
+// $zarfId = $taslak->getId();
+// $partyId = $taslak->getSigningUrls()[0]->getPartyId();
 
 // 2) Ana sözleşmeyi dosya olarak yükle (doc_kind CONTRACT). Belge başına TEK dosya,
 //    her belge için ayrı çağrı. idempotencyKey ZORUNLUDUR ve gövde alanı olarak

@@ -13,16 +13,24 @@ internal sealed class Zarf : ISenaryo
 
     public async Task CalistirAsync(Imzala imzala)
     {
-        // 1) Davet göndermeden taslak sözleşme oluştur. Davetlerin oluşturma anında
-        //    ÇIKMAMASI için gövdede dispatch_notifications: false gönderilir; her şey hazır
-        //    olunca 6. adımdaki dispatch ile tek seferde gönderilir. Bu alan dispatch ucunun
-        //    belgelerinde anlatılır; bu sürümün tipli CreateDemandRequest modeli alanı henüz
-        //    taşımadığından taslağı panelden ya da doğrudan HTTP ile oluşturup kimliğini
-        //    IMZALA_DEMAND_ID ile verin. Aşağıdaki adımlar o taslak üzerinde aynen çalışır.
-        //    Kişiler kurgusaldır.
+        // 1) Davet göndermeden taslak sözleşme oluştur. dispatchNotifications: false ile
+        //    davetler oluşturma anında ÇIKMAZ; her şey hazır olunca 6. adımdaki dispatch
+        //    ile tek seferde gönderilir. Kişiler kurgusaldır; rol id'si şablon detayından
+        //    (Templates.GetAsync) gelir. Taslağı panelden oluşturduysanız bu adımı atlayıp
+        //    kimliğini IMZALA_DEMAND_ID ile verebilirsiniz.
         //
-        // var zarfId = Guid.Parse(Ortam.Oku("IMZALA_DEMAND_ID")!);
-        // var partyId = (await imzala.Demands.GetAsync(zarfId)).Parties[0].PartyId;
+        // var taslak = await imzala.Demands.CreateAsync(
+        //     new CreateDemandRequest(
+        //         templateId: Guid.Parse(Ortam.Oku("IMZALA_TEMPLATE_ID")!),
+        //         title: "Üyelik sözleşmesi ve KVKK belgeleri",
+        //         dispatchNotifications: false,
+        //         partyMapping: new List<PartyMappingInput>
+        //         {
+        //             new(templatePartyId: Guid.Parse("<şablon detayından rol id>"), firstName: "Ayşe", lastName: "Yılmaz", email: "ayse@example.com", phone: "+905551112233"),
+        //         }),
+        //     Guid.NewGuid().ToString());
+        // var zarfId = taslak.Id;
+        // var partyId = taslak.SigningUrls[0].PartyId;
 
         // 2) Ana sözleşmeyi dosya olarak yükle (doc_kind CONTRACT). Belge başına TEK dosya,
         //    her belge için ayrı çağrı. IdempotencyKey ZORUNLUDUR ve gövde alanı olarak

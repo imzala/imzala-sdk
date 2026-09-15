@@ -13,8 +13,10 @@ import org.imzala.ListDemandsParams;
 import org.imzala.UploadEnvelopeDocumentParams;
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsGet200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsPostRequest;
+import org.imzala.client.generated.model.CreateDemandRequest;
 import org.imzala.client.generated.model.DemandStatus;
 import org.imzala.client.generated.model.EnvelopeDocument;
+import org.imzala.client.generated.model.PartyMappingInput;
 
 /**
  * Çok belgeli zarf: KVKK aydınlatma + açık rıza + ön bilgilendirme ile sözleşme toplama akışı.
@@ -26,16 +28,23 @@ public final class Zarf {
   public static void main(String[] args) throws IOException {
     Imzala imzala = Ornek.istemci();
 
-    // 1) Davet göndermeden taslak sözleşme oluştur. Davetlerin oluşturma anında
-    //    ÇIKMAMASI için gövdede dispatch_notifications: false gönderilir; her şey hazır
-    //    olunca 6. adımdaki dispatch ile tek seferde gönderilir. Bu alan dispatch ucunun
-    //    belgelerinde anlatılır; bu sürümün tipli CreateDemandRequest modeli alanı henüz
-    //    taşımadığından taslağı panelden ya da doğrudan HTTP ile oluşturup kimliğini
-    //    IMZALA_DEMAND_ID ile verin. Aşağıdaki adımlar o taslak üzerinde aynen çalışır.
-    //    Kişiler kurgusaldır.
+    // 1) Davet göndermeden taslak sözleşme oluştur. dispatchNotifications(false) ile
+    //    davetler oluşturma anında ÇIKMAZ; her şey hazır olunca 6. adımdaki dispatch
+    //    ile tek seferde gönderilir. Kişiler kurgusaldır; rol id'si şablon detayından
+    //    (templates().get()) gelir. Taslağı panelden oluşturduysanız bu adımı atlayıp
+    //    kimliğini IMZALA_DEMAND_ID ile verebilirsiniz.
     //
-    // UUID zarfId = UUID.fromString(Ornek.ortam("IMZALA_DEMAND_ID"));
-    // UUID partyId = imzala.demands().get(zarfId).getParties().get(0).getPartyId();
+    // var taslak = imzala.demands().create(
+    //     new CreateDemandRequest()
+    //         .templateId(UUID.fromString(Ornek.ortam("IMZALA_TEMPLATE_ID")))
+    //         .title("Üyelik sözleşmesi ve KVKK belgeleri")
+    //         .dispatchNotifications(false)
+    //         .partyMapping(List.of(new PartyMappingInput()
+    //             .templatePartyId(UUID.fromString("<şablon detayından rol id>"))
+    //             .firstName("Ayşe").lastName("Yılmaz").email("ayse@example.com").phone("+905551112233"))),
+    //     UUID.randomUUID().toString());
+    // UUID zarfId = taslak.getId();
+    // UUID partyId = taslak.getSigningUrls().get(0).getPartyId();
 
     // 2) Ana sözleşmeyi dosya olarak yükle (doc_kind CONTRACT). Belge başına TEK dosya,
     //    her belge için ayrı çağrı. idempotencyKey ZORUNLUDUR ve gövde alanı olarak

@@ -17,8 +17,9 @@ imzala = Imzala(
 
 # 1) Davet göndermeden taslak sözleşme oluştur. dispatch_notifications: False ile
 #    davetler oluşturma anında ÇIKMAZ; her şey hazır olunca 6. adımdaki dispatch
-#    ile tek seferde gönderilir. Bu alan dispatch ucunun belgelerinde anlatılır;
-#    gövde sözlük olarak olduğu gibi gönderilir. Kişiler kurgusaldır.
+#    ile tek seferde gönderilir. Kişiler kurgusaldır; rol id'si şablon detayından
+#    (templates.get) gelir. Taslağı panelden oluşturduysanız bu adımı atlayıp
+#    kimliğini IMZALA_DEMAND_ID ile verebilirsiniz.
 #
 # taslak = imzala.demands.create(
 #     {
