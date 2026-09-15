@@ -162,6 +162,39 @@ describe('demands: new write options', () => {
     });
   });
 
+  it('uploadDocument with an idempotencyKey is retried once after 429', async () => {
+    const spy = vi
+      .spyOn(DemandsApi.prototype, 'apiV1DemandsUploadPost')
+      .mockRejectedValueOnce(rateLimited())
+      .mockResolvedValueOnce(ok({ id: 'd3' }, 201));
+    await expect(
+      client().demands.uploadDocument({
+        files: [pdf],
+        parties: [{ first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com' }],
+        idempotencyKey: 'up-2',
+      }),
+    ).resolves.toEqual({ id: 'd3' });
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('uploadDocument without an idempotencyKey is a single attempt on 429', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsUploadPost').mockRejectedValue(rateLimited());
+    await expect(
+      client().demands.uploadDocument({ files: [pdf], parties: [{ first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com' }] }),
+    ).rejects.toBeInstanceOf(ImzalaRateLimitError);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('uploadDocument with a field template accepts template_party_id on parties', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsUploadPost').mockResolvedValue(ok({ id: 'd4' }, 201));
+    await client().demands.uploadDocument({
+      files: [pdf],
+      fieldTemplateId: 'ft1',
+      parties: [{ first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com', template_party_id: 'role-1' }],
+    });
+    expect(JSON.parse((spy.mock.calls[0][0] as any).parties)[0].template_party_id).toBe('role-1');
+  });
+
   it('uploadDocument omits force when not requested', async () => {
     const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsUploadPost').mockResolvedValue(ok({ id: 'd2' }, 201));
     await client().demands.uploadDocument({ files: [pdf], parties: [{ first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com' }] });

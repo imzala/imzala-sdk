@@ -101,7 +101,7 @@ export interface ImzalaOptions {
    * with 429 (rate limited) or 5xx (server error). Defaults to 2. Set to
    * `0` to disable. Writes (`demands.create`, `sendReminder`, ...) are
    * never retried by this setting. A write sent with an idempotency key is
-   * retried once after a 429, independently of it — see the SDK README.
+   * retried once after a 429, independently of it; see the SDK README.
    */
   maxRetries?: number;
   /** Base delay (ms) for the exponential backoff between retries. Defaults to 300. */
@@ -143,7 +143,7 @@ export interface ListFieldTemplatesParams {
 }
 
 export interface PreviewLayoutParams {
-  /** The PDF to try the layout on. */
+  /** Exactly one PDF to try the layout on (the field is a list on the wire). */
   files: FileInput[];
   /** See `UploadDemandParams.onAnchorMiss`. */
   onAnchorMiss?: 'block' | 'drop';
@@ -152,6 +152,7 @@ export interface PreviewLayoutParams {
 export interface ListContactsParams {
   q?: string;
   page?: number;
+  /** 10 to 100, default 25. */
   limit?: number;
   sort?: string;
   companyId?: string;
@@ -186,7 +187,7 @@ class TemplatesResource {
 
   /**
    * Lists your active templates (one page). `limit` is clamped to 1..100;
-   * `page` below 1 throws `INVALID_PAGE`. GET — safe to auto-retry.
+   * `page` below 1 throws `INVALID_PAGE`. GET, safe to auto-retry.
    */
   list(params: ListTemplatesParams = {}): Promise<ApiV1TemplatesGet200ResponseData> {
     return unwrapRetryableGet(
@@ -262,7 +263,7 @@ class TemplatesResource {
    * Deletes a template. The record is not erased immediately: it is marked
    * deleted and kept for 30 days. Existing demands created from it are
    * unaffected. A template with active (draft or pending) demands cannot be
-   * deleted and throws `TEMPLATE_IN_USE`. DELETE — never auto-retried.
+   * deleted and throws `TEMPLATE_IN_USE`. DELETE, never auto-retried.
    */
   delete(id: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
     return unwrap(this.api.apiV1TemplatesIdDelete({ id }));
@@ -352,7 +353,7 @@ class DemandsResource {
    * `RATE_LIMITED`, override with `{force: true}`) and a hard per-person cap
    * of 3 reminders per channel (not overridable). A draft, completed,
    * cancelled or expired demand throws 409 (`DEMAND_NOT_DISPATCHED`,
-   * `DEMAND_NOT_DISPATCHABLE`, `DEMAND_EXPIRED`). POST — never auto-retried
+   * `DEMAND_NOT_DISPATCHABLE`, `DEMAND_EXPIRED`). POST, never auto-retried
    * (a retried call could double-send).
    */
   sendReminder(
@@ -518,7 +519,7 @@ class TimestampsResource {
     );
   }
 
-  /** Lists your timestamp records (one page). GET — safe to auto-retry. */
+  /** Lists your timestamp records (one page). GET, safe to auto-retry. */
   list(params: ListTimestampsParams = {}): Promise<ApiV1TimestampsGet200ResponseData> {
     return unwrapRetryableGet(
       () =>
@@ -535,7 +536,7 @@ class TimestampsResource {
     );
   }
 
-  /** Returns one timestamp record. GET — safe to auto-retry. */
+  /** Returns one timestamp record. GET, safe to auto-retry. */
   get(id: string): Promise<TimestampListItem> {
     return unwrapRetryableGet(() => this.api.apiV1TimestampsIdGet({ id }), this.retryConfig);
   }
@@ -551,7 +552,7 @@ class FieldTemplatesResource {
   /**
    * Lists your field templates. A field template is separate from a contract
    * template: it describes where fields land on an uploaded PDF, located by
-   * anchor text. GET — safe to auto-retry.
+   * anchor text. GET, safe to auto-retry.
    */
   list(params: ListFieldTemplatesParams = {}): Promise<ApiV1FieldTemplatesGet200ResponseData> {
     return unwrapRetryableGet(
@@ -562,7 +563,7 @@ class FieldTemplatesResource {
 
   /**
    * Returns a field template's roles and field counts. A contract template
-   * id throws `TEMPLATE_NOT_FOUND`: the two are different kinds. GET — safe
+   * id throws `TEMPLATE_NOT_FOUND`: the two are different kinds. GET, safe
    * to auto-retry.
    */
   get(id: string): Promise<FieldTemplateDetail> {
@@ -593,7 +594,7 @@ class ContactsResource {
     private readonly retryConfig: RetryConfig,
   ) {}
 
-  /** Lists contacts in your workspace (one page). GET — safe to auto-retry. */
+  /** Lists contacts in your workspace (one page). GET, safe to auto-retry. */
   list(params: ListContactsParams = {}): Promise<ApiV1ContactsGet200ResponseData> {
     return unwrapRetryableGet(
       () =>
@@ -651,7 +652,7 @@ class ReportsResource {
   /**
    * Returns aggregate demand counts for your workspace (pending, completed,
    * cancelled, expired, created this month). Counts only, no personal data.
-   * GET — safe to auto-retry.
+   * GET, safe to auto-retry.
    */
   get(): Promise<ApiV1ReportsGet200ResponseData> {
     return unwrapRetryableGet(() => this.api.apiV1ReportsGet(), this.retryConfig);
@@ -725,7 +726,7 @@ export class Imzala {
     this.reports = new ReportsResource(reportsApi, this.retryConfig);
   }
 
-  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET — safe to auto-retry. */
+  /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET, safe to auto-retry. */
   me(): Promise<ApiV1MeGet200ResponseData> {
     return unwrapRetryableGet(() => this.accountApi.apiV1MeGet(), this.retryConfig);
   }

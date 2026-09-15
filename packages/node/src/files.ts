@@ -38,6 +38,12 @@ export interface UploadPartyInput {
   email?: string;
   /** E.164 format (e.g. `"+905551234567"`). */
   phone?: string;
+  /**
+   * Field template role for this party. Required on every party when
+   * `fieldTemplateId` is set; each role of the template must be mapped
+   * exactly once.
+   */
+  template_party_id?: string;
 }
 
 export interface UploadDemandParams {
@@ -70,8 +76,10 @@ export interface UploadDemandParams {
   onAnchorMiss?: 'block' | 'drop';
   /**
    * Sends signing invitations in the same request. **Off by default on this
-   * endpoint.** `'true'` or `'all'` sends on every channel, `'email'` or
-   * `'sms'` limits it, `'false'` sends nothing.
+   * endpoint.** `'true'` or `'all'` uses every channel, `'email'` limits it to
+   * e-mail, `'sms'` to phone channels (SMS and WhatsApp), `'false'` sends
+   * nothing. It can only narrow: a channel switched off in the demand's or
+   * party's notification settings is not turned back on.
    */
   sendInvitations?: 'true' | 'all' | 'email' | 'sms' | 'false';
   /**
