@@ -1,5 +1,4 @@
 from types import SimpleNamespace
-from unittest.mock import patch
 
 import pytest
 
@@ -12,6 +11,8 @@ from imzala_client.api.reminders_api import RemindersApi
 from imzala_client.api.templates_api import TemplatesApi
 from imzala_client.api.timestamps_api import TimestampsApi
 
+from .helpers import patch_api
+
 
 def envelope(data, success: bool = True) -> SimpleNamespace:
     """Stand-in for a generated `*200Response` pydantic model — the facade
@@ -22,7 +23,7 @@ def envelope(data, success: bool = True) -> SimpleNamespace:
 
 class TestEnvelopeUnwrap:
     def test_demands_get_unwraps_to_inner_data(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_get", return_value=envelope({"id": "d1", "status": "PENDING"})
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -32,7 +33,7 @@ class TestEnvelopeUnwrap:
         assert mocked.call_args.kwargs["id"] == "d1"
 
     def test_me_calls_account_api_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             AccountApi, "api_v1_me_get", return_value=envelope({"id": "u1", "email": "a@example.com"})
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -43,7 +44,7 @@ class TestEnvelopeUnwrap:
 
     def test_templates_list_forwards_page_limit_and_unwraps(self):
         data = {"templates": [{"id": "t1"}], "total": 1, "page": 2, "limit": 10}
-        with patch.object(TemplatesApi, "api_v1_templates_get", return_value=envelope(data)) as mocked:
+        with patch_api(TemplatesApi, "api_v1_templates_get", return_value=envelope(data)) as mocked:
             client = Imzala(api_key="imz_test")
             result = client.templates.list(page=2, limit=10)
 
@@ -52,11 +53,11 @@ class TestEnvelopeUnwrap:
         assert result["templates"] == [{"id": "t1"}]
 
     def test_send_reminder_routes_through_reminders_api_not_demands_api(self):
-        with patch.object(
+        with patch_api(
             RemindersApi,
             "api_v1_demands_id_reminders_post",
             return_value=envelope({"demand_id": "d1", "dispatched": [], "skipped": []}),
-        ) as reminders_mock, patch.object(DemandsApi, "api_v1_demands_id_get") as demands_get_mock:
+        ) as reminders_mock, patch_api(DemandsApi, "api_v1_demands_id_get") as demands_get_mock:
             client = Imzala(api_key="imz_test")
             result = client.demands.send_reminder("d1", {"force": True})
 
@@ -66,7 +67,7 @@ class TestEnvelopeUnwrap:
         assert result == {"demand_id": "d1", "dispatched": [], "skipped": []}
 
     def test_embed_create_session_maps_party_id_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_embed_session_post",
             return_value=envelope(
@@ -85,7 +86,7 @@ class TestEnvelopeUnwrap:
         assert result["embed_token"] == "tok"
 
     def test_upload_document_json_encodes_parties_order_and_builds_file_tuples(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_upload_post",
             return_value=envelope({"id": "d1", "pages": [{"id": 1, "order": 1}]}),
@@ -106,7 +107,7 @@ class TestEnvelopeUnwrap:
         assert result["id"] == "d1"
 
     def test_upload_document_accepts_plain_dict_parties(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_upload_post",
             return_value=envelope({"id": "d1", "pages": []}),
@@ -123,7 +124,7 @@ class TestEnvelopeUnwrap:
         assert mocked.call_args.kwargs["order"] is None
 
     def test_timestamps_create_builds_file_tuple_from_bytes_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             TimestampsApi, "api_v1_timestamps_post", return_value=envelope({"id": "ts1", "file_sha256": "abc"})
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -135,7 +136,7 @@ class TestEnvelopeUnwrap:
         assert result == {"id": "ts1", "file_sha256": "abc"}
 
     def test_raises_imzala_error_when_server_returns_success_false_on_2xx(self):
-        with patch.object(TemplatesApi, "api_v1_templates_id_get", return_value=envelope(None, success=False)):
+        with patch_api(TemplatesApi, "api_v1_templates_id_get", return_value=envelope(None, success=False)):
             client = Imzala(api_key="imz_test")
             with pytest.raises(ImzalaError):
                 client.templates.get("t1")
@@ -155,7 +156,7 @@ class TestConstruction:
         assert client._account_api.api_client.configuration.host == "https://test-api.imzala.org"
 
     def test_default_timeout_is_threaded_into_every_call(self):
-        with patch.object(AccountApi, "api_v1_me_get", return_value=envelope({})) as mocked:
+        with patch_api(AccountApi, "api_v1_me_get", return_value=envelope({})) as mocked:
             client = Imzala(api_key="imz_test", timeout=5)
             client.me()
 

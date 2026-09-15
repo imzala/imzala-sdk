@@ -1,8 +1,9 @@
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from imzala import Imzala
 from imzala_client.api.templates_api import TemplatesApi
+
+from .helpers import patch_api
 
 
 def page(templates, total: int, page_num: int, limit: int) -> SimpleNamespace:
@@ -14,7 +15,7 @@ def page(templates, total: int, page_num: int, limit: int) -> SimpleNamespace:
 
 class TestTemplatesListAllPaginationIterator:
     def test_walks_two_full_pages_then_a_short_page_yielding_every_item_and_stopping(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_get",
             side_effect=[
@@ -35,7 +36,7 @@ class TestTemplatesListAllPaginationIterator:
         assert mocked.call_args_list[2].kwargs["page"] == 3
 
     def test_stops_as_soon_as_total_reached_even_when_last_page_is_exactly_full(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_get",
             side_effect=[
@@ -55,7 +56,7 @@ class TestTemplatesListAllPaginationIterator:
         assert mocked.call_count == 2
 
     def test_stops_immediately_on_an_empty_first_page_no_infinite_loop(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi, "api_v1_templates_get", side_effect=[page([], 0, 1, 20)]
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -66,7 +67,7 @@ class TestTemplatesListAllPaginationIterator:
         assert mocked.call_count == 1
 
     def test_list_single_page_is_unaffected_still_returns_one_page_not_an_iterator(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_get",
             side_effect=[page([{"id": "t1"}, {"id": "t2"}], 5, 1, 2)],

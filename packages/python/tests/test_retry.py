@@ -10,6 +10,8 @@ from imzala_client.api.demands_api import DemandsApi
 from imzala_client.api.templates_api import TemplatesApi
 from imzala_client.exceptions import ApiException
 
+from .helpers import patch_api
+
 
 def envelope(data, success: bool = True) -> SimpleNamespace:
     """Stand-in for a generated `*200Response` pydantic model — the facade
@@ -40,7 +42,7 @@ def no_sleep():
 
 class TestSafeAutoRetryGetRequests:
     def test_retries_a_get_twice_on_429_then_succeeds_on_3rd_attempt(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_get",
             side_effect=[
@@ -56,7 +58,7 @@ class TestSafeAutoRetryGetRequests:
         assert result["templates"] == [{"id": "t1"}]
 
     def test_retries_a_get_on_5xx_server_error_and_succeeds(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_get",
             side_effect=[api_exception(503), envelope({"id": "d1", "status": "PENDING"})],
@@ -68,7 +70,7 @@ class TestSafeAutoRetryGetRequests:
         assert result == {"id": "d1", "status": "PENDING"}
 
     def test_does_not_retry_a_get_on_non_429_4xx(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_id_get",
             side_effect=api_exception(404, {"success": False, "error": "TEMPLATE_NOT_FOUND"}),
@@ -80,7 +82,7 @@ class TestSafeAutoRetryGetRequests:
         assert mocked.call_count == 1
 
     def test_max_retries_zero_disables_retry_entirely_even_on_429(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi, "api_v1_templates_get", side_effect=api_exception(429)
         ) as mocked:
             client = Imzala(api_key="imz_test", max_retries=0, retry_base_delay=0.001)
@@ -90,7 +92,7 @@ class TestSafeAutoRetryGetRequests:
         assert mocked.call_count == 1
 
     def test_exhausts_retries_and_raises_the_typed_error_when_every_attempt_fails(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi, "api_v1_templates_get", side_effect=api_exception(503)
         ) as mocked:
             client = Imzala(api_key="imz_test", max_retries=2, retry_base_delay=0.001)
@@ -103,7 +105,7 @@ class TestSafeAutoRetryGetRequests:
 
 class TestSafeAutoRetrySafetyWritesAreNeverRetried:
     def test_post_create_returning_429_raises_immediately_no_retry(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_post",
             side_effect=api_exception(429, {"success": False, "error": "RATE_LIMITED"}),
@@ -116,7 +118,7 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
         assert mocked.call_count == 1
 
     def test_post_create_returning_503_server_error_also_raises_immediately_no_retry(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_post", side_effect=api_exception(503)
         ) as mocked:
             client = Imzala(api_key="imz_test", **FAST_RETRY)
@@ -126,7 +128,7 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
         assert mocked.call_count == 1
 
     def test_delete_demand_returning_429_raises_immediately_no_retry(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_delete", side_effect=api_exception(429)
         ) as mocked:
             client = Imzala(api_key="imz_test", **FAST_RETRY)
@@ -136,7 +138,7 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
         assert mocked.call_count == 1
 
     def test_cancel_demand_returning_503_raises_immediately_no_retry(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_cancel_post", side_effect=api_exception(503)
         ) as mocked:
             client = Imzala(api_key="imz_test", **FAST_RETRY)
@@ -146,7 +148,7 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
         assert mocked.call_count == 1
 
     def test_template_update_returning_429_raises_immediately_no_retry(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi, "api_v1_templates_id_patch", side_effect=api_exception(429)
         ) as mocked:
             client = Imzala(api_key="imz_test", **FAST_RETRY)
@@ -158,7 +160,7 @@ class TestSafeAutoRetrySafetyWritesAreNeverRetried:
 
 class TestBinaryGetDownloadsRetryLikeOtherGets:
     def test_get_pdf_retries_on_5xx_then_returns_bytes(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_pdf_get",
             side_effect=[api_exception(503), b"%PDF-1.7 fake"],
@@ -170,7 +172,7 @@ class TestBinaryGetDownloadsRetryLikeOtherGets:
         assert out == b"%PDF-1.7 fake"
 
     def test_get_certificate_retries_on_429_honoring_retry_after(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_certificate_get",
             side_effect=[api_exception(429), b"%PDF cert"],
@@ -182,7 +184,7 @@ class TestBinaryGetDownloadsRetryLikeOtherGets:
         assert out == b"%PDF cert"
 
     def test_get_pdf_does_not_retry_on_404(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_pdf_get",
             side_effect=api_exception(404, {"success": False, "error": "DEMAND_NOT_FOUND"}),

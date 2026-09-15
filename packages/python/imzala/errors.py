@@ -8,15 +8,23 @@ the same regardless of language.
 from __future__ import annotations
 
 import json
+import math
+import re
+import time
+from dataclasses import dataclass
+from email.utils import parsedate_to_datetime
 from typing import Any, Mapping, Optional
 
 from imzala_client.exceptions import ApiException
+
+from .error_codes import describe_error_code
 
 __all__ = [
     "ImzalaError",
     "ImzalaAuthError",
     "ImzalaRateLimitError",
     "ImzalaValidationError",
+    "ImzalaRateLimitInfo",
     "extract_error_message",
     "extract_error_code",
     "map_api_exception",
@@ -44,7 +52,10 @@ class ImzalaError(Exception):
         super().__init__(message)
         self.status_code = status_code
         self.body = body
+        #: Machine-readable code, e.g. `TEMPLATE_IN_USE`. None when the response carried none.
         self.code = code
+        #: One-line explanation of `code` from the SDK's catalogue; None for codes it does not know.
+        self.code_description = describe_error_code(code)
 
     def __repr__(self) -> str:  # pragma: no cover - cosmetic only
         return (
@@ -57,8 +68,33 @@ class ImzalaAuthError(ImzalaError):
     """Missing/invalid API key (401) or disabled key / insufficient scope (403)."""
 
 
+@dataclass(frozen=True)
+class ImzalaRateLimitInfo:
+    """Standard `RateLimit-*` response headers. The server does not send `X-RateLimit-*`.
+
+    Attributes:
+        limit: `RateLimit-Limit`, requests allowed per window. Defaults to 60
+            but can be lowered per API key, so read it rather than assuming.
+        remaining: `RateLimit-Remaining`, requests left in the current window.
+        reset: `RateLimit-Reset`, seconds until the window resets.
+        policy: `RateLimit-Policy`, raw policy string, e.g. `60;w=60`.
+    """
+
+    limit: Optional[float] = None
+    remaining: Optional[float] = None
+    reset: Optional[float] = None
+    policy: Optional[str] = None
+
+
 class ImzalaRateLimitError(ImzalaError):
-    """Rate limited (429). `retry_after` is seconds, when the server provided one."""
+    """Rate limited (429). `retry_after` is seconds, when the server provided one.
+
+    Several different limits answer with 429 and each has its own `code`
+    (e.g. `RATE_LIMIT_EXCEEDED`, `TOO_MANY_REQUESTS`, `RATE_LIMITED`,
+    `RECIPIENT_RESEND_LIMIT`, `MAX_SMS_REMINDERS_REACHED`), so branch on this
+    class or on `status_code`, not on one particular code.
+    `rate_limit` carries the `RateLimit-*` headers, or None when absent.
+    """
 
     def __init__(
         self,
@@ -68,9 +104,11 @@ class ImzalaRateLimitError(ImzalaError):
         body: Any = None,
         code: Optional[str] = None,
         retry_after: Optional[float] = None,
+        rate_limit: Optional[ImzalaRateLimitInfo] = None,
     ) -> None:
         super().__init__(message, status_code=status_code, body=body, code=code)
         self.retry_after = retry_after
+        self.rate_limit = rate_limit
 
 
 class ImzalaValidationError(ImzalaError):
@@ -82,11 +120,14 @@ def _as_mapping(value: Any) -> Optional[Mapping[str, Any]]:
 
 
 def extract_error_message(body: Any) -> Optional[str]:
-    """imzala.org error envelopes aren't fully uniform across endpoints:
-    most are `{success: false, error: "<code>", message: "<text>"}`, but
-    some (e.g. the reminders 429) nest a `{code, message,
-    retry_after_seconds}` object under `error` instead of a plain string.
-    Handles both shapes.
+    """imzala.org error envelopes come in three shapes:
+
+    - `{success: false, error: "<CODE>", message: "<text>"}`
+    - `{success: false, error: "<text>", code: "<CODE>"}` (rate limits, coded errors)
+    - `{success: false, error: {code, message, retry_after_seconds}}` (reminders)
+
+    and some errors carry only a human-readable `error` string with no code.
+    This and `extract_error_code` handle all of them.
     """
     b = _as_mapping(body)
     if not b:
@@ -104,12 +145,23 @@ def extract_error_message(body: Any) -> Optional[str]:
     return None
 
 
+# Upper case, digits and underscores only, at least three characters: covers
+# `TEMPLATE_IN_USE`, `BULK_MAX_10` and single-word codes such as `UNAUTHORIZED`,
+# never a human-readable sentence.
+_CODE_SHAPE = re.compile(r"^[A-Z][A-Z0-9_]{2,}$")
+
+
 def extract_error_code(body: Any) -> Optional[str]:
+    """Reads the machine-readable code: `code` first, then `error` only when
+    it is shaped like a code, then a nested `error.code`. A human-readable
+    `error` sentence is never returned as a code."""
     b = _as_mapping(body)
     if not b:
         return None
+    if isinstance(b.get("code"), str):
+        return b["code"]
     if isinstance(b.get("error"), str):
-        return b["error"]
+        return b["error"] if _CODE_SHAPE.match(b["error"]) else None
     nested = _as_mapping(b.get("error"))
     if nested and isinstance(nested.get("code"), str):
         return nested["code"]
@@ -127,14 +179,59 @@ def _extract_retry_after(body: Any, headers: Any) -> Optional[float]:
     if isinstance(nested_retry, (int, float)) and not isinstance(nested_retry, bool):
         return float(nested_retry)
 
-    if headers is not None and hasattr(headers, "get"):
-        header = headers.get("Retry-After")
-        if header is not None:
-            try:
-                return float(header)
-            except (TypeError, ValueError):
-                pass
+    header = _header(headers, "retry-after")
+    if header is not None:
+        try:
+            return float(header)
+        except (TypeError, ValueError):
+            pass
+        # Retry-After may also be an HTTP date.
+        try:
+            at = parsedate_to_datetime(str(header))
+        except (TypeError, ValueError, IndexError):
+            return None
+        if at is None:
+            return None
+        return float(max(0, math.ceil(at.timestamp() - time.time())))
     return None
+
+
+def _header(headers: Any, name: str) -> Any:
+    """Case-insensitive header lookup that works for a plain dict and for
+    urllib3's `HTTPHeaderDict` (which the generated client attaches to
+    `ApiException.headers`)."""
+    if headers is None or not hasattr(headers, "items"):
+        return None
+    wanted = name.lower()
+    for key, value in headers.items():
+        if isinstance(key, str) and key.lower() == wanted:
+            return value
+    return None
+
+
+def _number(raw: Any) -> Optional[float]:
+    if raw is None or raw == "":
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(value):
+        return None
+    return int(value) if value.is_integer() else value
+
+
+def _extract_rate_limit_info(headers: Any) -> Optional[ImzalaRateLimitInfo]:
+    policy = _header(headers, "ratelimit-policy")
+    info = ImzalaRateLimitInfo(
+        limit=_number(_header(headers, "ratelimit-limit")),
+        remaining=_number(_header(headers, "ratelimit-remaining")),
+        reset=_number(_header(headers, "ratelimit-reset")),
+        policy=policy if isinstance(policy, str) else None,
+    )
+    if info == ImzalaRateLimitInfo():
+        return None
+    return info
 
 
 def _parse_body(raw_body: Any) -> Any:
@@ -186,6 +283,7 @@ def map_api_exception(err: BaseException) -> ImzalaError:
                 body=body,
                 code=code,
                 retry_after=_extract_retry_after(body, headers),
+                rate_limit=_extract_rate_limit_info(headers),
             )
         if status == 422:
             return ImzalaValidationError(message, status_code=status, body=body, code=code)

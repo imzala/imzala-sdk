@@ -9,11 +9,12 @@ raw `bytes` straight through, since the generated client deserializes an
 """
 
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from imzala import Imzala
 from imzala_client.api.demands_api import DemandsApi
 from imzala_client.api.templates_api import TemplatesApi
+
+from .helpers import patch_api
 
 
 def envelope(data, success: bool = True) -> SimpleNamespace:
@@ -30,7 +31,7 @@ class TestDemandsLifecycle:
             "page": 1,
             "limit": 20,
         }
-        with patch.object(DemandsApi, "api_v1_demands_get", return_value=envelope(data)) as mocked:
+        with patch_api(DemandsApi, "api_v1_demands_get", return_value=envelope(data)) as mocked:
             client = Imzala(api_key="imz_test")
             result = client.demands.list(
                 status="PENDING",
@@ -56,7 +57,7 @@ class TestDemandsLifecycle:
         assert result["demands"][0] == {"id": "d1", "parties_total": 2, "parties_signed": 1}
 
     def test_list_defaults_all_filters_to_none(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_get", return_value=envelope({"demands": [], "total": 0})
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -68,7 +69,7 @@ class TestDemandsLifecycle:
 
     def test_get_timeline_unwraps_masked_events(self):
         events = {"events": [{"id": "e1", "event_type": "SIGNED", "ip_masked": "1.2.3.***"}]}
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_timeline_get", return_value=envelope(events)
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -78,7 +79,7 @@ class TestDemandsLifecycle:
         assert result["events"][0]["ip_masked"] == "1.2.3.***"
 
     def test_cancel_posts_the_reason_body_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_cancel_post",
             return_value=envelope({"id": "d1", "status": "CANCELLED"}),
@@ -92,7 +93,7 @@ class TestDemandsLifecycle:
         assert result["status"] == "CANCELLED"
 
     def test_cancel_without_a_body_sends_an_empty_object(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_cancel_post",
             return_value=envelope({"id": "d1", "status": "CANCELLED"}),
@@ -103,7 +104,7 @@ class TestDemandsLifecycle:
         assert mocked.call_args.kwargs["api_v1_demands_id_cancel_post_request"] == {}
 
     def test_resend_party_targets_a_single_party(self):
-        with patch.object(
+        with patch_api(
             DemandsApi,
             "api_v1_demands_id_parties_party_id_resend_post",
             return_value=envelope({"sent": ["email"]}),
@@ -117,7 +118,7 @@ class TestDemandsLifecycle:
         assert result["sent"] == ["email"]
 
     def test_delete_unwraps_deletion_result(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_delete", return_value=envelope({"id": "d1", "deleted": True})
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -128,7 +129,7 @@ class TestDemandsLifecycle:
 
     def test_get_pdf_returns_raw_bytes(self):
         pdf_bytes = b"%PDF-1.7 fake signed contract"
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_pdf_get", return_value=pdf_bytes
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -140,7 +141,7 @@ class TestDemandsLifecycle:
         assert mocked.call_args.kwargs["id"] == "d1"
 
     def test_get_pdf_coerces_a_bytearray_to_bytes(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_pdf_get", return_value=bytearray(b"%PDF cert")
         ):
             client = Imzala(api_key="imz_test")
@@ -151,7 +152,7 @@ class TestDemandsLifecycle:
 
     def test_get_certificate_forwards_lang_and_returns_bytes(self):
         cert_bytes = b"%PDF cert"
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_certificate_get", return_value=cert_bytes
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -164,7 +165,7 @@ class TestDemandsLifecycle:
         assert kwargs["lang"] == "en"
 
     def test_get_certificate_defaults_lang_to_none(self):
-        with patch.object(
+        with patch_api(
             DemandsApi, "api_v1_demands_id_certificate_get", return_value=b"%PDF"
         ) as mocked:
             client = Imzala(api_key="imz_test")
@@ -175,7 +176,7 @@ class TestDemandsLifecycle:
 
 class TestTemplatesLifecycle:
     def test_update_patches_metadata_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi,
             "api_v1_templates_id_patch",
             return_value=envelope({"id": "t1", "name": "Yeni Ad"}),
@@ -189,7 +190,7 @@ class TestTemplatesLifecycle:
         assert result["name"] == "Yeni Ad"
 
     def test_delete_soft_deletes_and_unwraps(self):
-        with patch.object(
+        with patch_api(
             TemplatesApi, "api_v1_templates_id_delete", return_value=envelope({"id": "t1", "deleted": True})
         ) as mocked:
             client = Imzala(api_key="imz_test")

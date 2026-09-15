@@ -7,10 +7,12 @@
 """
 
 from .client import DEFAULT_BASE_URL, DEFAULT_TIMEOUT_S, Imzala
+from .error_codes import IMZALA_ERROR_CODES, describe_error_code, is_known_error_code
 from .errors import (
     ImzalaAuthError,
     ImzalaError,
     ImzalaRateLimitError,
+    ImzalaRateLimitInfo,
     ImzalaValidationError,
 )
 from .files import FileInput, UploadPartyInput
@@ -26,6 +28,10 @@ __all__ = [
     "ImzalaAuthError",
     "ImzalaRateLimitError",
     "ImzalaValidationError",
+    "ImzalaRateLimitInfo",
+    "IMZALA_ERROR_CODES",
+    "describe_error_code",
+    "is_known_error_code",
     "FileInput",
     "UploadPartyInput",
     "verify_webhook",

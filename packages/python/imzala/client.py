@@ -12,17 +12,25 @@ import json
 import random
 import time
 from dataclasses import dataclass
-from typing import Any, Callable, Iterator, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, Iterator, Literal, Mapping, Optional, Sequence, Union
 
 from imzala_client.api.account_api import AccountApi
+from imzala_client.api.contacts_api import ContactsApi
 from imzala_client.api.demands_api import DemandsApi
 from imzala_client.api.reminders_api import RemindersApi
+from imzala_client.api.reports_api import ReportsApi
 from imzala_client.api.templates_api import TemplatesApi
 from imzala_client.api.timestamps_api import TimestampsApi
 from imzala_client.api_client import ApiClient
 from imzala_client.configuration import Configuration
 
-from .errors import ImzalaError, ImzalaRateLimitError, map_api_exception
+from .errors import (
+    ImzalaError,
+    ImzalaRateLimitError,
+    extract_error_code,
+    extract_error_message,
+    map_api_exception,
+)
 from .files import FileInput, UploadPartyInput, to_multipart_tuple
 
 __all__ = [
@@ -31,12 +39,38 @@ __all__ = [
     "DEFAULT_TIMEOUT_S",
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_RETRY_BASE_DELAY_S",
+    "MAX_IDEMPOTENT_RETRY_WAIT_S",
 ]
 
 DEFAULT_BASE_URL = "https://api-prd.imzala.org"
 DEFAULT_TIMEOUT_S = 30.0
 DEFAULT_MAX_RETRIES = 2
 DEFAULT_RETRY_BASE_DELAY_S = 0.3
+#: Longest `Retry-After` an idempotent write waits out before its one retry.
+MAX_IDEMPOTENT_RETRY_WAIT_S = 60.0
+
+SendInvitations = Literal["true", "all", "email", "sms", "false"]
+OnAnchorMiss = Literal["block", "drop"]
+
+
+def _body_mapping(response: Any) -> Any:
+    """A `{success: false}` body arrives as a generated model (or, in tests,
+    a plain object); read its fields as a mapping for the error helpers."""
+    if response is None or isinstance(response, Mapping):
+        return response
+    for dump in ("to_dict", "model_dump"):
+        fn = getattr(response, dump, None)
+        if callable(fn):
+            try:
+                dumped = fn()
+            except Exception:  # pragma: no cover - defensive
+                continue
+            if isinstance(dumped, Mapping):
+                return dumped
+    try:
+        return vars(response)
+    except TypeError:
+        return None
 
 
 def _unwrap(call: Callable[[], Any]) -> Any:
@@ -58,7 +92,12 @@ def _unwrap(call: Callable[[], Any]) -> Any:
 
     success = getattr(response, "success", None)
     if response is None or success is False:
-        raise ImzalaError("imzala.org API request failed", body=response)
+        mapping = _body_mapping(response)
+        raise ImzalaError(
+            extract_error_message(mapping) or "imzala.org API request failed",
+            body=response,
+            code=extract_error_code(mapping),
+        )
 
     return response.data
 
@@ -119,6 +158,48 @@ def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
                 raise
             time.sleep(_compute_delay_s(err, attempt, retry.base_delay_s))
             attempt += 1
+
+
+def _unwrap_idempotent_write(
+    call: Callable[[], Any],
+    *,
+    idempotency_key: Optional[str],
+    retry_base_delay_s: float,
+    max_wait_s: float = MAX_IDEMPOTENT_RETRY_WAIT_S,
+    sleep: Optional[Callable[[float], None]] = None,
+) -> Any:
+    """Bounded, safe retry for write calls.
+
+    Writes are normally never retried: a repeated create produces a second
+    demand. The one exception is a write sent with an `Idempotency-Key`. The
+    server does not treat a second request with the same key as a new
+    record, so after a 429 it is safe to wait for `Retry-After` and try
+    exactly once more. A second 429, and any other error including 5xx, is
+    raised.
+
+    If the server asks for a longer wait than `max_wait_s` (default 60 s),
+    the 429 is raised instead of blocking the caller.
+
+    Only use this for endpoints whose Idempotency-Key the server honours
+    (demand create, document upload, timestamp create). On any other
+    endpoint the "safe" retry could create a duplicate.
+
+    Without a key this behaves exactly like `_unwrap`. `sleep` defaults to
+    `time.sleep` and can be injected by tests.
+    """
+    try:
+        return _unwrap(call)
+    except ImzalaError as err:
+        if not idempotency_key or err.status_code != 429:
+            raise
+        if isinstance(err, ImzalaRateLimitError) and err.retry_after is not None:
+            wait_s = max(0.0, float(err.retry_after))
+        else:
+            wait_s = retry_base_delay_s
+        if wait_s > max_wait_s:
+            raise
+        (sleep or time.sleep)(wait_s)
+    return _unwrap(call)
 
 
 def _retryable_binary_get(call: Callable[[], Any], retry: _RetryConfig) -> bytes:
@@ -188,7 +269,8 @@ class TemplatesResource:
         self._retry = retry
 
     def list(self, *, page: Optional[int] = None, limit: Optional[int] = None) -> Any:
-        """Lists your active templates (one page). GET — safe to auto-retry."""
+        """Lists your active templates (one page). `limit` is clamped to
+        1..100; `page` below 1 raises `INVALID_PAGE`. GET, safe to auto-retry."""
         return _unwrap_retryable_get(
             lambda: self._api.api_v1_templates_get(page=page, limit=limit, _request_timeout=self._timeout),
             self._retry,
@@ -260,8 +342,11 @@ class TemplatesResource:
         )
 
     def delete(self, template_id: str) -> Any:
-        """Deletes (soft-deletes) a template. Existing demands created from
-        it are unaffected. DELETE — never auto-retried."""
+        """Deletes a template. The record is not erased immediately: it is
+        marked deleted and kept for 30 days. Existing demands created from it
+        are unaffected. A template with active (draft or pending) demands
+        cannot be deleted and raises `TEMPLATE_IN_USE`. DELETE, never
+        auto-retried."""
         return _unwrap(
             lambda: self._api.api_v1_templates_id_delete(
                 id=template_id, _request_timeout=self._timeout
@@ -278,12 +363,38 @@ class DemandsResource:
         self._timeout = timeout
         self._retry = retry
 
-    def create(self, body: Mapping[str, Any]) -> Any:
-        """Creates a new demand (contract) from a template. POST — never
-        auto-retried (a retried create would produce a duplicate demand)."""
-        return _unwrap(
+    def create(self, body: Mapping[str, Any], *, idempotency_key: Optional[str] = None) -> Any:
+        """Creates a new demand (contract) from a template.
+
+        Without `idempotency_key` this is a single attempt: a retried create
+        would produce a duplicate demand. With a key, a repeated request does
+        not create a second demand, so one retry is made after a 429. A key
+        reused with a different body raises `IDEMPOTENCY_KEY_REUSED`.
+
+        An `expiry_date` that is not a real calendar day raises
+        `INVALID_EXPIRY_DATE`.
+        """
+        return _unwrap_idempotent_write(
             lambda: self._api.api_v1_demands_post(
-                create_demand_request=dict(body), _request_timeout=self._timeout
+                create_demand_request=dict(body),
+                idempotency_key=idempotency_key,
+                _request_timeout=self._timeout,
+            ),
+            idempotency_key=idempotency_key,
+            retry_base_delay_s=self._retry.base_delay_s,
+        )
+
+    def create_bulk(self, body: Mapping[str, Any]) -> Any:
+        """Creates up to 10 demands from one template in a single request.
+        Rows are created independently; check `failed` and each result's
+        `status`.
+
+        This endpoint has no idempotency key, so it is never retried: a
+        retried batch would create the demands again. Split larger lists into
+        batches of 10 yourself."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_bulk_post(
+                api_v1_demands_bulk_post_request=dict(body), _request_timeout=self._timeout
             )
         )
 
@@ -296,7 +407,9 @@ class DemandsResource:
 
     def add_items(self, demand_id: str, body: Mapping[str, Any]) -> Any:
         """Places (replaces) signature/form fields on a demand's pages. See
-        `page_ids` in `body` for full-replace vs per-page-replace semantics."""
+        `page_ids` in `body` for full-replace vs per-page-replace semantics.
+        Every item needs an integer `page_id` (`PAGE_ID_REQUIRED`); an
+        unknown `item_type` raises `INVALID_ITEM_TYPE`."""
         return _unwrap(
             lambda: self._api.api_v1_demands_id_items_post(
                 id=demand_id, upsert_items_request=dict(body), _request_timeout=self._timeout
@@ -311,31 +424,70 @@ class DemandsResource:
         order: Optional[Sequence[int]] = None,
         title: Optional[str] = None,
         description: Optional[str] = None,
+        idempotency_key: Optional[str] = None,
+        field_template_id: Optional[str] = None,
+        on_anchor_miss: Optional[OnAnchorMiss] = None,
+        send_invitations: Optional[SendInvitations] = None,
+        force: bool = False,
     ) -> Any:
         """Creates a demand directly from an uploaded document (no
         template) — a single PDF/DOC/DOCX/ODT/RTF/TXT, or 1-20 images
-        merged into one PDF."""
+        merged into one PDF.
+
+        Args:
+            idempotency_key: makes the upload safe to retry: a second request
+                with the same key does not create a second demand. With a
+                key, one retry is made after a 429.
+            field_template_id: field template (`kind: FIELD_LAYOUT`) whose
+                layout is applied to the upload. The upload must then be a
+                single PDF. The layout is resolved before the demand is
+                created or credit is spent; a 422 creates nothing. Dry-run
+                first with `field_templates.preview_layout`.
+            on_anchor_miss: only with `field_template_id`, `'block'` or
+                `'drop'`. Can tighten the template, never relax it: omitted
+                means `block`; `drop` applies only if every affected field is
+                already set to drop in the template (otherwise `block` is used
+                and the response carries an `ON_ANCHOR_MISS_NOT_RELAXED`
+                warning). Signature fields are never dropped.
+            send_invitations: sends signing invitations in the same request.
+                **Off by default on this endpoint.** `'true'` or `'all'` sends
+                on every channel, `'email'` or `'sms'` limits it, `'false'`
+                sends nothing.
+            force: `True` deliberately bypasses the duplicate check
+                (`DUPLICATE_SUSPECTED`). Only meaningful for calls without
+                `idempotency_key`.
+        """
         file_tuples = [to_multipart_tuple(f) for f in files]
         parties_json = json.dumps([_party_to_dict(p) for p in parties], ensure_ascii=False)
         order_json = json.dumps(list(order)) if order is not None else None
-        return _unwrap(
+        return _unwrap_idempotent_write(
             lambda: self._api.api_v1_demands_upload_post(
                 files=file_tuples,
                 parties=parties_json,
                 order=order_json,
                 title=title,
                 description=description,
+                idempotency_key=idempotency_key,
+                field_template_id=field_template_id,
+                on_anchor_miss=on_anchor_miss,
+                send_invitations=send_invitations,
+                force="true" if force else None,
                 _request_timeout=self._timeout,
-            )
+            ),
+            idempotency_key=idempotency_key,
+            retry_base_delay_s=self._retry.base_delay_s,
         )
 
     def send_reminder(self, demand_id: str, body: Optional[Mapping[str, Any]] = None) -> Any:
         """Triggers an immediate SMS/email reminder to a demand's unsigned
         parties. Independent of the template/demand's scheduled
-        `reminder_settings`. Subject to a 5-minute anti-spam window
-        (override with `{"force": True}`) and a hard per-person cap of 3
-        reminders per channel (not overridable). POST — never
-        auto-retried (a retried call could double-send)."""
+        `reminder_settings`. Subject to a 5-minute anti-spam window (429
+        `RATE_LIMITED`, override with `{"force": True}`) and a hard
+        per-person cap of 3 reminders per channel (not overridable). A draft,
+        completed, cancelled or expired demand raises 409
+        (`DEMAND_NOT_DISPATCHED`, `DEMAND_NOT_DISPATCHABLE`,
+        `DEMAND_EXPIRED`). POST, never auto-retried (a retried call could
+        double-send)."""
         return _unwrap(
             lambda: self._reminders_api.api_v1_demands_id_reminders_post(
                 id=demand_id,
@@ -390,6 +542,17 @@ class DemandsResource:
         return _retryable_binary_get(
             lambda: self._api.api_v1_demands_id_pdf_get(
                 id=demand_id, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def get_document_pdf(self, demand_id: str, document_id: str) -> bytes:
+        """Downloads the PDF of one document in a multi-document envelope as
+        raw `bytes`. For the whole contract use `get_pdf(demand_id)`. GET,
+        safe to auto-retry."""
+        return _retryable_binary_get(
+            lambda: self._api.api_v1_demands_id_belge_document_id_pdf_get(
+                id=demand_id, document_id=document_id, _request_timeout=self._timeout
             ),
             self._retry,
         )
@@ -479,9 +642,10 @@ class EmbedResource:
 class TimestampsResource:
     """`imzala.timestamps.*` — RFC 3161 timestamps."""
 
-    def __init__(self, api: TimestampsApi, timeout: float) -> None:
+    def __init__(self, api: TimestampsApi, timeout: float, retry: _RetryConfig) -> None:
         self._api = api
         self._timeout = timeout
+        self._retry = retry
 
     def create(
         self,
@@ -497,10 +661,11 @@ class TimestampsResource:
         """RFC 3161-timestamps a file via TÜBİTAK KAMU SM TSA (existence +
         integrity proof — not a signature; see the returned record for
         details). Pass `idempotency_key` to make retries safe (5-minute
-        window, no duplicate credit spend). `content_type` is currently
-        informational only — see `FileInput`."""
+        window, no duplicate credit spend); with a key, one retry is made
+        after a 429. `content_type` is currently informational only, see
+        `FileInput`."""
         del content_type
-        return _unwrap(
+        return _unwrap_idempotent_write(
             lambda: self._api.api_v1_timestamps_post(
                 file=(filename, bytes(content)),
                 idempotency_key=idempotency_key,
@@ -508,7 +673,200 @@ class TimestampsResource:
                 owner_first_name=owner_first_name,
                 owner_last_name=owner_last_name,
                 _request_timeout=self._timeout,
+            ),
+            idempotency_key=idempotency_key,
+            retry_base_delay_s=self._retry.base_delay_s,
+        )
+
+    def list(
+        self,
+        *,
+        q: Optional[str] = None,
+        status: Optional[str] = None,
+        from_: Optional[str] = None,
+        to: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[str] = None,
+    ) -> Any:
+        """Lists your timestamp records (one page). `from_` and `to` are ISO
+        dates (`YYYY-MM-DD`); `from_` maps to the API's `from` query param.
+        GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_timestamps_get(
+                page=page,
+                limit=limit,
+                q=q,
+                status=status,
+                var_from=from_,
+                to=to,
+                sort=sort,
+                _request_timeout=self._timeout,
+            ),
+            self._retry,
+        )
+
+    def get(self, timestamp_id: str) -> Any:
+        """Returns one timestamp record. GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_timestamps_id_get(id=timestamp_id, _request_timeout=self._timeout),
+            self._retry,
+        )
+
+
+class FieldTemplatesResource:
+    """`imzala.field_templates.*`: field layouts applied to uploaded PDFs."""
+
+    def __init__(self, templates_api: TemplatesApi, demands_api: DemandsApi, timeout: float, retry: _RetryConfig) -> None:
+        self._templates_api = templates_api
+        self._demands_api = demands_api
+        self._timeout = timeout
+        self._retry = retry
+
+    def list(self, *, page: Optional[int] = None, limit: Optional[int] = None) -> Any:
+        """Lists your field templates. A field template is separate from a
+        contract template: it describes where fields land on an uploaded PDF,
+        located by anchor text. `limit` is clamped to 1..100. GET, safe to
+        auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._templates_api.api_v1_field_templates_get(
+                page=page, limit=limit, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def get(self, field_template_id: str) -> Any:
+        """Returns a field template's roles and field counts. A contract
+        template id raises `TEMPLATE_NOT_FOUND`: the two are different kinds.
+        GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._templates_api.api_v1_field_templates_id_get(
+                id=field_template_id, _request_timeout=self._timeout
+            ),
+            self._retry,
+        )
+
+    def preview_layout(
+        self,
+        field_template_id: str,
+        *,
+        files: Sequence[FileInput],
+        on_anchor_miss: Optional[OnAnchorMiss] = None,
+    ) -> Any:
+        """Dry run: tries the field template's layout on a PDF without
+        creating anything or spending credit, and reports resolved fields and
+        unresolved anchors separately. The cheapest way to avoid surprises
+        before `demands.upload_document(field_template_id=...)`.
+        `on_anchor_miss` is `'block'` or `'drop'` (see `upload_document`).
+        Rate limited per user. POST, but side-effect free; never
+        auto-retried."""
+        file_tuples = [to_multipart_tuple(f) for f in files]
+        return _unwrap(
+            lambda: self._demands_api.api_v1_field_templates_id_preview_layout_post(
+                id=field_template_id,
+                files=file_tuples,
+                on_anchor_miss=on_anchor_miss,
+                _request_timeout=self._timeout,
             )
+        )
+
+
+class ContactsResource:
+    """`imzala.contacts.*`: the contacts in your workspace."""
+
+    def __init__(self, api: ContactsApi, timeout: float, retry: _RetryConfig) -> None:
+        self._api = api
+        self._timeout = timeout
+        self._retry = retry
+
+    def list(
+        self,
+        *,
+        q: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[str] = None,
+        company_id: Optional[str] = None,
+        archived: Optional[bool] = None,
+    ) -> Any:
+        """Lists contacts in your workspace (one page). GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_contacts_get(
+                page=page,
+                limit=limit,
+                q=q,
+                sort=sort,
+                company_id=company_id,
+                archived=archived,
+                _request_timeout=self._timeout,
+            ),
+            self._retry,
+        )
+
+    def list_all(
+        self,
+        *,
+        q: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[str] = None,
+        company_id: Optional[str] = None,
+        archived: Optional[bool] = None,
+    ) -> Iterator[Any]:
+        """Walks every page of contacts, yielding one contact at a time. Stops
+        on an empty page, a short page or once `total` is reached."""
+        current_page = page if page is not None else 1
+        yielded = 0
+
+        while True:
+            result = self.list(
+                q=q, page=current_page, limit=limit, sort=sort, company_id=company_id, archived=archived
+            )
+            contacts = _get_field(result, "contacts") or []
+
+            for contact in contacts:
+                yield contact
+            yielded += len(contacts)
+
+            if len(contacts) == 0:
+                break
+
+            total = _get_field(result, "total")
+            if isinstance(total, int) and yielded >= total:
+                break
+
+            effective_limit = _get_field(result, "limit", limit)
+            if isinstance(effective_limit, int) and len(contacts) < effective_limit:
+                break
+
+            current_page = (_get_field(result, "page") or current_page) + 1
+
+    def create(self, body: Mapping[str, Any]) -> Any:
+        """Adds a contact. An active contact with the same e-mail or phone
+        raises `CONTACT_DUPLICATE`. This endpoint has no idempotency key, so
+        it is never retried. POST."""
+        return _unwrap(
+            lambda: self._api.api_v1_contacts_post(
+                api_v1_contacts_post_request=dict(body), _request_timeout=self._timeout
+            )
+        )
+
+
+class ReportsResource:
+    """`imzala.reports.*`: aggregate counts."""
+
+    def __init__(self, api: ReportsApi, timeout: float, retry: _RetryConfig) -> None:
+        self._api = api
+        self._timeout = timeout
+        self._retry = retry
+
+    def get(self) -> Any:
+        """Returns aggregate demand counts for your workspace (pending,
+        completed, cancelled, expired, created this month). Counts only, no
+        personal data. GET, safe to auto-retry."""
+        return _unwrap_retryable_get(
+            lambda: self._api.api_v1_reports_get(_request_timeout=self._timeout),
+            self._retry,
         )
 
 
@@ -544,7 +902,9 @@ class Imzala:
                 **GET** requests that fail with 429 (rate limited) or 5xx
                 (server error). Defaults to 2. Set to `0` to disable.
                 Writes (`demands.create`, `send_reminder`, ...) are never
-                retried, regardless of this setting — see the SDK README.
+                retried by this setting. A write sent with an idempotency key
+                is retried once after a 429, independently of it; see the SDK
+                README.
             retry_base_delay: base delay (seconds) for the exponential
                 backoff between retries. Defaults to 0.3 (300ms).
         """
@@ -565,16 +925,21 @@ class Imzala:
         reminders_api = RemindersApi(api_client)
         templates_api = TemplatesApi(api_client)
         timestamps_api = TimestampsApi(api_client)
+        contacts_api = ContactsApi(api_client)
+        reports_api = ReportsApi(api_client)
 
         self.templates = TemplatesResource(templates_api, self._timeout, self._retry)
         self.demands = DemandsResource(demands_api, reminders_api, self._timeout, self._retry)
         self.embed = EmbedResource(demands_api, self._timeout)
-        self.timestamps = TimestampsResource(timestamps_api, self._timeout)
+        self.timestamps = TimestampsResource(timestamps_api, self._timeout, self._retry)
+        self.field_templates = FieldTemplatesResource(templates_api, demands_api, self._timeout, self._retry)
+        self.contacts = ContactsResource(contacts_api, self._timeout, self._retry)
+        self.reports = ReportsResource(reports_api, self._timeout, self._retry)
 
     def me(self) -> Any:
         """Returns the calling API key's owner info (id, email, name,
-        workspace, remaining credits). Requires the `timestamps` scope.
-        GET — safe to auto-retry."""
+        workspace, remaining credits). Works with any valid key; no scope is
+        required. GET, safe to auto-retry."""
         return _unwrap_retryable_get(
             lambda: self._account_api.api_v1_me_get(_request_timeout=self._timeout),
             self._retry,
