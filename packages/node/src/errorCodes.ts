@@ -13,8 +13,10 @@
 export const IMZALA_ERROR_CODES = {
   // İstek limiti ve tekrar koruması
   RATE_LIMIT_EXCEEDED:
-    'API anahtarının dakikalık istek sınırı aşıldı (varsayılan 60). Retry-After kadar bekleyip tekrar deneyin.',
-  TOO_MANY_REQUESTS: 'Belge yükleme ucunun API anahtarı başına dakikada 30 istek sınırı aşıldı.',
+    'API anahtarının dakikalık istek sınırı aşıldı (genel sınır varsayılan 60, zaman damgası isteklerinde 10). Retry-After kadar bekleyip tekrar deneyin.',
+  TOO_MANY_REQUESTS:
+    'Uca özgü istek sınırı aşıldı (ör. belge yüklemede dakikada 30, davet tekrarı ve zarf gönderiminde saatte 300).',
+  RECIPIENT_RESEND_LIMIT: 'Aynı alıcıya davet tekrarı sınırı aşıldı (saatte 3, günde 10).',
   RATE_LIMITED:
     'Uca özgü sıklık sınırı aşıldı (ör. aynı sözleşmeye 5 dakika içinde ikinci hatırlatma). Hatırlatmada force: true ile aşılabilir.',
   RATE_LIMITER_UNAVAILABLE: 'İstek sınırlayıcı geçici olarak kullanılamıyor; kısa süre sonra tekrar deneyin.',
@@ -49,7 +51,8 @@ export const IMZALA_ERROR_CODES = {
 
   // Sözleşme durumu
   DEMAND_NOT_FOUND: 'Sözleşme bu çalışma alanında bulunamadı.',
-  DEMAND_NOT_EDITABLE: 'Sözleşme düzenlemeye açık değil (tamamlanmış, iptal edilmiş veya süresi geçmiş).',
+  DEMAND_NOT_EDITABLE:
+    'Sözleşme düzenlemeye açık değil (ör. tamamlanmış, reddedilmiş, iptal edilmiş, süresi geçmiş veya bulunamadı).',
   DEMAND_COMPLETED: 'Tamamlanmış sözleşme API üzerinden silinemez.',
   DEMAND_NOT_DISPATCHED: 'Sözleşme henüz imzaya gönderilmedi (taslak).',
   DEMAND_NOT_DISPATCHABLE: 'Sözleşme tamamlanmış veya iptal edilmiş; tekrar gönderilemez.',
@@ -61,7 +64,8 @@ export const IMZALA_ERROR_CODES = {
 
   // Gönderim ve davet
   DISPATCH_NO_PARTIES: 'Sözleşmede imzacı taraf yok; yayına alınmadı ve kredi düşülmedi.',
-  DISPATCH_TOO_MANY: 'Taraf sayısı 20 sınırını aşıyor; davetler gönderilmedi.',
+  DISPATCH_TOO_MANY:
+    'Taraf sayısı 20 sınırını aşıyor. Gönderim ucunda istek yan etkisiz reddedilir (yayına geçmez, kredi düşmez); oluşturma yanıtında davetlerin gönderilmediğini bildirir.',
   INVALID_SEND_INVITATIONS: 'send_invitations değeri tanınmıyor.',
   RECONCILE_FAILED: 'Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.',
   INVALID_CHANNELS: 'channels boş ya da email/sms dışında bir değer içeriyor.',

@@ -112,7 +112,7 @@ describe('safe auto-retry — SAFETY: writes are never retried', () => {
   });
 });
 
-describe('unwrapIdempotentWrite — one safe retry for writes that carry an Idempotency-Key', () => {
+describe('unwrapIdempotentWrite: one safe retry for writes that carry an Idempotency-Key', () => {
   function rateLimited(retryAfterSeconds: number) {
     return {
       isAxiosError: true,
@@ -158,6 +158,20 @@ describe('unwrapIdempotentWrite — one safe retry for writes that carry an Idem
       ImzalaError,
     );
     expect(serverError).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws instead of waiting when Retry-After exceeds the cap', async () => {
+    const call = vi.fn().mockRejectedValue(rateLimited(3600));
+    await expect(unwrapIdempotentWrite(call, { idempotencyKey: 'k-6', retryBaseDelayMs: 1 })).rejects.toBeInstanceOf(
+      ImzalaRateLimitError,
+    );
+    expect(call).toHaveBeenCalledTimes(1);
+
+    const retried = vi.fn().mockRejectedValueOnce(rateLimited(2)).mockResolvedValueOnce(ok({ id: 'x' }));
+    await expect(
+      unwrapIdempotentWrite(retried, { idempotencyKey: 'k-7', retryBaseDelayMs: 1, maxWaitMs: 1000 }),
+    ).rejects.toBeInstanceOf(ImzalaRateLimitError);
+    expect(retried).toHaveBeenCalledTimes(1);
   });
 
   it('waits for Retry-After before the retry', async () => {

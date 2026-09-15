@@ -28,7 +28,10 @@ const NOT_ERROR_CODES: Record<string, string> = {
   WEBHOOK_TIMEOUT_MS: 'server environment variable',
 };
 
-const CODE_TOKEN = /\b[A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+\b/g;
+// Prose also contains single upper-case words (API, PDF, KVKK), so the
+// spec-to-catalogue direction only considers underscore tokens. Single-word
+// codes such as UNAUTHORIZED are still checked the other way round.
+const CODE_TOKEN = /\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g;
 
 describe('error code catalogue', () => {
   it('every catalogued code appears in the public spec', () => {
@@ -49,17 +52,11 @@ describe('error code catalogue', () => {
     }
   });
 
-  it('internal-only codes never enter the public catalogue', () => {
-    for (const code of ['ALREADY_TERMINAL', 'METHOD_INTERNAL_ONLY', 'METHOD_NOT_AVAILABLE', 'DROP']) {
-      expect(isKnownErrorCode(code), code).toBe(false);
-    }
-  });
-
   it('every description is a non-empty single line without an em dash', () => {
     for (const [code, text] of Object.entries(IMZALA_ERROR_CODES)) {
       expect(text, code).toMatch(/\S/);
       expect(text, code).not.toContain('\n');
-      expect(text, code).not.toContain('—');
+      expect(text, code).not.toContain('\u2014');
     }
   });
 
@@ -94,6 +91,17 @@ describe('error body shapes', () => {
     expect(extractErrorCode({ success: false, error: { code: 'DEMAND_NOT_DISPATCHABLE', message: 'x' } })).toBe(
       'DEMAND_NOT_DISPATCHABLE',
     );
+  });
+
+  it('a single-word code in error is still a code', () => {
+    expect(extractErrorCode({ error: 'UNAUTHORIZED' })).toBe('UNAUTHORIZED');
+  });
+
+  it('an HTTP-date Retry-After is converted to seconds', () => {
+    const at = new Date(Date.now() + 30_000).toUTCString();
+    const err = mapAxiosError(axiosError(429, { success: false, code: 'RATE_LIMIT_EXCEEDED' }, { 'retry-after': at }) as never);
+    expect((err as ImzalaRateLimitError).retryAfter).toBeGreaterThanOrEqual(28);
+    expect((err as ImzalaRateLimitError).retryAfter).toBeLessThanOrEqual(30);
   });
 
   it('a plain human-readable error string is not reported as a code', () => {

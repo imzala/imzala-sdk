@@ -67,9 +67,9 @@ export interface ImzalaRateLimitInfo {
  * Rate limited (429). `retryAfter` is seconds, when the server provided one.
  *
  * Several different limits answer with 429 and each has its own `code`
- * (`RATE_LIMIT_EXCEEDED`, `TOO_MANY_REQUESTS`, `RATE_LIMITED`,
- * `MAX_SMS_REMINDERS_REACHED`), so branch on this class or on `statusCode`,
- * not on one particular code.
+ * (e.g. `RATE_LIMIT_EXCEEDED`, `TOO_MANY_REQUESTS`, `RATE_LIMITED`,
+ * `RECIPIENT_RESEND_LIMIT`, `MAX_SMS_REMINDERS_REACHED`), so branch on this
+ * class or on `statusCode`, not on one particular code.
  */
 export class ImzalaRateLimitError extends ImzalaError {
   readonly retryAfter?: number;
@@ -121,7 +121,10 @@ export function extractErrorMessage(body: unknown): string | undefined {
   return undefined;
 }
 
-const CODE_SHAPE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/;
+// Upper case, digits and underscores only, at least three characters: covers
+// `TEMPLATE_IN_USE`, `BULK_MAX_10` and single-word codes such as `UNAUTHORIZED`,
+// never a human-readable sentence.
+const CODE_SHAPE = /^[A-Z][A-Z0-9_]{2,}$/;
 
 export function extractErrorCode(body: unknown): string | undefined {
   const b = asRecord(body);
@@ -148,6 +151,9 @@ function extractRetryAfter(body: unknown, headers: unknown): number | undefined 
   if (typeof header === 'string' || typeof header === 'number') {
     const n = Number(header);
     if (!Number.isNaN(n)) return n;
+    // Retry-After may also be an HTTP date.
+    const at = Date.parse(String(header));
+    if (!Number.isNaN(at)) return Math.max(0, Math.ceil((at - Date.now()) / 1000));
   }
   return undefined;
 }

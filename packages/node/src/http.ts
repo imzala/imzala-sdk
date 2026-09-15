@@ -106,11 +106,20 @@ export async function unwrapRetryableGet<T>(
  * so after a 429 it is safe to wait for `Retry-After` and try exactly once
  * more. A second 429, and any other error including 5xx, is thrown.
  *
+ * If the server asks for a longer wait than `maxWaitMs` (default 60 s), the
+ * 429 is thrown instead of blocking the caller.
+ *
+ * Only use this for endpoints whose Idempotency-Key the server honours
+ * (demand create, document upload, timestamp create). On any other endpoint
+ * the "safe" retry could create a duplicate.
+ *
  * Without a key this behaves exactly like `unwrap`.
  */
+export const MAX_IDEMPOTENT_RETRY_WAIT_MS = 60_000;
+
 export async function unwrapIdempotentWrite<T>(
   requestFn: () => AxiosPromise<{ success?: boolean; data?: T }>,
-  opts: { idempotencyKey?: string; retryBaseDelayMs: number },
+  opts: { idempotencyKey?: string; retryBaseDelayMs: number; maxWaitMs?: number },
 ): Promise<T> {
   try {
     return await unwrap(requestFn());
@@ -123,6 +132,7 @@ export async function unwrapIdempotentWrite<T>(
       mapped instanceof ImzalaRateLimitError && typeof mapped.retryAfter === 'number'
         ? Math.max(0, mapped.retryAfter * 1000)
         : opts.retryBaseDelayMs;
+    if (waitMs > (opts.maxWaitMs ?? MAX_IDEMPOTENT_RETRY_WAIT_MS)) throw mapped;
     await sleep(waitMs);
     return unwrap(requestFn());
   }
