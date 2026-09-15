@@ -402,15 +402,26 @@ class IdempotentWriteTest {
   }
 
   @Test
+  void a_key_that_is_not_printable_ascii_is_rejected_before_any_request_is_built() throws ApiException {
+    for (String key : List.of("sipariş-1", "a\r\nX-Evil: 1")) {
+      DemandsResource resource = new DemandsResource(demandsApi, org.mockito.Mockito.mock(RemindersApi.class), retry());
+      ImzalaException err = assertThrows(ImzalaException.class,
+          () -> resource.create(new CreateDemandRequest().templateId(java.util.UUID.randomUUID()), key));
+      assertInstanceOf(ImzalaValidationException.class, err);
+      assertNull(err.getStatusCode());
+    }
+    org.mockito.Mockito.verifyNoInteractions(demandsApi);
+  }
+
+  @Test
   void a_key_that_is_not_a_valid_header_value_surfaces_as_imzala_validation_exception() {
-    // Real generated client: the JDK rejects the header before any request is sent.
+    // Real generated client: the facade rejects the key before the JDK header builder sees it.
     DemandsResource resource =
         new DemandsResource(new DemandsApi(), org.mockito.Mockito.mock(RemindersApi.class), retry());
     ImzalaException err = assertThrows(ImzalaException.class,
         () -> resource.create(new CreateDemandRequest().templateId(java.util.UUID.randomUUID()), "sipariş-1"));
     assertInstanceOf(ImzalaValidationException.class, err);
     assertNull(err.getStatusCode());
-    assertInstanceOf(IllegalArgumentException.class, err.getCause());
   }
 
   @Test

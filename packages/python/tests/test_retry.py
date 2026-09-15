@@ -206,3 +206,15 @@ class TestBinaryGetDownloadsRetryLikeOtherGets:
                 client.demands.get_pdf("missing")
 
         assert mocked.call_count == 1
+
+
+@pytest.mark.parametrize("key", ["sipariş-1", "a\r\nX-Evil: 1"])
+def test_idempotent_write_rejects_a_key_that_is_not_printable_ascii_before_sending(key):
+    from imzala.client import _unwrap_idempotent_write
+    from imzala.errors import ImzalaValidationError
+
+    calls = []
+    with pytest.raises(ImzalaValidationError) as info:
+        _unwrap_idempotent_write(lambda: calls.append(1), idempotency_key=key, retry_base_delay_s=0.001)
+    assert info.value.status_code is None
+    assert calls == []

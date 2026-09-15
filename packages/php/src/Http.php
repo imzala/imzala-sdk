@@ -222,6 +222,22 @@ final class Http
      *     a generated client's {@code ...WithHttpInfo(...)} call
      * @param (callable(float):void)|null $sleepMs waits the given milliseconds; defaults to {@see usleep()}. Injectable for tests.
      */
+    /**
+     * Rejects a header value that is not printable ASCII before anything is
+     * sent, as the same ImzalaValidationException in every SDK language.
+     */
+    private static function assertHeaderValue(?string $value, string $headerName): void
+    {
+        if ($value === null) {
+            return;
+        }
+        if (preg_match('/[^\x20-\x7E]/', $value) === 1) {
+            throw new ImzalaValidationException(
+                $headerName . ' may only contain printable ASCII characters (no line breaks, no non-ASCII letters).'
+            );
+        }
+    }
+
     public static function unwrapIdempotentWrite(
         callable $call,
         ?string $idempotencyKey,
@@ -229,6 +245,7 @@ final class Http
         ?callable $sleepMs = null,
         int $maxWaitMs = self::MAX_RETRY_WAIT_MS,
     ): mixed {
+        self::assertHeaderValue($idempotencyKey, 'Idempotency-Key');
         try {
             return self::unwrap($call);
         } catch (ImzalaException $e) {

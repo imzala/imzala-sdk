@@ -1,5 +1,12 @@
 import type { AxiosPromise } from 'axios';
-import { ImzalaError, ImzalaRateLimitError, extractErrorCode, extractErrorMessage, mapAxiosError } from './errors';
+import {
+  ImzalaError,
+  ImzalaRateLimitError,
+  ImzalaValidationError,
+  extractErrorCode,
+  extractErrorMessage,
+  mapAxiosError,
+} from './errors';
 
 /**
  * Every imzala.org API response uses the same envelope:
@@ -121,10 +128,30 @@ export async function unwrapRetryableGet<T>(
  */
 export const MAX_IDEMPOTENT_RETRY_WAIT_MS = 60_000;
 
+/**
+ * Rejects a header value that is not printable ASCII before anything is sent.
+ * The HTTP stack would otherwise drop the offending characters and send a
+ * different key than the caller chose, so two distinct keys such as
+ * `sipariş-1` and `sipariç-1` could collapse into one and the second order be
+ * answered with the first demand.
+ */
+function assertHeaderValue(value: string | undefined, headerName: string): void {
+  if (value === undefined || value === null) return;
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    if (code < 0x20 || code > 0x7e) {
+      throw new ImzalaValidationError(
+        `${headerName} may only contain printable ASCII characters (no line breaks, no non-ASCII letters).`,
+      );
+    }
+  }
+}
+
 export async function unwrapIdempotentWrite<T>(
   requestFn: () => AxiosPromise<{ success?: boolean; data?: T }>,
   opts: { idempotencyKey?: string; retryBaseDelayMs: number; maxWaitMs?: number },
 ): Promise<T> {
+  assertHeaderValue(opts.idempotencyKey, 'Idempotency-Key');
   try {
     return await unwrap(requestFn());
   } catch (err) {

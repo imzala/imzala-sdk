@@ -142,6 +142,24 @@ final class Http {
    * <p>Without a key (or with an empty one) this behaves exactly like {@link
    * #unwrap}.
    */
+  /**
+   * Rejects a header value that is not printable ASCII before anything is
+   * sent, as the same ImzalaValidationException in every SDK language.
+   */
+  static void assertHeaderValue(String value, String headerName) {
+    if (value == null) {
+      return;
+    }
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      if (ch < 0x20 || ch > 0x7E) {
+        throw new ImzalaValidationException(
+            headerName + " may only contain printable ASCII characters (no line breaks, no non-ASCII letters).",
+            null, null, null, null);
+      }
+    }
+  }
+
   static <TResponse, TData> TData unwrapIdempotentWrite(
       ApiCall<TResponse> call,
       Function<TResponse, Boolean> success,
@@ -158,6 +176,7 @@ final class Http {
       String idempotencyKey,
       RetryConfig retry,
       long maxWaitMs) {
+    assertHeaderValue(idempotencyKey, "Idempotency-Key");
     try {
       return unwrap(call, success, data);
     } catch (ImzalaException err) {

@@ -30,6 +30,7 @@ from .errors import (
     extract_error_code,
     extract_error_message,
     map_api_exception,
+    ImzalaValidationError,
 )
 from .files import FileInput, UploadPartyInput, to_multipart_tuple
 
@@ -171,6 +172,19 @@ def _unwrap_retryable_get(call: Callable[[], Any], retry: _RetryConfig) -> Any:
             attempt += 1
 
 
+def _assert_header_value(value: Optional[str], header_name: str) -> None:
+    """Rejects a header value that is not printable ASCII before anything is
+    sent, as the same `ImzalaValidationError` in every SDK language (the HTTP
+    stack would otherwise fail with an unrelated error, or in other clients
+    send an altered key)."""
+    if value is None:
+        return
+    if any(ord(ch) < 0x20 or ord(ch) > 0x7E for ch in value):
+        raise ImzalaValidationError(
+            f"{header_name} may only contain printable ASCII characters (no line breaks, no non-ASCII letters)."
+        )
+
+
 def _unwrap_idempotent_write(
     call: Callable[[], Any],
     *,
@@ -198,6 +212,7 @@ def _unwrap_idempotent_write(
     Without a key this behaves exactly like `_unwrap`. `sleep` defaults to
     `time.sleep` and can be injected by tests.
     """
+    _assert_header_value(idempotency_key, "Idempotency-Key")
     try:
         return _unwrap(call)
     except ImzalaError as err:

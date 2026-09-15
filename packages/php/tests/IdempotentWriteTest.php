@@ -59,6 +59,29 @@ final class IdempotentWriteTest extends TestCase
         return new CreatedDemand(['id' => 'ok']);
     }
 
+    /** @return array<string, array{string}> */
+    public static function unsafeKeys(): array
+    {
+        return ['non-ascii' => ['sipariş-1'], 'line break' => ["a\r\nX-Evil: 1"]];
+    }
+
+    /** @dataProvider unsafeKeys */
+    #[\PHPUnit\Framework\Attributes\DataProvider('unsafeKeys')]
+    public function testAKeyThatIsNotPrintableAsciiIsRejectedBeforeSending(string $key): void
+    {
+        $called = false;
+        try {
+            Http::unwrapIdempotentWrite(function () use (&$called) {
+                $called = true;
+                return [null, 200, []];
+            }, $key, 1);
+            $this->fail('expected ImzalaValidationException');
+        } catch (\Imzala\ImzalaValidationException $e) {
+            $this->assertNull($e->getStatusCode());
+        }
+        $this->assertFalse($called);
+    }
+
     public function testAWriteWithoutAnIdempotencyKeyIsNeverRetriedOn429(): void
     {
         $calls = 0;

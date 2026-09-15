@@ -136,6 +136,15 @@ describe('unwrapIdempotentWrite: one safe retry for writes that carry an Idempot
   }
   const ok = (data: unknown) => ({ status: 200, data: { success: true, data } }) as any;
 
+  it.each(['sipariş-1', 'a\r\nX-Evil: 1'])('rejects a key that is not printable ASCII before sending (%j)', async (key) => {
+    const call = vi.fn();
+    await expect(unwrapIdempotentWrite(call, { idempotencyKey: key, retryBaseDelayMs: 1 })).rejects.toMatchObject({
+      name: 'ImzalaValidationError',
+      statusCode: undefined,
+    });
+    expect(call).not.toHaveBeenCalled();
+  });
+
   it('a write WITHOUT an Idempotency-Key is never retried on 429', async () => {
     const call = vi.fn().mockRejectedValue(rateLimited(0));
     await expect(unwrapIdempotentWrite(call, { retryBaseDelayMs: 1 })).rejects.toBeInstanceOf(ImzalaRateLimitError);
