@@ -439,4 +439,17 @@ final class ResourcesTest extends TestCase
         $this->assertInstanceOf(ReportsResource::class, $client->reports());
         $this->assertInstanceOf(TimestampsResource::class, $client->timestamps());
     }
+
+    public function testGeneratedClientParameterValidationSurfacesAsImzalaException(): void
+    {
+        // Real generated client: it rejects limit < 10 locally, before any request.
+        $resource = new \Imzala\ContactsResource(new \Imzala\Client\Api\ContactsApi(), new \Imzala\RetryConfig(0, 1));
+        try {
+            $resource->list(limit: 5);
+            $this->fail('expected ImzalaValidationException');
+        } catch (\Imzala\ImzalaValidationException $e) {
+            $this->assertNull($e->getStatusCode());
+            $this->assertInstanceOf(\InvalidArgumentException::class, $e->getPrevious());
+        }
+    }
 }

@@ -69,6 +69,11 @@ final class Http
             [$data, $statusCode, $headers] = $call();
         } catch (ApiException $e) {
             throw ErrorMapper::fromException($e);
+        } catch (\InvalidArgumentException $e) {
+            // The generated client validates some parameters locally (list
+            // limits, key length) and throws before any request is sent.
+            // Surface it as an ImzalaException so callers need one catch.
+            throw new ImzalaValidationException($e->getMessage(), null, null, null, $e);
         }
 
         if ($statusCode < 200 || $statusCode >= 300) {
@@ -116,6 +121,11 @@ final class Http
             [$data, $statusCode, $headers] = $call();
         } catch (ApiException $e) {
             throw ErrorMapper::fromException($e);
+        } catch (\InvalidArgumentException $e) {
+            // The generated client validates some parameters locally (list
+            // limits, key length) and throws before any request is sent.
+            // Surface it as an ImzalaException so callers need one catch.
+            throw new ImzalaValidationException($e->getMessage(), null, null, null, $e);
         }
 
         if ($statusCode < 200 || $statusCode >= 300) {

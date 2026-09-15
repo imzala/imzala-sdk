@@ -279,6 +279,8 @@ final class IdempotentWriteTest extends TestCase
             ->willReturnCallback(function (...$args) use (&$calls, $envelope) {
                 $calls++;
                 $this->assertSame('yukleme-1', $args[2]);
+                // The retry must still find the temp file on disk.
+                $this->assertFileExists($args[0][0]->getPathname());
                 if ($calls === 1) {
                     throw self::rateLimited('0');
                 }
@@ -317,6 +319,7 @@ final class IdempotentWriteTest extends TestCase
             ->method('apiV1TimestampsPostWithHttpInfo')
             ->willReturnCallback(function (...$args) use (&$calls, $envelope) {
                 $calls++;
+                $this->assertFileExists($args[0]->getPathname());
                 if ($calls === 1) {
                     throw self::rateLimited('0');
                 }
