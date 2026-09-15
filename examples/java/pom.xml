@@ -12,7 +12,7 @@
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <exec.mainClass>org.imzala.examples.Main</exec.mainClass>
+    <exec.mainClass>org.imzala.examples.SablondanSozlesme</exec.mainClass>
   </properties>
 
   <dependencies>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>org.imzala</groupId>
       <artifactId>imzala-java</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.2</version>
     </dependency>
   </dependencies>
 
