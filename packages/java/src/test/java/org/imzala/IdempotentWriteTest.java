@@ -36,6 +36,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -381,9 +382,16 @@ class IdempotentWriteTest {
   @Test
   void timestamps_create_with_key_retries_once_with_the_key_in_slot_two() throws ApiException {
     TimestampRecord record = new TimestampRecord();
+    int[] attempt = {0};
     when(timestampsApi.apiV1TimestampsPost(any(File.class), any(), any(), any(), any()))
-        .thenThrow(tooMany("1"))
-        .thenReturn(new ApiV1TimestampsPost201Response().success(true).data(record));
+        .thenAnswer(inv -> {
+          File file = inv.getArgument(0);
+          assertTrue(file.exists(), "temp file must still exist on every attempt");
+          if (attempt[0]++ == 0) {
+            throw tooMany("1");
+          }
+          return new ApiV1TimestampsPost201Response().success(true).data(record);
+        });
 
     TimestampRecord result = new TimestampsResource(timestampsApi, retry())
         .create(timestampParams().idempotencyKey("ts-1").description("Taslak").ownerFirstName("Ayşe").ownerLastName("Yılmaz"));
@@ -391,6 +399,18 @@ class IdempotentWriteTest {
     assertSame(record, result);
     verify(timestampsApi, times(2)).apiV1TimestampsPost(any(File.class), eq("ts-1"), eq("Taslak"), eq("Ayşe"), eq("Yılmaz"));
     assertEquals(List.of(1_000L), sleeper.waits);
+  }
+
+  @Test
+  void a_key_that_is_not_a_valid_header_value_surfaces_as_imzala_validation_exception() {
+    // Real generated client: the JDK rejects the header before any request is sent.
+    DemandsResource resource =
+        new DemandsResource(new DemandsApi(), org.mockito.Mockito.mock(RemindersApi.class), retry());
+    ImzalaException err = assertThrows(ImzalaException.class,
+        () -> resource.create(new CreateDemandRequest().templateId(java.util.UUID.randomUUID()), "sipariş-1"));
+    assertInstanceOf(ImzalaValidationException.class, err);
+    assertNull(err.getStatusCode());
+    assertInstanceOf(IllegalArgumentException.class, err.getCause());
   }
 
   @Test

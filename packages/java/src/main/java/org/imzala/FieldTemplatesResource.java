@@ -59,7 +59,7 @@ public final class FieldTemplatesResource {
         retryConfig);
   }
 
-  /** Same as {@link #previewLayout(UUID, List, String)} with the template's own anchor-miss setting. */
+  /** Same as {@link #previewLayout(UUID, List, String)} without {@code onAnchorMiss}: the server applies {@code block}. */
   public FieldLayoutPreview previewLayout(UUID id, List<FileInput> files) {
     return previewLayout(id, files, null);
   }
@@ -72,7 +72,7 @@ public final class FieldTemplatesResource {
    * user. POST, but side-effect free; never auto-retried.
    *
    * @param files exactly one PDF to try the layout on (the field is a list on the wire)
-   * @param onAnchorMiss {@code "block"} or {@code "drop"}, see {@link UploadDemandParams#onAnchorMiss(String)}; {@code null} for the template's setting
+   * @param onAnchorMiss {@code "block"} or {@code "drop"}, see {@link UploadDemandParams#onAnchorMiss(String)}; {@code null} means {@code block} (the template setting is not used)
    */
   public FieldLayoutPreview previewLayout(UUID id, List<FileInput> files, String onAnchorMiss) {
     List<File> tempFiles = new ArrayList<>();

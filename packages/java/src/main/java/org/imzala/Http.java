@@ -57,6 +57,10 @@ final class Http {
       response = call.call();
     } catch (ApiException err) {
       throw ErrorMapper.map(err);
+    } catch (IllegalArgumentException err) {
+      // Rejected locally before any request was sent, e.g. an Idempotency-Key
+      // with non-ASCII characters is not a valid HTTP header value.
+      throw new ImzalaValidationException(err.getMessage(), null, null, null, err);
     }
 
     if (response == null || !Boolean.TRUE.equals(success.apply(response))) {

@@ -362,6 +362,8 @@ public final class DemandsResource {
       file = call.call();
     } catch (ApiException err) {
       throw ErrorMapper.map(err);
+    } catch (IllegalArgumentException err) {
+      throw new ImzalaValidationException(err.getMessage(), null, null, null, err);
     }
 
     if (file == null) {

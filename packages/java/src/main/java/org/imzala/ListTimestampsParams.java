@@ -46,6 +46,7 @@ public final class ListTimestampsParams {
     return this;
   }
 
+  /** 10 to 100, default 25. */
   public ListTimestampsParams limit(Integer limit) {
     this.limit = limit;
     return this;
