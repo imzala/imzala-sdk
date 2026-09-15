@@ -20,6 +20,7 @@ npm install @imzala/embed-react
 - [Olaylar (callback payloadları)](#olaylar-callback-payloadları)
 - [Yaşam döngüsü davranışı](#yaşam-döngüsü-davranışı)
 - [Güvenlik](#güvenlik)
+- [Sürüm uyumu](#sürüm-uyumu)
 - [Sunucu-taraflı olan kısım ayrı](#️-sunucu-taraflı-olan-kısım-ayrı)
 - [İmza sınıfı](#imza-sınıfı)
 
@@ -147,6 +148,14 @@ Her callback, imza yüzeyinden gelen olayın payload'ını alır:
 - **`token` değişimi:** eski widget kapanır, yeni token ile yeni bir iframe açılır. Tek seferde tek iframe bulunur.
 - **`unmount`:** iframe kaldırılır ve `window` mesaj dinleyicisi temizlenir; unmount sonrası gelen mesajlar callback tetiklemez.
 - **Terminal olaylar:** `complete`, `decline` ve `timeout` sonrası widget kendini otomatik kapatır. `resize` gibi olaylar iframe'i açık bırakır.
+
+## Sürüm uyumu
+
+| @imzala/embed-react | @imzala/embed | Konuştuğu API | Not |
+|---|---|---|---|
+| 1.0.0 | 1.0.0 | v1 (1.8.10) | React bileşeni `@imzala/embed` üzerine ince bir sarmalayıcıdır |
+
+İmza oturumu yine **sunucuda** üretilir; bileşene yalnız kısa ömürlü, tek kullanımlık `token` verilir. API anahtarı hiçbir koşulda tarayıcıya konmaz.
 
 ## Güvenlik
 

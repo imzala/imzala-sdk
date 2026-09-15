@@ -23,6 +23,7 @@ npm install @imzala/embed
 - [API referansı](#api-referansı)
 - [Otomatik yükseklik (auto-resize)](#otomatik-yükseklik-auto-resize)
 - [Modal veya gömülü (container)](#modal-veya-gömülü-container)
+- [Sürüm uyumu](#sürüm-uyumu)
 - [Güvenlik (origin allowlist)](#güvenlik-origin-allowlist)
 - [React için](#react-için)
 - [İmza sınıfı](#imza-sınıfı)
@@ -183,6 +184,14 @@ Varsayılan olarak (`autoResize: true`) iframe başlangıçta `600px`'tir; imza 
 
 - **`container` verirseniz**, iframe doğrudan o element'e gömülür (sayfa akışının parçası olur).
 - **`container` vermezseniz**, `open()` sayfa üstünde tam ekran, yarı saydam bir modal overlay (`aria-modal="true"`) oluşturup iframe'i onun içine yerleştirir. `close()` bu overlay'i tamamen kaldırır.
+
+## Sürüm uyumu
+
+| @imzala/embed | Konuştuğu API | Not |
+|---|---|---|
+| 1.0.0 | v1 (1.8.10) | Gömülü imza oturumu sunucuda `@imzala/node` (veya diğer sunucu SDK'ları) ile üretilir |
+
+Bu paketin yüzeyi (iframe ve `postMessage` olayları) API sürümünden bağımsızdır; tarayıcıya yalnız kısa ömürlü, tek kullanımlık embed token'ı iner. API anahtarı hiçbir koşulda tarayıcıya konmaz.
 
 ## Güvenlik (origin allowlist)
 
