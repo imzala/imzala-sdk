@@ -6,6 +6,8 @@ namespace Imzala;
 
 use Imzala\Client\Api\DemandsApi;
 use Imzala\Client\Api\RemindersApi;
+use Imzala\Client\Model\ApiV1DemandsBulkPost200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsBulkPostRequest;
 use Imzala\Client\Model\ApiV1DemandsGet200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest;
@@ -38,15 +40,49 @@ final class DemandsResource
     /**
      * Creates a new demand (contract) from a template.
      *
+     * <p>Without {@code $idempotencyKey} this is a single attempt: a retried
+     * create would produce a duplicate demand. With a key, a repeated request
+     * does not create a second demand, so one retry is made after a 429. A
+     * key reused with a different body throws {@code IDEMPOTENCY_KEY_REUSED}.
+     *
+     * <p>An {@code expiry_date} that is not a real calendar day throws
+     * {@code INVALID_EXPIRY_DATE}.
+     *
      * @param CreateDemandRequest|array<string, mixed> $body a generated
      *     {@see CreateDemandRequest} instance, or a plain associative
      *     array with the same (snake_case) keys — e.g. {@code
      *     ['template_id' => $id, 'party_mapping' => [...]]}
+     * @param string|null $idempotencyKey your own reference for this request (e.g. an order number); sent as the Idempotency-Key header
      */
-    public function create(CreateDemandRequest|array $body): CreatedDemand
+    public function create(CreateDemandRequest|array $body, ?string $idempotencyKey = null): CreatedDemand
     {
         $request = $body instanceof CreateDemandRequest ? $body : new CreateDemandRequest($body);
-        return Http::unwrap(fn () => $this->api->apiV1DemandsPostWithHttpInfo($request));
+        return Http::unwrapIdempotentWrite(
+            fn () => $this->api->apiV1DemandsPostWithHttpInfo(
+                create_demand_request: $request,
+                idempotency_key: $idempotencyKey,
+            ),
+            $idempotencyKey,
+            $this->retryConfig->retryBaseDelayMs,
+        );
+    }
+
+    /**
+     * Creates up to 10 demands from one template in a single request. Rows
+     * are created independently; check {@code failed} and each result's
+     * {@code status}.
+     *
+     * <p>This endpoint has no idempotency key, so it is never retried: a
+     * retried batch would create the demands again. Split larger lists into
+     * batches of 10 yourself.
+     *
+     * @param ApiV1DemandsBulkPostRequest|array<string, mixed> $body a generated
+     *     request instance, or a plain associative array with the same keys
+     */
+    public function createBulk(ApiV1DemandsBulkPostRequest|array $body): ApiV1DemandsBulkPost200ResponseData
+    {
+        $request = $body instanceof ApiV1DemandsBulkPostRequest ? $body : new ApiV1DemandsBulkPostRequest($body);
+        return Http::unwrap(fn () => $this->api->apiV1DemandsBulkPostWithHttpInfo(api_v1_demands_bulk_post_request: $request));
     }
 
     /** Returns a demand's status + per-party signing progress. GET — safe to auto-retry. */
@@ -58,7 +94,9 @@ final class DemandsResource
     /**
      * Places (replaces) signature/form fields on a demand's pages. See
      * {@see UpsertItemsRequest}'s {@code page_ids} for full-replace vs
-     * per-page-replace semantics.
+     * per-page-replace semantics. Every item needs an integer {@code page_id}
+     * ({@code PAGE_ID_REQUIRED}); an unknown {@code item_type} throws {@code
+     * INVALID_ITEM_TYPE}.
      *
      * @param UpsertItemsRequest|array<string, mixed> $body
      */
@@ -73,14 +111,31 @@ final class DemandsResource
      * a single PDF/DOC/DOCX/ODT/RTF/TXT, or 1-20 images merged into one
      * PDF.
      *
+     * <p>Without an idempotency key this is a single attempt. With {@see
+     * UploadDemandParams::withIdempotencyKey()}, a repeated request does not
+     * create a second demand, so one retry is made after a 429. Invitations
+     * are not sent unless {@see UploadDemandParams::withSendInvitations()} is
+     * set.
+     *
      * <p>See {@see FileInput} for why this writes each file to a
      * throwaway temp file — the vendored generated client's multipart
      * layer requires a real path on disk. Temp files (and their parent
      * temp directories) are always deleted before this method returns,
      * success or failure.
+     *
+     * @throws \JsonException when a party or the order cannot be encoded (e.g. invalid UTF-8); nothing is sent
      */
     public function uploadDocument(UploadDemandParams $params): CreatedDemandUpload
     {
+        // Encode before touching the filesystem: a failed encode must never
+        // turn into an empty party list on the wire.
+        $jsonFlags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE;
+        $partiesJson = json_encode(array_map(
+            static fn (UploadPartyInput $party) => $party->toArray(),
+            $params->getParties()
+        ), $jsonFlags);
+        $orderJson = $params->getOrder() !== null ? json_encode($params->getOrder(), $jsonFlags) : null;
+
         /** @var SplFileObject[] $splFiles */
         $splFiles = [];
         $tempPaths = [];
@@ -92,23 +147,25 @@ final class DemandsResource
                 $tempPaths[] = $splFile->getRealPath();
             }
 
-            $partiesJson = (string) json_encode(array_map(
-                static fn (UploadPartyInput $party) => $party->toArray(),
-                $params->getParties()
-            ));
-            $orderJson = $params->getOrder() !== null ? (string) json_encode($params->getOrder()) : null;
-
-            // Named arguments: the generated signature puts idempotency_key
-            // between parties and order, so positional arguments would
-            // silently shift order/title/description one slot to the right.
-            return Http::unwrap(fn () => $this->api->apiV1DemandsUploadPostWithHttpInfo(
-                files: $splFiles,
-                parties: $partiesJson,
-                idempotency_key: null,
-                order: $orderJson,
-                title: $params->getTitle(),
-                description: $params->getDescription(),
-            ));
+            // Named arguments: the generated signature inserts new optional
+            // parameters between existing ones, so positional arguments would
+            // silently shift values into the wrong slot.
+            return Http::unwrapIdempotentWrite(
+                fn () => $this->api->apiV1DemandsUploadPostWithHttpInfo(
+                    files: $splFiles,
+                    parties: $partiesJson,
+                    idempotency_key: $params->getIdempotencyKey(),
+                    order: $orderJson,
+                    title: $params->getTitle(),
+                    description: $params->getDescription(),
+                    field_template_id: $params->getFieldTemplateId(),
+                    force: $params->getForce() ? 'true' : null,
+                    send_invitations: $params->getSendInvitations(),
+                    on_anchor_miss: $params->getOnAnchorMiss(),
+                ),
+                $params->getIdempotencyKey(),
+                $this->retryConfig->retryBaseDelayMs,
+            );
         } finally {
             unset($splFiles);
             foreach ($tempPaths as $tempPath) {
@@ -121,7 +178,14 @@ final class DemandsResource
 
     /**
      * Triggers an immediate SMS/email reminder to a demand's unsigned
-     * parties, with default options (equivalent to {@code {}}).
+     * parties, with default options (equivalent to {@code {}}). Independent
+     * of the template/demand's scheduled reminder settings. Subject to a
+     * 5-minute anti-spam window (429 {@code RATE_LIMITED}, override with
+     * {@code ['force' => true]}) and a hard per-person cap of 3 reminders per
+     * channel (not overridable). A draft, completed, cancelled or expired
+     * demand throws 409 ({@code DEMAND_NOT_DISPATCHED}, {@code
+     * DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}). POST, never
+     * auto-retried (a retried call could double-send).
      */
     public function sendReminder(string $id, TriggerReminderRequest|array|null $body = null): ApiV1DemandsIdRemindersPost200ResponseData
     {
@@ -179,6 +243,16 @@ final class DemandsResource
     public function getPdf(string $id): string
     {
         return Http::unwrapBinary(fn () => $this->api->apiV1DemandsIdPdfGetWithHttpInfo($id));
+    }
+
+    /**
+     * Downloads the PDF of one document in a multi-document envelope as raw
+     * bytes ({@code string}). For the whole contract use {@see self::getPdf()}.
+     * GET.
+     */
+    public function getDocumentPdf(string $id, string $documentId): string
+    {
+        return Http::unwrapBinary(fn () => $this->api->apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo($id, $documentId));
     }
 
     /**

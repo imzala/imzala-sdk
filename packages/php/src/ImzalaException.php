@@ -24,6 +24,7 @@ class ImzalaException extends \RuntimeException
     private ?int $statusCode;
     private ?string $body;
     private ?string $errorCode;
+    private ?string $codeDescription;
 
     /**
      * @param string $message human-readable error message
@@ -43,6 +44,7 @@ class ImzalaException extends \RuntimeException
         $this->statusCode = $statusCode;
         $this->body = $body;
         $this->errorCode = $errorCode;
+        $this->codeDescription = ErrorCodes::describe($errorCode);
     }
 
     /** HTTP status code, when the error originated from an HTTP response. {@code null} otherwise (e.g. a network error). */
@@ -57,9 +59,15 @@ class ImzalaException extends \RuntimeException
         return $this->body;
     }
 
-    /** Machine-readable error code from the response envelope, when present (e.g. {@code "INVALID_API_KEY"}). */
+    /** Machine-readable error code from the response envelope, when present (e.g. {@code "TEMPLATE_IN_USE"}). {@code null} when the response carried none. */
     public function getErrorCode(): ?string
     {
         return $this->errorCode;
+    }
+
+    /** One-line explanation of {@see self::getErrorCode()} from {@see ErrorCodes}; {@code null} for a code the SDK does not know. */
+    public function getCodeDescription(): ?string
+    {
+        return $this->codeDescription;
     }
 }

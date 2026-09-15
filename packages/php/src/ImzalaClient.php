@@ -6,8 +6,10 @@ namespace Imzala;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Imzala\Client\Api\AccountApi;
+use Imzala\Client\Api\ContactsApi;
 use Imzala\Client\Api\DemandsApi;
 use Imzala\Client\Api\RemindersApi;
+use Imzala\Client\Api\ReportsApi;
 use Imzala\Client\Api\TemplatesApi;
 use Imzala\Client\Api\TimestampsApi;
 use Imzala\Client\Configuration;
@@ -54,6 +56,9 @@ final class ImzalaClient
     private readonly DemandsResource $demandsResource;
     private readonly EmbedResource $embedResource;
     private readonly TimestampsResource $timestampsResource;
+    private readonly FieldTemplatesResource $fieldTemplatesResource;
+    private readonly ContactsResource $contactsResource;
+    private readonly ReportsResource $reportsResource;
     private readonly RetryConfig $retryConfig;
 
     /**
@@ -64,7 +69,9 @@ final class ImzalaClient
      *     **GET** requests that fail with 429 (rate limited) or 5xx (server
      *     error). Defaults to 2. Set to {@code 0} to disable. Writes
      *     ({@code demands()->create()}, {@code sendReminder()}, ...) are
-     *     never retried, regardless of this setting — see {@see Http::unwrapRetryableGet()}.
+     *     never retried by this setting (see {@see Http::unwrapRetryableGet()}).
+     *     A write sent with an idempotency key is retried once after a 429,
+     *     independently of it (see {@see Http::unwrapIdempotentWrite()}).
      * @param int $retryBaseDelayMs base delay (ms) for the exponential backoff between retries. Defaults to 300.
      */
     public function __construct(
@@ -91,11 +98,16 @@ final class ImzalaClient
         $remindersApi = new RemindersApi($httpClient, $config);
         $templatesApi = new TemplatesApi($httpClient, $config);
         $timestampsApi = new TimestampsApi($httpClient, $config);
+        $contactsApi = new ContactsApi($httpClient, $config);
+        $reportsApi = new ReportsApi($httpClient, $config);
 
         $this->templatesResource = new TemplatesResource($templatesApi, $this->retryConfig);
         $this->demandsResource = new DemandsResource($demandsApi, $remindersApi, $this->retryConfig);
         $this->embedResource = new EmbedResource($demandsApi);
-        $this->timestampsResource = new TimestampsResource($timestampsApi);
+        $this->timestampsResource = new TimestampsResource($timestampsApi, $this->retryConfig);
+        $this->fieldTemplatesResource = new FieldTemplatesResource($templatesApi, $demandsApi, $this->retryConfig);
+        $this->contactsResource = new ContactsResource($contactsApi, $this->retryConfig);
+        $this->reportsResource = new ReportsResource($reportsApi, $this->retryConfig);
     }
 
     /** {@code $imzala->templates()->list()/get($id)/usage($id)}. */
@@ -116,13 +128,31 @@ final class ImzalaClient
         return $this->embedResource;
     }
 
-    /** {@code $imzala->timestamps()->create(...)}. */
+    /** {@code $imzala->timestamps()->create(...)/list(...)/get($id)}. */
     public function timestamps(): TimestampsResource
     {
         return $this->timestampsResource;
     }
 
-    /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Requires the {@code timestamps} scope. GET — safe to auto-retry. */
+    /** {@code $imzala->fieldTemplates()->list(...)/get($id)/previewLayout($id, $files)}. */
+    public function fieldTemplates(): FieldTemplatesResource
+    {
+        return $this->fieldTemplatesResource;
+    }
+
+    /** {@code $imzala->contacts()->list(...)/listAll(...)/create(...)}. */
+    public function contacts(): ContactsResource
+    {
+        return $this->contactsResource;
+    }
+
+    /** {@code $imzala->reports()->get()}. */
+    public function reports(): ReportsResource
+    {
+        return $this->reportsResource;
+    }
+
+    /** Returns the calling API key's owner info (id, email, name, workspace, remaining credits). Works with any valid key; no scope is required. GET, safe to auto-retry. */
     public function me(): ApiV1MeGet200ResponseData
     {
         return Http::unwrapRetryableGet(fn () => $this->accountApi->apiV1MeGetWithHttpInfo(), $this->retryConfig);

@@ -175,4 +175,62 @@ final class RetryTest extends TestCase
         $this->expectException(ImzalaException::class);
         $resource->create(['template_id' => 'tpl-1']);
     }
+
+    // --- wait cap: never block past 60 s on a GET either ------------------
+
+    public function testGetThrowsWithoutWaitingWhenRetryAfterExceedsSixtySeconds(): void
+    {
+        $calls = 0;
+        $slept = [];
+        $call = function () use (&$calls) {
+            $calls++;
+            throw new ApiException('Rate limited', 429, ['Retry-After' => ['61']], null);
+        };
+        try {
+            \Imzala\Http::unwrapRetryableGet($call, self::fastRetry(), function (float $ms) use (&$slept) {
+                $slept[] = $ms;
+            });
+            $this->fail('expected ImzalaRateLimitException');
+        } catch (ImzalaRateLimitException $e) {
+            $this->assertSame(61.0, $e->getRetryAfter());
+        }
+        $this->assertSame(1, $calls);
+        $this->assertSame([], $slept);
+    }
+
+    public function testGetThrowsWithoutWaitingWhenAnHttpDateRetryAfterIsTooFar(): void
+    {
+        $calls = 0;
+        $at = gmdate('D, d M Y H:i:s', time() + 600) . ' GMT';
+        $call = function () use (&$calls, $at) {
+            $calls++;
+            throw new ApiException('Rate limited', 429, ['retry-after' => [$at]], null);
+        };
+        try {
+            \Imzala\Http::unwrapRetryableGet($call, self::fastRetry(), static fn () => null);
+            $this->fail('expected ImzalaRateLimitException');
+        } catch (ImzalaRateLimitException) {
+        }
+        $this->assertSame(1, $calls);
+    }
+
+    public function testGetStillWaitsExactlySixtySeconds(): void
+    {
+        $calls = 0;
+        $slept = [];
+        $data = new ApiV1TemplatesGet200ResponseData();
+        $envelope = new ApiV1TemplatesGet200Response(['success' => true, 'data' => $data]);
+        $call = function () use (&$calls, $envelope) {
+            if (++$calls === 1) {
+                throw new ApiException('Rate limited', 429, ['Retry-After' => ['60']], null);
+            }
+            return [$envelope, 200, []];
+        };
+        $result = \Imzala\Http::unwrapRetryableGet($call, self::fastRetry(), function (float $ms) use (&$slept) {
+            $slept[] = $ms;
+        });
+        $this->assertSame($data, $result);
+        $this->assertSame([60000.0], $slept);
+        $this->assertSame(2, $calls);
+    }
 }

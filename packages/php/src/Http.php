@@ -47,6 +47,13 @@ use Imzala\Client\ApiException;
  */
 final class Http
 {
+    /**
+     * Longest wait (ms) the SDK blocks the caller for after a 429 before it
+     * throws instead: applies to the GET auto-retry and to the one retry of
+     * an idempotent write.
+     */
+    public const MAX_RETRY_WAIT_MS = 60_000;
+
     private function __construct()
     {
     }
@@ -153,11 +160,15 @@ final class Http
      * $call()} internally), so simply passing the same closure back in on
      * each loop iteration re-issues the real API call every attempt.
      *
+     * <p>If the server asks for a longer wait than {@see self::MAX_RETRY_WAIT_MS}
+     * (60 s) the error is thrown instead of blocking the caller.
+     *
      * @param callable():array{0:mixed,1:int,2:array<string,string[]>} $call
      *     a generated client's {@code ...WithHttpInfo(...)} call — NOT the
      *     plain method, see class docs
+     * @param (callable(float):void)|null $sleepMs waits the given milliseconds; defaults to {@see usleep()}. Injectable for tests.
      */
-    public static function unwrapRetryableGet(callable $call, RetryConfig $retry): mixed
+    public static function unwrapRetryableGet(callable $call, RetryConfig $retry, ?callable $sleepMs = null): mixed
     {
         $attempt = 0;
         for (;;) {
@@ -167,9 +178,64 @@ final class Http
                 if ($attempt >= $retry->maxRetries || !self::isRetryableStatus($e->getStatusCode())) {
                     throw $e;
                 }
-                self::sleepMs(self::computeDelayMs($e, $attempt, $retry->retryBaseDelayMs));
+                $delayMs = self::computeDelayMs($e, $attempt, $retry->retryBaseDelayMs);
+                if ($delayMs > self::MAX_RETRY_WAIT_MS) {
+                    throw $e;
+                }
+                ($sleepMs ?? self::sleepMs(...))($delayMs);
                 $attempt++;
             }
+        }
+    }
+
+    /**
+     * Bounded, safe retry for write calls.
+     *
+     * <p>Writes are normally never retried: a repeated create produces a
+     * second demand. The one exception is a write sent with an
+     * Idempotency-Key. The server does not treat a second request with the
+     * same key as a new record, so after a 429 it is safe to wait for {@code
+     * Retry-After} and try exactly once more. A second 429, and any other
+     * error including 5xx, is thrown.
+     *
+     * <p>If the server asks for a longer wait than {@code $maxWaitMs}
+     * (default 60 s), the 429 is thrown instead of blocking the caller.
+     *
+     * <p>Only use this for endpoints whose Idempotency-Key the server honours
+     * (demand create, document upload, timestamp create). On any other
+     * endpoint the "safe" retry could create a duplicate.
+     *
+     * <p>Without a key (or with an empty one) this behaves exactly like
+     * {@see self::unwrap()}.
+     *
+     * @param callable():array{0:mixed,1:int,2:array<string,string[]>} $call
+     *     a generated client's {@code ...WithHttpInfo(...)} call
+     * @param (callable(float):void)|null $sleepMs waits the given milliseconds; defaults to {@see usleep()}. Injectable for tests.
+     */
+    public static function unwrapIdempotentWrite(
+        callable $call,
+        ?string $idempotencyKey,
+        int $retryBaseDelayMs,
+        ?callable $sleepMs = null,
+        int $maxWaitMs = self::MAX_RETRY_WAIT_MS,
+    ): mixed {
+        try {
+            return self::unwrap($call);
+        } catch (ImzalaException $e) {
+            $replayable = $idempotencyKey !== null && $idempotencyKey !== '' && $e->getStatusCode() === 429;
+            if (!$replayable) {
+                throw $e;
+            }
+
+            $waitMs = $e instanceof ImzalaRateLimitException && $e->getRetryAfter() !== null
+                ? max(0.0, $e->getRetryAfter() * 1000)
+                : (float) $retryBaseDelayMs;
+            if ($waitMs > $maxWaitMs) {
+                throw $e;
+            }
+            ($sleepMs ?? self::sleepMs(...))($waitMs);
+
+            return self::unwrap($call);
         }
     }
 

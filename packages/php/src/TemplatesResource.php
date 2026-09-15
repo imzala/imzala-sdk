@@ -23,7 +23,11 @@ final class TemplatesResource
     ) {
     }
 
-    /** Lists your active templates (one page). GET — safe to auto-retry. */
+    /**
+     * Lists your active templates (one page). {@code $limit} is clamped to
+     * 1..100; {@code $page} below 1 throws {@code INVALID_PAGE}. GET, safe to
+     * auto-retry.
+     */
     public function list(?int $page = null, ?int $limit = null): ApiV1TemplatesGet200ResponseData
     {
         return Http::unwrapRetryableGet(
@@ -111,8 +115,10 @@ final class TemplatesResource
     }
 
     /**
-     * Deletes (soft-deletes) a template. Existing demands created from it are
-     * unaffected. DELETE — never auto-retried.
+     * Deletes a template. The record is not erased immediately: it is marked
+     * deleted and kept for 30 days. Existing demands created from it are
+     * unaffected. A template with active (draft or pending) demands cannot be
+     * deleted and throws {@code TEMPLATE_IN_USE}. DELETE, never auto-retried.
      */
     public function delete(string $id): ApiV1TemplatesIdDelete200ResponseData
     {
