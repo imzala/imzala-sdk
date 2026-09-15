@@ -206,12 +206,17 @@ public class EnvelopeTests : IDisposable
     {
         var srv = Server(Ok(new { document = DocBody() }));
         var result = await Client(srv).Demands.Documents.UpdateAsync(Demand, Doc,
-            new ApiV1DemandsDemandIdDocumentsDocIdPatchRequest(title: "Yeni başlık", isRequired: true, signatureRequired: true));
+            new ApiV1DemandsDemandIdDocumentsDocIdPatchRequest(title: "Yeni başlık"));
         Assert.Equal(Doc, result.Document.Id);
         var call = srv.Calls[0];
         Assert.Equal("PATCH", call.Method);
         Assert.Equal($"/api/v1/demands/{Demand}/documents/{Doc}", call.Uri);
-        Assert.Equal("Yeni başlık", (string?)Json(call.Body)["title"]);
+        var body = Json(call.Body);
+        Assert.Equal("Yeni başlık", (string?)body["title"]);
+        // A title-only update must not carry false for the booleans: the
+        // server reads null (or absence) as "unchanged".
+        Assert.NotEqual(false, (bool?)body["is_required"]);
+        Assert.NotEqual(false, (bool?)body["signature_required"]);
     }
 
     [Fact]

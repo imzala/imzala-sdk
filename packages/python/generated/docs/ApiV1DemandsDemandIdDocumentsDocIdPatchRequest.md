@@ -7,8 +7,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **title** | **str** | Gönderilirse boş olamaz. | [optional] 
 **doc_kind** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**signature_required** | **bool** |  | [optional] 
+**is_required** | **bool** | Gönderilmezse değişmez. | [optional] 
+**signature_required** | **bool** | Gönderilmezse değişmez. | [optional] 
 
 ## Example
 

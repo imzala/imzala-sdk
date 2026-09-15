@@ -9,8 +9,8 @@
 |------------ | ------------- | ------------- | -------------|
 |**title** | **String** | Gönderilirse boş olamaz. |  [optional] |
 |**docKind** | [**DocKindEnum**](#DocKindEnum) |  |  [optional] |
-|**isRequired** | **Boolean** |  |  [optional] |
-|**signatureRequired** | **Boolean** |  |  [optional] |
+|**isRequired** | **Boolean** | Gönderilmezse değişmez. |  [optional] |
+|**signatureRequired** | **Boolean** | Gönderilmezse değişmez. |  [optional] |
 
 
 

@@ -96,10 +96,10 @@ public sealed class EnvelopeDocumentsResource
     }
 
     /// <summary>
-    /// Updates a document. The generated request model always sends
-    /// <c>is_required</c> and <c>signature_required</c> (they are non-nullable
-    /// booleans, <c>false</c> unless set), so pass the values you want kept along
-    /// with the field you change. Never retried. PATCH.
+    /// Updates only the fields you set. Unset booleans are serialised as
+    /// <c>null</c>, which the server treats as "not sent" (unchanged), so a
+    /// title-only update leaves <c>is_required</c> and <c>signature_required</c>
+    /// as they are. Never retried. PATCH.
     /// </summary>
     public Task<ApiV1DemandsDemandIdDocumentsPost201ResponseData> UpdateAsync(Guid demandId, Guid docId, ApiV1DemandsDemandIdDocumentsDocIdPatchRequest body, CancellationToken cancellationToken = default) =>
         Http.Unwrap(_api.ApiV1DemandsDemandIdDocumentsDocIdPatchAsync(demandId, docId, body, cancellationToken), r => r.Success, r => r.Data);

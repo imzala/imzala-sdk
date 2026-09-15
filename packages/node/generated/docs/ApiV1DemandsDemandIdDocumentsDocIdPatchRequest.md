@@ -7,8 +7,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **title** | **string** | Gönderilirse boş olamaz. | [optional] [default to undefined]
 **doc_kind** | **string** |  | [optional] [default to undefined]
-**is_required** | **boolean** |  | [optional] [default to undefined]
-**signature_required** | **boolean** |  | [optional] [default to undefined]
+**is_required** | **boolean** | Gönderilmezse değişmez. | [optional] [default to undefined]
+**signature_required** | **boolean** | Gönderilmezse değişmez. | [optional] [default to undefined]
 
 ## Example
 
