@@ -149,7 +149,13 @@ final class ErrorMapper {
     return null;
   }
 
+  /** Only a finite, non-negative number of seconds is usable; anything else (NaN, Infinity) counts as absent. */
   private static Double extractRetryAfter(JsonNode body, HttpHeaders headers) {
+    Double seconds = readRetryAfter(body, headers);
+    return seconds != null && Double.isFinite(seconds) && seconds >= 0 ? seconds : null;
+  }
+
+  private static Double readRetryAfter(JsonNode body, HttpHeaders headers) {
     if (body != null && body.isObject()) {
       JsonNode direct = body.get("retry_after_seconds");
       if (direct != null && direct.isNumber()) {

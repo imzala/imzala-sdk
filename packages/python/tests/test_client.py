@@ -147,6 +147,11 @@ class TestConstruction:
         with pytest.raises(ValueError, match="api_key is required"):
             Imzala(api_key="")
 
+    @pytest.mark.parametrize("api_key", ["imz_test\n", "imz_test\r\nX-Evil: 1", "imz_tëst"])
+    def test_rejects_an_api_key_that_is_not_printable_ascii(self, api_key):
+        with pytest.raises(ValueError, match="printable ASCII"):
+            Imzala(api_key=api_key)
+
     def test_defaults_base_url_to_prod(self):
         client = Imzala(api_key="imz_test")
         assert client._account_api.api_client.configuration.host == "https://api-prd.imzala.org"

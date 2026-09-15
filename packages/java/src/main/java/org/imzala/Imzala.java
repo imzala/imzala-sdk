@@ -94,6 +94,14 @@ public final class Imzala {
     if (apiKey == null || apiKey.isEmpty()) {
       throw new IllegalArgumentException("new Imzala(apiKey) — apiKey is required.");
     }
+    // A key read from a file often ends with a newline; sent as a header it
+    // would corrupt the request.
+    for (int i = 0; i < apiKey.length(); i++) {
+      char ch = apiKey.charAt(i);
+      if (ch < 0x20 || ch > 0x7E) {
+        throw new IllegalArgumentException("new Imzala(apiKey): apiKey may only contain printable ASCII characters (check for a trailing newline).");
+      }
+    }
 
     ApiClient apiClient = new ApiClient();
     apiClient.updateBaseUri(baseUrl != null && !baseUrl.isEmpty() ? baseUrl : DEFAULT_BASE_URL);

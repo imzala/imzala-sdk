@@ -68,6 +68,19 @@ class ErrorsTest {
   }
 
   @Test
+  void ignores_an_unusable_RetryAfter_header() {
+    for (String value : List.of("NaN", "Infinity", "-5")) {
+      ImzalaException err = ErrorMapper.map(fakeApiException(
+          429,
+          """
+              {"success":false,"error":"RATE_LIMITED"}""",
+          Map.of("Retry-After", List.of(value))));
+      ImzalaRateLimitException rateLimited = assertInstanceOf(ImzalaRateLimitException.class, err);
+      assertNull(rateLimited.getRetryAfter(), value);
+    }
+  }
+
+  @Test
   void maps_429_retryAfter_from_RetryAfter_header_when_body_omits_it() {
     ImzalaException err = ErrorMapper.map(fakeApiException(
         429,

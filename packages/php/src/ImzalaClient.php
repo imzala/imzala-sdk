@@ -84,6 +84,11 @@ final class ImzalaClient
         if ($apiKey === '') {
             throw new InvalidArgumentException('new ImzalaClient(apiKey) — apiKey is required.');
         }
+        // A key read from a file often ends with a newline; sent as a header
+        // it would corrupt the request.
+        if (preg_match('/[^\x20-\x7E]/', $apiKey) === 1) {
+            throw new InvalidArgumentException('new ImzalaClient(apiKey): apiKey may only contain printable ASCII characters (check for a trailing newline).');
+        }
 
         $config = new Configuration();
         $config->setApiKey('X-API-Key', $apiKey);

@@ -230,6 +230,16 @@ public class ClientTests
         await Assert.ThrowsAsync<ImzalaError>(() => resource.GetAsync(Guid.NewGuid()));
     }
 
+    [Theory]
+    [InlineData("imz_test\n")]
+    [InlineData("imz_test\r\nX-Evil: 1")]
+    [InlineData("imz_tëst")]
+    public void Construction_rejects_an_apiKey_that_is_not_printable_ascii(string apiKey)
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new Imzala(apiKey));
+        Assert.Contains("printable ASCII", ex.Message);
+    }
+
     [Fact]
     public void Construction_requires_an_apiKey()
     {

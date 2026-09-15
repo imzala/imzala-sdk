@@ -169,6 +169,15 @@ def extract_error_code(body: Any) -> Optional[str]:
 
 
 def _extract_retry_after(body: Any, headers: Any) -> Optional[float]:
+    """Only a finite, non-negative number of seconds is usable; anything
+    else (NaN, infinity) counts as absent."""
+    seconds = _read_retry_after(body, headers)
+    if seconds is None or not math.isfinite(seconds) or seconds < 0:
+        return None
+    return seconds
+
+
+def _read_retry_after(body: Any, headers: Any) -> Optional[float]:
     b = _as_mapping(body)
     direct = b.get("retry_after_seconds") if b else None
     if isinstance(direct, (int, float)) and not isinstance(direct, bool):

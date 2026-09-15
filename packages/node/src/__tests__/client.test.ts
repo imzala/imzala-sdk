@@ -143,6 +143,10 @@ describe('Imzala facade — construction', () => {
     expect(() => new Imzala({} as any)).toThrow(/apiKey is required/);
   });
 
+  it.each(['imz_test\n', 'imz_test\r\nX-Evil: 1', 'imz_tëst'])('rejects an apiKey that is not printable ASCII (%j)', (apiKey) => {
+    expect(() => new Imzala({ apiKey })).toThrow(/printable ASCII/);
+  });
+
   it('defaults baseUrl to prod', async () => {
     const spy = vi.spyOn(AccountApi.prototype, 'apiV1MeGet').mockResolvedValue({
       data: { success: true, data: {} },

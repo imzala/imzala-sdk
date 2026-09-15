@@ -78,6 +78,19 @@ public sealed class Imzala
             throw new ArgumentException("new Imzala(apiKey) — apiKey is required.", nameof(apiKey));
         }
 
+        // A key read from a file often ends with a newline. The generated client
+        // adds header values without validation, so a line break would go on the
+        // wire and start a new header.
+        foreach (var ch in apiKey)
+        {
+            if (ch < 0x20 || ch > 0x7E)
+            {
+                throw new ArgumentException(
+                    "new Imzala(apiKey): apiKey may only contain printable ASCII characters (check for a trailing newline).",
+                    nameof(apiKey));
+            }
+        }
+
         var configuration = new GeneratedConfiguration
         {
             BasePath = baseUrl,

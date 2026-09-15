@@ -947,6 +947,10 @@ class Imzala:
         """
         if not api_key:
             raise ValueError("Imzala(api_key=...) — api_key is required.")
+        # A key read from a file often ends with a newline; sent as a header
+        # it would corrupt the request.
+        if any(ord(ch) < 0x20 or ord(ch) > 0x7E for ch in api_key):
+            raise ValueError("Imzala(api_key=...): api_key may only contain printable ASCII characters (check for a trailing newline).")
 
         self._timeout = float(timeout)
         self._retry = _RetryConfig(

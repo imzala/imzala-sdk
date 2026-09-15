@@ -250,7 +250,14 @@ internal static class ErrorMapper
         return null;
     }
 
+    /// <summary>Only a finite, non-negative number of seconds is usable; anything else (NaN, Infinity) counts as absent.</summary>
     private static double? ExtractRetryAfter(JsonElement? body, GeneratedMultimap? headers)
+    {
+        var seconds = ReadRetryAfter(body, headers);
+        return seconds is { } s && double.IsFinite(s) && s >= 0 ? s : null;
+    }
+
+    private static double? ReadRetryAfter(JsonElement? body, GeneratedMultimap? headers)
     {
         if (body is { ValueKind: JsonValueKind.Object } b)
         {

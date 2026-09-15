@@ -152,6 +152,11 @@ describe('rate limit errors', () => {
     expect(err.rateLimit).toEqual({ limit: 5, remaining: 0, reset: 42, policy: '5;w=60' });
   });
 
+  it.each(['NaN', 'Infinity', '-5'])('ignores an unusable Retry-After (%s)', (value) => {
+    const err = mapAxiosError(axiosError(429, { success: false, code: 'RATE_LIMIT_EXCEEDED' }, { 'retry-after': value }) as never);
+    expect((err as ImzalaRateLimitError).retryAfter).toBeUndefined();
+  });
+
   it('leaves rateLimit undefined when the server sent no RateLimit-* headers', () => {
     const err = mapAxiosError(axiosError(429, { success: false, error: { code: 'RATE_LIMITED' } }) as never);
     expect((err as ImzalaRateLimitError).rateLimit).toBeUndefined();

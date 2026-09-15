@@ -214,6 +214,14 @@ class ClientTest {
   }
 
   @Test
+  void construction_rejects_an_apiKey_that_is_not_printable_ascii() {
+    for (String apiKey : List.of("imz_test\n", "imz_test\r\nX-Evil: 1", "imz_tëst")) {
+      IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> new Imzala(apiKey));
+      assertTrue(ex.getMessage().contains("printable ASCII"));
+    }
+  }
+
+  @Test
   void construction_requires_an_apiKey() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> new Imzala(""));
     assertTrue(ex.getMessage().contains("apiKey is required"));

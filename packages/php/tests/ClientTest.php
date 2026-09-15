@@ -388,4 +388,16 @@ final class ClientTest extends TestCase
         $this->expectException(ImzalaException::class);
         \Imzala\Http::unwrap(fn () => $api->apiV1MeGetWithHttpInfo());
     }
+
+    public function testConstructionRejectsAnApiKeyThatIsNotPrintableAscii(): void
+    {
+        foreach (["imz_test\n", "imz_test\r\nX-Evil: 1", "imz_tëst"] as $apiKey) {
+            try {
+                new \Imzala\ImzalaClient($apiKey);
+                $this->fail('expected InvalidArgumentException for ' . json_encode($apiKey));
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('printable ASCII', $e->getMessage());
+            }
+        }
+    }
 }

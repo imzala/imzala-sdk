@@ -697,6 +697,11 @@ export class Imzala {
     if (!options?.apiKey) {
       throw new Error('new Imzala({ apiKey }) — apiKey is required.');
     }
+    // A key read from a file often ends with a newline; sent as a header it
+    // would corrupt the request (or, in some HTTP stacks, start a new header).
+    if (/[^\x20-\x7e]/.test(options.apiKey)) {
+      throw new Error('new Imzala({ apiKey }): apiKey may only contain printable ASCII characters (check for a trailing newline).');
+    }
 
     const configuration = new Configuration({
       apiKey: options.apiKey,

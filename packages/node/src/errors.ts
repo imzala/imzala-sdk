@@ -138,7 +138,13 @@ export function extractErrorCode(body: unknown): string | undefined {
   return undefined;
 }
 
+/** Only a finite, non-negative number of seconds is usable; anything else (NaN, Infinity) counts as absent. */
 function extractRetryAfter(body: unknown, headers: unknown): number | undefined {
+  const seconds = readRetryAfter(body, headers);
+  return typeof seconds === 'number' && Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+}
+
+function readRetryAfter(body: unknown, headers: unknown): number | undefined {
   const b = asRecord(body);
   const direct = b?.retry_after_seconds;
   if (typeof direct === 'number') return direct;

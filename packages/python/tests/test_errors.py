@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from imzala.errors import (
     ImzalaAuthError,
     ImzalaError,
@@ -60,6 +62,15 @@ def test_maps_429_retry_after_from_header_when_body_omits_it():
     )
     assert isinstance(err, ImzalaRateLimitError)
     assert err.retry_after == 30.0
+
+
+@pytest.mark.parametrize("value", ["NaN", "inf", "-5"])
+def test_ignores_an_unusable_retry_after(value):
+    err = map_api_exception(
+        fake_api_exception(429, {"success": False, "error": "RATE_LIMITED"}, headers={"Retry-After": value})
+    )
+    assert isinstance(err, ImzalaRateLimitError)
+    assert err.retry_after is None
 
 
 def test_maps_422_to_validation_error():

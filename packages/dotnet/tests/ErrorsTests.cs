@@ -62,6 +62,21 @@ public class ErrorsTests
         Assert.Equal(30, rateLimited.RetryAfter);
     }
 
+    [Theory]
+    [InlineData("NaN")]
+    [InlineData("Infinity")]
+    [InlineData("-5")]
+    public void Ignores_an_unusable_RetryAfter_header(string value)
+    {
+        var headers = new GeneratedMultimap();
+        headers.Add("Retry-After", value);
+
+        var err = ErrorMapper.Map(FakeApiException(429, """{"success":false,"error":"RATE_LIMITED"}""", headers));
+
+        var rateLimited = Assert.IsType<ImzalaRateLimitError>(err);
+        Assert.Null(rateLimited.RetryAfter);
+    }
+
     [Fact]
     public void Maps_422_to_ImzalaValidationError()
     {
