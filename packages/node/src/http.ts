@@ -40,6 +40,33 @@ export async function unwrap<T>(
   return body.data as T;
 }
 
+/**
+ * Like `unwrapRetryableGet` for the binary GET endpoints (PDF downloads),
+ * whose 2xx body is raw bytes rather than the JSON envelope. Errors are mapped
+ * the same way; 429 and 5xx are retried within the same limits.
+ */
+export async function retryableBinaryGet(
+  requestFn: () => AxiosPromise<unknown>,
+  retry: RetryConfig,
+): Promise<Buffer> {
+  let attempt = 0;
+  for (;;) {
+    try {
+      const res = await requestFn();
+      return Buffer.from(res.data as ArrayBuffer);
+    } catch (err) {
+      const mapped = err instanceof ImzalaError ? err : mapAxiosError(err);
+      if (attempt >= retry.maxRetries || !isRetryableStatus(mapped.statusCode)) {
+        throw mapped;
+      }
+      const delayMs = computeDelayMs(mapped, attempt, retry.retryBaseDelayMs);
+      if (delayMs > MAX_IDEMPOTENT_RETRY_WAIT_MS) throw mapped;
+      await sleep(delayMs);
+      attempt += 1;
+    }
+  }
+}
+
 export interface RetryConfig {
   /** Max retry attempts (not counting the initial try). `0` disables retry. */
   maxRetries: number;

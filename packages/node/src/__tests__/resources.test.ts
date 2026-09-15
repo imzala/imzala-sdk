@@ -218,3 +218,37 @@ describe('demands: new write options', () => {
     expect(spy.mock.calls[0][1]).toEqual({ responseType: 'arraybuffer' });
   });
 });
+
+describe('binary GETs: errors are mapped and 429/5xx retried like other GETs', () => {
+  const rateLimited = () => ({
+    isAxiosError: true,
+    message: 'Request failed with status code 429',
+    response: { status: 429, data: { success: false, code: 'RATE_LIMIT_EXCEEDED', retry_after_seconds: 0 }, headers: { 'retry-after': '0' } },
+  });
+
+  it('getPdf maps a 404 to ImzalaError instead of leaking the axios error', async () => {
+    vi.spyOn(DemandsApi.prototype, 'apiV1DemandsIdPdfGet').mockRejectedValue({
+      isAxiosError: true,
+      message: 'Request failed with status code 404',
+      response: { status: 404, data: { success: false, error: 'Sözleşme bulunamadı', code: 'DEMAND_NOT_FOUND' }, headers: {} },
+    });
+    await expect(client().demands.getPdf('d1')).rejects.toMatchObject({ name: 'ImzalaError', statusCode: 404, code: 'DEMAND_NOT_FOUND' });
+  });
+
+  it('getDocumentPdf retries a 429 and returns the bytes', async () => {
+    const spy = vi
+      .spyOn(DemandsApi.prototype, 'apiV1DemandsIdBelgeDocumentIdPdfGet')
+      .mockRejectedValueOnce(rateLimited())
+      .mockResolvedValueOnce({ data: new TextEncoder().encode('%PDF-1.7').buffer, status: 200 } as any);
+    const c = new Imzala({ apiKey: 'imz_test', maxRetries: 1, retryBaseDelayMs: 1 });
+    const bytes = await c.demands.getDocumentPdf('d1', 'doc1');
+    expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('getCertificate does not retry when maxRetries is 0', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsIdCertificateGet').mockRejectedValue(rateLimited());
+    await expect(client().demands.getCertificate('d1')).rejects.toBeInstanceOf(ImzalaRateLimitError);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+});

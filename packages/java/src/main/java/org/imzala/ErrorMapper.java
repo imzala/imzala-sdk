@@ -40,7 +40,8 @@ final class ErrorMapper {
     }
 
     if (err instanceof ApiException apiEx) {
-      int status = apiEx.getCode();
+      // ApiException(Throwable) (no HTTP exchange) carries code 0: no status.
+      Integer status = apiEx.getCode() > 0 ? apiEx.getCode() : null;
       String bodyText = apiEx.getResponseBody();
       JsonNode json = tryParseJson(bodyText);
       String message = extractErrorMessage(json);
@@ -49,6 +50,9 @@ final class ErrorMapper {
       }
       String code = extractErrorCode(json);
 
+      if (status == null) {
+        return new ImzalaException(message, null, bodyText, code, apiEx);
+      }
       switch (status) {
         case 401:
         case 403:

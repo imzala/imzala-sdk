@@ -68,6 +68,13 @@ class ErrorsTest {
   }
 
   @Test
+  void a_transport_failure_has_no_status_code() {
+    ImzalaException err = ErrorMapper.map(new ApiException(new java.net.ConnectException("connection refused")));
+    assertNull(err.getStatusCode());
+    assertEquals(ImzalaException.class, err.getClass());
+  }
+
+  @Test
   void ignores_an_unusable_RetryAfter_header() {
     for (String value : List.of("NaN", "Infinity", "-5")) {
       ImzalaException err = ErrorMapper.map(fakeApiException(

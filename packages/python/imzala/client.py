@@ -419,7 +419,7 @@ class TemplatesResource:
 
 
 class EnvelopeDocumentsResource:
-    """`imzala.demands.documents.*` — documents of a multi-document envelope.
+    """`imzala.demands.documents.*`: documents of a multi-document envelope.
 
     While multi-document envelopes are not enabled for the account, every
     method here raises `ENVELOPE_MULTI_DOC_DISABLED` (409), `list` included;

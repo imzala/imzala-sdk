@@ -194,7 +194,14 @@ final class ErrorMapper
      * @param array<string, mixed> $body
      * @param array<string, string[]>|null $headers
      */
+    /** Only a finite, non-negative number of seconds is usable; anything else (NAN, INF, negative) counts as absent. */
     private static function extractRetryAfter(array $body, ?array $headers): ?float
+    {
+        $seconds = self::readRetryAfter($body, $headers);
+        return $seconds !== null && is_finite($seconds) && $seconds >= 0 ? $seconds : null;
+    }
+
+    private static function readRetryAfter(array $body, ?array $headers): ?float
     {
         if (isset($body['retry_after_seconds']) && is_numeric($body['retry_after_seconds'])) {
             return (float) $body['retry_after_seconds'];

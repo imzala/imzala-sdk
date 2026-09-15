@@ -74,6 +74,17 @@ final class ErrorsTest extends TestCase
         $this->assertSame(30.0, $e->getRetryAfter());
     }
 
+    public function testUnusableRetryAfterCountsAsAbsent(): void
+    {
+        foreach (['NAN', 'INF', '-5', '1e999'] as $value) {
+            $e = ErrorMapper::fromResponse((object) ['success' => false, 'error' => 'RATE_LIMITED'], 429, ['Retry-After' => [$value]]);
+            $this->assertInstanceOf(ImzalaRateLimitException::class, $e);
+            $this->assertNull($e->getRetryAfter(), $value);
+        }
+        $e = ErrorMapper::fromResponse((object) ['success' => false, 'error' => 'RATE_LIMITED', 'retry_after_seconds' => -5], 429, []);
+        $this->assertNull($e->getRetryAfter());
+    }
+
     public function testFromResponse422MapsToValidationException(): void
     {
         $body = (object) ['success' => false, 'error' => 'VALIDATION_ERROR', 'message' => 'template_id zorunlu'];

@@ -73,8 +73,13 @@ jobs:
           node-version: '20'
       - run: npm ci
       - run: npm test -w @imzala/node
+      # vitest does not type-check; a type error would otherwise surface only
+      # in the publish build (tsup dts).
+      - run: npx tsc --noEmit -p packages/node
+      - run: npm run build -w @imzala/node
       - run: npm run build -w @imzala/embed
       - run: npm test -w @imzala/embed
+      - run: npm run build -w @imzala/embed-react
       - run: npm test -w @imzala/embed-react
 
   python:

@@ -41,7 +41,7 @@ import type {
   UpsertItemsRequest,
   UpsertItemsResponseData,
 } from '../generated/api';
-import { assertIdempotencyKey, unwrap, unwrapIdempotentWrite, unwrapRetryableGet } from './http';
+import { assertIdempotencyKey, retryableBinaryGet, unwrap, unwrapIdempotentWrite, unwrapRetryableGet } from './http';
 import { ImzalaError } from './errors';
 import type { RetryConfig } from './http';
 import { toUploadFile } from './files';
@@ -574,9 +574,22 @@ class DemandsResource {
    * Returns the raw bytes as a `Buffer` — write it to disk or stream it on.
    * Requires the API key's owner to own the demand. GET — safe to auto-retry.
    */
-  async getPdf(id: string): Promise<Buffer> {
-    const res = await this.api.apiV1DemandsIdPdfGet({ id }, { responseType: 'arraybuffer' });
-    return Buffer.from(res.data as unknown as ArrayBuffer);
+  getPdf(id: string): Promise<Buffer> {
+    return retryableBinaryGet(
+      () => this.api.apiV1DemandsIdPdfGet({ id }, { responseType: 'arraybuffer' }),
+      this.retryConfig,
+    );
+  }
+
+  /**
+   * Downloads the PDF of one document in a multi-document envelope as a
+   * `Buffer`. For the whole contract use `getPdf(id)`. GET, safe to auto-retry.
+   */
+  getDocumentPdf(id: string, documentId: string): Promise<Buffer> {
+    return retryableBinaryGet(
+      () => this.api.apiV1DemandsIdBelgeDocumentIdPdfGet({ id, documentId }, { responseType: 'arraybuffer' }),
+      this.retryConfig,
+    );
   }
 
   /**
@@ -584,21 +597,11 @@ class DemandsResource {
    * a `Buffer`. Only produced for `COMPLETED` demands. Pass `{lang: 'en'}` for
    * English. GET — safe to auto-retry.
    */
-  /**
-   * Downloads the PDF of one document in a multi-document envelope as a
-   * `Buffer`. For the whole contract use `getPdf(id)`. GET.
-   */
-  async getDocumentPdf(id: string, documentId: string): Promise<Buffer> {
-    const res = await this.api.apiV1DemandsIdBelgeDocumentIdPdfGet({ id, documentId }, { responseType: 'arraybuffer' });
-    return Buffer.from(res.data as unknown as ArrayBuffer);
-  }
-
-  async getCertificate(id: string, params: { lang?: string } = {}): Promise<Buffer> {
-    const res = await this.api.apiV1DemandsIdCertificateGet(
-      { id, lang: params.lang },
-      { responseType: 'arraybuffer' },
+  getCertificate(id: string, params: { lang?: string } = {}): Promise<Buffer> {
+    return retryableBinaryGet(
+      () => this.api.apiV1DemandsIdCertificateGet({ id, lang: params.lang }, { responseType: 'arraybuffer' }),
+      this.retryConfig,
     );
-    return Buffer.from(res.data as unknown as ArrayBuffer);
   }
 
   /**
