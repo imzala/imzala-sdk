@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.8.13
+  version: 1.8.14
   description: >
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
 
-    **Sürüm:** 1.8.13 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.14 · **Son güncelleme:** 2026-09-15
 
 
     ## Auth
@@ -21,12 +21,15 @@ info:
 
     ## Workspace (organizasyon)
 
-    Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız
-    `X-Workspace-Id`
+    Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna
 
-    header'ı göndermeniz gerekir (organizasyon UUID'si). Kişisel anahtarlar için
+    bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu
 
-    bu header gerekmez.
+    otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır
+
+    (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık
+
+    gerekmez.
 
 
     ## Multi-Party Variables (parti-bazlı ve ortak field'lar)

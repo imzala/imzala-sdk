@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.13 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.14 · **Son güncelleme:** 2026-09-15
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -15,9 +15,11 @@ info:
     veya **Hesap Ayarları -> API Anahtarları**.
 
     ## Workspace (organizasyon)
-    Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız `X-Workspace-Id`
-    header'ı göndermeniz gerekir (organizasyon UUID'si). Kişisel anahtarlar için
-    bu header gerekmez.
+    Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna
+    bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu
+    otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır
+    (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık
+    gerekmez.
 
     ## Multi-Party Variables (parti-bazlı ve ortak field'lar)
     `POST /api/v1/demands` payload'ında iki tip "variables" alanı vardır:
@@ -263,7 +265,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.13
+  version: 1.8.14
 servers:
 - description: Production
   url: https://api-prd.imzala.org

@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.8.13
+- API version: 1.8.14
 
-- Build date: 2026-09-15T14:40:40.831203+03:00[Europe/Istanbul]
+- Build date: 2026-09-15T15:19:24.667455+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.8.13 · **Son güncelleme:** 2026-09-15
+**Sürüm:** 1.8.14 · **Son güncelleme:** 2026-09-15
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -18,9 +18,11 @@ oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer)
 veya **Hesap Ayarları -> API Anahtarları**.
 
 ## Workspace (organizasyon)
-Organizasyon içinde oluşturulmuş bir API key kullanıyorsanız `X-Workspace-Id`
-header'ı göndermeniz gerekir (organizasyon UUID'si). Kişisel anahtarlar için
-bu header gerekmez.
+Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna
+bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu
+otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır
+(aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık
+gerekmez.
 
 ## Multi-Party Variables (parti-bazlı ve ortak field'lar)
 `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:
@@ -300,7 +302,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.8.13</version>
+  <version>1.8.14</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -310,7 +312,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.8.13"
+compile "org.imzala:imzala-client-generated:1.8.14"
 ```
 
 ### Others
@@ -323,7 +325,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.8.13.jar`
+- `target/imzala-client-generated-1.8.14.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
