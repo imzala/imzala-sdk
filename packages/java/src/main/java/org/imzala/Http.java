@@ -143,6 +143,17 @@ final class Http {
    * #unwrap}.
    */
   /**
+   * A required idempotency key sent as a body field: it must be a non-empty
+   * printable ASCII string. Checked before the request is built.
+   */
+  static void assertIdempotencyKey(String value, String name) {
+    if (value == null || value.isEmpty()) {
+      throw new ImzalaValidationException(name + " is required and must be a non-empty string.", null, null, null, null);
+    }
+    assertHeaderValue(value, name);
+  }
+
+  /**
    * Rejects a header value that is not printable ASCII before anything is
    * sent, as the same ImzalaValidationException in every SDK language.
    */

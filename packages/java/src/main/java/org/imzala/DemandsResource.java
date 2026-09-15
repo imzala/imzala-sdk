@@ -7,6 +7,9 @@ import org.imzala.client.generated.api.DemandsApi;
 import org.imzala.client.generated.api.RemindersApi;
 import org.imzala.client.generated.model.ApiV1DemandsBulkPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsBulkPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPost200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPostRequestSendInvitations;
 import org.imzala.client.generated.model.ApiV1DemandsGet200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPostRequest;
@@ -42,11 +45,66 @@ public final class DemandsResource {
   private final DemandsApi api;
   private final RemindersApi remindersApi;
   private final RetryConfig retryConfig;
+  private final EnvelopeDocumentsResource documents;
 
   DemandsResource(DemandsApi api, RemindersApi remindersApi, RetryConfig retryConfig) {
     this.api = api;
     this.remindersApi = remindersApi;
     this.retryConfig = retryConfig;
+    this.documents = new EnvelopeDocumentsResource(api, retryConfig);
+  }
+
+  /** {@code imzala.demands().documents().list/create/upload/update/delete/reorder/setAssignments}: the documents of a multi-document envelope. */
+  public EnvelopeDocumentsResource documents() {
+    return documents;
+  }
+
+  /**
+   * Sends the demand for signing with the server default for invitations
+   * (invitations on). See {@link #dispatch(UUID, String)}.
+   */
+  public ApiV1DemandsDemandIdDispatchPost200ResponseData dispatch(UUID id) {
+    return dispatch(id, (ApiV1DemandsDemandIdDispatchPostRequestSendInvitations) null);
+  }
+
+  /**
+   * Sends the demand for signing; {@code false} sends no invitations. See
+   * {@link #dispatch(UUID, String)}.
+   */
+  public ApiV1DemandsDemandIdDispatchPost200ResponseData dispatch(UUID id, boolean sendInvitations) {
+    return dispatch(id, new ApiV1DemandsDemandIdDispatchPostRequestSendInvitations(Boolean.valueOf(sendInvitations)));
+  }
+
+  /**
+   * Sends the demand for signing: reconciles credit, moves a {@code DRAFT}
+   * to {@code PENDING} and sends invitations. This is where credit is
+   * charged; the {@link #documents()} methods charge nothing. Calling it
+   * again for a demand that is already out charges nothing more ({@code
+   * dispatched: false}). Throws for {@code DISPATCH_NO_PARTIES}, {@code
+   * DISPATCH_TOO_MANY}, {@code QES_NOT_SUPPORTED_MULTI_DOCUMENT}, {@code
+   * INSUFFICIENT_CREDITS} and others. No idempotency key, so never retried,
+   * not even after a 429. POST.
+   *
+   * @param sendInvitations narrows which channels invitations go out on.
+   *     {@code "false"}, {@code "0"}, {@code "off"}, {@code "no"}, {@code
+   *     "hayir"}, {@code "hayır"} send no invitations; {@code "email"} and
+   *     {@code "sms"} limit the channel; {@code "true"}, {@code "1"}, {@code
+   *     "all"} keep them all. It can only narrow the demand's own
+   *     notification settings. An unknown value throws {@code
+   *     INVALID_SEND_INVITATIONS}. {@code null} means the server default.
+   */
+  public ApiV1DemandsDemandIdDispatchPost200ResponseData dispatch(UUID id, String sendInvitations) {
+    return dispatch(id, sendInvitations == null ? null : new ApiV1DemandsDemandIdDispatchPostRequestSendInvitations(sendInvitations));
+  }
+
+  private ApiV1DemandsDemandIdDispatchPost200ResponseData dispatch(UUID id, ApiV1DemandsDemandIdDispatchPostRequestSendInvitations sendInvitations) {
+    // The generated oneOf wrapper serialises its actual instance (a bare
+    // boolean or string); a null wrapper leaves the field out of the body.
+    ApiV1DemandsDemandIdDispatchPostRequest body = new ApiV1DemandsDemandIdDispatchPostRequest().sendInvitations(sendInvitations);
+    return Http.unwrap(
+        () -> api.apiV1DemandsDemandIdDispatchPost(id, body),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
   }
 
   /**
