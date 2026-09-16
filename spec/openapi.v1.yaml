@@ -5,11 +5,11 @@
 openapi: 3.1.0
 info:
   title: imzala External API
-  version: 1.8.14
+  version: 1.8.17
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.14 · **Son güncelleme:** 2026-09-15
+    **Sürüm:** 1.8.17 · **Son güncelleme:** 2026-09-16
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -371,6 +371,10 @@ paths:
         tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date,
         dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı
         slug birden fazla partide olabilir, her parti için ayrı satır.
+
+        `documents` şablonun zarf belgelerini `order` sırasıyla döndürür;
+        `documents[].id` sözleşme oluştururken `documents.include` /
+        `documents.exclude` listelerinde kullanılır.
       parameters:
         - name: id
           in: path
@@ -556,6 +560,23 @@ paths:
         - Variable value'ları `string | number | boolean | null` olmalı
           (object/array reject)
         - `template_party_id` party_mapping içinde unique olmalı
+
+        **Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa
+        (her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o
+        imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre
+        azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30,
+        3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı
+        yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse
+        aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden
+        uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.
+
+        **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği
+        sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa
+        sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü
+        atlamak için `dispatch_notifications: false` gönderip belge
+        atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten
+        sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden
+        uygular).
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -639,14 +660,33 @@ paths:
             `INVALID_EXPIRY_DATE`: `expiry_date` çözümlenemiyor veya takvimde
             olmayan bir gün (ör. `2026-02-30`). Bu hatada `error` insan-okur
             mesajı, `code` alanı makinece okunur kodu taşır.
+
+            `INVALID_DOCUMENT_SELECTION`: belge seçimi hatası; `details.reason`
+            şu değerlerden biridir: `shape` (biçim: nesne değil, bilinmeyen
+            alan, kimlik metin değil, 20'den fazla kimlik), `unknown_document`
+            (kimlik bu şablonun belgesi değil), `conflict` (aynı kimlik iki
+            listede), `empty` (seçim sonucunda belge kalmadı). Biçim hataları
+            kredi kontrolünden önce, şablona bağlı hatalar şablon erişim
+            kontrolünden sonra ve kredi kontrolünden önce döner.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CodedError'
+                anyOf:
+                  - $ref: '#/components/schemas/CodedError'
+                  - $ref: '#/components/schemas/DocumentSelectionError'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '402':
-          description: Yetersiz kredi (INSUFFICIENT_CREDITS)
+          description: |
+            Kredi mutabakatı başarısız: `INSUFFICIENT_CREDITS` (bakiye
+            yetersiz) veya `MEMBER_LIMIT_EXCEEDED` (organizasyon üyesinin
+            aylık kredi limiti aşıldı, havuzda bakiye olsa bile).
+
+            Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir:
+            gövdede `data.id` ile aynı sözleşmenin kimliği ve
+            `data.status: "DRAFT_UNDISPATCHED"` döner. Kredi yükleyip aynı
+            sözleşmeyi `POST /demands/{id}/dispatch` ile gönderin; sözleşme
+            silinmez.
           content:
             application/json:
               schema:
@@ -658,6 +698,20 @@ paths:
                   error:
                     type: string
                     example: Yeterli krediniz yok
+                  code:
+                    type: string
+                    enum:
+                      - INSUFFICIENT_CREDITS
+                      - MEMBER_LIMIT_EXCEEDED
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+                        example: DRAFT_UNDISPATCHED
         '403':
           description: |
             **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body'de `sms_content` alanı dolu
@@ -682,7 +736,7 @@ paths:
                       planda olması ve kendi SMS sağlayıcınızı tanımlamış olmanız gerekir.
         '409':
           description: |
-            Üç ayrı kod döner.
+            Altı ayrı kod döner.
 
             `IDEMPOTENCY_KEY_REUSED` — aynı `Idempotency-Key` daha önce FARKLI
             bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek
@@ -702,6 +756,60 @@ paths:
 
             Bu kapı yalnız anahtarsız çağrılarda çalışır: `Idempotency-Key`
             gönderen istemci zaten tekrar-korumalıdır.
+
+            `PARTY_WITHOUT_DOCUMENTS`: eşlediğiniz bir tarafa imzalayacak
+            belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde
+            ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet
+            gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede
+            `template_party_ids` (şablon rol kimlikleri) döner; (b)
+            `documents` seçiminiz (ya da `documents` göndermediyseniz
+            şablonun varsayılan belge kümesi) bir role seçili belge
+            bırakmıyorsa `dispatch_notifications` değerinden bağımsız yine
+            yaratmadan reddedilir, gövdede `template_party_ids` döner
+            (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma
+            sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA
+            düşürülür ve gövdede
+            `party_ids` (imzacı kimlikleri) + `data.id` / `data.status:
+            "DRAFT_UNDISPATCHED"` döner. Hiçbir biçimde kredi düşülmez, davet
+            gönderilmez.
+
+            `TEMPLATE_DOCUMENTS_NOT_READY`: şablonun belge yapısı henüz hazır
+            değil; `documents` göndermeden deneyin ya da destekle iletişime
+            geçin.
+
+            `DOCUMENT_SOURCE_UNAVAILABLE`: şablonun ilk belgesini çıkardınız
+            ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin
+            ya da o belgeye dosya yükleyin.
+        '500':
+          description: |
+            `RECONCILE_FAILED`: kredi mutabakatı beklenmedik (kredi-dışı) bir
+            hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve
+            TASLAĞA düşürülür; gövdede `data.id` / `data.status:
+            "DRAFT_UNDISPATCHED"` döner. Davet gönderilmez. İstek güvenle
+            tekrarlanabilir (mutabakat idempotenttir).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Kredi mutabakatı yapılamadı
+                  code:
+                    type: string
+                    example: RECONCILE_FAILED
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+                        example: DRAFT_UNDISPATCHED
     get:
       tags:
         - Demands
@@ -727,7 +835,9 @@ paths:
           in: query
           schema:
             type: string
-          description: Başlık araması
+          description: >-
+            Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon
+            alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
         - name: from
           in: query
           schema:
@@ -829,7 +939,12 @@ paths:
           `POST /demands` ile AYNI formülle hesaplanır (imza sınıfı taban
           ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek
           maliyeti, imzacı sayısıyla çarpılır; `eidas_timestamp` seçilirse
-          satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES'te
+          satır başına +1 kredi eklenir). Şablon çok-belgeli bir zarf
+          tanımlıyorsa imzacı başına maliyet o imzacıya ATANMIŞ belge
+          sayısına göre hesaplanır ve belge sayısına göre azalan birim
+          fiyatlı bir indirim uygulanır (1 belge %0, 2 belge %30, 3 ve üzeri
+          %50, imzacı başına ayrı yukarı yuvarlanır; bkz. `POST /demands`
+          "Kredi (çok belgeli zarf)" bölümü). PAdES seviye eki yalnız QES'te
           uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden
           `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`
           batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın
@@ -841,7 +956,21 @@ paths:
           oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır
           yine `failed` döner ama sözleşme zaten oluşturulmuş taslak
           olarak kalır (`demand_id` response'ta bulunur, davet
-          gönderilmemiştir).
+          gönderilmemiştir); mutabakat kredi-dışı bir hatayla düşerse satır
+          `failed` (`error: "RECONCILE_FAILED"`) döner, sözleşme yine taslağa
+          düşer.
+        - Atamasız imzacı: çok belgeli şablonda eşlenen bir taraf hiçbir
+          belgeye atanmamışsa (ve `options.dispatch_notifications` `false`
+          DEĞİLSE) o satır `failed` (`error: "PARTY_WITHOUT_DOCUMENTS"`)
+          döner; kontrol satır oluşturulmadan ÖNCE (`demand_id` YOK) veya
+          oluşturulduktan hemen SONRA (sözleşme taslağa düşer, `demand_id` +
+          `party_ids` döner) çalışabilir. Diğer satırlar etkilenmez.
+        - Belge seçimi satır başınadır: `rows[i].documents` (`POST /demands`
+          ile aynı şema). `options.documents` gönderilirse 400
+          `INVALID_DOCUMENT_SELECTION`. Satırın seçim hatası o satırı `failed`
+          yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da
+          `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar
+          etkilenmez.
         - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;
           başka workspace'in şablonu 404).
         - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı
@@ -962,6 +1091,8 @@ paths:
                       variables:
                         type: object
                         description: Satır-kök değişkenler
+                      documents:
+                        $ref: '#/components/schemas/DocumentSelectionInput'
       responses:
         '200':
           description: |
@@ -1007,7 +1138,37 @@ paths:
                               format: uuid
                               description: >-
                                 status=created ise; veya status=failed olup sözleşme oluşturulduktan
-                                SONRA kredi mutabakatı reddettiyse (taslak, davet gönderilmedi)
+                                SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa
+                                (taslak, davet gönderilmedi)
+                            party_ids:
+                              type: array
+                              items:
+                                type: string
+                                format: uuid
+                              description: >-
+                                Yalnız error=PARTY_WITHOUT_DOCUMENTS ve sözleşme oluşturulduktan
+                                SONRA tespit edildiyse: hiçbir belgeye atanmamış taraf id'leri.
+                            template_party_ids:
+                              type: array
+                              items:
+                                type: string
+                                format: uuid
+                              description: >-
+                                Yalnız error=PARTY_WITHOUT_DOCUMENTS ve satır oluşturulmadan ÖNCE
+                                tespit edildiyse: seçim sonucunda hiçbir belgeye atanmamış kalan
+                                şablon rol kimlikleri.
+                            details:
+                              type: object
+                              description: >-
+                                Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape |
+                                unknown_document | conflict | empty) ve varsa document_ids.
+                              properties:
+                                reason:
+                                  type: string
+                                document_ids:
+                                  type: array
+                                  items:
+                                    type: string
                             signing_urls:
                               type: array
                               items:
@@ -1037,14 +1198,19 @@ paths:
                               type: string
                               description: >-
                                 status=failed ise makinece okunabilir kod (VALIDATION,
-                                INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, CREATE_FAILED vb.)
+                                INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED,
+                                PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION,
+                                TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,
+                                RECONCILE_FAILED, CREATE_FAILED vb.)
                             message:
                               type: string
                               description: status=failed ise açıklama
         '400':
           description: |
             Geçersiz istek. Olası kodlar: `BULK_MAX_10` (`rows` 10'dan fazla),
-            boş `rows`, eksik `template_id`, `INVALID_PADES_LEVEL`
+            boş `rows`, eksik `template_id`, `INVALID_DOCUMENT_SELECTION`
+            (`options.documents` gönderildi; belge seçimi satır başınadır,
+            bkz. `rows[i].documents`), `INVALID_PADES_LEVEL`
             (`options.qes_pades_level` satılabilir seviyelerden biri değil),
             `FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE` (verilen kimlik bir Alan
             Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken
@@ -1329,6 +1495,10 @@ paths:
             **DEMAND_NOT_DISPATCHABLE**: sözleşme tamamlanmış veya iptal edilmiş.
 
             **DEMAND_EXPIRED**: sözleşmenin imza süresi geçmiş.
+
+            **ENVELOPE_NOT_DISPATCHED**: çok belgeli zarf henüz gönderilmedi.
+            Önce `POST /demands/{id}/dispatch` çağırın; tek belgeli ve
+            gönderilmiş sözleşmelerde bu kod hiç dönmez.
           content:
             application/json:
               schema:
@@ -1544,7 +1714,31 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '402':
-          description: Yetersiz kredi
+          description: |
+            Yetersiz kredi: `INSUFFICIENT_CREDITS` veya `MEMBER_LIMIT_EXCEEDED`.
+            Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir:
+            gövdedeki `demand_id` ile aynı sözleşmeyi kredi yükledikten sonra
+            `POST /demands/{id}/dispatch` ile gönderebilirsiniz; sözleşme
+            silinmez.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Kredi bakiyeniz yetersiz. Lütfen kredi yükleyin.
+                  code:
+                    type: string
+                    enum:
+                      - INSUFFICIENT_CREDITS
+                      - MEMBER_LIMIT_EXCEEDED
+                  demand_id:
+                    type: string
+                    format: uuid
         '403':
           description: |
             Organizasyona bağlı API anahtarı ile uyuşmayan `X-Workspace-Id`
@@ -1594,6 +1788,29 @@ paths:
             aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve `send_invitations`
             ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın
             hızını kırmak içindir.
+        '500':
+          description: |
+            `RECONCILE_FAILED`: kredi mutabakatı beklenmedik (kredi-dışı) bir
+            hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet
+            gitmemiştir; gövdedeki `demand_id` ile durumu sorgulayın. İstek
+            güvenle tekrarlanabilir (mutabakat idempotenttir).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Kredi mutabakatı yapılamadı
+                  code:
+                    type: string
+                    example: RECONCILE_FAILED
+                  demand_id:
+                    type: string
+                    format: uuid
   /api/v1/field-templates:
     get:
       tags:
@@ -2349,6 +2566,9 @@ paths:
             - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
             - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
             - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
+            - `ENVELOPE_NOT_DISPATCHED`: çok belgeli zarf henüz gönderilmedi.
+              Önce `POST /demands/{id}/dispatch` çağırın; tek belgeli ve
+              gönderilmiş sözleşmelerde bu kod hiç dönmez.
           content:
             application/json:
               schema:
@@ -2501,7 +2721,9 @@ paths:
             `DEMAND_NOT_EDITABLE` — sözleşme düzenlemeye açık değil (iptal/
             süresi geçmiş/bulunamadı). `SIGNING_ALREADY_STARTED` — imza
             süreci başlamış zarfın belge listesi değiştirilemez (biri
-            görüntülemiş/imzalamış/karar vermiş).
+            görüntülemiş/imzalamış/karar vermiş). `ENVELOPE_ALREADY_DISPATCHED`:
+            sözleşme gönderilmiş (yayına alınmış veya en az bir tarafa
+            davet gitmiş); gönderilmiş bir zarfa belge eklenemez.
   /api/v1/demands/{demandId}/documents/upload:
     post:
       tags:
@@ -2588,7 +2810,8 @@ paths:
             `ENVELOPE_MULTI_DOC_DISABLED` — bayrak kapalı.
             `IDEMPOTENT_REPLAY` — aynı `idempotency_key` daha önce kullanıldı,
             yeni belge yaratılmaz (gövdede mevcut belgenin `document`'ı döner).
-            `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` — bkz. yukarıdaki uç.
+            `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` /
+            `ENVELOPE_ALREADY_DISPATCHED`: bkz. yukarıdaki uç.
         '413':
           description: '`FILE_TOO_LARGE` — 20 MB sınırı.'
         '415':
@@ -2650,7 +2873,9 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED`.'
+          description: >-
+            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` /
+            `ENVELOPE_ALREADY_DISPATCHED`.
   /api/v1/demands/{demandId}/documents/{docId}:
     patch:
       tags:
@@ -2777,7 +3002,9 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED`.'
+          description: >-
+            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` /
+            `ENVELOPE_ALREADY_DISPATCHED`.
   /api/v1/demands/{demandId}/documents/{docId}/assignments:
     put:
       tags:
@@ -2843,7 +3070,9 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED`.'
+          description: >-
+            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` /
+            `ENVELOPE_ALREADY_DISPATCHED`.
   /api/v1/demands/{demandId}/dispatch:
     post:
       tags:
@@ -2865,7 +3094,11 @@ paths:
         `POST .../documents` / `POST .../documents/upload` ile belgeler
         eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations`
         gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu
-        uçla yayına alıp davetleri gönderir.
+        uçla yayına alıp davetleri gönderir. **Bu uç çağrılana kadar** birden
+        çok belgeli bir zarfın oluşturma yanıtındaki `signing_url`'leri
+        ÇALIŞMAZ (imzacı için 410; `POST .../parties/{partyId}/resend` ve
+        `POST .../reminders` için 409 `ENVELOPE_NOT_DISPATCHED` döner); belge
+        uçları (`/documents*`) ise gönderim beklemeden kullanılabilir.
 
         **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`).
         Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir:
@@ -3016,6 +3249,17 @@ paths:
             etki bırakmadan reddedilir (kredi düşmez, sözleşme yayına
             geçmez); sözleşmeyi tarafları azaltarak gönderin veya davetleri
             `/parties/{partyId}/resend` ile tek tek yollayın.
+            `PARTY_WITHOUT_DOCUMENTS`: çok belgeli zarfta eşlenen bir taraf
+            hiçbir belgeye atanmamış. Kredi ve iddiadan ÖNCE, yan etkisiz
+            kontrol edilir (kredi dokunulmaz, statü değişmez, davet gitmez);
+            gövdede atamasız taraf id'leri `party_ids` içinde döner.
+            `PUT .../documents/{docId}/assignments` ile atamayı tamamlayıp
+            tekrar deneyin.
+            `ENVELOPE_CHANGED_DURING_DISPATCH`: kredi mutabakatı ile
+            gönderim iddiası arasında zarf değiştirildi (ör. eşzamanlı bir
+            istek belge/atama ekledi). Sunucu bunu kilit altında bir kez
+            kendiliğinden yeniden dener; ikinci denemede de olursa bu kod
+            döner. Sözleşme yayına GEÇMEDİ; istek güvenle tekrarlanabilir.
         '429':
           description: |
             Tekrar-gönderim hız sınırı aşıldı — bu uç
@@ -3991,6 +4235,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TemplateVariable'
+        documents:
+          type: array
+          description: Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi.
+          items:
+            $ref: '#/components/schemas/TemplateDocumentSummary'
     TemplatePartySummary:
       type: object
       properties:
@@ -4004,6 +4253,124 @@ components:
           example: Musteri
         is_required:
           type: boolean
+    TemplateDocumentSummary:
+      type: object
+      description: |
+        Şablonun zarf belgesi. `id` alanı `POST /api/v1/demands` ve
+        `POST /api/v1/demands/bulk` isteklerindeki `documents.include` /
+        `documents.exclude` listelerinde kullanılır. Şablon kopyalandığında
+        (panelden "Kopyala" ya da sözleşmeden şablon oluşturma) kopyanın belge
+        kimlikleri YENİDİR; entegrasyonunuz kopyanın kimliklerini bu uçtan
+        yeniden okumalıdır. Başlık, tür ve ayar değişiklikleri ile yeniden
+        sıralama kimliği değiştirmez.
+      properties:
+        id:
+          type: string
+          format: uuid
+        order:
+          type: integer
+          description: Şablondaki sıra (1'den başlar)
+        title:
+          type: string
+        doc_kind:
+          type: string
+          enum:
+            - CONTRACT
+            - KVKK_NOTICE
+            - KVKK_CONSENT
+            - PREINFO
+            - PRICE_LIST
+            - OTHER
+        is_required:
+          type: boolean
+          description: |
+            İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri
+            SEÇMEKLE ilgisi yoktur: zorunlu belge de `documents.exclude` ile
+            bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa
+            verilmesi gereken bir belgeyi (örneğin `doc_kind: PREINFO` ön
+            bilgilendirme formu veya `KVKK_NOTICE` aydınlatma metni) başka bir
+            kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi
+            yükümlülüğü sözleşmeyi gönderene aittir.
+        signature_required:
+          type: boolean
+        default_included:
+          type: boolean
+          description: İstek `documents` belirtmezse bu belge imza sürecine (zarfa) dahil edilir mi.
+        assigned_template_party_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: |
+            Bu belgeyi imzalayacak şablon rollerinin kimlikleri (`parties[].id`
+            ve `party_mapping[].template_party_id` ile aynı küme). Sözleşme
+            uçlarındaki `assigned_party_ids` (imzacı kimliği) ile karıştırmayın.
+    DocumentSelectionInput:
+      type: object
+      additionalProperties: false
+      description: |
+        Bu istekte gönderilecek belgeleri şablon varsayılanına göre değiştirir.
+        Alan hiç gönderilmezse `default_included: true` olan belgeler gider.
+        `include` varsayılanı kapalı belgeyi ekler, `exclude` varsayılanı açık
+        belgeyi (zorunlu olsa bile) çıkarır. Çıkarılan belge bu imza sürecine
+        (zarfa) eklenmez: imzacıya gösterilmez, imzalı PDF'te ve tamamlanma
+        sertifikasında yer almaz, kredi hesaplamasına dahil edilmez. Sonuçta
+        en az bir belge kalmalıdır ve eşlediğiniz her role en az bir seçili
+        belge düşmelidir. Mevzuat gereği verilmesi gereken belgeleri
+        çıkarmadan önce `is_required` açıklamasına bakın; bu belgelerin
+        verilmesi yükümlülüğü sözleşmeyi gönderene aittir.
+      properties:
+        include:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+          description: Şablon belge kimlikleri (`GET /api/v1/templates/{id}` → `documents[].id`).
+        exclude:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+    DocumentSelectionError:
+      type: object
+      description: |
+        `400 INVALID_DOCUMENT_SELECTION` gövdesi. `details.reason` hatanın
+        sınıfını, `details.document_ids` (varsa) yalnız isteğinizde
+        gönderdiğiniz ve soruna yol açan kimlikleri taşır.
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        code:
+          type: string
+          enum:
+            - INVALID_DOCUMENT_SELECTION
+        details:
+          type: object
+          properties:
+            reason:
+              type: string
+              enum:
+                - shape
+                - unknown_document
+                - conflict
+                - empty
+              description: |
+                `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler
+                metin değil, listede 20'den fazla kimlik ya da toplu uçta
+                `options.documents`. `unknown_document`: kimlik bu şablonun
+                belgesi değil. `conflict`: aynı kimlik hem `include` hem
+                `exclude` listesinde. `empty`: seçim sonucunda ya da
+                `documents` göndermediyseniz şablonun varsayılan belge
+                kümesinde gönderilecek belge kalmadı.
+            document_ids:
+              type: array
+              items:
+                type: string
     TemplateVariable:
       type: object
       properties:
@@ -4272,6 +4639,8 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/PartyMappingInput'
+        documents:
+          $ref: '#/components/schemas/DocumentSelectionInput'
         variables:
           type: object
           additionalProperties:
@@ -5352,6 +5721,7 @@ components:
                 - DEMAND_NOT_DISPATCHED
                 - DEMAND_NOT_DISPATCHABLE
                 - DEMAND_EXPIRED
+                - ENVELOPE_NOT_DISPATCHED
                 - UNAUTHORIZED
                 - INTERNAL_ERROR
             message:
