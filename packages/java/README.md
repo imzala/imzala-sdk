@@ -195,6 +195,30 @@ UploadDemandParams layout = new UploadDemandParams(
 
 `FileInput` bayt + dosya adı alır (sunucu işlemeyi uzantıdan çıkarır); SDK içeride geçici bir dosyaya yazıp çağrı bitince (başarı ya da hata) siler. Çağıran taraf dosya sistemiyle uğraşmaz. Multipart metin alanları (başlık, açıklama, taraf adları) UTF-8 gönderilir. `UploadDemandParams` diğer seçenekleri: `sendInvitations(String)` (bu uçta varsayılan kapalı; `"sms"` SMS ve WhatsApp'ı kapsar, yalnız daraltır) ve `force(boolean)`.
 
+**Şablonun hangi belgelerinin gönderileceğini seçme.** İstekteki `documents` alanı şablonun varsayılanını bu isteğe özel değiştirir: `include` varsayılanı kapalı bir belgeyi ekler, `exclude` varsayılanı açık bir belgeyi çıkarır (her liste en çok 20 kimlik). Kimlikler `templates().get(id).getDocuments()` içinden gelir. Alanı hiç göndermezseniz şablonun varsayılanı gider; davranış eskisiyle birebir aynıdır. Çıkarılan belge bu imza sürecine hiç girmez: imzacıya gösterilmez, imzalı PDF'te ve tamamlanma sertifikasında yer almaz, kredi hesabına katılmaz. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (ör. `docKind: PREINFO` ya da `KVKK_NOTICE`) başka bir kanaldan vermiyorsanız çıkarmayın; bu yükümlülük sözleşmeyi gönderene aittir.
+
+```java
+TemplateDetail template = imzala.templates().get(templateId);
+UUID kvkkId = template.getDocuments().stream()
+    .filter(d -> d.getDocKind() == TemplateDocumentSummary.DocKindEnum.KVKK_NOTICE)
+    .findFirst()
+    .orElseThrow()
+    .getId();
+
+CreatedDemand demand = imzala.demands().create(new CreateDemandRequest()
+    .templateId(templateId)
+    // varsayılanı kapalı belgeyi bu isteğe ekle
+    .documents(new DocumentSelectionInput().include(List.of(kvkkId))));
+
+// Toplu uçta seçim satır başınadır (batch geneli `options.documents` reddedilir)
+imzala.demands().createBulk(new ApiV1DemandsBulkPostRequest()
+    .templateId(templateId)
+    .rows(List.of(new ApiV1DemandsBulkPostRequestRowsInner()
+        .documents(new DocumentSelectionInput().exclude(List.of(ekId))))));
+```
+
+Geçersiz seçim `INVALID_DOCUMENT_SELECTION` (400) fırlatır; `details.reason` nedeni verir: `shape`, `unknown_document`, `conflict`, `empty`. Eşlediğiniz bir role hiç belge kalmazsa `PARTY_WITHOUT_DOCUMENTS` (409) döner ve sözleşme oluşmaz.
+
 ### Çok belgeli zarf (documents, dispatch)
 
 Bir sözleşme `dispatchNotifications(false)` ile sessizce oluşturulur, belgeler eklenir, sonra tek çağrıyla yayına alınır. Belge uçları kimseye bildirim göndermez ve kredi düşmez; kredi yalnız `dispatch` anında düşer.
@@ -218,7 +242,7 @@ Bir sözleşme `dispatchNotifications(false)` ile sessizce oluşturulur, belgele
 |---|---|---|
 | `templates().list()` / `list(Integer page, Integer limit)` | Aktif şablonlar (tek sayfa) | ✅ GET |
 | `templates().listAll()` / `listAll(Integer page, Integer limit)` | Tüm şablonları gezen `Iterable` | ✅ GET |
-| `templates().get(UUID id)` | Şablon detayı, taraflar, doldurulabilir alanlar | ✅ GET |
+| `templates().get(UUID id)` | Şablon detayı, taraflar, doldurulabilir alanlar, zarf belgeleri (`getDocuments()`) | ✅ GET |
 | `templates().usage(UUID id)` | API kullanım kılavuzu (örnek curl ve JSON) | ✅ GET |
 | `templates().update(UUID id, ApiV1TemplatesIdPatchRequest body)` | Şablon metadata güncelle (ad/açıklama/kategori) | ❌ PATCH |
 | `templates().delete(UUID id)` | Şablonu sil; kayıt 30 gün saklanır, mevcut sözleşmeler etkilenmez. Aktif sözleşmesi olan şablon silinemez (`409 TEMPLATE_IN_USE`) | ❌ DELETE |

@@ -1,5 +1,6 @@
 package org.imzala;
 
+import org.imzala.client.generated.ApiClient;
 import org.imzala.client.generated.ApiException;
 import org.imzala.client.generated.api.ContactsApi;
 import org.imzala.client.generated.api.DemandsApi;
@@ -14,6 +15,8 @@ import org.imzala.client.generated.model.ApiV1ContactsPostRequest;
 import org.imzala.client.generated.model.ApiV1DemandsBulkPost200Response;
 import org.imzala.client.generated.model.ApiV1DemandsBulkPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsBulkPostRequest;
+import org.imzala.client.generated.model.ApiV1DemandsBulkPostRequestRowsInner;
+import org.imzala.client.generated.model.ApiV1DemandsPost201Response;
 import org.imzala.client.generated.model.ApiV1DemandsUploadPost201Response;
 import org.imzala.client.generated.model.ApiV1FieldTemplatesGet200Response;
 import org.imzala.client.generated.model.ApiV1FieldTemplatesGet200ResponseData;
@@ -21,13 +24,19 @@ import org.imzala.client.generated.model.ApiV1FieldTemplatesIdGet200Response;
 import org.imzala.client.generated.model.ApiV1FieldTemplatesIdPreviewLayoutPost200Response;
 import org.imzala.client.generated.model.ApiV1ReportsGet200Response;
 import org.imzala.client.generated.model.ApiV1ReportsGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1TemplatesIdGet200Response;
 import org.imzala.client.generated.model.ApiV1TimestampsGet200Response;
 import org.imzala.client.generated.model.ApiV1TimestampsGet200ResponseData;
 import org.imzala.client.generated.model.ApiV1TimestampsIdGet200Response;
 import org.imzala.client.generated.model.ContactSummary;
+import org.imzala.client.generated.model.CreateDemandRequest;
+import org.imzala.client.generated.model.CreatedDemand;
 import org.imzala.client.generated.model.CreatedDemandUpload;
+import org.imzala.client.generated.model.DocumentSelectionInput;
 import org.imzala.client.generated.model.FieldLayoutPreview;
 import org.imzala.client.generated.model.FieldTemplateDetail;
+import org.imzala.client.generated.model.TemplateDetail;
+import org.imzala.client.generated.model.TemplateDocumentSummary;
 import org.imzala.client.generated.model.TimestampListItem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +50,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -401,5 +411,129 @@ class ResourcesTest {
     assertNotNull(imzala.contacts());
     assertNotNull(imzala.reports());
     assertNotNull(imzala.timestamps());
+  }
+
+  // --- demands: template document selection ---
+
+  @Test
+  void create_forwards_the_document_selection_untouched() throws Exception {
+    UUID includedId = UUID.randomUUID();
+    UUID excludedId = UUID.randomUUID();
+    CreateDemandRequest body = new CreateDemandRequest()
+        .templateId(UUID.randomUUID())
+        .documents(new DocumentSelectionInput().include(List.of(includedId)).exclude(List.of(excludedId)));
+    when(demandsApi.apiV1DemandsPost(body, null))
+        .thenReturn(new ApiV1DemandsPost201Response().success(true).data(new CreatedDemand().id(UUID.randomUUID())));
+
+    new DemandsResource(demandsApi, remindersApi, NO_RETRY).create(body);
+
+    ArgumentCaptor<CreateDemandRequest> sent = ArgumentCaptor.forClass(CreateDemandRequest.class);
+    verify(demandsApi).apiV1DemandsPost(sent.capture(), isNull());
+    assertEquals(List.of(includedId), sent.getValue().getDocuments().getInclude());
+    assertEquals(List.of(excludedId), sent.getValue().getDocuments().getExclude());
+
+    Map<String, Object> payload = asMap(sent.getValue());
+    assertEquals(Map.of("include", List.of(includedId.toString()), "exclude", List.of(excludedId.toString())),
+        payload.get("documents"));
+  }
+
+  @Test
+  void create_without_a_document_selection_sends_the_same_payload_as_before() throws Exception {
+    CreateDemandRequest body = new CreateDemandRequest().templateId(UUID.randomUUID());
+    when(demandsApi.apiV1DemandsPost(body, null))
+        .thenReturn(new ApiV1DemandsPost201Response().success(true).data(new CreatedDemand().id(UUID.randomUUID())));
+
+    new DemandsResource(demandsApi, remindersApi, NO_RETRY).create(body);
+
+    ArgumentCaptor<CreateDemandRequest> sent = ArgumentCaptor.forClass(CreateDemandRequest.class);
+    verify(demandsApi).apiV1DemandsPost(sent.capture(), isNull());
+    assertNull(sent.getValue().getDocuments());
+    assertFalse(asMap(sent.getValue()).containsKey("documents"));
+  }
+
+  @Test
+  void create_bulk_carries_the_selection_per_row() throws Exception {
+    UUID excludedId = UUID.randomUUID();
+    ApiV1DemandsBulkPostRequest body = new ApiV1DemandsBulkPostRequest()
+        .templateId(UUID.randomUUID())
+        .rows(List.of(
+            new ApiV1DemandsBulkPostRequestRowsInner().documents(new DocumentSelectionInput().exclude(List.of(excludedId))),
+            new ApiV1DemandsBulkPostRequestRowsInner()));
+    when(demandsApi.apiV1DemandsBulkPost(body, null))
+        .thenReturn(new ApiV1DemandsBulkPost200Response().success(true).data(new ApiV1DemandsBulkPost200ResponseData()));
+
+    new DemandsResource(demandsApi, remindersApi, NO_RETRY).createBulk(body);
+
+    verify(demandsApi).apiV1DemandsBulkPost(eq(body), isNull());
+    assertEquals(List.of(excludedId), body.getRows().get(0).getDocuments().getExclude());
+    assertTrue(body.getRows().get(0).getDocuments().getInclude().isEmpty());
+    assertNull(body.getRows().get(1).getDocuments());
+  }
+
+  @Test
+  void template_detail_exposes_the_documents_the_ids_come_from() throws ApiException {
+    UUID templateId = UUID.randomUUID();
+    UUID documentId = UUID.randomUUID();
+    UUID roleId = UUID.randomUUID();
+    TemplateDetail detail = new TemplateDetail()
+        .id(templateId)
+        .documents(List.of(new TemplateDocumentSummary()
+            .id(documentId)
+            .order(1)
+            .title("Sözleşme")
+            .docKind(TemplateDocumentSummary.DocKindEnum.CONTRACT)
+            .isRequired(true)
+            .signatureRequired(true)
+            .defaultIncluded(true)
+            .assignedTemplatePartyIds(List.of(roleId))));
+    when(templatesApi.apiV1TemplatesIdGet(templateId))
+        .thenReturn(new ApiV1TemplatesIdGet200Response().success(true).data(detail));
+
+    List<TemplateDocumentSummary> documents =
+        new TemplatesResource(templatesApi, NO_RETRY).get(templateId).getDocuments();
+
+    assertEquals(documentId, documents.get(0).getId());
+    assertTrue(documents.get(0).getDefaultIncluded());
+    assertEquals(List.of(roleId), documents.get(0).getAssignedTemplatePartyIds());
+  }
+
+  @Test
+  void a_rejected_document_selection_surfaces_as_a_coded_exception() throws ApiException {
+    CreateDemandRequest body = new CreateDemandRequest()
+        .templateId(UUID.randomUUID())
+        .documents(new DocumentSelectionInput().include(List.of(UUID.randomUUID())));
+    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class), any())).thenThrow(IdempotentWriteTest.status(400,
+        "{\"success\":false,\"error\":\"Belge seçimi geçersiz\",\"code\":\"INVALID_DOCUMENT_SELECTION\","
+            + "\"details\":{\"reason\":\"unknown_document\"}}"));
+
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
+    ImzalaException e = assertThrows(ImzalaException.class, () -> resource.create(body));
+
+    assertEquals(400, e.getStatusCode());
+    assertEquals("INVALID_DOCUMENT_SELECTION", e.getCode());
+    assertTrue(e.getCodeDescription().contains("unknown_document"));
+  }
+
+  @Test
+  void a_party_left_without_documents_surfaces_as_a_coded_exception() throws ApiException {
+    CreateDemandRequest body = new CreateDemandRequest()
+        .templateId(UUID.randomUUID())
+        .documents(new DocumentSelectionInput().exclude(List.of(UUID.randomUUID())));
+    when(demandsApi.apiV1DemandsPost(any(CreateDemandRequest.class), any())).thenThrow(IdempotentWriteTest.status(409,
+        "{\"success\":false,\"error\":\"Eşlenen bir tarafa imzalayacak belge düşmüyor\","
+            + "\"code\":\"PARTY_WITHOUT_DOCUMENTS\"}"));
+
+    DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
+    ImzalaException e = assertThrows(ImzalaException.class, () -> resource.create(body));
+
+    assertEquals(409, e.getStatusCode());
+    assertEquals("PARTY_WITHOUT_DOCUMENTS", e.getCode());
+  }
+
+  /** Serialises a request with the generated client's own mapper, the way the wire body is built. */
+  private static Map<String, Object> asMap(Object body) throws Exception {
+    return ApiClient.createDefaultObjectMapper()
+        .readValue(ApiClient.createDefaultObjectMapper().writeValueAsString(body),
+            new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
   }
 }

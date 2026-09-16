@@ -21,6 +21,7 @@ import org.imzala.client.generated.model.CreateDemandRequest;
 import org.imzala.client.generated.model.CreatedDemand;
 import org.imzala.client.generated.model.CreatedDemandUpload;
 import org.imzala.client.generated.model.DemandStatus;
+import org.imzala.client.generated.model.DocumentSelectionInput;
 import org.imzala.client.generated.model.TriggerReminderRequest;
 import org.imzala.client.generated.model.UpsertItemsRequest;
 import org.imzala.client.generated.model.UpsertItemsResponseData;
@@ -128,6 +129,20 @@ public final class DemandsResource {
    * <p>An {@code expiry_date} that is not a real calendar day throws {@code
    * INVALID_EXPIRY_DATE}.
    *
+   * <p>{@link CreateDemandRequest#documents(DocumentSelectionInput)} picks
+   * which of the template's documents this request sends: {@code include}
+   * adds a document the template leaves out by default, {@code exclude}
+   * drops one it includes (at most 20 ids per list). The ids come from
+   * {@code templates().get(id).getDocuments()}. Leave it unset and the
+   * template's own defaults are sent, exactly as before. An excluded
+   * document is not part of this signing process at all: it is not shown to
+   * the signer, not in the signed PDF or the completion certificate, and
+   * not charged for. A bad selection throws {@code
+   * INVALID_DOCUMENT_SELECTION} (see {@code details.reason}: {@code shape},
+   * {@code unknown_document}, {@code conflict}, {@code empty}); a selection
+   * that leaves a mapped party with nothing to sign throws {@code
+   * PARTY_WITHOUT_DOCUMENTS}.
+   *
    * @param idempotencyKey your own reference for this request (e.g. an order number); {@code null} for none
    */
   public CreatedDemand create(CreateDemandRequest body, String idempotencyKey) {
@@ -147,6 +162,12 @@ public final class DemandsResource {
    * <p>This endpoint has no idempotency key, so it is never retried: a
    * retried batch would create the demands again. Split larger lists into
    * batches of 10 yourself. POST.
+   *
+   * <p>Document selection is per row: each row's {@code documents} takes the
+   * same shape as {@link #create(CreateDemandRequest, String)}. It is not a
+   * batch-wide option, so {@code options.documents} throws {@code
+   * INVALID_DOCUMENT_SELECTION}. A row with a bad selection comes back
+   * {@code failed}; the other rows are unaffected.
    */
   public ApiV1DemandsBulkPost200ResponseData createBulk(ApiV1DemandsBulkPostRequest body) {
     return Http.unwrap(

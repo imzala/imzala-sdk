@@ -6,6 +6,7 @@ import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200ResponseData;
 import org.imzala.client.generated.model.ApiV1TemplatesIdPatch200ResponseData;
 import org.imzala.client.generated.model.ApiV1TemplatesIdPatchRequest;
 import org.imzala.client.generated.model.TemplateDetail;
+import org.imzala.client.generated.model.TemplateDocumentSummary;
 import org.imzala.client.generated.model.TemplateSummary;
 import org.imzala.client.generated.model.TemplateUsage;
 
@@ -43,7 +44,16 @@ public final class TemplatesResource {
         retryConfig);
   }
 
-  /** Returns a template's parties + fillable variables. GET — safe to auto-retry. */
+  /**
+   * Returns a template's parties + fillable variables, plus its envelope
+   * documents in {@code getDocuments()} ({@link TemplateDocumentSummary}):
+   * {@code id}, {@code order}, {@code title}, {@code doc_kind}, {@code
+   * is_required}, {@code signature_required}, {@code default_included} and
+   * {@code assigned_template_party_ids}. Those ids are what {@code
+   * demands().create(...)}'s {@code documents.include} / {@code
+   * documents.exclude} expect. A copied template has NEW document ids, so
+   * read them back from here for the copy. GET — safe to auto-retry.
+   */
   public TemplateDetail get(UUID id) {
     return Http.unwrapRetryableGet(
         () -> api.apiV1TemplatesIdGet(id),
