@@ -32,8 +32,11 @@ use Imzala\Client\Model\ApiV1TimestampsIdGet200Response;
 use Imzala\Client\Model\ContactSummary;
 use Imzala\Client\Model\CreateDemandRequest;
 use Imzala\Client\Model\CreatedDemandUpload;
+use Imzala\Client\Model\DocumentSelectionInput;
 use Imzala\Client\Model\FieldLayoutPreview;
 use Imzala\Client\Model\FieldTemplateDetail;
+use Imzala\Client\Model\TemplateDetail;
+use Imzala\Client\Model\TemplateDocumentSummary;
 use Imzala\Client\Model\TimestampListItem;
 use Imzala\Client\ObjectSerializer;
 use Imzala\ContactsResource;
@@ -45,6 +48,7 @@ use Imzala\ImzalaClient;
 use Imzala\ImzalaException;
 use Imzala\ReportsResource;
 use Imzala\RetryConfig;
+use Imzala\TemplatesResource;
 use Imzala\TimestampsResource;
 use Imzala\UploadDemandParams;
 use Imzala\UploadPartyInput;
@@ -450,6 +454,148 @@ final class ResourcesTest extends TestCase
         } catch (\Imzala\ImzalaValidationException $e) {
             $this->assertNull($e->getStatusCode());
             $this->assertInstanceOf(\InvalidArgumentException::class, $e->getPrevious());
+        }
+    }
+
+    // --- demands: template document selection ---
+
+    public function testCreateForwardsTheDocumentSelectionUntouched(): void
+    {
+        $sent = null;
+        $api = $this->createMock(DemandsApi::class);
+        $api->expects($this->once())
+            ->method('apiV1DemandsPostWithHttpInfo')
+            ->willReturnCallback(function (...$args) use (&$sent) {
+                $sent = $args[0];
+                return [new \Imzala\Client\Model\ApiV1DemandsPost201Response(['success' => true, 'data' => new \Imzala\Client\Model\CreatedDemand()]), 201, []];
+            });
+
+        $this->demands($api)->create([
+            'template_id' => 'tpl-1',
+            'documents' => new DocumentSelectionInput(['include' => ['doc-1'], 'exclude' => ['doc-2']]),
+        ]);
+
+        $this->assertInstanceOf(DocumentSelectionInput::class, $sent->getDocuments());
+        $this->assertSame(['doc-1'], $sent->getDocuments()->getInclude());
+        $this->assertSame(['doc-2'], $sent->getDocuments()->getExclude());
+        $payload = (array) ObjectSerializer::sanitizeForSerialization($sent);
+        $this->assertSame(['include' => ['doc-1'], 'exclude' => ['doc-2']], (array) $payload['documents']);
+    }
+
+    public function testCreateWithoutADocumentSelectionSendsTheSamePayloadAsBefore(): void
+    {
+        $sent = null;
+        $api = $this->createMock(DemandsApi::class);
+        $api->expects($this->once())
+            ->method('apiV1DemandsPostWithHttpInfo')
+            ->willReturnCallback(function (...$args) use (&$sent) {
+                $sent = $args[0];
+                return [new \Imzala\Client\Model\ApiV1DemandsPost201Response(['success' => true, 'data' => new \Imzala\Client\Model\CreatedDemand()]), 201, []];
+            });
+
+        $this->demands($api)->create(['template_id' => 'tpl-1', 'party_mapping' => []]);
+
+        $this->assertNull($sent->getDocuments());
+        $payload = (array) ObjectSerializer::sanitizeForSerialization($sent);
+        $this->assertArrayNotHasKey('documents', $payload);
+    }
+
+    public function testCreateBulkCarriesTheSelectionPerRow(): void
+    {
+        $sent = null;
+        $api = $this->createMock(DemandsApi::class);
+        $api->expects($this->once())
+            ->method('apiV1DemandsBulkPostWithHttpInfo')
+            ->willReturnCallback(function (...$args) use (&$sent) {
+                $sent = $args[0];
+                return [new ApiV1DemandsBulkPost200Response(['success' => true, 'data' => new ApiV1DemandsBulkPost200ResponseData()]), 200, []];
+            });
+
+        $this->demands($api)->createBulk([
+            'template_id' => 'tpl-1',
+            'rows' => [
+                ['party_mapping' => [], 'documents' => ['exclude' => ['doc-2']]],
+                ['party_mapping' => []],
+            ],
+        ]);
+
+        $payload = (array) ObjectSerializer::sanitizeForSerialization($sent);
+        $rows = (array) $payload['rows'];
+        $this->assertSame(['exclude' => ['doc-2']], (array) ((array) $rows[0])['documents']);
+        $this->assertArrayNotHasKey('documents', (array) $rows[1]);
+    }
+
+    public function testTemplateDetailExposesTheDocumentsTheIdsComeFrom(): void
+    {
+        $data = new TemplateDetail([
+            'id' => 'tpl-1',
+            'documents' => [new TemplateDocumentSummary([
+                'id' => 'doc-1',
+                'order' => 1,
+                'title' => 'Sözleşme',
+                'doc_kind' => 'CONTRACT',
+                'is_required' => true,
+                'signature_required' => true,
+                'default_included' => true,
+                'assigned_template_party_ids' => ['rol-1'],
+            ])],
+        ]);
+        $api = $this->createMock(TemplatesApi::class);
+        $api->expects($this->once())
+            ->method('apiV1TemplatesIdGetWithHttpInfo')
+            ->with('tpl-1')
+            ->willReturn([new ApiV1TemplatesIdGet200Response(['success' => true, 'data' => $data]), 200, []]);
+
+        $documents = (new TemplatesResource($api, self::noRetry()))->get('tpl-1')->getDocuments();
+        $this->assertSame('doc-1', $documents[0]->getId());
+        $this->assertTrue($documents[0]->getDefaultIncluded());
+    }
+
+    public function testARejectedDocumentSelectionSurfacesAsACodedImzalaException(): void
+    {
+        $api = $this->createMock(DemandsApi::class);
+        $api->method('apiV1DemandsPostWithHttpInfo')->willReturn([
+            (object) [
+                'success' => false,
+                'error' => 'Belge seçimi geçersiz',
+                'code' => 'INVALID_DOCUMENT_SELECTION',
+                'details' => (object) ['reason' => 'unknown_document', 'document_ids' => ['doc-9']],
+            ],
+            400,
+            [],
+        ]);
+
+        try {
+            $this->demands($api)->create(['template_id' => 'tpl-1', 'documents' => ['include' => ['doc-9']]]);
+            $this->fail('expected ImzalaException');
+        } catch (ImzalaException $e) {
+            $this->assertSame(400, $e->getStatusCode());
+            $this->assertSame('INVALID_DOCUMENT_SELECTION', $e->getErrorCode());
+            $this->assertStringContainsString('unknown_document', (string) $e->getCodeDescription());
+            $this->assertStringContainsString('unknown_document', (string) $e->getBody());
+        }
+    }
+
+    public function testAPartyLeftWithoutDocumentsSurfacesAsACodedImzalaException(): void
+    {
+        $api = $this->createMock(DemandsApi::class);
+        $api->method('apiV1DemandsPostWithHttpInfo')->willReturn([
+            (object) [
+                'success' => false,
+                'error' => 'Eşlenen bir tarafa imzalayacak belge düşmüyor',
+                'code' => 'PARTY_WITHOUT_DOCUMENTS',
+                'template_party_ids' => ['rol-2'],
+            ],
+            409,
+            [],
+        ]);
+
+        try {
+            $this->demands($api)->create(['template_id' => 'tpl-1', 'documents' => ['exclude' => ['doc-2']]]);
+            $this->fail('expected ImzalaException');
+        } catch (ImzalaException $e) {
+            $this->assertSame(409, $e->getStatusCode());
+            $this->assertSame('PARTY_WITHOUT_DOCUMENTS', $e->getErrorCode());
         }
     }
 }

@@ -190,6 +190,42 @@ $uploaded = $imzala->demands()->uploadDocument(
 
 `UploadDemandParams` diğer seçenekleri: `withSendInvitations()` (bu uçta varsayılan kapalı; `'sms'` SMS ve WhatsApp'ı kapsar, yalnız daraltır) ve `withForce()`.
 
+**Şablonun hangi belgelerinin gönderileceğini seçme.** İstekteki `documents` alanı şablonun varsayılanını bu isteğe özel değiştirir: `include` varsayılanı kapalı bir belgeyi ekler, `exclude` varsayılanı açık bir belgeyi çıkarır (her liste en çok 20 kimlik). Kimlikler `templates()->get($id)->getDocuments()` içinden gelir. Alanı hiç göndermezseniz şablonun varsayılanı gider; davranış eskisiyle birebir aynıdır. Çıkarılan belge bu imza sürecine hiç girmez: imzacıya gösterilmez, imzalı PDF'te ve tamamlanma sertifikasında yer almaz, kredi hesabına katılmaz. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (ör. `doc_kind: PREINFO` ya da `KVKK_NOTICE`) başka bir kanaldan vermiyorsanız çıkarmayın; bu yükümlülük sözleşmeyi gönderene aittir.
+
+```php
+<?php
+
+use Imzala\Client\Model\DocumentSelectionInput;
+
+$template = $imzala->templates()->get($templateId);
+$kvkk = null;
+foreach ($template->getDocuments() as $document) {
+    if ($document->getDocKind() === 'KVKK_NOTICE') {
+        $kvkk = $document;
+    }
+}
+
+$demand = $imzala->demands()->create([
+    'template_id' => $templateId,
+    'party_mapping' => [[
+        'template_party_id' => $roleId,
+        'first_name' => 'Ayşe',
+        'last_name' => 'Yılmaz',
+        'email' => 'ayse@example.com',
+    ]],
+    // varsayılanı kapalı belgeyi bu isteğe ekle
+    'documents' => new DocumentSelectionInput(['include' => [$kvkk->getId()]]),
+]);
+
+// Toplu uçta seçim satır başınadır (batch geneli `options.documents` reddedilir)
+$imzala->demands()->createBulk([
+    'template_id' => $templateId,
+    'rows' => [['party_mapping' => [...], 'documents' => ['exclude' => [$ekId]]]],
+]);
+```
+
+Geçersiz seçim `INVALID_DOCUMENT_SELECTION` (400) fırlatır; `details.reason` nedeni verir: `shape`, `unknown_document`, `conflict`, `empty`. Eşlediğiniz bir role hiç belge kalmazsa `PARTY_WITHOUT_DOCUMENTS` (409) döner ve sözleşme oluşmaz.
+
 ### Çok belgeli zarf (documents, dispatch)
 
 Bir sözleşme `dispatch_notifications: false` ile sessizce oluşturulur, belgeler eklenir, sonra tek çağrıyla yayına alınır. Belge uçları kimseye bildirim göndermez ve kredi düşmez; kredi yalnız `dispatch` anında düşer.
@@ -213,7 +249,7 @@ Bir sözleşme `dispatch_notifications: false` ile sessizce oluşturulur, belgel
 |---|---|---|
 | `templates()->list($page?, $limit?)` | Aktif şablonlar (tek sayfa) | ✅ GET |
 | `templates()->listAll($page?, $limit?)` | Tüm şablonları gezen generator (bkz. [Sayfalama](#sayfalama)) | ✅ GET |
-| `templates()->get($id)` | Şablon detayı + taraflar + doldurulabilir alanlar | ✅ GET |
+| `templates()->get($id)` | Şablon detayı + taraflar + doldurulabilir alanlar + zarf belgeleri (`documents`) | ✅ GET |
 | `templates()->usage($id)` | API kullanım kılavuzu (curl + JSON örneği) | ✅ GET |
 | `templates()->update($id, $body)` | Şablon metadata güncelle (name / description / category) | ❌ PATCH |
 | `templates()->delete($id)` | Şablonu sil; kayıt 30 gün saklanır, mevcut sözleşmeler etkilenmez. Aktif (taslak veya imza bekleyen) sözleşmesi olan şablon silinemez (`409 TEMPLATE_IN_USE`) | ❌ DELETE |

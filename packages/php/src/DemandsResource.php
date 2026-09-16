@@ -21,6 +21,7 @@ use Imzala\Client\Model\CreateDemandRequest;
 use Imzala\Client\Model\CreatedDemand;
 use Imzala\Client\Model\CreatedDemandUpload;
 use Imzala\Client\Model\DemandStatus;
+use Imzala\Client\Model\DocumentSelectionInput;
 use Imzala\Client\Model\TriggerReminderRequest;
 use Imzala\Client\Model\UpsertItemsRequest;
 use Imzala\Client\Model\UpsertItemsResponseData;
@@ -85,6 +86,20 @@ final class DemandsResource
      * <p>An {@code expiry_date} that is not a real calendar day throws
      * {@code INVALID_EXPIRY_DATE}.
      *
+     * <p>The optional {@code documents} field ({@see DocumentSelectionInput})
+     * picks which of the template's documents this request sends:
+     * {@code include} adds a document the template leaves out by default,
+     * {@code exclude} drops one it includes (at most 20 ids per list). The
+     * ids come from {@code templates()->get($id)->getDocuments()}. Omit the
+     * field and the template's own defaults are sent, exactly as before. An
+     * excluded document is not part of this signing process at all: it is
+     * not shown to the signer, not in the signed PDF or the completion
+     * certificate, and not charged for. A bad selection throws
+     * {@code INVALID_DOCUMENT_SELECTION} (see {@code details.reason}:
+     * {@code shape}, {@code unknown_document}, {@code conflict},
+     * {@code empty}); a selection that leaves a mapped party with nothing to
+     * sign throws {@code PARTY_WITHOUT_DOCUMENTS}.
+     *
      * @param CreateDemandRequest|array<string, mixed> $body a generated
      *     {@see CreateDemandRequest} instance, or a plain associative
      *     array with the same (snake_case) keys — e.g. {@code
@@ -112,6 +127,12 @@ final class DemandsResource
      * <p>This endpoint has no idempotency key, so it is never retried: a
      * retried batch would create the demands again. Split larger lists into
      * batches of 10 yourself.
+     *
+     * <p>Document selection is per row: {@code rows[i]['documents']} takes
+     * the same shape as {@see self::create()}. It is not a batch-wide
+     * option, so {@code options.documents} throws
+     * {@code INVALID_DOCUMENT_SELECTION}. A row with a bad selection comes
+     * back {@code failed}; the other rows are unaffected.
      *
      * @param ApiV1DemandsBulkPostRequest|array<string, mixed> $body a generated
      *     request instance, or a plain associative array with the same keys

@@ -11,6 +11,7 @@ use Imzala\Client\Model\ApiV1TemplatesIdDelete200ResponseData;
 use Imzala\Client\Model\ApiV1TemplatesIdPatch200ResponseData;
 use Imzala\Client\Model\ApiV1TemplatesIdPatchRequest;
 use Imzala\Client\Model\TemplateDetail;
+use Imzala\Client\Model\TemplateDocumentSummary;
 use Imzala\Client\Model\TemplateSummary;
 use Imzala\Client\Model\TemplateUsage;
 
@@ -36,7 +37,17 @@ final class TemplatesResource
         );
     }
 
-    /** Returns a template's parties + fillable variables. GET — safe to auto-retry. */
+    /**
+     * Returns a template's parties + fillable variables, plus its envelope
+     * documents in {@code getDocuments()} ({@see TemplateDocumentSummary}):
+     * {@code id}, {@code order}, {@code title}, {@code doc_kind},
+     * {@code is_required}, {@code signature_required},
+     * {@code default_included} and {@code assigned_template_party_ids}.
+     * Those ids are what {@code demands()->create()}'s
+     * {@code documents.include} / {@code documents.exclude} expect. A copied
+     * template has NEW document ids, so read them back from here for the
+     * copy. GET — safe to auto-retry.
+     */
     public function get(string $id): TemplateDetail
     {
         return Http::unwrapRetryableGet(fn () => $this->api->apiV1TemplatesIdGetWithHttpInfo($id), $this->retryConfig);
