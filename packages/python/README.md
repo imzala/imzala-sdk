@@ -159,6 +159,39 @@ uploaded = imzala.demands.upload_document(
 )
 ```
 
+**Şablonun hangi belgelerinin gönderileceğini seçme.** İstekteki `documents` anahtarı şablonun varsayılanını bu isteğe özel değiştirir: `include` varsayılanı kapalı bir belgeyi ekler, `exclude` varsayılanı açık bir belgeyi çıkarır (her liste en çok 20 kimlik). Kimlikler `templates.get(template_id)` yanıtındaki `documents` listesinden gelir. Anahtarı hiç göndermezseniz şablonun varsayılanı gider; davranış eskisiyle birebir aynıdır. Çıkarılan belge bu imza sürecine hiç girmez: imzacıya gösterilmez, imzalı PDF'te ve tamamlanma sertifikasında yer almaz, kredi hesabına katılmaz. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (ör. `doc_kind: PREINFO` ya da `KVKK_NOTICE`) başka bir kanaldan vermiyorsanız çıkarmayın; bu yükümlülük sözleşmeyi gönderene aittir.
+
+```python
+template = imzala.templates.get(template_id)
+kvkk = next(d for d in template.documents if d.doc_kind == "KVKK_NOTICE")
+
+demand = imzala.demands.create(
+    {
+        "template_id": template_id,
+        "party_mapping": [
+            {
+                "template_party_id": role_id,
+                "first_name": "Ayşe",
+                "last_name": "Yılmaz",
+                "email": "ayse@example.com",
+            }
+        ],
+        # varsayılanı kapalı belgeyi bu isteğe ekle
+        "documents": {"include": [kvkk.id]},
+    }
+)
+
+# Toplu uçta seçim satır başınadır (batch geneli `options.documents` reddedilir)
+imzala.demands.create_bulk(
+    {
+        "template_id": template_id,
+        "rows": [{"party_mapping": [...], "documents": {"exclude": [ek_id]}}],
+    }
+)
+```
+
+Geçersiz seçim `INVALID_DOCUMENT_SELECTION` (400) fırlatır; `details.reason` nedeni verir: `shape`, `unknown_document`, `conflict`, `empty`. Eşlediğiniz bir role hiç belge kalmazsa `PARTY_WITHOUT_DOCUMENTS` (409) döner ve sözleşme oluşmaz.
+
 ### Çok belgeli zarf (demands.documents, dispatch)
 
 Bir sözleşme `dispatch_notifications: False` ile sessizce oluşturulur, belgeler eklenir, sonra tek çağrıyla yayına alınır. Belge uçları kimseye bildirim göndermez ve kredi düşmez; kredi yalnız `dispatch` anında düşer.
@@ -182,7 +215,7 @@ Bir sözleşme `dispatch_notifications: False` ile sessizce oluşturulur, belgel
 |---|---|---|
 | `templates.list(page=None, limit=None)` | Aktif şablonlar (tek sayfa) | Evet (GET) |
 | `templates.list_all(page=None, limit=None)` | Tüm şablonları gezen iterator | Evet (GET) |
-| `templates.get(template_id)` | Şablon detayı + taraflar + doldurulabilir alanlar | Evet (GET) |
+| `templates.get(template_id)` | Şablon detayı + taraflar + doldurulabilir alanlar + zarf belgeleri (`documents`) | Evet (GET) |
 | `templates.usage(template_id)` | API kullanım kılavuzu (curl + JSON örneği) | Evet (GET) |
 | `templates.update(template_id, body)` | Şablon metadata güncelle (`name` / `description` / `category`) | Hayır (PATCH) |
 | `templates.delete(template_id)` | Şablonu sil; kayıt 30 gün saklanır, mevcut sözleşmeler etkilenmez. Aktif (taslak veya imza bekleyen) sözleşmesi olan şablon silinemez (`409 TEMPLATE_IN_USE`) | Hayır (DELETE) |

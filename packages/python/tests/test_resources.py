@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from imzala import FileInput, Imzala
-from imzala.errors import ImzalaRateLimitError
+from imzala.errors import ImzalaError, ImzalaRateLimitError
 from imzala_client.api.contacts_api import ContactsApi
 from imzala_client.api.demands_api import DemandsApi
 from imzala_client.api.reports_api import ReportsApi
@@ -248,3 +248,110 @@ class TestDemandsWriteOptions:
         assert out[:5] == b"%PDF-"
         assert mocked.call_args.kwargs["id"] == "d1"
         assert mocked.call_args.kwargs["document_id"] == "doc1"
+
+
+class TestDemandsDocumentSelection:
+    PARTY_MAPPING = [{"template_party_id": "role-1", **PARTY, "phone": "+905551112233"}]
+
+    def test_create_forwards_the_document_selection_untouched(self):
+        with patch_api(DemandsApi, "api_v1_demands_post", return_value=ok({"id": "d1"})) as mocked:
+            client().demands.create(
+                {
+                    "template_id": "t1",
+                    "party_mapping": self.PARTY_MAPPING,
+                    "documents": {"include": ["doc-1"], "exclude": ["doc-2", "doc-3"]},
+                }
+            )
+        body = mocked.call_args.kwargs["create_demand_request"]
+        assert body == {
+            "template_id": "t1",
+            "party_mapping": self.PARTY_MAPPING,
+            "documents": {"include": ["doc-1"], "exclude": ["doc-2", "doc-3"]},
+        }
+
+    def test_create_without_a_selection_sends_the_same_body_as_before(self):
+        with patch_api(DemandsApi, "api_v1_demands_post", return_value=ok({"id": "d1"})) as mocked:
+            client().demands.create({"template_id": "t1", "party_mapping": self.PARTY_MAPPING})
+        body = mocked.call_args.kwargs["create_demand_request"]
+        assert body == {"template_id": "t1", "party_mapping": self.PARTY_MAPPING}
+        assert "documents" not in body
+
+    def test_create_bulk_carries_the_selection_per_row(self):
+        with patch_api(DemandsApi, "api_v1_demands_bulk_post", return_value=ok({"created": 1, "failed": 0})) as mocked:
+            client().demands.create_bulk(
+                {
+                    "template_id": "t1",
+                    "rows": [
+                        {"party_mapping": self.PARTY_MAPPING, "documents": {"exclude": ["doc-2"]}},
+                        {"party_mapping": self.PARTY_MAPPING},
+                    ],
+                }
+            )
+        rows = mocked.call_args.kwargs["api_v1_demands_bulk_post_request"]["rows"]
+        assert rows[0]["documents"] == {"exclude": ["doc-2"]}
+        assert "documents" not in rows[1]
+
+    def test_templates_get_returns_the_documents_the_ids_come_from(self):
+        data = {
+            "id": "t1",
+            "documents": [
+                {
+                    "id": "doc-1",
+                    "order": 1,
+                    "title": "Sözleşme",
+                    "doc_kind": "CONTRACT",
+                    "is_required": True,
+                    "signature_required": True,
+                    "default_included": True,
+                    "assigned_template_party_ids": ["role-1"],
+                }
+            ],
+        }
+        with patch_api(TemplatesApi, "api_v1_templates_id_get", return_value=ok(data)):
+            template = client().templates.get("t1")
+        assert template["documents"][0]["id"] == "doc-1"
+        assert template["documents"][0]["default_included"] is True
+
+    def test_a_rejected_selection_raises_a_coded_imzala_error(self):
+        exc = ApiException(
+            status=400,
+            reason="Bad Request",
+            body=json.dumps(
+                {
+                    "success": False,
+                    "error": "Belge seçimi geçersiz",
+                    "code": "INVALID_DOCUMENT_SELECTION",
+                    "details": {"reason": "unknown_document", "document_ids": ["doc-9"]},
+                }
+            ),
+        )
+        with patch_api(DemandsApi, "api_v1_demands_post", side_effect=exc):
+            with pytest.raises(ImzalaError) as raised:
+                client().demands.create(
+                    {"template_id": "t1", "party_mapping": self.PARTY_MAPPING, "documents": {"include": ["doc-9"]}}
+                )
+        assert raised.value.status_code == 400
+        assert raised.value.code == "INVALID_DOCUMENT_SELECTION"
+        assert "unknown_document" in raised.value.code_description
+        assert raised.value.body["details"] == {"reason": "unknown_document", "document_ids": ["doc-9"]}
+
+    def test_a_party_left_without_documents_raises_a_coded_imzala_error(self):
+        exc = ApiException(
+            status=409,
+            reason="Conflict",
+            body=json.dumps(
+                {
+                    "success": False,
+                    "error": "Eşlenen bir tarafa imzalayacak belge düşmüyor",
+                    "code": "PARTY_WITHOUT_DOCUMENTS",
+                    "template_party_ids": ["role-2"],
+                }
+            ),
+        )
+        with patch_api(DemandsApi, "api_v1_demands_post", side_effect=exc):
+            with pytest.raises(ImzalaError) as raised:
+                client().demands.create(
+                    {"template_id": "t1", "party_mapping": self.PARTY_MAPPING, "documents": {"exclude": ["doc-2"]}}
+                )
+        assert raised.value.status_code == 409
+        assert raised.value.code == "PARTY_WITHOUT_DOCUMENTS"

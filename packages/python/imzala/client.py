@@ -341,7 +341,13 @@ class TemplatesResource:
         )
 
     def get(self, template_id: str) -> Any:
-        """Returns a template's parties + fillable variables. GET — safe to auto-retry."""
+        """Returns a template's parties + fillable variables, plus its
+        envelope documents under `documents`: `id`, `order`, `title`,
+        `doc_kind`, `is_required`, `signature_required`, `default_included`
+        and `assigned_template_party_ids`. Those ids are what
+        `demands.create`'s `documents.include` / `documents.exclude` expect.
+        A copied template has NEW document ids, so read them back from here
+        for the copy. GET — safe to auto-retry."""
         return _unwrap_retryable_get(
             lambda: self._api.api_v1_templates_id_get(id=template_id, _request_timeout=self._timeout),
             self._retry,
@@ -591,6 +597,19 @@ class DemandsResource:
 
         An `expiry_date` that is not a real calendar day raises
         `INVALID_EXPIRY_DATE`.
+
+        The optional `documents` key picks which of the template's documents
+        this request sends: `{"include": [...]}` adds a document the template
+        leaves out by default, `{"exclude": [...]}` drops one it includes (at
+        most 20 ids per list). The ids come from
+        `templates.get(template_id)["documents"][i]["id"]`. Leave the key out
+        and the template's own defaults are sent, exactly as before. An
+        excluded document is not part of this signing process at all: it is
+        not shown to the signer, not in the signed PDF or the completion
+        certificate, and not charged for. A bad selection raises
+        `INVALID_DOCUMENT_SELECTION` (see `details.reason`: `shape`,
+        `unknown_document`, `conflict`, `empty`); a selection that leaves a
+        mapped party with nothing to sign raises `PARTY_WITHOUT_DOCUMENTS`.
         """
         return _unwrap_idempotent_write(
             lambda: self._api.api_v1_demands_post(
@@ -609,7 +628,12 @@ class DemandsResource:
 
         This endpoint has no idempotency key, so it is never retried: a
         retried batch would create the demands again. Split larger lists into
-        batches of 10 yourself."""
+        batches of 10 yourself.
+
+        Document selection is per row: `rows[i]["documents"]` takes the same
+        shape as `create`. It is not a batch-wide option, so
+        `options.documents` raises `INVALID_DOCUMENT_SELECTION`. A row with a
+        bad selection comes back `failed`; the other rows are unaffected."""
         return _unwrap(
             lambda: self._api.api_v1_demands_bulk_post(
                 api_v1_demands_bulk_post_request=dict(body), _request_timeout=self._timeout
