@@ -93,6 +93,20 @@ public sealed class DemandsResource
     /// (waiting Retry-After, at most 60 s). A key reused with a different body
     /// throws <c>IDEMPOTENCY_KEY_REUSED</c>. An <c>expiry_date</c> that is not a
     /// real calendar day throws <c>INVALID_EXPIRY_DATE</c>.
+    ///
+    /// <see cref="CreateDemandRequest.Documents"/> (a
+    /// <see cref="DocumentSelectionInput"/>) picks which of the template's
+    /// documents this request sends: <c>Include</c> adds a document the
+    /// template leaves out by default, <c>Exclude</c> drops one it includes (at
+    /// most 20 ids per list). The ids come from
+    /// <c>Templates.GetAsync(id).Documents</c>. Leave it unset and the
+    /// template's own defaults are sent, exactly as before. An excluded
+    /// document is not part of this signing process at all: it is not shown to
+    /// the signer, not in the signed PDF or the completion certificate, and not
+    /// charged for. A bad selection throws <c>INVALID_DOCUMENT_SELECTION</c>
+    /// (see <c>details.reason</c>: <c>shape</c>, <c>unknown_document</c>,
+    /// <c>conflict</c>, <c>empty</c>); a selection that leaves a mapped party
+    /// with nothing to sign throws <c>PARTY_WITHOUT_DOCUMENTS</c>.
     /// </summary>
     /// <param name="body">The demand to create.</param>
     /// <param name="idempotencyKey">Your own reference for this request (e.g. an order number), sent as the <c>Idempotency-Key</c> header; <c>null</c> for none.</param>
@@ -113,6 +127,12 @@ public sealed class DemandsResource
     ///
     /// This endpoint has no idempotency key, so it is never retried: a retried
     /// batch would create the demands again. POST.
+    ///
+    /// Document selection is per row: each row's <c>Documents</c> takes the
+    /// same shape as <see cref="CreateAsync(CreateDemandRequest, string?, CancellationToken)"/>.
+    /// It is not a batch-wide option, so <c>options.documents</c> throws
+    /// <c>INVALID_DOCUMENT_SELECTION</c>. A row with a bad selection comes back
+    /// <c>failed</c>; the other rows are unaffected.
     /// </summary>
     public Task<ApiV1DemandsBulkPost200ResponseData> CreateBulkAsync(ApiV1DemandsBulkPostRequest body, CancellationToken cancellationToken = default) =>
         Http.Unwrap(

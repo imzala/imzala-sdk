@@ -383,6 +383,145 @@ public class ResourcesTests
         Assert.Null(call.OnAnchorMiss);
     }
 
+
+    // ---- demands: template document selection -----------------------------------
+
+    private static ApiV1DemandsPost201Response CreatedResponse() =>
+        new(true, new CreatedDemand(id: Guid.NewGuid()));
+
+    [Fact]
+    public async Task Demands_CreateAsync_forwards_the_document_selection_untouched()
+    {
+        var includedId = Guid.NewGuid();
+        var excludedId = Guid.NewGuid();
+        var body = new CreateDemandRequest(
+            templateId: Guid.NewGuid(),
+            partyMapping: new List<PartyMappingInput>(),
+            documents: new DocumentSelectionInput(include: new List<Guid> { includedId }, exclude: new List<Guid> { excludedId }));
+        var api = new Mock<IDemandsApi>();
+        api.Setup(a => a.ApiV1DemandsPostAsync(body, null, It.IsAny<CancellationToken>())).ReturnsAsync(CreatedResponse());
+
+        await Demands(api).CreateAsync(body);
+
+        api.Verify(a => a.ApiV1DemandsPostAsync(body, null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(new List<Guid> { includedId }, body.Documents.Include);
+        Assert.Equal(new List<Guid> { excludedId }, body.Documents.Exclude);
+        Assert.Contains(@"""documents""", body.ToJson());
+        Assert.Contains(includedId.ToString(), body.ToJson());
+    }
+
+    [Fact]
+    public async Task Demands_CreateAsync_without_a_selection_sends_the_same_payload_as_before()
+    {
+        var body = new CreateDemandRequest(templateId: Guid.NewGuid(), partyMapping: new List<PartyMappingInput>());
+        var api = new Mock<IDemandsApi>();
+        api.Setup(a => a.ApiV1DemandsPostAsync(body, null, It.IsAny<CancellationToken>())).ReturnsAsync(CreatedResponse());
+
+        await Demands(api).CreateAsync(body);
+
+        api.Verify(a => a.ApiV1DemandsPostAsync(body, null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Null(body.Documents);
+        Assert.DoesNotContain(@"""documents"": {", body.ToJson());
+    }
+
+    [Fact]
+    public async Task Demands_CreateBulkAsync_carries_the_selection_per_row()
+    {
+        var excludedId = Guid.NewGuid();
+        var body = new ApiV1DemandsBulkPostRequest(
+            templateId: Guid.NewGuid(),
+            rows: new List<ApiV1DemandsBulkPostRequestRowsInner>
+            {
+                new(
+                    partyMapping: new List<ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner>(),
+                    documents: new DocumentSelectionInput(exclude: new List<Guid> { excludedId })),
+                new(partyMapping: new List<ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner>()),
+            });
+        var api = new Mock<IDemandsApi>();
+        api.Setup(a => a.ApiV1DemandsBulkPostAsync(body, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ApiV1DemandsBulkPost200Response(true, new ApiV1DemandsBulkPost200ResponseData(created: 1)));
+
+        await Demands(api).CreateBulkAsync(body);
+
+        api.Verify(a => a.ApiV1DemandsBulkPostAsync(body, null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(new List<Guid> { excludedId }, body.Rows[0].Documents.Exclude);
+        Assert.Null(body.Rows[1].Documents);
+    }
+
+    [Fact]
+    public async Task Templates_GetAsync_returns_the_documents_the_ids_come_from()
+    {
+        var templateId = Guid.NewGuid();
+        var documentId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var detail = new TemplateDetail(
+            id: templateId,
+            documents: new List<TemplateDocumentSummary>
+            {
+                new(
+                    id: documentId,
+                    order: 1,
+                    title: "Sözleşme",
+                    docKind: TemplateDocumentSummary.DocKindEnum.CONTRACT,
+                    isRequired: true,
+                    signatureRequired: true,
+                    defaultIncluded: true,
+                    assignedTemplatePartyIds: new List<Guid> { roleId }),
+            });
+        var templates = new Mock<ITemplatesApi>();
+        templates.Setup(a => a.ApiV1TemplatesIdGetAsync(templateId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, detail));
+
+        var documents = (await new TemplatesResource(templates.Object, NoWaitRetry).GetAsync(templateId)).Documents;
+
+        Assert.Equal(documentId, documents[0].Id);
+        Assert.True(documents[0].DefaultIncluded);
+        Assert.Equal(new List<Guid> { roleId }, documents[0].AssignedTemplatePartyIds);
+    }
+
+    [Fact]
+    public async Task Demands_CreateAsync_maps_a_rejected_document_selection()
+    {
+        var api = new Mock<IDemandsApi>();
+        api.Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new GeneratedApiException(
+                400,
+                "bad request",
+                """{"success":false,"error":"Belge seçimi geçersiz","code":"INVALID_DOCUMENT_SELECTION","details":{"reason":"unknown_document"}}""",
+                new GeneratedMultimap()));
+
+        var body = new CreateDemandRequest(
+            templateId: Guid.NewGuid(),
+            partyMapping: new List<PartyMappingInput>(),
+            documents: new DocumentSelectionInput(include: new List<Guid> { Guid.NewGuid() }));
+
+        var err = await Assert.ThrowsAsync<ImzalaError>(() => Demands(api).CreateAsync(body));
+        Assert.Equal(400, err.StatusCode);
+        Assert.Equal("INVALID_DOCUMENT_SELECTION", err.Code);
+        Assert.Contains("unknown_document", err.CodeDescription);
+    }
+
+    [Fact]
+    public async Task Demands_CreateAsync_maps_a_party_left_without_documents()
+    {
+        var api = new Mock<IDemandsApi>();
+        api.Setup(a => a.ApiV1DemandsPostAsync(It.IsAny<CreateDemandRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new GeneratedApiException(
+                409,
+                "conflict",
+                """{"success":false,"error":"Eşlenen bir tarafa imzalayacak belge düşmüyor","code":"PARTY_WITHOUT_DOCUMENTS"}""",
+                new GeneratedMultimap()));
+
+        var body = new CreateDemandRequest(
+            templateId: Guid.NewGuid(),
+            partyMapping: new List<PartyMappingInput>(),
+            documents: new DocumentSelectionInput(exclude: new List<Guid> { Guid.NewGuid() }));
+
+        var err = await Assert.ThrowsAsync<ImzalaError>(() => Demands(api).CreateAsync(body));
+        Assert.Equal(409, err.StatusCode);
+        Assert.Equal("PARTY_WITHOUT_DOCUMENTS", err.Code);
+    }
+
     // ---- client surface ---------------------------------------------------------
 
     [Fact]

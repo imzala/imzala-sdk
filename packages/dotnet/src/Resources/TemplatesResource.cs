@@ -28,7 +28,17 @@ public sealed class TemplatesResource
             _retry,
             cancellationToken);
 
-    /// <summary>Returns a template's parties + fillable variables. GET — safe to auto-retry.</summary>
+    /// <summary>
+    /// Returns a template's parties + fillable variables, plus its envelope
+    /// documents in <see cref="TemplateDetail.Documents"/>
+    /// (<see cref="TemplateDocumentSummary"/>): <c>Id</c>, <c>Order</c>,
+    /// <c>Title</c>, <c>DocKind</c>, <c>IsRequired</c>,
+    /// <c>SignatureRequired</c>, <c>DefaultIncluded</c> and
+    /// <c>AssignedTemplatePartyIds</c>. Those ids are what
+    /// <c>Demands.CreateAsync</c>'s <c>Documents.Include</c> /
+    /// <c>Documents.Exclude</c> expect. A copied template has NEW document ids,
+    /// so read them back from here for the copy. GET — safe to auto-retry.
+    /// </summary>
     public Task<TemplateDetail> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
         Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
 

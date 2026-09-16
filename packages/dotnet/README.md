@@ -174,6 +174,31 @@ var uploaded = await imzala.Demands.UploadDocumentAsync(new UploadDemandParams
 
 `UploadDemandParams` diğer seçenekleri: `SendInvitations` (bu uçta varsayılan kapalı; `"sms"` SMS ve WhatsApp'ı kapsar, yalnız daraltır) ve `Force`.
 
+**Şablonun hangi belgelerinin gönderileceğini seçme.** İstekteki `Documents` alanı şablonun varsayılanını bu isteğe özel değiştirir: `Include` varsayılanı kapalı bir belgeyi ekler, `Exclude` varsayılanı açık bir belgeyi çıkarır (her liste en çok 20 kimlik). Kimlikler `Templates.GetAsync(id).Documents` içinden gelir. Alanı hiç göndermezseniz şablonun varsayılanı gider; davranış eskisiyle birebir aynıdır. Çıkarılan belge bu imza sürecine hiç girmez: imzacıya gösterilmez, imzalı PDF'te ve tamamlanma sertifikasında yer almaz, kredi hesabına katılmaz. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (ör. `DocKind: PREINFO` ya da `KVKK_NOTICE`) başka bir kanaldan vermiyorsanız çıkarmayın; bu yükümlülük sözleşmeyi gönderene aittir.
+
+```csharp
+var template = await imzala.Templates.GetAsync(templateId);
+var kvkkId = template.Documents
+    .First(d => d.DocKind == TemplateDocumentSummary.DocKindEnum.KVKK_NOTICE)
+    .Id;
+
+var demand = await imzala.Demands.CreateAsync(new CreateDemandRequest(
+    templateId: templateId,
+    partyMapping: partyMapping,
+    // varsayılanı kapalı belgeyi bu isteğe ekle
+    documents: new DocumentSelectionInput(include: new List<Guid> { kvkkId })));
+
+// Toplu uçta seçim satır başınadır (batch geneli `options.documents` reddedilir)
+await imzala.Demands.CreateBulkAsync(new ApiV1DemandsBulkPostRequest(
+    templateId: templateId,
+    rows: new List<ApiV1DemandsBulkPostRequestRowsInner>
+    {
+        new(partyMapping: rowPartyMapping, documents: new DocumentSelectionInput(exclude: new List<Guid> { ekId })),
+    }));
+```
+
+Geçersiz seçim `INVALID_DOCUMENT_SELECTION` (400) fırlatır; `details.reason` nedeni verir: `shape`, `unknown_document`, `conflict`, `empty`. Eşlediğiniz bir role hiç belge kalmazsa `PARTY_WITHOUT_DOCUMENTS` (409) döner ve sözleşme oluşmaz.
+
 ### Çok belgeli zarf (Demands.Documents, Dispatch)
 
 Bir sözleşme `dispatchNotifications: false` ile sessizce oluşturulur, belgeler eklenir, sonra tek çağrıyla yayına alınır. Belge uçları kimseye bildirim göndermez ve kredi düşmez; kredi yalnız `Dispatch` anında düşer.
@@ -197,7 +222,7 @@ Bir sözleşme `dispatchNotifications: false` ile sessizce oluşturulur, belgele
 |---|---|---|
 | `Templates.ListAsync(page?, limit?)` | Aktif şablonlar (tek sayfa) | ✅ GET |
 | `Templates.ListAllAsync(page?, limit?)` | Tüm şablonları gezen `IAsyncEnumerable<TemplateSummary>` | ✅ GET |
-| `Templates.GetAsync(Guid id)` | Şablon detayı + taraflar + doldurulabilir alanlar | ✅ GET |
+| `Templates.GetAsync(Guid id)` | Şablon detayı + taraflar + doldurulabilir alanlar + zarf belgeleri (`documents`) | ✅ GET |
 | `Templates.UsageAsync(Guid id)` | API kullanım kılavuzu (curl + JSON örneği) | ✅ GET |
 | `Templates.UpdateAsync(Guid id, name?, description?, category?)` | Şablon metadata güncelle (yalnızca dolu argümanlar gönderilir) | ❌ PATCH |
 | `Templates.DeleteAsync(Guid id)` | Şablonu sil; kayıt 30 gün saklanır, mevcut sözleşmeler etkilenmez. Aktif (taslak veya imza bekleyen) sözleşmesi olan şablon silinemez (`409 TEMPLATE_IN_USE`) | ❌ DELETE |
