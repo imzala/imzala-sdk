@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ContactsApi, DemandsApi, ReportsApi, TemplatesApi, TimestampsApi } from '../../generated/api';
 import { Imzala } from '../index';
-import { ImzalaRateLimitError } from '../errors';
+import { ImzalaError, ImzalaRateLimitError } from '../errors';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -250,5 +250,114 @@ describe('binary GETs: errors are mapped and 429/5xx retried like other GETs', (
     const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsIdCertificateGet').mockRejectedValue(rateLimited());
     await expect(client().demands.getCertificate('d1')).rejects.toBeInstanceOf(ImzalaRateLimitError);
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('demands: template document selection', () => {
+  const partyMapping = [
+    { template_party_id: 'role-1', first_name: 'Ayşe', last_name: 'Yılmaz', email: 'ayse@example.com', phone: '+905551112233' },
+  ];
+
+  it('create forwards documents.include / documents.exclude untouched', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockResolvedValue(ok({ id: 'd1' }, 201));
+    await client().demands.create({
+      template_id: 't1',
+      party_mapping: partyMapping,
+      documents: { include: ['doc-1'], exclude: ['doc-2', 'doc-3'] },
+    } as any);
+    expect((spy.mock.calls[0][0] as any).createDemandRequest).toEqual({
+      template_id: 't1',
+      party_mapping: partyMapping,
+      documents: { include: ['doc-1'], exclude: ['doc-2', 'doc-3'] },
+    });
+  });
+
+  it('create without documents sends the same body as before (no injected key)', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockResolvedValue(ok({ id: 'd1' }, 201));
+    await client().demands.create({ template_id: 't1', party_mapping: partyMapping } as any);
+    const body = (spy.mock.calls[0][0] as any).createDemandRequest;
+    expect(body).toEqual({ template_id: 't1', party_mapping: partyMapping });
+    expect('documents' in body).toBe(false);
+  });
+
+  it('createBulk carries the selection per row, not batch-wide', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsBulkPost').mockResolvedValue(ok({ created: 1, failed: 0, results: [] }));
+    await client().demands.createBulk({
+      template_id: 't1',
+      rows: [
+        { party_mapping: partyMapping, documents: { exclude: ['doc-2'] } },
+        { party_mapping: partyMapping },
+      ],
+    } as any);
+    const rows = (spy.mock.calls[0][0] as any).apiV1DemandsBulkPostRequest.rows;
+    expect(rows[0].documents).toEqual({ exclude: ['doc-2'] });
+    expect('documents' in rows[1]).toBe(false);
+  });
+
+  it('templates.get returns the template documents the ids come from', async () => {
+    vi.spyOn(TemplatesApi.prototype, 'apiV1TemplatesIdGet').mockResolvedValue(
+      ok({
+        id: 't1',
+        documents: [
+          {
+            id: 'doc-1',
+            order: 1,
+            title: 'Sözleşme',
+            doc_kind: 'CONTRACT',
+            is_required: true,
+            signature_required: true,
+            default_included: true,
+            assigned_template_party_ids: ['role-1'],
+          },
+        ],
+      }),
+    );
+    const template = await client().templates.get('t1');
+    expect(template.documents?.[0]).toMatchObject({ id: 'doc-1', default_included: true, doc_kind: 'CONTRACT' });
+  });
+
+  it('a rejected selection surfaces as a coded ImzalaError with the reason details', async () => {
+    vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockRejectedValue({
+      isAxiosError: true,
+      message: 'Request failed with status code 400',
+      response: {
+        status: 400,
+        data: {
+          success: false,
+          error: 'Belge seçimi geçersiz',
+          code: 'INVALID_DOCUMENT_SELECTION',
+          details: { reason: 'unknown_document', document_ids: ['doc-9'] },
+        },
+        headers: {},
+      },
+    });
+    const err = await client()
+      .demands.create({ template_id: 't1', party_mapping: partyMapping, documents: { include: ['doc-9'] } } as any)
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(ImzalaError);
+    expect(err.statusCode).toBe(400);
+    expect(err.code).toBe('INVALID_DOCUMENT_SELECTION');
+    expect(err.codeDescription).toContain('unknown_document');
+    expect((err.body as any).details).toEqual({ reason: 'unknown_document', document_ids: ['doc-9'] });
+  });
+
+  it('a party left without documents surfaces as a coded ImzalaError', async () => {
+    vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockRejectedValue({
+      isAxiosError: true,
+      message: 'Request failed with status code 409',
+      response: {
+        status: 409,
+        data: {
+          success: false,
+          error: 'Eşlenen bir tarafa imzalayacak belge düşmüyor',
+          code: 'PARTY_WITHOUT_DOCUMENTS',
+          template_party_ids: ['role-2'],
+        },
+        headers: {},
+      },
+    });
+    await expect(
+      client().demands.create({ template_id: 't1', party_mapping: partyMapping, documents: { exclude: ['doc-2'] } } as any),
+    ).rejects.toMatchObject({ name: 'ImzalaError', statusCode: 409, code: 'PARTY_WITHOUT_DOCUMENTS' });
   });
 });

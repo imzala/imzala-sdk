@@ -87,7 +87,9 @@ export type {
   CreatedDemand,
   CreatedDemandUpload,
   DemandStatus,
+  DocumentSelectionInput,
   TemplateDetail,
+  TemplateDocumentSummary,
   TemplateSummary,
   TemplateUsage,
   TimestampRecord,
@@ -253,7 +255,15 @@ class TemplatesResource {
     );
   }
 
-  /** Returns a template's parties + fillable variables. GET — safe to auto-retry. */
+  /**
+   * Returns a template's parties + fillable variables, plus its envelope
+   * documents in `documents` ({@link TemplateDocumentSummary}) — `id`,
+   * `order`, `title`, `doc_kind`, `is_required`, `signature_required`,
+   * `default_included` and `assigned_template_party_ids`. Those ids are
+   * what `demands.create`'s `documents.include` / `documents.exclude`
+   * expect. A copied template has NEW document ids, so read them back from
+   * here for the copy. GET — safe to auto-retry.
+   */
   get(id: string): Promise<TemplateDetail> {
     return unwrapRetryableGet(() => this.api.apiV1TemplatesIdGet({ id }), this.retryConfig);
   }
@@ -470,6 +480,19 @@ class DemandsResource {
    *
    * An `expiry_date` that is not a real calendar day throws
    * `INVALID_EXPIRY_DATE`.
+   *
+   * The optional `documents` field ({@link DocumentSelectionInput}) picks
+   * which of the template's documents this request sends: `include` adds a
+   * document the template leaves out by default, `exclude` drops one it
+   * includes. Ids come from `templates.get(id).documents[].id`; each list
+   * takes at most 20. Omit the field entirely and the template's own
+   * defaults are sent, exactly as before. An excluded document is not part
+   * of this signing process at all: it is not shown to the signer, not in
+   * the signed PDF or the completion certificate, and not charged for.
+   * A bad selection throws `INVALID_DOCUMENT_SELECTION` (see
+   * `details.reason`: `shape`, `unknown_document`, `conflict`, `empty`),
+   * a selection that leaves a mapped party with nothing to sign throws
+   * `PARTY_WITHOUT_DOCUMENTS`.
    */
   create(body: CreateDemandRequest, options: WriteOptions = {}): Promise<CreatedDemand> {
     return unwrapIdempotentWrite(
@@ -485,6 +508,11 @@ class DemandsResource {
    * This endpoint has no idempotency key, so it is never retried: a retried
    * batch would create the demands again. Split larger lists into batches
    * of 10 yourself.
+   *
+   * Document selection is per row: `rows[i].documents` takes the same shape
+   * as `create`. It is not a batch-wide option — sending
+   * `options.documents` throws `INVALID_DOCUMENT_SELECTION`. A row with a
+   * bad selection comes back `failed`; the other rows are unaffected.
    */
   createBulk(body: ApiV1DemandsBulkPostRequest): Promise<ApiV1DemandsBulkPost200ResponseData> {
     return unwrap(this.api.apiV1DemandsBulkPost({ apiV1DemandsBulkPostRequest: body }));
