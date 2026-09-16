@@ -50,6 +50,12 @@ final class ErrorCodes
         'FIELD_LAYOUT_UNRESOLVED' => 'Alan yerleşimi bu belgeye uygulanamadı; sözleşme oluşturulmadı ve kredi düşülmedi.',
         'INVALID_ON_ANCHOR_MISS' => 'on_anchor_miss değeri geçersiz.',
 
+        // Şablon belge seçimi
+        'INVALID_DOCUMENT_SELECTION' => 'Belge seçimi geçersiz; details.reason alanı nedeni verir: shape (biçim hatası), unknown_document (kimlik bu şablonun belgesi değil), conflict (aynı kimlik iki listede), empty (seçim sonucunda belge kalmadı).',
+        'PARTY_WITHOUT_DOCUMENTS' => 'Eşlenen bir tarafa imzalayacak belge düşmüyor. Seçimi değiştirin, o rolü eşlemeden çıkarın ya da dispatch_notifications: false ile oluşturup atamaları düzelttikten sonra gönderin.',
+        'TEMPLATE_DOCUMENTS_NOT_READY' => 'Şablonun belge yapısı henüz hazır değil; documents göndermeden deneyin.',
+        'DOCUMENT_SOURCE_UNAVAILABLE' => 'Seçim sonrasında kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.',
+
         // Sözleşme durumu
         'DEMAND_NOT_FOUND' => 'Sözleşme bu çalışma alanında bulunamadı.',
         'DEMAND_NOT_EDITABLE' => 'Sözleşme düzenlemeye açık değil (ör. tamamlanmış, reddedilmiş, iptal edilmiş, süresi geçmiş veya bulunamadı).',
@@ -69,10 +75,13 @@ final class ErrorCodes
         'RECONCILE_FAILED' => 'Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.',
         'INVALID_CHANNELS' => 'channels boş ya da email/sms dışında bir değer içeriyor.',
         'MAX_SMS_REMINDERS_REACHED' => 'Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.',
+        'ENVELOPE_NOT_DISPATCHED' => 'Çok belgeli zarf henüz gönderilmedi; önce POST /demands/{id}/dispatch çağırın.',
+        'ENVELOPE_CHANGED_DURING_DISPATCH' => 'Kredi mutabakatı ile gönderim arasında zarf değiştirildi. Sözleşme yayına geçmedi; istek güvenle tekrarlanabilir.',
 
         // Zarf belgeleri
         'ENVELOPE_MULTI_DOC_DISABLED' => 'Çok belgeli zarf özelliği bu hesap için henüz açık değil.',
         'SIGNING_ALREADY_STARTED' => 'İmza süreci başlamış zarfın belge listesi değiştirilemez.',
+        'ENVELOPE_ALREADY_DISPATCHED' => 'Sözleşme gönderilmiş; gönderilmiş bir zarfın belge listesi değiştirilemez.',
         'DOCUMENT_LIMIT_EXCEEDED' => 'Zarf başına en fazla 20 belge eklenebilir.',
         'QES_NOT_SUPPORTED_MULTI_DOCUMENT' => 'Nitelikli elektronik imza birden çok belge içeren zarflarda henüz desteklenmiyor.',
         'CANNOT_DELETE_LAST_DOCUMENT' => 'Zarftaki son belge silinemez.',

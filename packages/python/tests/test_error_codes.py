@@ -32,6 +32,7 @@ NOT_ERROR_CODES = {
     "CREATE_FAILED": "per-row result code in the bulk 200 response",
     "DISPATCH_FAILED": "per-party invitation result code in a 200 response",
     "DISPATCH_SKIPPED": "invitation result code in a 200 response",
+    "DRAFT_UNDISPATCHED": "demand status value returned alongside an error, not a code itself",
     "RECIPIENT_QUOTA_EXCEEDED": "per-party invitation result code in a 200 response",
     "ON_ANCHOR_MISS_NOT_RELAXED": "warning in a 200 response, not an error",
     "DEAD_LETTER": "webhook delivery status",

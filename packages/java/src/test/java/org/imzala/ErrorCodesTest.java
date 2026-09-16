@@ -51,6 +51,8 @@ class ErrorCodesTest {
     NOT_ERROR_CODES.put("CREATE_FAILED", "per-row result code in the bulk 200 response");
     NOT_ERROR_CODES.put("DISPATCH_FAILED", "per-party invitation result code in a 200 response");
     NOT_ERROR_CODES.put("DISPATCH_SKIPPED", "invitation result code in a 200 response");
+    NOT_ERROR_CODES.put("DRAFT_UNDISPATCHED",
+        "demand status value returned alongside an error, not a code itself");
     NOT_ERROR_CODES.put("RECIPIENT_QUOTA_EXCEEDED", "per-party invitation result code in a 200 response");
     NOT_ERROR_CODES.put("ON_ANCHOR_MISS_NOT_RELAXED", "warning in a 200 response, not an error");
     NOT_ERROR_CODES.put("DEAD_LETTER", "webhook delivery status");
@@ -170,7 +172,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(73, ErrorCodes.CODES.size());
+    assertEquals(80, ErrorCodes.CODES.size());
   }
 
   @Test
