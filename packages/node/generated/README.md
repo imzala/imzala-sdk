@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.8.14
+## @imzala/server-sdk-node@1.8.17
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.8.14 --save
+npm install @imzala/server-sdk-node@1.8.17 --save
 ```
 
 _unPublished (not recommended):_
@@ -101,6 +101,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsBulkPost200Response](docs/ApiV1DemandsBulkPost200Response.md)
  - [ApiV1DemandsBulkPost200ResponseData](docs/ApiV1DemandsBulkPost200ResponseData.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md)
+ - [ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md)
  - [ApiV1DemandsBulkPostRequest](docs/ApiV1DemandsBulkPostRequest.md)
  - [ApiV1DemandsBulkPostRequestOptions](docs/ApiV1DemandsBulkPostRequestOptions.md)
@@ -144,7 +145,13 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdTimelineGet200ResponseData](docs/ApiV1DemandsIdTimelineGet200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
+ - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
+ - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
+ - [ApiV1DemandsPost402ResponseData](docs/ApiV1DemandsPost402ResponseData.md)
+ - [ApiV1DemandsPost500Response](docs/ApiV1DemandsPost500Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
+ - [ApiV1DemandsUploadPost402Response](docs/ApiV1DemandsUploadPost402Response.md)
+ - [ApiV1DemandsUploadPost500Response](docs/ApiV1DemandsUploadPost500Response.md)
  - [ApiV1FieldTemplatesGet200Response](docs/ApiV1FieldTemplatesGet200Response.md)
  - [ApiV1FieldTemplatesGet200ResponseData](docs/ApiV1FieldTemplatesGet200ResponseData.md)
  - [ApiV1FieldTemplatesIdGet200Response](docs/ApiV1FieldTemplatesIdGet200Response.md)
@@ -185,6 +192,9 @@ Class | Method | HTTP request | Description
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
+ - [DocumentSelectionError](docs/DocumentSelectionError.md)
+ - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
+ - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
  - [EnvelopeDocument](docs/EnvelopeDocument.md)
  - [FieldLayoutDiagnostic](docs/FieldLayoutDiagnostic.md)
  - [FieldLayoutPreview](docs/FieldLayoutPreview.md)
@@ -204,6 +214,7 @@ Class | Method | HTTP request | Description
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)
  - [TemplateDetail](docs/TemplateDetail.md)
+ - [TemplateDocumentSummary](docs/TemplateDocumentSummary.md)
  - [TemplatePartySummary](docs/TemplatePartySummary.md)
  - [TemplateSummary](docs/TemplateSummary.md)
  - [TemplateSummaryPartiesInner](docs/TemplateSummaryPartiesInner.md)

@@ -643,7 +643,7 @@ ApiResponse<[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Res
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır. 
 
 ### Example
 
@@ -716,7 +716,7 @@ public class Example {
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır. 
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır. 
 
 ### Example
 

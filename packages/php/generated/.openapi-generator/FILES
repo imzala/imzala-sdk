@@ -19,6 +19,7 @@ docs/Model/ApiV1ContactsPostRequest.md
 docs/Model/ApiV1DemandsBulkPost200Response.md
 docs/Model/ApiV1DemandsBulkPost200ResponseData.md
 docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
+docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
 docs/Model/ApiV1DemandsBulkPostRequest.md
 docs/Model/ApiV1DemandsBulkPostRequestOptions.md
@@ -62,7 +63,13 @@ docs/Model/ApiV1DemandsIdTimelineGet200Response.md
 docs/Model/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
 docs/Model/ApiV1DemandsPost201Response.md
+docs/Model/ApiV1DemandsPost400Response.md
+docs/Model/ApiV1DemandsPost402Response.md
+docs/Model/ApiV1DemandsPost402ResponseData.md
+docs/Model/ApiV1DemandsPost500Response.md
 docs/Model/ApiV1DemandsUploadPost201Response.md
+docs/Model/ApiV1DemandsUploadPost402Response.md
+docs/Model/ApiV1DemandsUploadPost500Response.md
 docs/Model/ApiV1FieldTemplatesGet200Response.md
 docs/Model/ApiV1FieldTemplatesGet200ResponseData.md
 docs/Model/ApiV1FieldTemplatesIdGet200Response.md
@@ -103,6 +110,9 @@ docs/Model/CreatedDemandUploadFieldLayout.md
 docs/Model/DemandPage.md
 docs/Model/DemandStatus.md
 docs/Model/DemandStatusPartiesInner.md
+docs/Model/DocumentSelectionError.md
+docs/Model/DocumentSelectionErrorDetails.md
+docs/Model/DocumentSelectionInput.md
 docs/Model/EnvelopeDocument.md
 docs/Model/FieldLayoutDiagnostic.md
 docs/Model/FieldLayoutPreview.md
@@ -122,6 +132,7 @@ docs/Model/ReminderSettings.md
 docs/Model/StandardError.md
 docs/Model/StandardErrorError.md
 docs/Model/TemplateDetail.md
+docs/Model/TemplateDocumentSummary.md
 docs/Model/TemplatePartySummary.md
 docs/Model/TemplateSummary.md
 docs/Model/TemplateSummaryPartiesInner.md
@@ -172,6 +183,7 @@ lib/Model/ApiV1ContactsPostRequest.php
 lib/Model/ApiV1DemandsBulkPost200Response.php
 lib/Model/ApiV1DemandsBulkPost200ResponseData.php
 lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.php
+lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.php
 lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.php
 lib/Model/ApiV1DemandsBulkPostRequest.php
 lib/Model/ApiV1DemandsBulkPostRequestOptions.php
@@ -215,7 +227,13 @@ lib/Model/ApiV1DemandsIdTimelineGet200Response.php
 lib/Model/ApiV1DemandsIdTimelineGet200ResponseData.php
 lib/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.php
 lib/Model/ApiV1DemandsPost201Response.php
+lib/Model/ApiV1DemandsPost400Response.php
+lib/Model/ApiV1DemandsPost402Response.php
+lib/Model/ApiV1DemandsPost402ResponseData.php
+lib/Model/ApiV1DemandsPost500Response.php
 lib/Model/ApiV1DemandsUploadPost201Response.php
+lib/Model/ApiV1DemandsUploadPost402Response.php
+lib/Model/ApiV1DemandsUploadPost500Response.php
 lib/Model/ApiV1FieldTemplatesGet200Response.php
 lib/Model/ApiV1FieldTemplatesGet200ResponseData.php
 lib/Model/ApiV1FieldTemplatesIdGet200Response.php
@@ -256,6 +274,9 @@ lib/Model/CreatedDemandUploadFieldLayout.php
 lib/Model/DemandPage.php
 lib/Model/DemandStatus.php
 lib/Model/DemandStatusPartiesInner.php
+lib/Model/DocumentSelectionError.php
+lib/Model/DocumentSelectionErrorDetails.php
+lib/Model/DocumentSelectionInput.php
 lib/Model/EnvelopeDocument.php
 lib/Model/FieldLayoutDiagnostic.php
 lib/Model/FieldLayoutPreview.php
@@ -276,6 +297,7 @@ lib/Model/ReminderSettings.php
 lib/Model/StandardError.php
 lib/Model/StandardErrorError.php
 lib/Model/TemplateDetail.php
+lib/Model/TemplateDocumentSummary.php
 lib/Model/TemplatePartySummary.php
 lib/Model/TemplateSummary.php
 lib/Model/TemplateSummaryPartiesInner.php
@@ -320,6 +342,7 @@ test/Model/ApiV1ContactsGet200ResponseDataTest.php
 test/Model/ApiV1ContactsGet200ResponseTest.php
 test/Model/ApiV1ContactsPost201ResponseTest.php
 test/Model/ApiV1ContactsPostRequestTest.php
+test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetailsTest.php
 test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInnerTest.php
 test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTest.php
 test/Model/ApiV1DemandsBulkPost200ResponseDataTest.php
@@ -366,7 +389,13 @@ test/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInnerTest.php
 test/Model/ApiV1DemandsIdTimelineGet200ResponseDataTest.php
 test/Model/ApiV1DemandsIdTimelineGet200ResponseTest.php
 test/Model/ApiV1DemandsPost201ResponseTest.php
+test/Model/ApiV1DemandsPost400ResponseTest.php
+test/Model/ApiV1DemandsPost402ResponseDataTest.php
+test/Model/ApiV1DemandsPost402ResponseTest.php
+test/Model/ApiV1DemandsPost500ResponseTest.php
 test/Model/ApiV1DemandsUploadPost201ResponseTest.php
+test/Model/ApiV1DemandsUploadPost402ResponseTest.php
+test/Model/ApiV1DemandsUploadPost500ResponseTest.php
 test/Model/ApiV1FieldTemplatesGet200ResponseDataTest.php
 test/Model/ApiV1FieldTemplatesGet200ResponseTest.php
 test/Model/ApiV1FieldTemplatesIdGet200ResponseTest.php
@@ -407,6 +436,9 @@ test/Model/CreatedDemandUploadTest.php
 test/Model/DemandPageTest.php
 test/Model/DemandStatusPartiesInnerTest.php
 test/Model/DemandStatusTest.php
+test/Model/DocumentSelectionErrorDetailsTest.php
+test/Model/DocumentSelectionErrorTest.php
+test/Model/DocumentSelectionInputTest.php
 test/Model/EnvelopeDocumentTest.php
 test/Model/FieldLayoutDiagnosticTest.php
 test/Model/FieldLayoutPreviewPlacementsSummaryByPageInnerTest.php
@@ -426,6 +458,7 @@ test/Model/ReminderSettingsTest.php
 test/Model/StandardErrorErrorTest.php
 test/Model/StandardErrorTest.php
 test/Model/TemplateDetailTest.php
+test/Model/TemplateDocumentSummaryTest.php
 test/Model/TemplatePartySummaryTest.php
 test/Model/TemplateSummaryPartiesInnerTest.php
 test/Model/TemplateSummaryTest.php

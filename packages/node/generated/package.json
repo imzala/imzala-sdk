@@ -1,6 +1,6 @@
 {
   "name": "@imzala/server-sdk-node",
-  "version": "1.8.14",
+  "version": "1.8.17",
   "description": "OpenAPI client for @imzala/server-sdk-node",
   "author": "OpenAPI-Generator Contributors",
   "repository": {

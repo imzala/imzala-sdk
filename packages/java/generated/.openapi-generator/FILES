@@ -15,6 +15,7 @@ docs/ApiV1ContactsPostRequest.md
 docs/ApiV1DemandsBulkPost200Response.md
 docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
+docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
@@ -58,7 +59,13 @@ docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
 docs/ApiV1DemandsPost201Response.md
+docs/ApiV1DemandsPost400Response.md
+docs/ApiV1DemandsPost402Response.md
+docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
+docs/ApiV1DemandsUploadPost402Response.md
+docs/ApiV1DemandsUploadPost500Response.md
 docs/ApiV1FieldTemplatesGet200Response.md
 docs/ApiV1FieldTemplatesGet200ResponseData.md
 docs/ApiV1FieldTemplatesIdGet200Response.md
@@ -101,6 +108,9 @@ docs/DemandPage.md
 docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandsApi.md
+docs/DocumentSelectionError.md
+docs/DocumentSelectionErrorDetails.md
+docs/DocumentSelectionInput.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -122,6 +132,7 @@ docs/ReportsApi.md
 docs/StandardError.md
 docs/StandardErrorError.md
 docs/TemplateDetail.md
+docs/TemplateDocumentSummary.md
 docs/TemplatePartySummary.md
 docs/TemplateSummary.md
 docs/TemplateSummaryPartiesInner.md
@@ -190,6 +201,7 @@ src/main/java/org/imzala/client/generated/model/ApiV1ContactsPostRequest.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInner.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequest.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestOptions.java
@@ -233,7 +245,13 @@ src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200Resp
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost201Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost400Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost402Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseData.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost500Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost201Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost402Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost500Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1FieldTemplatesGet200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1FieldTemplatesGet200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1FieldTemplatesIdGet200Response.java
@@ -274,6 +292,9 @@ src/main/java/org/imzala/client/generated/model/CreatedDemandUploadFieldLayout.j
 src/main/java/org/imzala/client/generated/model/DemandPage.java
 src/main/java/org/imzala/client/generated/model/DemandStatus.java
 src/main/java/org/imzala/client/generated/model/DemandStatusPartiesInner.java
+src/main/java/org/imzala/client/generated/model/DocumentSelectionError.java
+src/main/java/org/imzala/client/generated/model/DocumentSelectionErrorDetails.java
+src/main/java/org/imzala/client/generated/model/DocumentSelectionInput.java
 src/main/java/org/imzala/client/generated/model/EnvelopeDocument.java
 src/main/java/org/imzala/client/generated/model/FieldLayoutDiagnostic.java
 src/main/java/org/imzala/client/generated/model/FieldLayoutPreview.java
@@ -293,6 +314,7 @@ src/main/java/org/imzala/client/generated/model/ReminderSettings.java
 src/main/java/org/imzala/client/generated/model/StandardError.java
 src/main/java/org/imzala/client/generated/model/StandardErrorError.java
 src/main/java/org/imzala/client/generated/model/TemplateDetail.java
+src/main/java/org/imzala/client/generated/model/TemplateDocumentSummary.java
 src/main/java/org/imzala/client/generated/model/TemplatePartySummary.java
 src/main/java/org/imzala/client/generated/model/TemplateSummary.java
 src/main/java/org/imzala/client/generated/model/TemplateSummaryPartiesInner.java
@@ -335,6 +357,7 @@ src/test/java/org/imzala/client/generated/model/ApiV1ContactsGet200ResponseDataT
 src/test/java/org/imzala/client/generated/model/ApiV1ContactsGet200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1ContactsPost201ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1ContactsPostRequestTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetailsTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataTest.java
@@ -381,7 +404,13 @@ src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200Resp
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost201ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost400ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseDataTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost500ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost201ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost402ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost500ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1FieldTemplatesGet200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1FieldTemplatesGet200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1FieldTemplatesIdGet200ResponseTest.java
@@ -422,6 +451,9 @@ src/test/java/org/imzala/client/generated/model/CreatedDemandUploadTest.java
 src/test/java/org/imzala/client/generated/model/DemandPageTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusTest.java
+src/test/java/org/imzala/client/generated/model/DocumentSelectionErrorDetailsTest.java
+src/test/java/org/imzala/client/generated/model/DocumentSelectionErrorTest.java
+src/test/java/org/imzala/client/generated/model/DocumentSelectionInputTest.java
 src/test/java/org/imzala/client/generated/model/EnvelopeDocumentTest.java
 src/test/java/org/imzala/client/generated/model/FieldLayoutDiagnosticTest.java
 src/test/java/org/imzala/client/generated/model/FieldLayoutPreviewPlacementsSummaryByPageInnerTest.java
@@ -441,6 +473,7 @@ src/test/java/org/imzala/client/generated/model/ReminderSettingsTest.java
 src/test/java/org/imzala/client/generated/model/StandardErrorErrorTest.java
 src/test/java/org/imzala/client/generated/model/StandardErrorTest.java
 src/test/java/org/imzala/client/generated/model/TemplateDetailTest.java
+src/test/java/org/imzala/client/generated/model/TemplateDocumentSummaryTest.java
 src/test/java/org/imzala/client/generated/model/TemplatePartySummaryTest.java
 src/test/java/org/imzala/client/generated/model/TemplateSummaryPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/TemplateSummaryTest.java

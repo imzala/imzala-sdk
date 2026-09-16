@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **parties** | [**List[TemplatePartySummary]**](TemplatePartySummary.md) |  | [optional] 
 **pages_count** | **int** |  | [optional] 
 **variables** | [**List[TemplateVariable]**](TemplateVariable.md) |  | [optional] 
+**documents** | [**List[TemplateDocumentSummary]**](TemplateDocumentSummary.md) | Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi. | [optional] 
 
 ## Example
 

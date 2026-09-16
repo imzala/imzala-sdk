@@ -13,6 +13,7 @@ docs/ApiV1ContactsPostRequest.md
 docs/ApiV1DemandsBulkPost200Response.md
 docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
+docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
@@ -56,7 +57,13 @@ docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
 docs/ApiV1DemandsPost201Response.md
+docs/ApiV1DemandsPost400Response.md
+docs/ApiV1DemandsPost402Response.md
+docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
+docs/ApiV1DemandsUploadPost402Response.md
+docs/ApiV1DemandsUploadPost500Response.md
 docs/ApiV1FieldTemplatesGet200Response.md
 docs/ApiV1FieldTemplatesGet200ResponseData.md
 docs/ApiV1FieldTemplatesIdGet200Response.md
@@ -99,6 +106,9 @@ docs/DemandPage.md
 docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandsApi.md
+docs/DocumentSelectionError.md
+docs/DocumentSelectionErrorDetails.md
+docs/DocumentSelectionInput.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -120,6 +130,7 @@ docs/ReportsApi.md
 docs/StandardError.md
 docs/StandardErrorError.md
 docs/TemplateDetail.md
+docs/TemplateDocumentSummary.md
 docs/TemplatePartySummary.md
 docs/TemplateSummary.md
 docs/TemplateSummaryPartiesInner.md
@@ -166,6 +177,7 @@ src/ImzalaApiClient.Test/Model/ApiV1ContactsGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1ContactsGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1ContactsPost201ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1ContactsPostRequestTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetailsTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataTests.cs
@@ -212,7 +224,13 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInn
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost201ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsPost400ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsPost402ResponseDataTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsPost402ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsPost500ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsUploadPost201ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsUploadPost402ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsUploadPost500ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1FieldTemplatesGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1FieldTemplatesGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1FieldTemplatesIdGet200ResponseTests.cs
@@ -253,6 +271,9 @@ src/ImzalaApiClient.Test/Model/CreatedDemandUploadTests.cs
 src/ImzalaApiClient.Test/Model/DemandPageTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusTests.cs
+src/ImzalaApiClient.Test/Model/DocumentSelectionErrorDetailsTests.cs
+src/ImzalaApiClient.Test/Model/DocumentSelectionErrorTests.cs
+src/ImzalaApiClient.Test/Model/DocumentSelectionInputTests.cs
 src/ImzalaApiClient.Test/Model/EnvelopeDocumentTests.cs
 src/ImzalaApiClient.Test/Model/FieldLayoutDiagnosticTests.cs
 src/ImzalaApiClient.Test/Model/FieldLayoutPreviewPlacementsSummaryByPageInnerTests.cs
@@ -272,6 +293,7 @@ src/ImzalaApiClient.Test/Model/ReminderSettingsTests.cs
 src/ImzalaApiClient.Test/Model/StandardErrorErrorTests.cs
 src/ImzalaApiClient.Test/Model/StandardErrorTests.cs
 src/ImzalaApiClient.Test/Model/TemplateDetailTests.cs
+src/ImzalaApiClient.Test/Model/TemplateDocumentSummaryTests.cs
 src/ImzalaApiClient.Test/Model/TemplatePartySummaryTests.cs
 src/ImzalaApiClient.Test/Model/TemplateSummaryPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/TemplateSummaryTests.cs
@@ -336,6 +358,7 @@ src/ImzalaApiClient/Model/ApiV1ContactsPostRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.cs
+src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPostRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPostRequestOptions.cs
@@ -379,7 +402,13 @@ src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost201Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsPost400Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsPost402Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsPost402ResponseData.cs
+src/ImzalaApiClient/Model/ApiV1DemandsPost500Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsUploadPost201Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsUploadPost402Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsUploadPost500Response.cs
 src/ImzalaApiClient/Model/ApiV1FieldTemplatesGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1FieldTemplatesGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1FieldTemplatesIdGet200Response.cs
@@ -420,6 +449,9 @@ src/ImzalaApiClient/Model/CreatedDemandUploadFieldLayout.cs
 src/ImzalaApiClient/Model/DemandPage.cs
 src/ImzalaApiClient/Model/DemandStatus.cs
 src/ImzalaApiClient/Model/DemandStatusPartiesInner.cs
+src/ImzalaApiClient/Model/DocumentSelectionError.cs
+src/ImzalaApiClient/Model/DocumentSelectionErrorDetails.cs
+src/ImzalaApiClient/Model/DocumentSelectionInput.cs
 src/ImzalaApiClient/Model/EnvelopeDocument.cs
 src/ImzalaApiClient/Model/FieldLayoutDiagnostic.cs
 src/ImzalaApiClient/Model/FieldLayoutPreview.cs
@@ -439,6 +471,7 @@ src/ImzalaApiClient/Model/ReminderSettings.cs
 src/ImzalaApiClient/Model/StandardError.cs
 src/ImzalaApiClient/Model/StandardErrorError.cs
 src/ImzalaApiClient/Model/TemplateDetail.cs
+src/ImzalaApiClient/Model/TemplateDocumentSummary.cs
 src/ImzalaApiClient/Model/TemplatePartySummary.cs
 src/ImzalaApiClient/Model/TemplateSummary.cs
 src/ImzalaApiClient/Model/TemplateSummaryPartiesInner.cs

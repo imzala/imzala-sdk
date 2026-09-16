@@ -383,6 +383,10 @@ tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date,
 dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı
 slug birden fazla partide olabilir, her parti için ayrı satır.
 
+`documents` şablonun zarf belgelerini `order` sırasıyla döndürür;
+`documents[].id` sözleşme oluştururken `documents.include` /
+`documents.exclude` listelerinde kullanılır.
+
 
 ### Example
 

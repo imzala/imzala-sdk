@@ -15,6 +15,7 @@ docs/ApiV1ContactsPostRequest.md
 docs/ApiV1DemandsBulkPost200Response.md
 docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
+docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
@@ -58,7 +59,13 @@ docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
 docs/ApiV1DemandsPost201Response.md
+docs/ApiV1DemandsPost400Response.md
+docs/ApiV1DemandsPost402Response.md
+docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
+docs/ApiV1DemandsUploadPost402Response.md
+docs/ApiV1DemandsUploadPost500Response.md
 docs/ApiV1FieldTemplatesGet200Response.md
 docs/ApiV1FieldTemplatesGet200ResponseData.md
 docs/ApiV1FieldTemplatesIdGet200Response.md
@@ -101,6 +108,9 @@ docs/DemandPage.md
 docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandsApi.md
+docs/DocumentSelectionError.md
+docs/DocumentSelectionErrorDetails.md
+docs/DocumentSelectionInput.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -122,6 +132,7 @@ docs/ReportsApi.md
 docs/StandardError.md
 docs/StandardErrorError.md
 docs/TemplateDetail.md
+docs/TemplateDocumentSummary.md
 docs/TemplatePartySummary.md
 docs/TemplateSummary.md
 docs/TemplateSummaryPartiesInner.md

@@ -45,7 +45,12 @@ satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
   `POST /demands` ile AYNI formülle hesaplanır (imza sınıfı taban
   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek
   maliyeti, imzacı sayısıyla çarpılır; `eidas_timestamp` seçilirse
-  satır başına +1 kredi eklenir). PAdES seviye eki yalnız QES'te
+  satır başına +1 kredi eklenir). Şablon çok-belgeli bir zarf
+  tanımlıyorsa imzacı başına maliyet o imzacıya ATANMIŞ belge
+  sayısına göre hesaplanır ve belge sayısına göre azalan birim
+  fiyatlı bir indirim uygulanır (1 belge %0, 2 belge %30, 3 ve üzeri
+  %50, imzacı başına ayrı yukarı yuvarlanır; bkz. `POST /demands`
+  "Kredi (çok belgeli zarf)" bölümü). PAdES seviye eki yalnız QES'te
   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden
   `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`
   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın
@@ -57,7 +62,21 @@ satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır
   yine `failed` döner ama sözleşme zaten oluşturulmuş taslak
   olarak kalır (`demand_id` response'ta bulunur, davet
-  gönderilmemiştir).
+  gönderilmemiştir); mutabakat kredi-dışı bir hatayla düşerse satır
+  `failed` (`error: "RECONCILE_FAILED"`) döner, sözleşme yine taslağa
+  düşer.
+- Atamasız imzacı: çok belgeli şablonda eşlenen bir taraf hiçbir
+  belgeye atanmamışsa (ve `options.dispatch_notifications` `false`
+  DEĞİLSE) o satır `failed` (`error: "PARTY_WITHOUT_DOCUMENTS"`)
+  döner; kontrol satır oluşturulmadan ÖNCE (`demand_id` YOK) veya
+  oluşturulduktan hemen SONRA (sözleşme taslağa düşer, `demand_id` +
+  `party_ids` döner) çalışabilir. Diğer satırlar etkilenmez.
+- Belge seçimi satır başınadır: `rows[i].documents` (`POST /demands`
+  ile aynı şema). `options.documents` gönderilirse 400
+  `INVALID_DOCUMENT_SELECTION`. Satırın seçim hatası o satırı `failed`
+  yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da
+  `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar
+  etkilenmez.
 - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;
   başka workspace'in şablonu 404).
 - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı
@@ -140,7 +159,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Batch tamamlandı (kısmi başarı dahil). &#x60;results&#x60; giriş sırasında, her satır &#x60;row_index&#x60; ile eşlenir.  |  -  |
-**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  |  -  |
+**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **402** | INSUFFICIENT_CREDITS: N satırın toplam tahmini maliyeti için yeterli kredi yok (ön kontrol; hiçbir sözleşme yaratılmadı). Satır bazlı yetersiz kredi durumları burada DEĞİL, 200 yanıtı içindeki &#x60;results[].status: \&quot;failed\&quot;&#x60; altında döner.  |  -  |
 **403** | INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED |  -  |
@@ -169,7 +188,11 @@ YARATIMINI kapatan bir anahtardır.
 `POST .../documents` / `POST .../documents/upload` ile belgeler
 eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations`
 gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu
-uçla yayına alıp davetleri gönderir.
+uçla yayına alıp davetleri gönderir. **Bu uç çağrılana kadar** birden
+çok belgeli bir zarfın oluşturma yanıtındaki `signing_url`'leri
+ÇALIŞMAZ (imzacı için 410; `POST .../parties/{partyId}/resend` ve
+`POST .../reminders` için 409 `ENVELOPE_NOT_DISPATCHED` döner); belge
+uçları (`/documents*`) ise gönderim beklemeden kullanılabilir.
 
 **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`).
 Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir:
@@ -254,7 +277,7 @@ Name | Type | Description  | Notes
 **400** | &#x60;INVALID_SEND_INVITATIONS&#x60; — tanınmayan &#x60;send_invitations&#x60; değeri. |  -  |
 **402** | Kredi mutabakatı başarısız — sözleşme yayına GEÇMEZ, davet gönderilmez. &#x60;INSUFFICIENT_CREDITS&#x60; — hesabın/organizasyonun kredisi yetmiyor. &#x60;MEMBER_LIMIT_EXCEEDED&#x60; — organizasyon üyesinin aylık kredi limiti aşıldı (kredi havuzunda bakiye olsa bile).  |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;DEMAND_EXPIRED&#x60; — sözleşmenin imza süresi geçmiş. &#x60;DEMAND_NOT_DISPATCHABLE&#x60; — tamamlanmış/iptal edilmiş sözleşme tekrar yayınlanamaz. &#x60;DISPATCH_NO_PARTIES&#x60; — sözleşmede hiç imzacı taraf yok. Zarf tamamlanamayacağı için yayına ALINMAZ; kredi dokunulmaz, statü değişmez, &#x60;demand.dispatched&#x60; olayı yayılmaz. Önce &#x60;POST /demands/{demandId}/parties&#x60; ile taraf ekleyin. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20&#39;yi aşıyor. İstek hiçbir yan etki bırakmadan reddedilir (kredi düşmez, sözleşme yayına geçmez); sözleşmeyi tarafları azaltarak gönderin veya davetleri &#x60;/parties/{partyId}/resend&#x60; ile tek tek yollayın.  |  -  |
+**409** | &#x60;DEMAND_EXPIRED&#x60; — sözleşmenin imza süresi geçmiş. &#x60;DEMAND_NOT_DISPATCHABLE&#x60; — tamamlanmış/iptal edilmiş sözleşme tekrar yayınlanamaz. &#x60;DISPATCH_NO_PARTIES&#x60; — sözleşmede hiç imzacı taraf yok. Zarf tamamlanamayacağı için yayına ALINMAZ; kredi dokunulmaz, statü değişmez, &#x60;demand.dispatched&#x60; olayı yayılmaz. Önce &#x60;POST /demands/{demandId}/parties&#x60; ile taraf ekleyin. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20&#39;yi aşıyor. İstek hiçbir yan etki bırakmadan reddedilir (kredi düşmez, sözleşme yayına geçmez); sözleşmeyi tarafları azaltarak gönderin veya davetleri &#x60;/parties/{partyId}/resend&#x60; ile tek tek yollayın. &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: çok belgeli zarfta eşlenen bir taraf hiçbir belgeye atanmamış. Kredi ve iddiadan ÖNCE, yan etkisiz kontrol edilir (kredi dokunulmaz, statü değişmez, davet gitmez); gövdede atamasız taraf id&#39;leri &#x60;party_ids&#x60; içinde döner. &#x60;PUT .../documents/{docId}/assignments&#x60; ile atamayı tamamlayıp tekrar deneyin. &#x60;ENVELOPE_CHANGED_DURING_DISPATCH&#x60;: kredi mutabakatı ile gönderim iddiası arasında zarf değiştirildi (ör. eşzamanlı bir istek belge/atama ekledi). Sunucu bunu kilit altında bir kez kendiliğinden yeniden dener; ikinci denemede de olursa bu kod döner. Sözleşme yayına GEÇMEDİ; istek güvenle tekrarlanabilir.  |  -  |
 **429** | Tekrar-gönderim hız sınırı aşıldı — bu uç &#x60;/parties/{partyId}/resend&#x60; ile AYNI anahtar-bazlı freni paylaşır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek. Gövdede &#x60;retry_after_seconds&#x60; döner.  |  -  |
 **500** | &#x60;RECONCILE_FAILED&#x60; — kredi mutabakatı beklenmedik bir hatayla düştü. Sözleşme yayına GEÇMEZ ve davet gönderilmez; istek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
 
@@ -350,7 +373,7 @@ Name | Type | Description  | Notes
 **200** | Atama güncellendi |  -  |
 **400** | &#x60;ASSIGNMENT_EMPTY&#x60; — &#x60;party_ids&#x60; eksik/boş. &#x60;INVALID_PARTY_ID&#x60; — bu sözleşmeye ait olmayan taraf id&#39;si. &#x60;ASSIGNMENT_HAS_DECISION&#x60; — karar vermiş bir imzacının ataması kaldırılamaz.  |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60;. |  -  |
+**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; / &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -437,7 +460,7 @@ Name | Type | Description  | Notes
 **200** | Silindi |  -  |
 **400** | &#x60;CANNOT_DELETE_LAST_DOCUMENT&#x60; — zarftaki son belge. &#x60;DOCUMENT_HAS_SIGNED_CONTENT&#x60; — imza/içerik girilmiş belge silinemez. &#x60;DOCUMENT_HAS_DECISIONS&#x60; — bu belge için onay/red kararı verilmiş.  |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60;. |  -  |
+**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; / &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -715,7 +738,7 @@ Name | Type | Description  | Notes
 **200** | Yeni sıra uygulandı |  -  |
 **400** | &#x60;ORDER_SET_MISMATCH&#x60; — gönderilen id kümesi zarftaki belgelerle eşleşmiyor. |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60;. |  -  |
+**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; / &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; / &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -805,7 +828,7 @@ Name | Type | Description  | Notes
 **201** | Belge oluşturuldu |  -  |
 **400** | &#x60;VALIDATION_FAIL&#x60; — başlık boş. &#x60;INVALID_DOC_KIND&#x60; — geçersiz &#x60;doc_kind&#x60;. &#x60;CONSENT_CANNOT_BE_REQUIRED&#x60; / &#x60;PREINFO_MUST_BE_REQUIRED&#x60; — yukarı bakın. &#x60;DOCUMENT_LIMIT_EXCEEDED&#x60; — zarf başına en fazla 20 belge. &#x60;QES_NOT_SUPPORTED_MULTI_DOCUMENT&#x60; — NES/Mobil İmza açık (&#x60;enable_qes&#x60;) bir sözleşmede ikinci belge eklenemez.  |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; — bayrak kapalı. &#x60;DEMAND_NOT_EDITABLE&#x60; — sözleşme düzenlemeye açık değil (iptal/ süresi geçmiş/bulunamadı). &#x60;SIGNING_ALREADY_STARTED&#x60; — imza süreci başlamış zarfın belge listesi değiştirilemez (biri görüntülemiş/imzalamış/karar vermiş).  |  -  |
+**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; — bayrak kapalı. &#x60;DEMAND_NOT_EDITABLE&#x60; — sözleşme düzenlemeye açık değil (iptal/ süresi geçmiş/bulunamadı). &#x60;SIGNING_ALREADY_STARTED&#x60; — imza süreci başlamış zarfın belge listesi değiştirilemez (biri görüntülemiş/imzalamış/karar vermiş). &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;: sözleşme gönderilmiş (yayına alınmış veya en az bir tarafa davet gitmiş); gönderilmiş bir zarfa belge eklenemez.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -908,7 +931,7 @@ Name | Type | Description  | Notes
 **200** | Belge yüklendi |  -  |
 **400** | &#x60;VALIDATION_FAIL&#x60; (dosya/idempotency_key/başlık eksik) veya &#x60;INVALID_DOC_KIND&#x60;. |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; — bayrak kapalı. &#x60;IDEMPOTENT_REPLAY&#x60; — aynı &#x60;idempotency_key&#x60; daha önce kullanıldı, yeni belge yaratılmaz (gövdede mevcut belgenin &#x60;document&#x60;&#39;ı döner). &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; — bkz. yukarıdaki uç.  |  -  |
+**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; — bayrak kapalı. &#x60;IDEMPOTENT_REPLAY&#x60; — aynı &#x60;idempotency_key&#x60; daha önce kullanıldı, yeni belge yaratılmaz (gövdede mevcut belgenin &#x60;document&#x60;&#39;ı döner). &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; / &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;: bkz. yukarıdaki uç.  |  -  |
 **413** | &#x60;FILE_TOO_LARGE&#x60; — 20 MB sınırı. |  -  |
 **415** | Desteklenmeyen dosya türü. |  -  |
 **422** | &#x60;IMAGE_DECODE_FAILED&#x60; — görsel çözümlenemedi. |  -  |
@@ -958,7 +981,7 @@ with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
     status = 'status_example' # str |  (optional)
-    q = 'q_example' # str | Başlık araması (optional)
+    q = 'q_example' # str | Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. (optional)
     var_from = '2013-10-20' # date |  (optional)
     to = '2013-10-20' # date |  (optional)
     template_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |  (optional)
@@ -983,7 +1006,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **status** | **str**|  | [optional] 
- **q** | **str**| Başlık araması | [optional] 
+ **q** | **str**| Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] 
  **var_from** | **date**|  | [optional] 
  **to** | **date**|  | [optional] 
  **template_id** | **UUID**|  | [optional] 
@@ -1787,7 +1810,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | Gönderildi |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş veya sıralı imzada sırası gelmemiş taraf   (&#x60;code&#x60; alanı yok) - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş  |  -  |
+**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş veya sıralı imzada sırası gelmemiş taraf   (&#x60;code&#x60; alanı yok) - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
 **429** | İki ayrı sınır vardır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek (dispatch ucuyla ortak sınır). Gövdede &#x60;retry_after_seconds&#x60; döner.  &#x60;RECIPIENT_RESEND_LIMIT&#x60;: aynı alıcıya saatte en fazla 3, günde en fazla 10 davet tekrarı gönderilebilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1978,6 +2001,23 @@ imzalama URL'lerini döner.
   (object/array reject)
 - `template_party_id` party_mapping içinde unique olmalı
 
+**Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa
+(her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o
+imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre
+azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30,
+3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı
+yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse
+aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden
+uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.
+
+**Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği
+sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa
+sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü
+atlamak için `dispatch_notifications: false` gönderip belge
+atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten
+sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden
+uygular).
+
 
 ### Example
 
@@ -2051,11 +2091,12 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **201** | Sözleşme oluşturuldu |  -  |
-**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  |  -  |
+**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
-**402** | Yetersiz kredi (INSUFFICIENT_CREDITS) |  -  |
+**402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 **403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |
-**409** | Üç ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  |  -  |
+**409** | Altı ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: eşlediğiniz bir tarafa imzalayacak belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede &#x60;template_party_ids&#x60; (şablon rol kimlikleri) döner; (b) &#x60;documents&#x60; seçiminiz (ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesi) bir role seçili belge bırakmıyorsa &#x60;dispatch_notifications&#x60; değerinden bağımsız yine yaratmadan reddedilir, gövdede &#x60;template_party_ids&#x60; döner (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA düşürülür ve gövdede &#x60;party_ids&#x60; (imzacı kimlikleri) + &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Hiçbir biçimde kredi düşülmez, davet gönderilmez.  &#x60;TEMPLATE_DOCUMENTS_NOT_READY&#x60;: şablonun belge yapısı henüz hazır değil; &#x60;documents&#x60; göndermeden deneyin ya da destekle iletişime geçin.  &#x60;DOCUMENT_SOURCE_UNAVAILABLE&#x60;: şablonun ilk belgesini çıkardınız ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.  |  -  |
+**500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve TASLAĞA düşürülür; gövdede &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Davet gönderilmez. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2159,7 +2200,7 @@ Name | Type | Description  | Notes
 **201** | Sözleşme oluşturuldu |  -  |
 **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
-**402** | Yetersiz kredi |  -  |
+**402** | Yetersiz kredi: &#x60;INSUFFICIENT_CREDITS&#x60; veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60;. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdedeki &#x60;demand_id&#x60; ile aynı sözleşmeyi kredi yükledikten sonra &#x60;POST /demands/{id}/dispatch&#x60; ile gönderebilirsiniz; sözleşme silinmez.  |  -  |
 **403** | Organizasyona bağlı API anahtarı ile uyuşmayan &#x60;X-Workspace-Id&#x60; (&#x60;WORKSPACE_MISMATCH&#x60;). Yalnız &#x60;field_template_id&#x60; yolunda.  |  -  |
 **404** | Alan Şablonu bulunamadı (&#x60;TEMPLATE_NOT_FOUND&#x60;) |  -  |
 **409** | Üç ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  |  -  |
@@ -2167,6 +2208,7 @@ Name | Type | Description  | Notes
 **415** | &#x60;field_template_id&#x60; yolunda PDF olmayan dosya (&#x60;UNSUPPORTED_FILE_TYPE&#x60;).  |  -  |
 **422** | Görsel okunamadı (&#x60;IMAGE_DECODE_FAILED&#x60;) **veya** alan yerleşimi bu belgeye uygulanamadı (&#x60;FIELD_LAYOUT_UNRESOLVED&#x60;). İkinci durumda sözleşme oluşturulmaz ve kredi düşülmez.  |  -  |
 **429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve &#x60;send_invitations&#x60; ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın hızını kırmak içindir.  |  -  |
+**500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir; gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

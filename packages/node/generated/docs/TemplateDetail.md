@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **parties** | [**Array&lt;TemplatePartySummary&gt;**](TemplatePartySummary.md) |  | [optional] [default to undefined]
 **pages_count** | **number** |  | [optional] [default to undefined]
 **variables** | [**Array&lt;TemplateVariable&gt;**](TemplateVariable.md) |  | [optional] [default to undefined]
+**documents** | [**Array&lt;TemplateDocumentSummary&gt;**](TemplateDocumentSummary.md) | Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi. | [optional] [default to undefined]
 
 ## Example
 
@@ -28,6 +29,7 @@ const instance: TemplateDetail = {
     parties,
     pages_count,
     variables,
+    documents,
 };
 ```
 

@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.8.14
+- API version: 1.8.17
 
-- Build date: 2026-09-15T15:19:24.667455+03:00[Europe/Istanbul]
+- Build date: 2026-09-16T05:38:17.731809+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.8.14 · **Son güncelleme:** 2026-09-15
+**Sürüm:** 1.8.17 · **Son güncelleme:** 2026-09-16
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -302,7 +302,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.8.14</version>
+  <version>1.8.17</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -312,7 +312,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.8.14"
+compile "org.imzala:imzala-client-generated:1.8.17"
 ```
 
 ### Others
@@ -325,7 +325,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.8.14.jar`
+- `target/imzala-client-generated-1.8.17.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -454,6 +454,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsBulkPost200Response](docs/ApiV1DemandsBulkPost200Response.md)
  - [ApiV1DemandsBulkPost200ResponseData](docs/ApiV1DemandsBulkPost200ResponseData.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md)
+ - [ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md)
  - [ApiV1DemandsBulkPostRequest](docs/ApiV1DemandsBulkPostRequest.md)
  - [ApiV1DemandsBulkPostRequestOptions](docs/ApiV1DemandsBulkPostRequestOptions.md)
@@ -497,7 +498,13 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdTimelineGet200ResponseData](docs/ApiV1DemandsIdTimelineGet200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
+ - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
+ - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
+ - [ApiV1DemandsPost402ResponseData](docs/ApiV1DemandsPost402ResponseData.md)
+ - [ApiV1DemandsPost500Response](docs/ApiV1DemandsPost500Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
+ - [ApiV1DemandsUploadPost402Response](docs/ApiV1DemandsUploadPost402Response.md)
+ - [ApiV1DemandsUploadPost500Response](docs/ApiV1DemandsUploadPost500Response.md)
  - [ApiV1FieldTemplatesGet200Response](docs/ApiV1FieldTemplatesGet200Response.md)
  - [ApiV1FieldTemplatesGet200ResponseData](docs/ApiV1FieldTemplatesGet200ResponseData.md)
  - [ApiV1FieldTemplatesIdGet200Response](docs/ApiV1FieldTemplatesIdGet200Response.md)
@@ -538,6 +545,9 @@ Class | Method | HTTP request | Description
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
+ - [DocumentSelectionError](docs/DocumentSelectionError.md)
+ - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
+ - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
  - [EnvelopeDocument](docs/EnvelopeDocument.md)
  - [FieldLayoutDiagnostic](docs/FieldLayoutDiagnostic.md)
  - [FieldLayoutPreview](docs/FieldLayoutPreview.md)
@@ -557,6 +567,7 @@ Class | Method | HTTP request | Description
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)
  - [TemplateDetail](docs/TemplateDetail.md)
+ - [TemplateDocumentSummary](docs/TemplateDocumentSummary.md)
  - [TemplatePartySummary](docs/TemplatePartySummary.md)
  - [TemplateSummary](docs/TemplateSummary.md)
  - [TemplateSummaryPartiesInner](docs/TemplateSummaryPartiesInner.md)

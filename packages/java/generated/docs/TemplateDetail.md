@@ -15,6 +15,7 @@
 |**parties** | [**List&lt;TemplatePartySummary&gt;**](TemplatePartySummary.md) |  |  [optional] |
 |**pagesCount** | **Integer** |  |  [optional] |
 |**variables** | [**List&lt;TemplateVariable&gt;**](TemplateVariable.md) |  |  [optional] |
+|**documents** | [**List&lt;TemplateDocumentSummary&gt;**](TemplateDocumentSummary.md) | Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi. |  [optional] |
 
 
 
