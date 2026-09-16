@@ -4,7 +4,7 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ## 1.0.0
 
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.14`.
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.17`.
 
 **0.x'ten yükseltme, facade (`ImzalaSdk.Imzala` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
 
@@ -43,6 +43,6 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ### Üretilmiş istemciyi doğrudan kullananlar için
 
-Bu sürümde `ImzalaApiClient` altındaki sınıflar API `1.8.14` spesifikasyonundan yeniden üretildi. `CreateDemandRequest` kurucusuna `idempotencyKey` ve `force` parametreleri `description` ile `partyMapping` **arasına**, `dispatchNotifications` ise `hasTimestamp`'ten sonra girdi. Kurucuyu **konumsal** argümanlarla çağıran kod ya derlenmez ya da aynı tipli komşu argümanlar kayarak yanlış alana gider. İsimli argümanlara geçin ya da facade kullanın; facade isimli argümanlarla çağırır ve her yuva testle kilitlidir.
+Bu sürümde `ImzalaApiClient` altındaki sınıflar API `1.8.17` spesifikasyonundan yeniden üretildi. `CreateDemandRequest` kurucusuna `idempotencyKey` ve `force` parametreleri `description` ile `partyMapping` **arasına**, `dispatchNotifications` ise `hasTimestamp`'ten sonra girdi. Kurucuyu **konumsal** argümanlarla çağıran kod ya derlenmez ya da aynı tipli komşu argümanlar kayarak yanlış alana gider. İsimli argümanlara geçin ya da facade kullanın; facade isimli argümanlarla çağırır ve her yuva testle kilitlidir.
 
 `ImzalaApiClient.Client.RetryConfiguration` statik Polly politikasını ayarlamayın: doluysa üretilmiş istemci her isteği taşıma katmanında tekrarlar ve yazmalar SDK'dan habersiz yinelenir. SDK bu politikayı hiç ayarlamaz.

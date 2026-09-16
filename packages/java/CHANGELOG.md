@@ -4,7 +4,7 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ## 1.0.0
 
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.14`.
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.17`.
 
 **0.x'ten yükseltme, facade (`org.imzala.Imzala` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
 
@@ -44,7 +44,7 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ### Üretilmiş istemciyi doğrudan kullananlar için
 
-Bu sürümde `org.imzala.client.generated` altındaki sınıflar API `1.8.14` spesifikasyonundan yeniden üretildi (paketin önceki yayınından bu yana ilk yeniden üretim). İki imza değişti:
+Bu sürümde `org.imzala.client.generated` altındaki sınıflar API `1.8.17` spesifikasyonundan yeniden üretildi (paketin önceki yayınından bu yana ilk yeniden üretim). İki imza değişti:
 
 - `DemandsApi.apiV1DemandsPost(CreateDemandRequest)` tek argümanlı biçim kalktı; yeni imza `apiV1DemandsPost(CreateDemandRequest, String idempotencyKey)` (anahtar için `null` geçilebilir).
 - `DemandsApi.apiV1DemandsUploadPost(...)` 5 argümandan 10 argümana çıktı ve opsiyonel `idempotencyKey` mevcut parametrelerin **arasına** girdi: `files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss`. Eski çağrılar derlenmez; aynı tipli komşu argümanlar kaydırılırsa derlenir ama yanlış alana gider.

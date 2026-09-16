@@ -440,7 +440,7 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | imzala/imzala-php | Konuştuğu API | Durum |
 |---|---|---|
-| 1.0.0 | v1 (`1.8.14`) | Güncel |
+| 1.0.0 | v1 (`1.8.17`) | Güncel |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 
 İmzala dış API'si **v1**'dir ve geriye dönük uyumludur: yeni alanlar opsiyonel, yeni davranışlar
