@@ -89,6 +89,7 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
     "INVALID_ON_ANCHOR_MISS": "on_anchor_miss değeri geçersiz.",
 
     # Şablon belge seçimi
+    "SIGNATURE_VARIANTS_PHONE_ONLY": "İmza yöntemi listesi yalnız phone içeremez; draw, type veya upload yöntemlerinden en az biri gereklidir.",
     "INVALID_DOCUMENT_SELECTION": "Belge seçimi geçersiz; details.reason alanı nedeni verir: shape (biçim hatası), unknown_document (kimlik bu şablonun belgesi değil), conflict (aynı kimlik iki listede), empty (seçim sonucunda belge kalmadı).",
     "PARTY_WITHOUT_DOCUMENTS": "Eşlenen bir tarafa imzalayacak belge düşmüyor. Seçimi değiştirin, o rolü eşlemeden çıkarın ya da dispatch_notifications: false ile oluşturup atamaları düzelttikten sonra gönderin.",
     "TEMPLATE_DOCUMENTS_NOT_READY": "Şablonun belge yapısı henüz hazır değil; documents göndermeden deneyin.",

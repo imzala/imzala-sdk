@@ -361,3 +361,22 @@ describe('demands: template document selection', () => {
     ).rejects.toMatchObject({ name: 'ImzalaError', statusCode: 409, code: 'PARTY_WITHOUT_DOCUMENTS' });
   });
 });
+
+describe('signature variant policy transport', () => {
+  it.each([['upload', 'draw'], null, undefined])('preserves ordered/null/omitted policy %j', async variants => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockResolvedValue(ok({ id: 'd1' }));
+    const body: any = { template_id: 't1', party_mapping: [] };
+    if (variants !== undefined) body.allowed_signature_variants = variants;
+    await client().demands.create(body);
+    const sent = (spy.mock.calls[0][0] as any).createDemandRequest;
+    if (variants === undefined) expect(sent).not.toHaveProperty('allowed_signature_variants');
+    else expect(sent.allowed_signature_variants).toEqual(variants);
+  });
+  it('forwards batch policy in options without modifying row payloads', async () => {
+    const spy = vi.spyOn(DemandsApi.prototype, 'apiV1DemandsBulkPost').mockResolvedValue(ok({ results: [] }));
+    await client().demands.createBulk({ template_id: 't1', options: { allowed_signature_variants: ['type', 'phone'] }, rows: [{ party_mapping: [] }] } as any);
+    const sent = (spy.mock.calls[0][0] as any).apiV1DemandsBulkPostRequest;
+    expect(sent.options.allowed_signature_variants).toEqual(['type', 'phone']);
+    expect(sent.rows[0]).not.toHaveProperty('allowed_signature_variants');
+  });
+});

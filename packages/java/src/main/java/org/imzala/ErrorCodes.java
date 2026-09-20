@@ -80,6 +80,7 @@ public final class ErrorCodes {
     m.put("INVALID_ON_ANCHOR_MISS",
         "on_anchor_miss değeri geçersiz.");
     // Şablon belge seçimi
+    m.put("SIGNATURE_VARIANTS_PHONE_ONLY", "İmza yöntemi listesi yalnız phone içeremez; draw, type veya upload yöntemlerinden en az biri gereklidir.");
     m.put("INVALID_DOCUMENT_SELECTION",
         "Belge seçimi geçersiz; details.reason alanı nedeni verir: shape (biçim hatası), unknown_document (kimlik bu şablonun belgesi değil), conflict (aynı kimlik iki listede), empty (seçim sonucunda belge kalmadı).");
     m.put("PARTY_WITHOUT_DOCUMENTS",

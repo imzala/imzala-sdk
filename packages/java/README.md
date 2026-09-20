@@ -447,7 +447,8 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | org.imzala:imzala-java | Konuştuğu API | Durum |
 |---|---|---|
-| 1.0.0 | v1 (`1.8.17`) | Güncel |
+| Geliştirme (yayınlanmamış) | v1 (`1.8.18`) | İmza yöntemi listesi ve sırası |
+| 1.0.0 | v1 (`1.8.17`) | Önceki sözleşme |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 
 İmzala dış API'si **v1**'dir ve geriye dönük uyumludur: yeni alanlar opsiyonel, yeni davranışlar

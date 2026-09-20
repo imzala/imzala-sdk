@@ -5,11 +5,11 @@
 openapi: 3.1.0
 info:
   title: imzala External API
-  version: 1.8.17
+  version: 1.8.18
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.17 · **Son güncelleme:** 2026-09-16
+    **Sürüm:** 1.8.18 · **Son güncelleme:** 2026-09-20
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -668,6 +668,10 @@ paths:
             listede), `empty` (seçim sonucunda belge kalmadı). Biçim hataları
             kredi kontrolünden önce, şablona bağlı hatalar şablon erişim
             kontrolünden sonra ve kredi kontrolünden önce döner.
+
+            `SIGNATURE_VARIANTS_PHONE_ONLY`: `allowed_signature_variants`
+            yalnız `phone` içeriyor. Telefonda çizim tek başına seçilemez;
+            listede en az bir `phone` olmayan yöntem bırakın.
           content:
             application/json:
               schema:
@@ -1029,6 +1033,29 @@ paths:
                       description: >-
                         🔴 Faturayı etkiler. AB nitelikli zaman damgası; satır (sözleşme) başına +1
                         kredi.
+                    allowed_signature_variants:
+                      type: array
+                      nullable: true
+                      maxItems: 4
+                      items:
+                        type: string
+                        enum:
+                          - draw
+                          - type
+                          - upload
+                          - phone
+                      description: |
+                        Batch-seviye: bu listedeki dijital imza yöntemleri ve sıra
+                        TÜM satırlara uygulanır (satır başına ayarlanamaz).
+                        Davranışı `POST /api/v1/demands` ile aynıdır: sıra sekme
+                        sırasıdır, gönderilmezse şablon, sonra organizasyon ayarı
+                        devralınır, boş dizi veya tanınmayan değer yok sayılır.
+                        Yalnız `phone` içeren liste tüm batch'i 400
+                        `SIGNATURE_VARIANTS_PHONE_ONLY` ile reddeder (hiçbir
+                        sözleşme oluşturulmaz).
+                      example:
+                        - type
+                        - draw
                     require_id_photo:
                       type: boolean
                       description: 🔴 Faturayı etkiler. Kimlik fotoğrafı doğrulaması; imzacı başına +1 kredi.
@@ -1215,6 +1242,10 @@ paths:
             `FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE` (verilen kimlik bir Alan
             Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken
             `eidas_timestamp` gönderilirse de 400 döner.
+
+            `SIGNATURE_VARIANTS_PHONE_ONLY`:
+            `options.allowed_signature_variants` yalnız `phone` içeriyor.
+            Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.
           content:
             application/json:
               schema:
@@ -4657,6 +4688,44 @@ components:
           type: boolean
           default: false
           description: TÜBİTAK zaman damgası
+        allowed_signature_variants:
+          type: array
+          nullable: true
+          maxItems: 4
+          items:
+            type: string
+            enum:
+              - draw
+              - type
+              - upload
+              - phone
+          description: |
+            İmzacının kullanabileceği dijital imza yöntemleri ve görünme sırası.
+            Dizinin SIRASI imza ekranındaki sekme sırasıdır; listede olmayan
+            yöntem o sözleşmede kapalıdır. Değerler: `draw` (parmakla veya fareyle
+            çizerek), `type` (adını yazarak), `upload` (imza görselini dosya olarak
+            yükleyerek), `phone` (telefonda çizerek).
+
+            Gönderilmezse (veya `null` gönderilirse) şablonun ayarı, şablonda da
+            tanımlı değilse organizasyonun ayarı geçerli olur; hiçbiri tanımlı
+            değilse dört yöntem varsayılan sırayla açıktır.
+
+            Bu alan toleranslı okunur: boş dizi, dizi olmayan bir değer veya
+            tanınmayan bir değer gönderilirse alan YOK SAYILIR ve üst katmandan
+            devralınır. Yani boş dizi göndermek "tüm yöntemleri kapat" anlamına
+            GELMEZ; en az bir yöntem her zaman açık kalır. Büyük harfli değerler
+            (`DRAW`) kabul edilir, tekrar eden değerler teke indirilir.
+
+            Yalnız `phone` içeren bir liste reddedilir (400
+            `SIGNATURE_VARIANTS_PHONE_ONLY`): telefonda çizim mobil cihazda
+            kullanılamadığı için tek başına bırakılırsa imzacı yöntemsiz kalır.
+            En az bir `phone` olmayan yöntem bırakın.
+
+            Ayar sözleşme düzeyindedir; imzacı bazında farklılaştırılamaz.
+            `party_mapping` girdilerine yazılan böyle bir alan yok sayılır.
+          example:
+            - type
+            - draw
         dispatch_notifications:
           type: boolean
           default: true

@@ -124,6 +124,7 @@ for entry in "${LANG_TABLE[@]}"; do
     if grep -q '"application/json"' <(grep -A1 '"multipart/form-data",' "$outdir/src/ImzalaApiClient/Api/TimestampsApi.cs"); then
       echo "[generate] ERROR: csharp timestamps content-type list still declares application/json" >&2; exit 1
     fi
+    node scripts/patch-csharp-constructors.mjs "$outdir"
     echo "[generate] csharp: $n timestamps content-type lists narrowed to multipart"
   fi
 
