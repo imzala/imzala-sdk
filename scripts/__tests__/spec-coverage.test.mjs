@@ -23,6 +23,7 @@ const REQUIRED_PATHS = [
   '/api/v1/demands/{id}/reminders',
   '/api/v1/demands/upload',
   '/api/v1/demands/{id}/items',
+  '/api/v1/demands/{id}/items/{itemId}/stamp',
   '/api/v1/demands/{id}/embed-session',
   '/api/v1/demands/{id}/pdf',
   '/api/v1/demands/{id}/belge/{document_id}/pdf',
