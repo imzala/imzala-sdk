@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.8.22
+  version: 1.8.23
   description: >
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
 
-    **Sürüm:** 1.8.22 · **Son güncelleme:** 2026-09-23
+    **Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24
 
 
     ## Auth
@@ -765,10 +765,10 @@ paths:
                   title: Kira Sözleşmesi - Mayıs 2026
                   party_mapping:
                     - template_party_id: <kiraya-veren-id>
-                      first_name: Ali
-                      last_name: Yilmaz
-                      email: ali@x.com
-                      phone: '+905551111111'
+                      first_name: Ayşe
+                      last_name: Yılmaz
+                      email: ayse@example.com
+                      phone: '+905551112233'
                       government_id: '12345678901'
                       variables:
                         address: Kiraya verenin adresi
@@ -776,8 +776,7 @@ paths:
                     - template_party_id: <kiraci-id>
                       first_name: Veli
                       last_name: Demir
-                      email: veli@x.com
-                      phone: '+905552222222'
+                      email: veli@example.com
                       government_id: '10987654321'
                       variables:
                         address: Kiracının adresi
@@ -1361,7 +1360,7 @@ paths:
                             phone:
                               type: string
                               description: >-
-                                E.164 biçiminde telefon (ör. `+905551234567`).
+                                E.164 biçiminde telefon (ör. `+905551112233`).
                                 Ülke kodu ile birlikte gönderin; fazlalık
                                 şehirlerarası öneki (TRde baş sıfır, `+90
                                 0542…`) sunucuda kaldırılır ve numara kanonik
@@ -5062,7 +5061,7 @@ components:
           description: email VEYA phone'dan en az biri zorunlu
         phone:
           type: string
-          description: E.164 format (örn. "+905551234567")
+          description: E.164 format (örn. "+905551112233")
         government_id:
           type: string
           description: TC kimlik no (11 hane)
@@ -6144,7 +6143,7 @@ components:
                 description: Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme
               email_masked:
                 type: string
-                description: Maskeli e-posta (ah***@x.com)
+                description: Maskeli e-posta (ay***@example.com)
               signed:
                 type: boolean
               signed_at:
