@@ -17,6 +17,9 @@
 |**variablesAppliedRoot** | **List&lt;String&gt;** | Root variables&#39;tan uygulanan slug listesi (sorted). |  [optional] |
 |**variablesAppliedByParty** | **Map&lt;String, List&lt;String&gt;&gt;** | template_party_id → o partiye uygulanan slug listesi (sorted per party).  |  [optional] |
 |**variablesIgnored** | **List&lt;String&gt;** | Gönderdiğiniz AMA hiçbir item&#39;a uygulanmayan slug&#39;lar (unique, sorted). Boş olmayınca yazım hatası yapmışsınız demektir — kontrol edin.  |  [optional] |
+|**stampsApplied** | [**List&lt;CreatedDemandStampsAppliedInner&gt;**](CreatedDemandStampsAppliedInner.md) | Yalnız kaşe slug&#39;ına &#x60;StampData&#x60; nesnesi gönderildiyse döner. Nesne değerle doldurulan kaşe alanları (alan kimliği sözleşmeye aittir, şablona değil).  |  [optional] |
+|**variablesAppliedByDocument** | [**Map&lt;String, DocumentScopedSlugs&gt;**](DocumentScopedSlugs.md) | Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kimliği → belge kapsamından uygulanan slug&#39;lar: &#x60;_common&#x60; (kök &#x60;document_variables&#x60;) ve &#x60;_by_party&#x60; (template_party_id → slug&#39;lar).  |  [optional] |
+|**variablesIgnoredByDocument** | [**Map&lt;String, DocumentScopedSlugs&gt;**](DocumentScopedSlugs.md) | Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kapsamında gönderilip O BELGEDE hiçbir alana yazılmayan slug&#39;lar (aynı biçim).  |  [optional] |
 
 
 

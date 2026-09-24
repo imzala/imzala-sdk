@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **required_headers** | **array<string,string>** |  | [optional]
 **parties** | [**\Imzala\Client\Model\TemplateUsagePartiesInner[]**](TemplateUsagePartiesInner.md) |  | [optional]
 **variables** | [**\Imzala\Client\Model\TemplateUsageVariablesInner[]**](TemplateUsageVariablesInner.md) |  | [optional]
+**documents** | [**\Imzala\Client\Model\TemplateUsageDocumentsInner[]**](TemplateUsageDocumentsInner.md) | Şablonun belgeleri (sıra artan). &#x60;document_variables&#x60; anahtarları buradaki &#x60;template_document_id&#x60; değerleridir. | [optional]
 **example_request** | [**\Imzala\Client\Model\TemplateUsageExampleRequest**](TemplateUsageExampleRequest.md) |  | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

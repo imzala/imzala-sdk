@@ -2,7 +2,7 @@
 
 # ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails
 
-Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document | conflict | empty) ve varsa document_ids.
+Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document | conflict | empty) ve varsa document_ids. error=INVALID_DOCUMENT_VARIABLES ise: reason (unsupported_endpoint) ve path.
 
 ## Properties
 
@@ -10,6 +10,7 @@ Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document |
 |------------ | ------------- | ------------- | -------------|
 |**reason** | **String** |  |  [optional] |
 |**documentIds** | **List&lt;String&gt;** |  |  [optional] |
+|**path** | **String** |  |  [optional] |
 
 
 

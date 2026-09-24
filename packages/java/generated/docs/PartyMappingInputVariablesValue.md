@@ -5,6 +5,7 @@
 ## oneOf schemas
 * [BigDecimal](BigDecimal.md)
 * [Boolean](Boolean.md)
+* [StampData](StampData.md)
 * [String](String.md)
 
 NOTE: this class is nullable.
@@ -15,6 +16,7 @@ NOTE: this class is nullable.
 import org.imzala.client.generated.model.PartyMappingInputVariablesValue;
 import org.imzala.client.generated.model.BigDecimal;
 import org.imzala.client.generated.model.Boolean;
+import org.imzala.client.generated.model.StampData;
 import org.imzala.client.generated.model.String;
 
 public class Example {
@@ -34,6 +36,13 @@ public class Example {
         examplePartyMappingInputVariablesValue.setActualInstance(exampleBoolean);
         // to get back the Boolean set earlier
         Boolean testBoolean = (Boolean) examplePartyMappingInputVariablesValue.getActualInstance();
+
+        // create a new StampData
+        StampData exampleStampData = new StampData();
+        // set PartyMappingInputVariablesValue to StampData
+        examplePartyMappingInputVariablesValue.setActualInstance(exampleStampData);
+        // to get back the StampData set earlier
+        StampData testStampData = (StampData) examplePartyMappingInputVariablesValue.getActualInstance();
 
         // create a new String
         String exampleString = new String();

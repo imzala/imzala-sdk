@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.8.18
+## @imzala/server-sdk-node@1.8.22
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.8.18 --save
+npm install @imzala/server-sdk-node@1.8.22 --save
 ```
 
 _unPublished (not recommended):_
@@ -70,6 +70,7 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdDelete**](docs/DemandsApi.md#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPost**](docs/DemandsApi.md#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/DemandsApi.md#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
+*DemandsApi* | [**apiV1DemandsIdItemsItemIdStampPatch**](docs/DemandsApi.md#apiv1demandsiditemsitemidstamppatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 *DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPost**](docs/DemandsApi.md#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
 *DemandsApi* | [**apiV1DemandsIdPdfGet**](docs/DemandsApi.md#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF\&#39;i (auth\&#39;lu indirme)
@@ -185,13 +186,20 @@ Class | Method | HTTP request | Description
  - [CreateDemandRequest](docs/CreateDemandRequest.md)
  - [CreatedDemand](docs/CreatedDemand.md)
  - [CreatedDemandSigningUrlsInner](docs/CreatedDemandSigningUrlsInner.md)
+ - [CreatedDemandStampsAppliedInner](docs/CreatedDemandStampsAppliedInner.md)
  - [CreatedDemandUpload](docs/CreatedDemandUpload.md)
  - [CreatedDemandUploadDispatch](docs/CreatedDemandUploadDispatch.md)
  - [CreatedDemandUploadDispatchResultsInner](docs/CreatedDemandUploadDispatchResultsInner.md)
  - [CreatedDemandUploadFieldLayout](docs/CreatedDemandUploadFieldLayout.md)
+ - [DemandDocumentStatus](docs/DemandDocumentStatus.md)
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
+ - [DemandStatusStampItemsInner](docs/DemandStatusStampItemsInner.md)
+ - [DocumentPartyDecision](docs/DocumentPartyDecision.md)
+ - [DocumentProgress](docs/DocumentProgress.md)
+ - [DocumentScopedSlugs](docs/DocumentScopedSlugs.md)
+ - [DocumentSealing](docs/DocumentSealing.md)
  - [DocumentSelectionError](docs/DocumentSelectionError.md)
  - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
  - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
@@ -210,7 +218,11 @@ Class | Method | HTTP request | Description
  - [PageItem](docs/PageItem.md)
  - [PartyMappingInput](docs/PartyMappingInput.md)
  - [PartyMappingInputVariablesValue](docs/PartyMappingInputVariablesValue.md)
+ - [PatchStampItemRequest](docs/PatchStampItemRequest.md)
+ - [PatchStampItemResponse](docs/PatchStampItemResponse.md)
+ - [PatchStampItemResponseData](docs/PatchStampItemResponseData.md)
  - [ReminderSettings](docs/ReminderSettings.md)
+ - [StampData](docs/StampData.md)
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)
  - [TemplateDetail](docs/TemplateDetail.md)
@@ -219,6 +231,7 @@ Class | Method | HTTP request | Description
  - [TemplateSummary](docs/TemplateSummary.md)
  - [TemplateSummaryPartiesInner](docs/TemplateSummaryPartiesInner.md)
  - [TemplateUsage](docs/TemplateUsage.md)
+ - [TemplateUsageDocumentsInner](docs/TemplateUsageDocumentsInner.md)
  - [TemplateUsageEndpoint](docs/TemplateUsageEndpoint.md)
  - [TemplateUsageExampleRequest](docs/TemplateUsageExampleRequest.md)
  - [TemplateUsageFormFieldsInner](docs/TemplateUsageFormFieldsInner.md)

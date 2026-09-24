@@ -18,6 +18,9 @@ Name | Type | Description | Notes
 **has_timestamp** | **boolean** | Yalnız varsayılan (özet) görünümde bulunur. &#x60;sealing_status&#x60; &#x60;SEALED&#x60; değilken daima &#x60;false&#x60; döner.  | [optional] [default to undefined]
 **page_count** | **number** |  | [optional] [default to undefined]
 **completed_at** | **string** |  | [optional] [default to undefined]
+**progress** | [**DocumentProgress**](DocumentProgress.md) | Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur. | [optional] [default to undefined]
+**sealing** | [**DocumentSealing**](DocumentSealing.md) | Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur. | [optional] [default to undefined]
+**decisions** | [**Array&lt;DocumentPartyDecision&gt;**](DocumentPartyDecision.md) | Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur. Belge başına taraf kararları; &#x60;GET /api/v1/demands/{id}&#x60; yanıtındaki &#x60;documents[].decisions&#x60; ile aynıdır.  | [optional] [default to undefined]
 
 ## Example
 
@@ -37,6 +40,9 @@ const instance: EnvelopeDocument = {
     has_timestamp,
     page_count,
     completed_at,
+    progress,
+    sealing,
+    decisions,
 };
 ```
 

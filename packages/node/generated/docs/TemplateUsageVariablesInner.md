@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **default_source** | **string** |  | [optional] [default to undefined]
 **auto_filled** | **boolean** |  | [optional] [default to undefined]
 **template_party_id** | **string** |  | [optional] [default to undefined]
+**template_document_id** | **string** | Alanın bulunduğu şablon belgesi (&#x60;document_variables&#x60; anahtarı). Aynı slug birden fazla belgede geçiyorsa belge başına ayrı satır döner.  | [optional] [default to undefined]
 **note** | **string** |  | [optional] [default to undefined]
 
 ## Example
@@ -27,6 +28,7 @@ const instance: TemplateUsageVariablesInner = {
     default_source,
     auto_filled,
     template_party_id,
+    template_document_id,
     note,
 };
 ```

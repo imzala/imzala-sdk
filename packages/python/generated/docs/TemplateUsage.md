@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **required_headers** | **Dict[str, str]** |  | [optional] 
 **parties** | [**List[TemplateUsagePartiesInner]**](TemplateUsagePartiesInner.md) |  | [optional] 
 **variables** | [**List[TemplateUsageVariablesInner]**](TemplateUsageVariablesInner.md) |  | [optional] 
+**documents** | [**List[TemplateUsageDocumentsInner]**](TemplateUsageDocumentsInner.md) | Şablonun belgeleri (sıra artan). &#x60;document_variables&#x60; anahtarları buradaki &#x60;template_document_id&#x60; değerleridir.  | [optional] 
 **example_request** | [**TemplateUsageExampleRequest**](TemplateUsageExampleRequest.md) |  | [optional] 
 
 ## Example

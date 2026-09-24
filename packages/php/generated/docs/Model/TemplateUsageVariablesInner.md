@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **default_source** | **string** |  | [optional]
 **auto_filled** | **bool** |  | [optional]
 **template_party_id** | **string** |  | [optional]
+**template_document_id** | **string** | Alanın bulunduğu şablon belgesi (&#x60;document_variables&#x60; anahtarı). Aynı slug birden fazla belgede geçiyorsa belge başına ayrı satır döner. | [optional]
 **note** | **string** |  | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

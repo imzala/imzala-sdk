@@ -14,5 +14,8 @@ Name | Type | Description | Notes
 **variables_applied_root** | **string[]** | Root variables&#39;tan uygulanan slug listesi (sorted). | [optional]
 **variables_applied_by_party** | **array<string,string[]>** | template_party_id → o partiye uygulanan slug listesi (sorted per party). | [optional]
 **variables_ignored** | **string[]** | Gönderdiğiniz AMA hiçbir item&#39;a uygulanmayan slug&#39;lar (unique, sorted). Boş olmayınca yazım hatası yapmışsınız demektir — kontrol edin. | [optional]
+**stamps_applied** | [**\Imzala\Client\Model\CreatedDemandStampsAppliedInner[]**](CreatedDemandStampsAppliedInner.md) | Yalnız kaşe slug&#39;ına &#x60;StampData&#x60; nesnesi gönderildiyse döner. Nesne değerle doldurulan kaşe alanları (alan kimliği sözleşmeye aittir, şablona değil). | [optional]
+**variables_applied_by_document** | [**array<string,\Imzala\Client\Model\DocumentScopedSlugs>**](DocumentScopedSlugs.md) | Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kimliği → belge kapsamından uygulanan slug&#39;lar: &#x60;_common&#x60; (kök &#x60;document_variables&#x60;) ve &#x60;_by_party&#x60; (template_party_id → slug&#39;lar). | [optional]
+**variables_ignored_by_document** | [**array<string,\Imzala\Client\Model\DocumentScopedSlugs>**](DocumentScopedSlugs.md) | Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kapsamında gönderilip O BELGEDE hiçbir alana yazılmayan slug&#39;lar (aynı biçim). | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

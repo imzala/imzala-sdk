@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **signing_urls** | [**List[ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner]**](ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md) |  | [optional] 
 **result_url** | **str** |  | [optional] 
 **dispatched** | **int** | Gönderilen davet (SMS+e-posta) sayısı | [optional] 
-**error** | **str** | status&#x3D;failed ise makinece okunabilir kod (VALIDATION, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, CREATE_FAILED vb.) | [optional] 
+**error** | **str** | status&#x3D;failed ise makinece okunabilir kod (VALIDATION, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, CREATE_FAILED vb.) | [optional] 
 **message** | **str** | status&#x3D;failed ise açıklama | [optional] 
 
 ## Example

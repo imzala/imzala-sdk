@@ -11,8 +11,10 @@ Name | Type | Description | Notes
 **created_at** | **datetime** |  | [optional] 
 **completed_at** | **datetime** |  | [optional] 
 **parties** | [**List[DemandStatusPartiesInner]**](DemandStatusPartiesInner.md) |  | [optional] 
+**stamp_items** | [**List[DemandStatusStampItemsInner]**](DemandStatusStampItemsInner.md) | Sözleşmedeki kaşe alanları. &#x60;PATCH /api/v1/demands/{id}/items/{itemId}/stamp&#x60; için alan kimliği buradan alınır. Kaşe içeriği bu listede dönmez.  | [optional] 
 **result_url** | **str** |  | [optional] 
 **pdf_url** | **str** | Sadece status&#x3D;COMPLETED iken dolu | [optional] 
+**documents** | [**List[DemandDocumentStatus]**](DemandDocumentStatus.md) | Zarftaki belgelerin her biri için ayrı durum, &#x60;order&#x60; sırasıyla. Zarf genelindeki &#x60;status&#x60; alanı değişmez; bu liste hangi belgenin ne zaman tamamlandığını, hangisinin beklediğini, mühür durumunu ve her tarafın belge başına kararını ayrıca gösterir. Belge kaydı bulunmayan eski sözleşmelerde boş dizi döner.  | [optional] 
 
 ## Example
 

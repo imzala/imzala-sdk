@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **default_source** | **str** |  | [optional] 
 **auto_filled** | **bool** |  | [optional] 
 **template_party_id** | **str** |  | [optional] 
+**template_document_id** | **str** | Alanın bulunduğu şablon belgesi (&#x60;document_variables&#x60; anahtarı). Aynı slug birden fazla belgede geçiyorsa belge başına ayrı satır döner.  | [optional] 
 **note** | **str** |  | [optional] 
 
 ## Example

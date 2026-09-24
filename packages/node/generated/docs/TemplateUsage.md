@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **required_headers** | **{ [key: string]: string; }** |  | [optional] [default to undefined]
 **parties** | [**Array&lt;TemplateUsagePartiesInner&gt;**](TemplateUsagePartiesInner.md) |  | [optional] [default to undefined]
 **variables** | [**Array&lt;TemplateUsageVariablesInner&gt;**](TemplateUsageVariablesInner.md) |  | [optional] [default to undefined]
+**documents** | [**Array&lt;TemplateUsageDocumentsInner&gt;**](TemplateUsageDocumentsInner.md) | Şablonun belgeleri (sıra artan). &#x60;document_variables&#x60; anahtarları buradaki &#x60;template_document_id&#x60; değerleridir.  | [optional] [default to undefined]
 **example_request** | [**TemplateUsageExampleRequest**](TemplateUsageExampleRequest.md) |  | [optional] [default to undefined]
 
 ## Example
@@ -27,6 +28,7 @@ const instance: TemplateUsage = {
     required_headers,
     parties,
     variables,
+    documents,
     example_request,
 };
 ```

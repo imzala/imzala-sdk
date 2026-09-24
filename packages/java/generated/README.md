@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.8.18
+- API version: 1.8.22
 
-- Build date: 2026-09-20T23:59:15.949712+03:00[Europe/Istanbul]
+- Build date: 2026-09-24T11:36:57.394357+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.8.18 · **Son güncelleme:** 2026-09-20
+**Sürüm:** 1.8.22 · **Son güncelleme:** 2026-09-23
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -302,7 +302,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.8.18</version>
+  <version>1.8.22</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -312,7 +312,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.8.18"
+compile "org.imzala:imzala-client-generated:1.8.22"
 ```
 
 ### Others
@@ -325,7 +325,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.8.18.jar`
+- `target/imzala-client-generated-1.8.22.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -404,6 +404,8 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdEmbedSessionPostWithHttpInfo) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdGetWithHttpInfo) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
+*DemandsApi* | [**apiV1DemandsIdItemsItemIdStampPatch**](docs/DemandsApi.md#apiV1DemandsIdItemsItemIdStampPatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
+*DemandsApi* | [**apiV1DemandsIdItemsItemIdStampPatchWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdItemsItemIdStampPatchWithHttpInfo) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 *DemandsApi* | [**apiV1DemandsIdItemsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdItemsPostWithHttpInfo) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 *DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPost**](docs/DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
@@ -538,13 +540,20 @@ Class | Method | HTTP request | Description
  - [CreateDemandRequest](docs/CreateDemandRequest.md)
  - [CreatedDemand](docs/CreatedDemand.md)
  - [CreatedDemandSigningUrlsInner](docs/CreatedDemandSigningUrlsInner.md)
+ - [CreatedDemandStampsAppliedInner](docs/CreatedDemandStampsAppliedInner.md)
  - [CreatedDemandUpload](docs/CreatedDemandUpload.md)
  - [CreatedDemandUploadDispatch](docs/CreatedDemandUploadDispatch.md)
  - [CreatedDemandUploadDispatchResultsInner](docs/CreatedDemandUploadDispatchResultsInner.md)
  - [CreatedDemandUploadFieldLayout](docs/CreatedDemandUploadFieldLayout.md)
+ - [DemandDocumentStatus](docs/DemandDocumentStatus.md)
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
+ - [DemandStatusStampItemsInner](docs/DemandStatusStampItemsInner.md)
+ - [DocumentPartyDecision](docs/DocumentPartyDecision.md)
+ - [DocumentProgress](docs/DocumentProgress.md)
+ - [DocumentScopedSlugs](docs/DocumentScopedSlugs.md)
+ - [DocumentSealing](docs/DocumentSealing.md)
  - [DocumentSelectionError](docs/DocumentSelectionError.md)
  - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
  - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
@@ -563,7 +572,11 @@ Class | Method | HTTP request | Description
  - [PageItem](docs/PageItem.md)
  - [PartyMappingInput](docs/PartyMappingInput.md)
  - [PartyMappingInputVariablesValue](docs/PartyMappingInputVariablesValue.md)
+ - [PatchStampItemRequest](docs/PatchStampItemRequest.md)
+ - [PatchStampItemResponse](docs/PatchStampItemResponse.md)
+ - [PatchStampItemResponseData](docs/PatchStampItemResponseData.md)
  - [ReminderSettings](docs/ReminderSettings.md)
+ - [StampData](docs/StampData.md)
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)
  - [TemplateDetail](docs/TemplateDetail.md)
@@ -572,6 +585,7 @@ Class | Method | HTTP request | Description
  - [TemplateSummary](docs/TemplateSummary.md)
  - [TemplateSummaryPartiesInner](docs/TemplateSummaryPartiesInner.md)
  - [TemplateUsage](docs/TemplateUsage.md)
+ - [TemplateUsageDocumentsInner](docs/TemplateUsageDocumentsInner.md)
  - [TemplateUsageEndpoint](docs/TemplateUsageEndpoint.md)
  - [TemplateUsageExampleRequest](docs/TemplateUsageExampleRequest.md)
  - [TemplateUsageFormFieldsInner](docs/TemplateUsageFormFieldsInner.md)

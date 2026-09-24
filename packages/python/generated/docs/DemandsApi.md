@@ -20,6 +20,7 @@ Method | HTTP request | Description
 [**api_v1_demands_id_delete**](DemandsApi.md#api_v1_demands_id_delete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 [**api_v1_demands_id_embed_session_post**](DemandsApi.md#api_v1_demands_id_embed_session_post) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 [**api_v1_demands_id_get**](DemandsApi.md#api_v1_demands_id_get) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
+[**api_v1_demands_id_items_item_id_stamp_patch**](DemandsApi.md#api_v1_demands_id_items_item_id_stamp_patch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
 [**api_v1_demands_id_items_post**](DemandsApi.md#api_v1_demands_id_items_post) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 [**api_v1_demands_id_parties_party_id_resend_post**](DemandsApi.md#api_v1_demands_id_parties_party_id_resend_post) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
 [**api_v1_demands_id_pdf_get**](DemandsApi.md#api_v1_demands_id_pdf_get) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
@@ -77,6 +78,13 @@ satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
   yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da
   `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar
   etkilenmez.
+- Belge başına değişkenler (`document_variables`) bu uçta
+  desteklenmez; yalnız `POST /demands` ile gönderilir. Satırda (kökte
+  ya da `party_mapping[i]` içinde) gönderilirse o satır `failed`
+  (`error: "INVALID_DOCUMENT_VARIABLES"`, `details.reason:
+  "unsupported_endpoint"`, `details.path`) döner ve oluşturulmaz;
+  `options.document_variables` gönderilirse 400
+  `INVALID_DOCUMENT_VARIABLES` döner, hiçbir satır oluşturulmaz.
 - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;
   başka workspace'in şablonu 404).
 - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı
@@ -159,7 +167,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Batch tamamlandı (kısmi başarı dahil). &#x60;results&#x60; giriş sırasında, her satır &#x60;row_index&#x60; ile eşlenir.  |  -  |
-**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.  |  -  |
+**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **402** | INSUFFICIENT_CREDITS: N satırın toplam tahmini maliyeti için yeterli kredi yok (ön kontrol; hiçbir sözleşme yaratılmadı). Satır bazlı yetersiz kredi durumları burada DEĞİL, 200 yanıtı içindeki &#x60;results[].status: \&quot;failed\&quot;&#x60; altında döner.  |  -  |
 **403** | INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED |  -  |
@@ -1405,7 +1413,10 @@ sınıf için ayrı QES akışını kullanın.
 
 **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran
 organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi
-için 404 döner (IDOR koruması).
+için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme
+düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm
+sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için
+oturum alır. Erişim yoksa 404 döner.
 
 
 ### Example
@@ -1494,6 +1505,11 @@ Name | Type | Description  | Notes
 
 Sözleşme durumu + imza ilerlemesi
 
+Kurum çalışma alanında erişim, sözleşme listesi ile aynı rol kuralını
+izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi
+oluşturduğu sözleşmeleri görür. Erişim yoksa 404 döner.
+
+
 ### Example
 
 * Api Key Authentication (ApiKeyAuth):
@@ -1567,6 +1583,147 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **api_v1_demands_id_items_item_id_stamp_patch**
+> PatchStampItemResponse api_v1_demands_id_items_item_id_stamp_patch(id, item_id, patch_stamp_item_request)
+
+Kaşe alanını doldur (kısmi güncelleme)
+
+Sözleşmedeki var olan TEK bir kaşe alanını yapılandırılmış veriyle
+doldurur. `POST /api/v1/demands/{id}/items` tüm alanları yeniden
+yazar; bu uç ise yalnız belirtilen kaşeye dokunur, diğer alanlar
+değişmez.
+
+Kaşe alanının kimliği (`itemId`) `GET /api/v1/demands/{id}` yanıtındaki
+`stamp_items[].item_id` alanından alınır.
+
+### Kısmi güncelleme kuralları
+
+- `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk kırpılır).
+- `null` veya boş string gönderilen alan kaldırılır.
+- Gönderilmeyen alan olduğu gibi korunur.
+- Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA` döner.
+
+### Kaşe kaynağına göre davranış
+
+- `FILLER_PROVIDES`: veri imzalayanın kaşesine önceden doldurulur;
+  zorunlu kaşe bu veriyle karşılanmış sayılır. İmzalayan imza
+  sayfasında bu değeri görür ve imzalamadan önce düzenleyebilir;
+  düzenlerse onun verisi kaydedilir. Kayıtta verinin gönderen
+  tarafından mı imzalayan tarafından mı girildiği ayrıca tutulur.
+- `INLINE`: kaşe verisi güncellenir.
+- `FROM_SAVED`: veri artık kayıtlı kaşeyle aynı olmadığı için kaşe
+  `INLINE` olur. Görsel kaşe (logo) varsa korunur ve belgede logo gösterilir.
+
+### Durum kontrolü
+
+Yalnız `DRAFT` ve `PENDING` sözleşmeler güncellenebilir. Taraflardan
+biri imzaladıysa veya bir belge için karar verdiyse kaşe değiştirilemez.
+
+### Erişim
+
+Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerinde,
+MEMBER yalnız kendi oluşturduğu sözleşmelerde kaşe doldurabilir.
+Erişim yoksa `404 DEMAND_NOT_FOUND` döner.
+
+### Örnek
+
+```bash
+curl -X PATCH https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp \
+  -H "X-API-Key: imz_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stamp_data": {
+      "companyName": "Örnek Ltd.",
+      "taxNumber": "1234567890",
+      "taxOffice": "Kadıköy",
+      "companyPhone": "+905551112233"
+    }
+  }'
+```
+
+
+### Example
+
+* Api Key Authentication (ApiKeyAuth):
+
+```python
+import imzala_client
+from imzala_client.models.patch_stamp_item_request import PatchStampItemRequest
+from imzala_client.models.patch_stamp_item_response import PatchStampItemResponse
+from imzala_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://api-prd.imzala.org
+# See configuration.py for a list of all supported configuration parameters.
+configuration = imzala_client.Configuration(
+    host = "https://api-prd.imzala.org"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure API key authorization: ApiKeyAuth
+configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
+
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# configuration.api_key_prefix['ApiKeyAuth'] = 'Bearer'
+
+# Enter a context with an instance of the API client
+with imzala_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = imzala_client.DemandsApi(api_client)
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    item_id = 56 # int | Kaşe alanının kimliği (`stamp_items[].item_id`)
+    patch_stamp_item_request = imzala_client.PatchStampItemRequest() # PatchStampItemRequest | 
+
+    try:
+        # Kaşe alanını doldur (kısmi güncelleme)
+        api_response = api_instance.api_v1_demands_id_items_item_id_stamp_patch(id, item_id, patch_stamp_item_request)
+        print("The response of DemandsApi->api_v1_demands_id_items_item_id_stamp_patch:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DemandsApi->api_v1_demands_id_items_item_id_stamp_patch: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **UUID**|  | 
+ **item_id** | **int**| Kaşe alanının kimliği (&#x60;stamp_items[].item_id&#x60;) | 
+ **patch_stamp_item_request** | [**PatchStampItemRequest**](PatchStampItemRequest.md)|  | 
+
+### Return type
+
+[**PatchStampItemResponse**](PatchStampItemResponse.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Kaşe alanı güncellendi |  -  |
+**400** | Olası &#x60;error&#x60; değerleri: - &#x60;INVALID_ITEM_ID&#x60;: &#x60;itemId&#x60; pozitif tam sayı değil - &#x60;VALIDATION_ERROR&#x60;: gövde nesne değil, bilinmeyen gövde alanı veya geçersiz &#x60;document_id&#x60; - &#x60;INVALID_STAMP_DATA&#x60;: &#x60;stamp_data&#x60; boş, bilinmeyen alan veya string/null olmayan değer içeriyor - &#x60;NOT_A_STAMP_ITEM&#x60;: alan kaşe değil  |  -  |
+**401** | API key geçersiz veya eksik |  -  |
+**403** | &#x60;DEMAND_NOT_EDITABLE&#x60;: sözleşme &#x60;DRAFT&#x60;/&#x60;PENDING&#x60; değil. &#x60;INSUFFICIENT_SCOPE&#x60;: API anahtarında &#x60;demands:write&#x60; yok.  |  -  |
+**404** | &#x60;DEMAND_NOT_FOUND&#x60;: sözleşme bu workspace&#39;te yok. &#x60;ITEM_NOT_FOUND&#x60;: alan bu sözleşmede (veya verilen &#x60;document_id&#x60; belgesinde) yok.  |  -  |
+**409** | &#x60;DEMAND_PARTIALLY_SIGNED&#x60;: taraflardan biri imzaladı veya karar verdi.  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **api_v1_demands_id_items_post**
 > UpsertItemsResponse api_v1_demands_id_items_post(id, upsert_items_request)
 
@@ -1591,7 +1748,7 @@ Endpoint **replace** semantiği taşır:
 
 | `item_type` | `party_id` zorunlu? | `config` örneği |
 |-------------|---------------------|-----------------|
-| `signature` | ✅ | (yok) |
+| `signature` | ✅ | (yok) veya `{ requireFirstSignatureOtp: true }` |
 | `text` | ❌ | `{ default_content }` |
 | `dynamic_text` | ✅ | `{ defaultSource: "{{signer.full_name}}" }` |
 | `cells` | ✅ | `{ cellCount: 11, defaultSource: "{{signer.government_id}}" }` |
@@ -1599,7 +1756,26 @@ Endpoint **replace** semantiği taşır:
 | `dropdown` | ✅ | `{ options: [{label,value}], defaultValue }` |
 | `checkbox` | ✅ | `{ checkedByDefault: false }` |
 | `radio` | ✅ | `{ options: [{label,value}], defaultValue }` |
-| `stamp` | ❌ | `{ stampData: "data:image/png;base64,..." }` |
+| `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) | `{ source: "INLINE", stampData: { companyName: "Örnek Ltd.", taxNumber: "1234567890" } }` |
+
+### Kaşe (`stamp`) alanı
+
+- `config.source`: `INLINE` (varsayılan, kaşe verisi gönderenden gelir),
+  `FROM_SAVED` (kayıtlı kaşeden kopya) veya `FILLER_PROVIDES` (kaşeyi
+  `party_id` ile belirtilen imzalayan doldurur).
+- `config.stampData`: yapılandırılmış kaşe verisi. İzinli alanlar:
+  `companyName`, `personalName`, `address`, `companyAddress`,
+  `personalAddress`, `taxNumber`, `taxOffice`, `idNumber`, `phone`,
+  `companyPhone`, `personalPhone`, `email` (hepsi string). Bilinmeyen alan
+  veya string olmayan değer `400 INVALID_STAMP_DATA` döner. Eski
+  dokümandaki data URL string biçimi geriye dönük uyum için hâlâ kabul
+  edilir, ancak belgede kaşe olarak çizilmez; yapılandırılmış nesneyi kullanın.
+- `config.isRequired: true` yalnız `FILLER_PROVIDES` kaşede anlamlıdır:
+  imzalayan kaşeyi doldurmadan imzalayamaz. Zorunlu kaşenin `party_id`'si
+  olmak zorundadır; çok belgeli zarfta taraf, kaşenin bulunduğu belgeye
+  atanmış olmalıdır.
+- Var olan tek bir kaşeyi diğer alanlara dokunmadan doldurmak için bu
+  uç yerine `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` kullanın.
 
 ### Sistem değişkenleri (dynamic_text/cells/date `config.defaultSource`)
 
@@ -1612,6 +1788,9 @@ Endpoint **replace** semantiği taşır:
 
 X-API-Key middleware demand'i workspace'e göre filtreler;
 başka workspace'in demand'ine item ekleyemezsiniz (404 döner).
+Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerine,
+MEMBER yalnız kendi oluşturduğu sözleşmelere alan yerleştirebilir.
+Erişim yoksa 404 döner.
 
 ### Status kontrolü
 
@@ -1720,7 +1899,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Alanlar yerleştirildi |  -  |
-**400** | Validation hatası. Olası &#x60;error&#x60; değerleri: - &#x60;INVALID_ITEMS_BODY&#x60; — items array değil - &#x60;VALIDATION_ERROR&#x60; — position bounds, slug regex, party-required - &#x60;INVALID_PAGE_ID&#x60; — page_id demand&#39;e ait değil veya page_ids&#39;te yok - &#x60;INVALID_PARTY_ID&#x60; — party_id demand&#39;e ait değil - &#x60;PAGE_ID_REQUIRED&#x60;: bir öğede tam sayı &#x60;page_id&#x60; yok - &#x60;INVALID_ITEM_TYPE&#x60;: desteklenmeyen &#x60;item_type&#x60; (mesaj izinli türleri listeler)  |  -  |
+**400** | Validation hatası. Olası &#x60;error&#x60; değerleri: - &#x60;INVALID_ITEMS_BODY&#x60; — items array değil - &#x60;VALIDATION_ERROR&#x60; — position bounds, slug regex, party-required - &#x60;INVALID_PAGE_ID&#x60; — page_id demand&#39;e ait değil veya page_ids&#39;te yok - &#x60;INVALID_PARTY_ID&#x60; — party_id demand&#39;e ait değil - &#x60;PARTY_NOT_ASSIGNED_TO_DOCUMENT&#x60;: kaşeyi dolduracak taraf, kaşenin belgesine atanmamış - &#x60;INVALID_STAMP_DATA&#x60;: &#x60;config.stampData&#x60; bilinmeyen alan veya string olmayan değer içeriyor - &#x60;PAGE_ID_REQUIRED&#x60;: bir öğede tam sayı &#x60;page_id&#x60; yok - &#x60;INVALID_ITEM_TYPE&#x60;: desteklenmeyen &#x60;item_type&#x60; (mesaj izinli türleri listeler)  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **403** | &#x60;DEMAND_NOT_EDITABLE&#x60; — demand status ≠ &#x60;PENDING&#x60; (COMPLETED, EXPIRED, REJECTED edit edilemez).  |  -  |
 **404** | &#x60;DEMAND_NOT_FOUND&#x60; — demand bu workspace&#39;te yok (cross-workspace IDOR koruması).  |  -  |
@@ -1904,6 +2083,14 @@ Name | Type | Description  | Notes
 Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner.
 KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham
 IP/cihaz asla döndürülmez.
+
+`event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`,
+`COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`,
+`COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
+(SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
+`MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
+olayın `ip_masked` ve `device_label` alanları telefona aittir).
+Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
 
 
 ### Example
@@ -2091,11 +2278,11 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **201** | Sözleşme oluşturuldu |  -  |
-**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  |  -  |
+**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 **403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |
-**409** | Altı ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: eşlediğiniz bir tarafa imzalayacak belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede &#x60;template_party_ids&#x60; (şablon rol kimlikleri) döner; (b) &#x60;documents&#x60; seçiminiz (ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesi) bir role seçili belge bırakmıyorsa &#x60;dispatch_notifications&#x60; değerinden bağımsız yine yaratmadan reddedilir, gövdede &#x60;template_party_ids&#x60; döner (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA düşürülür ve gövdede &#x60;party_ids&#x60; (imzacı kimlikleri) + &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Hiçbir biçimde kredi düşülmez, davet gönderilmez.  &#x60;TEMPLATE_DOCUMENTS_NOT_READY&#x60;: şablonun belge yapısı henüz hazır değil; &#x60;documents&#x60; göndermeden deneyin ya da destekle iletişime geçin.  &#x60;DOCUMENT_SOURCE_UNAVAILABLE&#x60;: şablonun ilk belgesini çıkardınız ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.  |  -  |
+**409** | Altı ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: eşlediğiniz bir tarafa imzalayacak belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede &#x60;template_party_ids&#x60; (şablon rol kimlikleri) döner; (b) &#x60;documents&#x60; seçiminiz (ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesi) bir role seçili belge bırakmıyorsa &#x60;dispatch_notifications&#x60; değerinden bağımsız yine yaratmadan reddedilir, gövdede &#x60;template_party_ids&#x60; döner (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA düşürülür ve gövdede &#x60;party_ids&#x60; (imzacı kimlikleri) + &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Hiçbir biçimde kredi düşülmez, davet gönderilmez.  &#x60;TEMPLATE_DOCUMENTS_NOT_READY&#x60;: şablonun belge yapısı henüz hazır değil; &#x60;documents&#x60; ve &#x60;document_variables&#x60; göndermeden deneyin ya da destekle iletişime geçin.  &#x60;DOCUMENT_SOURCE_UNAVAILABLE&#x60;: şablonun ilk belgesini çıkardınız ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.  |  -  |
 **500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve TASLAĞA düşürülür; gövdede &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Davet gönderilmez. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -2146,7 +2333,7 @@ with imzala_client.ApiClient(configuration) as api_client:
     parties = 'parties_example' # str | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir. 
     idempotency_key = 'idempotency_key_example' # str | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
     order = 'order_example' # str | Çoklu görsel sırası (JSON array of indices, örnek \\\"[0,2,1]\\\") (optional)
-    title = 'title_example' # str |  (optional)
+    title = 'title_example' # str | Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS'lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  (optional)
     description = 'description_example' # str |  (optional)
     field_template_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.  (optional)
     force = 'force_example' # str | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
@@ -2173,7 +2360,7 @@ Name | Type | Description  | Notes
  **parties** | **str**| JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  | 
  **idempotency_key** | **str**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  | [optional] 
  **order** | **str**| Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) | [optional] 
- **title** | **str**|  | [optional] 
+ **title** | **str**| Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  | [optional] 
  **description** | **str**|  | [optional] 
  **field_template_id** | **UUID**| Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  | [optional] 
  **force** | **str**| Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  | [optional] 

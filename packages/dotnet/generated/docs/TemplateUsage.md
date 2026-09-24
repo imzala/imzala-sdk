@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **RequiredHeaders** | **Dictionary&lt;string, string&gt;** |  | [optional] 
 **Parties** | [**List&lt;TemplateUsagePartiesInner&gt;**](TemplateUsagePartiesInner.md) |  | [optional] 
 **Variables** | [**List&lt;TemplateUsageVariablesInner&gt;**](TemplateUsageVariablesInner.md) |  | [optional] 
+**Documents** | [**List&lt;TemplateUsageDocumentsInner&gt;**](TemplateUsageDocumentsInner.md) | Şablonun belgeleri (sıra artan). &#x60;document_variables&#x60; anahtarları buradaki &#x60;template_document_id&#x60; değerleridir.  | [optional] 
 **ExampleRequest** | [**TemplateUsageExampleRequest**](TemplateUsageExampleRequest.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

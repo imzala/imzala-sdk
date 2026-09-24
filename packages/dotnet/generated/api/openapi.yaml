@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.18 · **Son güncelleme:** 2026-09-20
+    **Sürüm:** 1.8.22 · **Son güncelleme:** 2026-09-23
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -265,7 +265,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.18
+  version: 1.8.22
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -731,6 +731,29 @@ paths:
                     kira_baslangic_tarihi: 2026-06-01
                     kira_bedeli: 12.000 TL
                     depozito: 24.000 TL
+              multiDocument:
+                summary: "Çok belgeli zarf, belge başına değişken"
+                value:
+                  template_id: <zarf-template-id>
+                  title: Hizmet Zarfı - Ayşe Yılmaz
+                  party_mapping:
+                  - template_party_id: <musteri-id>
+                    first_name: Ayşe
+                    last_name: Yılmaz
+                    email: ayse@example.com
+                    phone: "+905551112233"
+                    variables:
+                      adres: "Atatürk Cad. No: 12, Çankaya/Ankara"
+                    document_variables:
+                      <hizmet-sozlesmesi-belge-id>:
+                        tutar: 10.000 TL
+                      <bakim-eki-belge-id>:
+                        tutar: 2.500 TL
+                  variables:
+                    baslangic_tarihi: 2026-10-01
+                  document_variables:
+                    <bakim-eki-belge-id>:
+                      baslangic_tarihi: 2026-11-01
             schema:
               $ref: "#/components/schemas/CreateDemandRequest"
         required: true
@@ -769,9 +792,26 @@ paths:
             kredi kontrolünden önce, şablona bağlı hatalar şablon erişim
             kontrolünden sonra ve kredi kontrolünden önce döner.
 
+            `INVALID_DOCUMENT_VARIABLES`: `document_variables` hatası;
+            `details.reason` şu değerlerden biridir: `shape` (biçim: nesne
+            değil, değer string|number|boolean|null değil, boş ya da ayrılmış
+            anahtar, 20'den fazla belge), `unknown_document` (kimlik bu
+            şablonun belgesi değil), `unselected_document` (belge bu istekte
+            gönderilmiyor; `documents.include` ile ekleyin). `details.path`
+            hatalı alanı (`document_variables` ya da
+            `party_mapping[i].document_variables`), `details.document_ids`
+            yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi
+            kontrolünden önce, şablona bağlı hatalar şablon erişim
+            kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.
+
             `SIGNATURE_VARIANTS_PHONE_ONLY`: `allowed_signature_variants`
             yalnız `phone` içeriyor. Telefonda çizim tek başına seçilemez;
             listede en az bir `phone` olmayan yöntem bırakın.
+
+            `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE`:
+            `allowed_signature_variants` içinde `phone_draw` başka bir
+            yöntemle birlikte gönderildi. `phone_draw` yalnız tek başına
+            kullanılabilir (`["phone_draw"]`).
         "401":
           content:
             application/json:
@@ -843,8 +883,8 @@ paths:
             gönderilmez.
 
             `TEMPLATE_DOCUMENTS_NOT_READY`: şablonun belge yapısı henüz hazır
-            değil; `documents` göndermeden deneyin ya da destekle iletişime
-            geçin.
+            değil; `documents` ve `document_variables` göndermeden deneyin ya
+            da destekle iletişime geçin.
 
             `DOCUMENT_SOURCE_UNAVAILABLE`: şablonun ilk belgesini çıkardınız
             ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin
@@ -910,6 +950,13 @@ paths:
           yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da
           `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar
           etkilenmez.
+        - Belge başına değişkenler (`document_variables`) bu uçta
+          desteklenmez; yalnız `POST /demands` ile gönderilir. Satırda (kökte
+          ya da `party_mapping[i]` içinde) gönderilirse o satır `failed`
+          (`error: "INVALID_DOCUMENT_VARIABLES"`, `details.reason:
+          "unsupported_endpoint"`, `details.path`) döner ve oluşturulmaz;
+          `options.document_variables` gönderilirse 400
+          `INVALID_DOCUMENT_VARIABLES` döner, hiçbir satır oluşturulmaz.
         - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;
           başka workspace'in şablonu 404).
         - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı
@@ -961,7 +1008,9 @@ paths:
             Geçersiz istek. Olası kodlar: `BULK_MAX_10` (`rows` 10'dan fazla),
             boş `rows`, eksik `template_id`, `INVALID_DOCUMENT_SELECTION`
             (`options.documents` gönderildi; belge seçimi satır başınadır,
-            bkz. `rows[i].documents`), `INVALID_PADES_LEVEL`
+            bkz. `rows[i].documents`), `INVALID_DOCUMENT_VARIABLES`
+            (`options.document_variables` gönderildi; bu uçta desteklenmez,
+            `details.reason: "unsupported_endpoint"`), `INVALID_PADES_LEVEL`
             (`options.qes_pades_level` satılabilir seviyelerden biri değil),
             `FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE` (verilen kimlik bir Alan
             Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken
@@ -969,7 +1018,9 @@ paths:
 
             `SIGNATURE_VARIANTS_PHONE_ONLY`:
             `options.allowed_signature_variants` yalnız `phone` içeriyor.
-            Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.
+            `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE`: `phone_draw` başka bir
+            yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için
+            hiçbir satır oluşturulmaz.
         "401":
           content:
             application/json:
@@ -1055,6 +1106,10 @@ paths:
       - Demands
       x-required-scope: demands:write
     get:
+      description: |
+        Kurum çalışma alanında erişim, sözleşme listesi ile aynı rol kuralını
+        izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi
+        oluşturduğu sözleşmeleri görür. Erişim yoksa 404 döner.
       parameters:
       - explode: false
         in: path
@@ -1613,7 +1668,7 @@ paths:
 
         | `item_type` | `party_id` zorunlu? | `config` örneği |
         |-------------|---------------------|-----------------|
-        | `signature` | ✅ | (yok) |
+        | `signature` | ✅ | (yok) veya `{ requireFirstSignatureOtp: true }` |
         | `text` | ❌ | `{ default_content }` |
         | `dynamic_text` | ✅ | `{ defaultSource: "{{signer.full_name}}" }` |
         | `cells` | ✅ | `{ cellCount: 11, defaultSource: "{{signer.government_id}}" }` |
@@ -1621,7 +1676,26 @@ paths:
         | `dropdown` | ✅ | `{ options: [{label,value}], defaultValue }` |
         | `checkbox` | ✅ | `{ checkedByDefault: false }` |
         | `radio` | ✅ | `{ options: [{label,value}], defaultValue }` |
-        | `stamp` | ❌ | `{ stampData: "data:image/png;base64,..." }` |
+        | `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) | `{ source: "INLINE", stampData: { companyName: "Örnek Ltd.", taxNumber: "1234567890" } }` |
+
+        ### Kaşe (`stamp`) alanı
+
+        - `config.source`: `INLINE` (varsayılan, kaşe verisi gönderenden gelir),
+          `FROM_SAVED` (kayıtlı kaşeden kopya) veya `FILLER_PROVIDES` (kaşeyi
+          `party_id` ile belirtilen imzalayan doldurur).
+        - `config.stampData`: yapılandırılmış kaşe verisi. İzinli alanlar:
+          `companyName`, `personalName`, `address`, `companyAddress`,
+          `personalAddress`, `taxNumber`, `taxOffice`, `idNumber`, `phone`,
+          `companyPhone`, `personalPhone`, `email` (hepsi string). Bilinmeyen alan
+          veya string olmayan değer `400 INVALID_STAMP_DATA` döner. Eski
+          dokümandaki data URL string biçimi geriye dönük uyum için hâlâ kabul
+          edilir, ancak belgede kaşe olarak çizilmez; yapılandırılmış nesneyi kullanın.
+        - `config.isRequired: true` yalnız `FILLER_PROVIDES` kaşede anlamlıdır:
+          imzalayan kaşeyi doldurmadan imzalayamaz. Zorunlu kaşenin `party_id`'si
+          olmak zorundadır; çok belgeli zarfta taraf, kaşenin bulunduğu belgeye
+          atanmış olmalıdır.
+        - Var olan tek bir kaşeyi diğer alanlara dokunmadan doldurmak için bu
+          uç yerine `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` kullanın.
 
         ### Sistem değişkenleri (dynamic_text/cells/date `config.defaultSource`)
 
@@ -1634,6 +1708,9 @@ paths:
 
         X-API-Key middleware demand'i workspace'e göre filtreler;
         başka workspace'in demand'ine item ekleyemezsiniz (404 döner).
+        Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerine,
+        MEMBER yalnız kendi oluşturduğu sözleşmelere alan yerleştirebilir.
+        Erişim yoksa 404 döner.
 
         ### Status kontrolü
 
@@ -1697,6 +1774,8 @@ paths:
             - `VALIDATION_ERROR` — position bounds, slug regex, party-required
             - `INVALID_PAGE_ID` — page_id demand'e ait değil veya page_ids'te yok
             - `INVALID_PARTY_ID` — party_id demand'e ait değil
+            - `PARTY_NOT_ASSIGNED_TO_DOCUMENT`: kaşeyi dolduracak taraf, kaşenin belgesine atanmamış
+            - `INVALID_STAMP_DATA`: `config.stampData` bilinmeyen alan veya string olmayan değer içeriyor
             - `PAGE_ID_REQUIRED`: bir öğede tam sayı `page_id` yok
             - `INVALID_ITEM_TYPE`: desteklenmeyen `item_type` (mesaj izinli türleri listeler)
         "401":
@@ -1720,6 +1799,120 @@ paths:
             DB-level partial unique constraint engelledi. Pozisyonu
             değiştirip tekrar deneyin.
       summary: Sözleşmeye alan yerleştir (replace)
+      tags:
+      - Demands
+      x-required-scope: demands:write
+  /api/v1/demands/{id}/items/{itemId}/stamp:
+    patch:
+      description: |
+        Sözleşmedeki var olan TEK bir kaşe alanını yapılandırılmış veriyle
+        doldurur. `POST /api/v1/demands/{id}/items` tüm alanları yeniden
+        yazar; bu uç ise yalnız belirtilen kaşeye dokunur, diğer alanlar
+        değişmez.
+
+        Kaşe alanının kimliği (`itemId`) `GET /api/v1/demands/{id}` yanıtındaki
+        `stamp_items[].item_id` alanından alınır.
+
+        ### Kısmi güncelleme kuralları
+
+        - `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk kırpılır).
+        - `null` veya boş string gönderilen alan kaldırılır.
+        - Gönderilmeyen alan olduğu gibi korunur.
+        - Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA` döner.
+
+        ### Kaşe kaynağına göre davranış
+
+        - `FILLER_PROVIDES`: veri imzalayanın kaşesine önceden doldurulur;
+          zorunlu kaşe bu veriyle karşılanmış sayılır. İmzalayan imza
+          sayfasında bu değeri görür ve imzalamadan önce düzenleyebilir;
+          düzenlerse onun verisi kaydedilir. Kayıtta verinin gönderen
+          tarafından mı imzalayan tarafından mı girildiği ayrıca tutulur.
+        - `INLINE`: kaşe verisi güncellenir.
+        - `FROM_SAVED`: veri artık kayıtlı kaşeyle aynı olmadığı için kaşe
+          `INLINE` olur. Görsel kaşe (logo) varsa korunur ve belgede logo gösterilir.
+
+        ### Durum kontrolü
+
+        Yalnız `DRAFT` ve `PENDING` sözleşmeler güncellenebilir. Taraflardan
+        biri imzaladıysa veya bir belge için karar verdiyse kaşe değiştirilemez.
+
+        ### Erişim
+
+        Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerinde,
+        MEMBER yalnız kendi oluşturduğu sözleşmelerde kaşe doldurabilir.
+        Erişim yoksa `404 DEMAND_NOT_FOUND` döner.
+
+        ### Örnek
+
+        ```bash
+        curl -X PATCH https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp \
+          -H "X-API-Key: imz_..." \
+          -H "Content-Type: application/json" \
+          -d '{
+            "stamp_data": {
+              "companyName": "Örnek Ltd.",
+              "taxNumber": "1234567890",
+              "taxOffice": "Kadıköy",
+              "companyPhone": "+905551112233"
+            }
+          }'
+        ```
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      - description: "Kaşe alanının kimliği (`stamp_items[].item_id`)"
+        explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchStampItemRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatchStampItemResponse"
+          description: Kaşe alanı güncellendi
+        "400":
+          description: |
+            Olası `error` değerleri:
+            - `INVALID_ITEM_ID`: `itemId` pozitif tam sayı değil
+            - `VALIDATION_ERROR`: gövde nesne değil, bilinmeyen gövde alanı veya geçersiz `document_id`
+            - `INVALID_STAMP_DATA`: `stamp_data` boş, bilinmeyen alan veya string/null olmayan değer içeriyor
+            - `NOT_A_STAMP_ITEM`: alan kaşe değil
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates_get_401_response"
+          description: API key geçersiz veya eksik
+        "403":
+          description: |
+            `DEMAND_NOT_EDITABLE`: sözleşme `DRAFT`/`PENDING` değil.
+            `INSUFFICIENT_SCOPE`: API anahtarında `demands:write` yok.
+        "404":
+          description: |
+            `DEMAND_NOT_FOUND`: sözleşme bu workspace'te yok.
+            `ITEM_NOT_FOUND`: alan bu sözleşmede (veya verilen `document_id` belgesinde) yok.
+        "409":
+          description: |
+            `DEMAND_PARTIALLY_SIGNED`: taraflardan biri imzaladı veya karar verdi.
+      summary: Kaşe alanını doldur (kısmi güncelleme)
       tags:
       - Demands
       x-required-scope: demands:write
@@ -1749,7 +1942,10 @@ paths:
 
         **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran
         organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi
-        için 404 döner (IDOR koruması).
+        için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme
+        düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm
+        sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için
+        oturum alır. Erişim yoksa 404 döner.
       parameters:
       - description: Sözleşme (demand) ID
         explode: false
@@ -1950,6 +2146,14 @@ paths:
         Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner.
         KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham
         IP/cihaz asla döndürülmez.
+
+        `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`,
+        `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`,
+        `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
+        (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
+        `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
+        olayın `ip_masked` ve `device_label` alanları telefona aittir).
+        Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
       parameters:
       - explode: false
         in: path
@@ -3477,6 +3681,7 @@ components:
           default_source: default_source
           auto_filled: true
           template_party_id: template_party_id
+          template_document_id: template_document_id
           note: note
         - slug: slug
           label: label
@@ -3485,7 +3690,17 @@ components:
           default_source: default_source
           auto_filled: true
           template_party_id: template_party_id
+          template_document_id: template_document_id
           note: note
+        documents:
+        - template_document_id: template_document_id
+          title: title
+          order: 1
+          default_included: true
+        - template_document_id: template_document_id
+          title: title
+          order: 1
+          default_included: true
         example_request:
           curl: curl
           json: "{}"
@@ -3527,6 +3742,13 @@ components:
           items:
             $ref: "#/components/schemas/TemplateUsage_variables_inner"
           type: array
+        documents:
+          description: |
+            Şablonun belgeleri (sıra artan). `document_variables`
+            anahtarları buradaki `template_document_id` değerleridir.
+          items:
+            $ref: "#/components/schemas/TemplateUsage_documents_inner"
+          type: array
         example_request:
           $ref: "#/components/schemas/TemplateUsage_example_request"
       type: object
@@ -3543,6 +3765,7 @@ components:
         send_email: true
         variables:
           key: PartyMappingInput_variables_value
+        document_variables: ""
       properties:
         template_party_id:
           description: "GET /api/v1/templates/{id} cevabındaki parties[].id"
@@ -3578,12 +3801,35 @@ components:
           description: |
             Bu PARTİYE AİT dynamic field'lara gönderilen değerler. Slug bazında
             eşleşir. Item'ın template_party_id'si bu partiyle aynı olmalı; değilse
-            değişken atlanır ve variables_ignored'a düşürülür.
+            değişken atlanır ve variables_ignored'a düşürülür. Kaşe alanının
+            slug'ına `StampData` nesnesi verilebilir (bkz.
+            `CreateDemandRequest.variables`).
           type: object
+        document_variables:
+          allOf:
+          - $ref: "#/components/schemas/DocumentVariables"
+          description: |
+            Bu partinin BELGE BAŞINA değerleri. Anahtar şablon belgesinin
+            kimliğidir (`GET /api/v1/templates/{id}/usage` cevabındaki
+            `documents[].template_document_id`); belge başlığı ya da sırası
+            anahtar olarak kullanılamaz. Aynı slug için en yüksek önceliklidir
+            (bkz. `CreateDemandRequest.document_variables`).
       required:
       - first_name
       - last_name
       - template_party_id
+      type: object
+    DocumentVariables:
+      additionalProperties:
+        additionalProperties:
+          $ref: "#/components/schemas/PartyMappingInput_variables_value"
+        type: object
+      description: |
+        Belge kimliği → (slug → değer). Değerler string, number, boolean ya
+        da null olabilir; kaşe alanının slug'ına `StampData` nesnesi de
+        verilebilir (kaşe o belgede olmalı). Belge kimliği bu şablonun, bu
+        istekte gönderilen (`documents` seçimi sonrası) bir belgesi olmalıdır.
+      maxProperties: 20
       type: object
     CreateDemandRequest:
       example:
@@ -3604,6 +3850,7 @@ components:
           send_email: true
           variables:
             key: PartyMappingInput_variables_value
+          document_variables: ""
         - template_party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           first_name: first_name
           last_name: last_name
@@ -3615,6 +3862,7 @@ components:
           send_email: true
           variables:
             key: PartyMappingInput_variables_value
+          document_variables: ""
         documents:
           include:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -3629,7 +3877,13 @@ components:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         variables:
-          key: null
+          kira_baslangic_tarihi: 2026-10-01
+          firma_kasesi:
+            companyName: Örnek Ltd.
+            taxNumber: "1234567890"
+            taxOffice: Kadıköy
+            companyAddress: "Kadıköy, İstanbul"
+        document_variables: ""
         has_timestamp: false
         allowed_signature_variants:
         - type
@@ -3650,7 +3904,10 @@ components:
           format: uuid
           type: string
         title:
-          description: Sözleşme başlığı (yoksa template adı kullanılır)
+          description: |
+            Sözleşme başlığı (yoksa template adı kullanılır). Başlık,
+            imza davet ve hatırlatma SMS'lerinde imzacının telefon
+            ekranında görünebilir; kişisel veya gizli bilgi yazmayın.
           type: string
         description:
           type: string
@@ -3682,7 +3939,48 @@ components:
             **Root scope** — partilerden bağımsız field'lara gönderilen değerler.
             Item'ın template_party_id'si NULL ise (partisiz) buradan dolar.
             Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field'lar.
+
+            **Kaşe alanları:** Değer bir `StampData` NESNESİ ise ve slug bir
+            kaşe alanına aitse, sözleşme oluşturulurken o kaşe
+            `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` ile aynı kurallarla
+            doldurulur (gönderenin kaşesi yapılandırılmış veriyle; imzalayanın
+            dolduracağı kaşeye düzenlenebilir ön değer). Aynı slug birden fazla
+            belgede geçiyorsa hepsine yazılır; öncelik kuralları `variables` ile
+            aynıdır (bkz. `document_variables`). Nesne değer yalnız kaşe
+            slug'ına verilebilir: kaşe olmayan ya da gönderilecek belgelerde
+            bulunmayan slug 400 `INVALID_VARIABLES`
+            (`details.reason: object_value_for_non_stamp`), geçersiz kaşe
+            verisi 400 `INVALID_STAMP_DATA` döner; ikisinde de sözleşme
+            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin gönderilirse
+            kaşeye yazılmaz ve `variables_ignored` içinde görünür. Toplu
+            uçlar nesne değeri desteklemez (400 `INVALID_VARIABLES`,
+            `details.reason: unsupported_endpoint`).
+          example:
+            kira_baslangic_tarihi: 2026-10-01
+            firma_kasesi:
+              companyName: Örnek Ltd.
+              taxNumber: "1234567890"
+              taxOffice: Kadıköy
+              companyAddress: "Kadıköy, İstanbul"
           type: object
+        document_variables:
+          allOf:
+          - $ref: "#/components/schemas/DocumentVariables"
+          description: |
+            Çok belgeli şablonda BELGE BAŞINA ortak değerler (o belgedeki tüm
+            taraflar ve partisiz alanlar için). Opsiyoneldir; göndermezseniz
+            `variables` ve `party_mapping[].variables` eskisi gibi çalışır.
+
+            Öncelik (alan bazında; bir seviyede anahtar yoksa bir alttakine
+            düşer, açıkça gönderilen boş metin ya da null o seviyede kalır):
+            1. `party_mapping[i].document_variables[belge][slug]`
+            2. `document_variables[belge][slug]`
+            3. `party_mapping[i].variables[slug]`
+            4. `variables[slug]`
+
+            Şablona ait olmayan ya da bu istekte gönderilmeyen belge kimliği
+            400 `INVALID_DOCUMENT_VARIABLES` ile reddedilir; sözleşme
+            oluşturulmaz, kredi düşülmez, davet gönderilmez.
         has_timestamp:
           default: false
           description: TÜBİTAK zaman damgası
@@ -3710,6 +4008,13 @@ components:
             kullanılamadığı için tek başına bırakılırsa imzacı yöntemsiz kalır.
             En az bir `phone` olmayan yöntem bırakın.
 
+            `phone_draw` ("Yalnız telefonda çizerek") ayrı bir moddur ve YALNIZ
+            tek başına gönderilir: `["phone_draw"]`. Bilgisayardan açan imzacı
+            yalnız QR kod ile telefona yönlendirilir ve imzasını telefonda
+            çizer; telefondan açan imzacı yalnız çizerek imzalar. Başka bir
+            yöntemle birlikte gönderilirse 400
+            `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE` döner.
+
             Ayar sözleşme düzeyindedir; imzacı bazında farklılaştırılamaz.
             `party_mapping` girdilerine yazılan böyle bir alan yok sayılır.
           example:
@@ -3721,6 +4026,7 @@ components:
             - type
             - upload
             - phone
+            - phone_draw
             type: string
           maxItems: 4
           nullable: true
@@ -3896,6 +4202,28 @@ components:
           - address
           - iban
         variables_ignored: []
+        stamps_applied:
+        - item_id: 101
+          slug: firma_kasesi
+          document_id: 3f6c1a2e-8b4d-4e7a-9c11-2d5e8f0a7b33
+        variables_applied_by_document:
+          key:
+            _common:
+            - _common
+            - _common
+            _by_party:
+              key:
+              - _by_party
+              - _by_party
+        variables_ignored_by_document:
+          key:
+            _common:
+            - _common
+            - _common
+            _by_party:
+              key:
+              - _by_party
+              - _by_party
       properties:
         id:
           format: uuid
@@ -3961,6 +4289,54 @@ components:
           items:
             type: string
           type: array
+        stamps_applied:
+          description: |
+            Yalnız kaşe slug'ına `StampData` nesnesi gönderildiyse döner.
+            Nesne değerle doldurulan kaşe alanları (alan kimliği sözleşmeye
+            aittir, şablona değil).
+          example:
+          - item_id: 101
+            slug: firma_kasesi
+            document_id: 3f6c1a2e-8b4d-4e7a-9c11-2d5e8f0a7b33
+          items:
+            $ref: "#/components/schemas/CreatedDemand_stamps_applied_inner"
+          type: array
+        variables_applied_by_document:
+          additionalProperties:
+            $ref: "#/components/schemas/DocumentScopedSlugs"
+          description: |
+            Yalnız `document_variables` gönderildiyse döner. Belge kimliği →
+            belge kapsamından uygulanan slug'lar: `_common` (kök
+            `document_variables`) ve `_by_party` (template_party_id → slug'lar).
+          type: object
+        variables_ignored_by_document:
+          additionalProperties:
+            $ref: "#/components/schemas/DocumentScopedSlugs"
+          description: |
+            Yalnız `document_variables` gönderildiyse döner. Belge kapsamında
+            gönderilip O BELGEDE hiçbir alana yazılmayan slug'lar (aynı biçim).
+          type: object
+      type: object
+    DocumentScopedSlugs:
+      example:
+        _common:
+        - _common
+        - _common
+        _by_party:
+          key:
+          - _by_party
+          - _by_party
+      properties:
+        _common:
+          items:
+            type: string
+          type: array
+        _by_party:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
       type: object
     CreatedDemandUpload:
       example:
@@ -4404,7 +4780,9 @@ components:
             `signature` ve doldurulabilir alanlar (`dynamic_text`,
             `cells`, `date`, `dropdown`, `checkbox`, `radio`) için
             **zorunlu** — alanı dolduracak/imzalayacak partinin id'si
-            (`signing_urls[].party_id`). `text` ve `stamp` için null.
+            (`signing_urls[].party_id`). `text` için null. `stamp` için
+            yalnız `config.source: FILLER_PROVIDES` ise kaşeyi dolduracak
+            taraftır (zorunlu kaşede şart); diğer kaynaklarda yok sayılır.
           format: uuid
           nullable: true
           type: string
@@ -4462,7 +4840,24 @@ components:
             - `date`: `{ defaultSource, defaultValue }`
             - `dropdown`/`radio`: `{ options: [{label, value}], defaultValue }`
             - `checkbox`: `{ checkedByDefault }`
-            - `stamp`: `{ stampData }` (base64 data URL)
+            - `stamp`: `{ source, stampData, isRequired }`: `source` =
+              `INLINE` | `FROM_SAVED` | `FILLER_PROVIDES`; `stampData` =
+              yapılandırılmış kaşe verisi (bkz. `StampData`)
+            - `signature`: `{ requireFirstSignatureOtp: true }` (opsiyonel,
+              varsayılan kapalı). Açıksa imzacı, zarftaki İLK imzasını atarken
+              tarafın telefon numarasına gönderilen SMS kodunu doğrular;
+              girişteki telefon doğrulama adımı bu taraf için gösterilmez.
+              Bu taraf için sözleşme içeriği, imza bağlantısına sahip kişi
+              tarafından kod girilmeden görüntülenebilir. Sözleşmede telefon
+              doğrulaması da açıksa, imza içermeyen kararlar (ör. isteğe
+              bağlı bir belgeyi onaylamamak) ayrı bir SMS koduyla
+              doğrulanır; bu durumda ilk imzada yeniden kod istenir. Yalnız
+              imzacı tarafa atanmış imza alanında ve geçerli cep telefonu
+              numarası olan tarafta kullanılabilir. Nitelikli e-imza (NES),
+              onaycı ve kendi kendine imza akışlarında desteklenmez; bu
+              durumda gönderim ya da alan kaydı imza bağlantısı
+              üretilmeden `400 FIRST_SIGNATURE_OTP_UNSUPPORTED` ile
+              reddedilir. Taraf imzalamaya başladıktan sonra açılamaz.
           nullable: true
           type: object
       required:
@@ -4578,8 +4973,90 @@ components:
           rejected: true
           rejected_at: 2000-01-23T04:56:07.000+00:00
           signing_url: https://openapi-generator.tech
+        stamp_items:
+        - item_id: 4821
+          page_id: 12345
+          document_id: document_id
+          slug: firma_kasesi
+          label: Firma kaşesi
+          source: INLINE
+          party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          is_required: true
+        - item_id: 4821
+          page_id: 12345
+          document_id: document_id
+          slug: firma_kasesi
+          label: Firma kaşesi
+          source: INLINE
+          party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          is_required: true
         result_url: https://openapi-generator.tech
         pdf_url: https://openapi-generator.tech
+        documents:
+        - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          order: 0
+          title: title
+          doc_kind: CONTRACT
+          is_required: true
+          signature_required: true
+          assigned_party_ids:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          progress:
+            status: PENDING
+            active_assigned_party_count: 6
+            decided_party_count: 1
+            completed_at: 2000-01-23T04:56:07.000+00:00
+          sealing:
+            status: NONE
+            has_timestamp: true
+          decisions:
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+        - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          order: 0
+          title: title
+          doc_kind: CONTRACT
+          is_required: true
+          signature_required: true
+          assigned_party_ids:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          progress:
+            status: PENDING
+            active_assigned_party_count: 6
+            decided_party_count: 1
+            completed_at: 2000-01-23T04:56:07.000+00:00
+          sealing:
+            status: NONE
+            has_timestamp: true
+          decisions:
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
       properties:
         id:
           format: uuid
@@ -4605,6 +5082,13 @@ components:
           items:
             $ref: "#/components/schemas/DemandStatus_parties_inner"
           type: array
+        stamp_items:
+          description: |
+            Sözleşmedeki kaşe alanları. `PATCH /api/v1/demands/{id}/items/{itemId}/stamp`
+            için alan kimliği buradan alınır. Kaşe içeriği bu listede dönmez.
+          items:
+            $ref: "#/components/schemas/DemandStatus_stamp_items_inner"
+          type: array
         result_url:
           format: uri
           type: string
@@ -4613,6 +5097,302 @@ components:
           format: uri
           nullable: true
           type: string
+        documents:
+          description: |
+            Zarftaki belgelerin her biri için ayrı durum, `order` sırasıyla.
+            Zarf genelindeki `status` alanı değişmez; bu liste hangi belgenin
+            ne zaman tamamlandığını, hangisinin beklediğini, mühür durumunu ve
+            her tarafın belge başına kararını ayrıca gösterir. Belge kaydı
+            bulunmayan eski sözleşmelerde boş dizi döner.
+          items:
+            $ref: "#/components/schemas/DemandDocumentStatus"
+          type: array
+      type: object
+    DemandDocumentStatus:
+      description: Zarftaki tek bir belgenin durumu.
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        order: 0
+        title: title
+        doc_kind: CONTRACT
+        is_required: true
+        signature_required: true
+        assigned_party_ids:
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        progress:
+          status: PENDING
+          active_assigned_party_count: 6
+          decided_party_count: 1
+          completed_at: 2000-01-23T04:56:07.000+00:00
+        sealing:
+          status: NONE
+          has_timestamp: true
+        decisions:
+        - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          decision: PENDING
+          decided_at: 2000-01-23T04:56:07.000+00:00
+          withdrawn_at: 2000-01-23T04:56:07.000+00:00
+          signature_collected: true
+          recorded: true
+          consent_granted: true
+        - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          decision: PENDING
+          decided_at: 2000-01-23T04:56:07.000+00:00
+          withdrawn_at: 2000-01-23T04:56:07.000+00:00
+          signature_collected: true
+          recorded: true
+          consent_granted: true
+      properties:
+        id:
+          format: uuid
+          type: string
+        order:
+          description: 1'den başlar.
+          type: integer
+        title:
+          type: string
+        doc_kind:
+          enum:
+          - CONTRACT
+          - KVKK_NOTICE
+          - KVKK_CONSENT
+          - PREINFO
+          - PRICE_LIST
+          - OTHER
+          type: string
+        is_required:
+          type: boolean
+        signature_required:
+          type: boolean
+        assigned_party_ids:
+          items:
+            format: uuid
+            type: string
+          type: array
+        progress:
+          $ref: "#/components/schemas/DocumentProgress"
+        sealing:
+          $ref: "#/components/schemas/DocumentSealing"
+        decisions:
+          items:
+            $ref: "#/components/schemas/DocumentPartyDecision"
+          type: array
+      type: object
+    DocumentProgress:
+      description: |
+        Belgeye atanmış tarafların karar ilerlemesi. Mühürden ve rızadan
+        bağımsızdır: `COMPLETED`, belgeye atanmış tüm tarafların bu belge için
+        karar verdiğini gösterir (isteğe bağlı bir belgede ret de karardır).
+      example:
+        status: PENDING
+        active_assigned_party_count: 6
+        decided_party_count: 1
+        completed_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        status:
+          description: |
+            `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir
+            kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
+          enum:
+          - PENDING
+          - PARTIAL
+          - COMPLETED
+          type: string
+        active_assigned_party_count:
+          description: Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.
+          type: integer
+        decided_party_count:
+          description: Bunlardan bu belge için karar vermiş olanların sayısı.
+          type: integer
+        completed_at:
+          description: |
+            Belgenin kendi tamamlanma anı. Sistem bu anı kaydetmediyse `null`
+            döner; zarfın tamamlanma zamanı bu alana kopyalanmaz.
+          format: date-time
+          nullable: true
+          type: string
+      type: object
+    DocumentSealing:
+      description: Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
+      example:
+        status: NONE
+        has_timestamp: true
+      properties:
+        status:
+          enum:
+          - NONE
+          - PENDING
+          - SEALED
+          - FAILED
+          type: string
+        has_timestamp:
+          description: Yalnız `status` `SEALED` iken `true` olabilir.
+          type: boolean
+      type: object
+    DocumentPartyDecision:
+      description: |
+        Bir tarafın bu belge için kararı. Kişisel veri (ad, e-posta, telefon)
+        içermez; tarafı `party_id` ile `parties` listesiyle eşleyin.
+      example:
+        party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        decision: PENDING
+        decided_at: 2000-01-23T04:56:07.000+00:00
+        withdrawn_at: 2000-01-23T04:56:07.000+00:00
+        signature_collected: true
+        recorded: true
+        consent_granted: true
+      properties:
+        party_id:
+          format: uuid
+          type: string
+        decision:
+          description: |
+            Yürürlükteki karar. `PENDING` karar verilmediğini gösterir.
+            `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini
+            gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
+          enum:
+          - PENDING
+          - ACCEPTED
+          - DECLINED
+          - WITHDRAWN
+          type: string
+        decided_at:
+          description: |
+            Kararın verildiği an. `WITHDRAWN` için geri çekilen onayın anıdır.
+            `recorded` `false` iken `null` döner.
+          format: date-time
+          nullable: true
+          type: string
+        withdrawn_at:
+          description: Yalnız `WITHDRAWN` için dolu; geri çekme anı.
+          format: date-time
+          nullable: true
+          type: string
+        signature_collected:
+          description: Bu kararla birlikte bu belgede dijital imza toplandı mı.
+          type: boolean
+        recorded:
+          description: |
+            `false` ise karar belge bazında kayıtlı değildir; tek belgeli eski
+            sözleşmelerde tarafın imzasından türetilmiştir ve karar delili
+            olarak kullanılamaz.
+          type: boolean
+        consent_granted:
+          description: |
+            Yalnız `KVKK_CONSENT` belgesinde dolu. Taraf bu belgeyi onaylamış
+            ve onayını geri çekmemişse `true`; reddetmiş, geri çekmiş veya
+            karar vermemişse `false`. Bu alan yalnızca platformdaki onay
+            kaydını yansıtır; açık rızanın KVKK anlamında hukuken geçerli olup
+            olmadığını (belirli konuya ilişkin olması, bilgilendirmeye
+            dayanması, özgür iradeyle verilmesi) imzala.org değerlendirmez.
+            Reddedilen isteğe bağlı bir rıza hizmetin koşulu yapılmamalıdır.
+            Diğer belge türlerinde `null`.
+          nullable: true
+          type: boolean
+      type: object
+    StampData:
+      additionalProperties: false
+      description: |
+        Yapılandırılmış kaşe verisi. Tüm alanlar isteğe bağlıdır. PATCH
+        isteğinde `null` veya boş string alanı kaldırır.
+
+        Belgeye yalnız gerekli kişisel veriyi yazın; bu verilerin hukuka
+        uygunluğu ve aydınlatması sizin sorumluluğunuzdadır.
+      properties:
+        companyName:
+          example: Örnek Ltd.
+          maxLength: 500
+          nullable: true
+          type: string
+        personalName:
+          example: Ayşe Yılmaz
+          maxLength: 500
+          nullable: true
+          type: string
+        address:
+          maxLength: 500
+          nullable: true
+          type: string
+        companyAddress:
+          example: "Kadıköy, İstanbul"
+          maxLength: 500
+          nullable: true
+          type: string
+        personalAddress:
+          maxLength: 500
+          nullable: true
+          type: string
+        taxNumber:
+          example: "1234567890"
+          maxLength: 500
+          nullable: true
+          type: string
+        taxOffice:
+          example: Kadıköy
+          maxLength: 500
+          nullable: true
+          type: string
+        idNumber:
+          maxLength: 500
+          nullable: true
+          type: string
+        phone:
+          maxLength: 500
+          nullable: true
+          type: string
+        companyPhone:
+          example: "+905551112233"
+          maxLength: 500
+          nullable: true
+          type: string
+        personalPhone:
+          maxLength: 500
+          nullable: true
+          type: string
+        email:
+          example: ayse@example.com
+          maxLength: 500
+          nullable: true
+          type: string
+      type: object
+    PatchStampItemRequest:
+      additionalProperties: false
+      example:
+        stamp_data:
+          companyName: Örnek Ltd.
+          taxNumber: "1234567890"
+          taxOffice: Kadıköy
+          companyPhone: "+905551112233"
+      properties:
+        stamp_data:
+          allOf:
+          - $ref: "#/components/schemas/StampData"
+          minProperties: 1
+        document_id:
+          description: Verilirse kaşe bu belgede olmalıdır (çok belgeli zarf).
+          type: string
+      required:
+      - stamp_data
+      type: object
+    PatchStampItemResponse:
+      example:
+        success: true
+        data:
+          item_id: 4821
+          page_id: 12345
+          document_id: document_id
+          party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          source: INLINE
+          is_required: true
+          stamp_data:
+            key: ""
+      properties:
+        success:
+          example: true
+          type: boolean
+        data:
+          $ref: "#/components/schemas/PatchStampItemResponse_data"
       type: object
     WebhookEnvelope:
       description: |
@@ -5072,6 +5852,23 @@ components:
         has_timestamp: true
         page_count: 1
         completed_at: 2000-01-23T04:56:07.000+00:00
+        progress: ""
+        sealing: ""
+        decisions:
+        - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          decision: PENDING
+          decided_at: 2000-01-23T04:56:07.000+00:00
+          withdrawn_at: 2000-01-23T04:56:07.000+00:00
+          signature_collected: true
+          recorded: true
+          consent_granted: true
+        - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          decision: PENDING
+          decided_at: 2000-01-23T04:56:07.000+00:00
+          withdrawn_at: 2000-01-23T04:56:07.000+00:00
+          signature_collected: true
+          recorded: true
+          consent_granted: true
       properties:
         id:
           format: uuid
@@ -5124,6 +5921,22 @@ components:
           format: date-time
           nullable: true
           type: string
+        progress:
+          allOf:
+          - $ref: "#/components/schemas/DocumentProgress"
+          description: Yalnız `GET .../documents` liste yanıtında bulunur.
+        sealing:
+          allOf:
+          - $ref: "#/components/schemas/DocumentSealing"
+          description: Yalnız `GET .../documents` liste yanıtında bulunur.
+        decisions:
+          description: |
+            Yalnız `GET .../documents` liste yanıtında bulunur. Belge başına
+            taraf kararları; `GET /api/v1/demands/{id}` yanıtındaki
+            `documents[].decisions` ile aynıdır.
+          items:
+            $ref: "#/components/schemas/DocumentPartyDecision"
+          type: array
       type: object
     _api_v1_templates_get_200_response_data:
       example:
@@ -5432,6 +6245,7 @@ components:
             default_source: default_source
             auto_filled: true
             template_party_id: template_party_id
+            template_document_id: template_document_id
             note: note
           - slug: slug
             label: label
@@ -5440,7 +6254,17 @@ components:
             default_source: default_source
             auto_filled: true
             template_party_id: template_party_id
+            template_document_id: template_document_id
             note: note
+          documents:
+          - template_document_id: template_document_id
+            title: title
+            order: 1
+            default_included: true
+          - template_document_id: template_document_id
+            title: title
+            order: 1
+            default_included: true
           example_request:
             curl: curl
             json: "{}"
@@ -5586,6 +6410,28 @@ components:
             - address
             - iban
           variables_ignored: []
+          stamps_applied:
+          - item_id: 101
+            slug: firma_kasesi
+            document_id: 3f6c1a2e-8b4d-4e7a-9c11-2d5e8f0a7b33
+          variables_applied_by_document:
+            key:
+              _common:
+              - _common
+              - _common
+              _by_party:
+                key:
+                - _by_party
+                - _by_party
+          variables_ignored_by_document:
+            key:
+              _common:
+              - _common
+              - _common
+              _by_party:
+                key:
+                - _by_party
+                - _by_party
       properties:
         success:
           type: boolean
@@ -5693,8 +6539,10 @@ components:
             sırasıdır, gönderilmezse şablon, sonra organizasyon ayarı
             devralınır, boş dizi veya tanınmayan değer yok sayılır.
             Yalnız `phone` içeren liste tüm batch'i 400
-            `SIGNATURE_VARIANTS_PHONE_ONLY` ile reddeder (hiçbir
-            sözleşme oluşturulmaz).
+            `SIGNATURE_VARIANTS_PHONE_ONLY` ile, `phone_draw`'ı başka
+            bir yöntemle birleştiren liste 400
+            `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE` ile reddeder
+            (hiçbir sözleşme oluşturulmaz).
           example:
           - type
           - draw
@@ -5704,6 +6552,7 @@ components:
             - type
             - upload
             - phone
+            - phone_draw
             type: string
           maxItems: 4
           nullable: true
@@ -5791,12 +6640,14 @@ components:
       type: object
     _api_v1_demands_bulk_post_200_response_data_results_inner_details:
       description: "Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document\
-        \ | conflict | empty) ve varsa document_ids."
+        \ | conflict | empty) ve varsa document_ids. error=INVALID_DOCUMENT_VARIABLES\
+        \ ise: reason (unsupported_endpoint) ve path."
       example:
         reason: reason
         document_ids:
         - document_ids
         - document_ids
+        path: path
       properties:
         reason:
           type: string
@@ -5804,6 +6655,8 @@ components:
           items:
             type: string
           type: array
+        path:
+          type: string
       type: object
     _api_v1_demands_bulk_post_200_response_data_results_inner_signing_urls_inner:
       example:
@@ -5845,6 +6698,7 @@ components:
           document_ids:
           - document_ids
           - document_ids
+          path: path
         signing_urls:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           first_name: first_name
@@ -5906,8 +6760,8 @@ components:
         error:
           description: "status=failed ise makinece okunabilir kod (VALIDATION, INSUFFICIENT_CREDITS,\
             \ MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION,\
-            \ TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED,\
-            \ CREATE_FAILED vb.)"
+            \ INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,\
+            \ RECONCILE_FAILED, CREATE_FAILED vb.)"
           type: string
         message:
           description: status=failed ise açıklama
@@ -5934,6 +6788,7 @@ components:
             document_ids:
             - document_ids
             - document_ids
+            path: path
           signing_urls:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             first_name: first_name
@@ -5965,6 +6820,7 @@ components:
             document_ids:
             - document_ids
             - document_ids
+            path: path
           signing_urls:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             first_name: first_name
@@ -6023,6 +6879,7 @@ components:
               document_ids:
               - document_ids
               - document_ids
+              path: path
             signing_urls:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               first_name: first_name
@@ -6054,6 +6911,7 @@ components:
               document_ids:
               - document_ids
               - document_ids
+              path: path
             signing_urls:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               first_name: first_name
@@ -6104,8 +6962,90 @@ components:
             rejected: true
             rejected_at: 2000-01-23T04:56:07.000+00:00
             signing_url: https://openapi-generator.tech
+          stamp_items:
+          - item_id: 4821
+            page_id: 12345
+            document_id: document_id
+            slug: firma_kasesi
+            label: Firma kaşesi
+            source: INLINE
+            party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            is_required: true
+          - item_id: 4821
+            page_id: 12345
+            document_id: document_id
+            slug: firma_kasesi
+            label: Firma kaşesi
+            source: INLINE
+            party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            is_required: true
           result_url: https://openapi-generator.tech
           pdf_url: https://openapi-generator.tech
+          documents:
+          - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            order: 0
+            title: title
+            doc_kind: CONTRACT
+            is_required: true
+            signature_required: true
+            assigned_party_ids:
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            progress:
+              status: PENDING
+              active_assigned_party_count: 6
+              decided_party_count: 1
+              completed_at: 2000-01-23T04:56:07.000+00:00
+            sealing:
+              status: NONE
+              has_timestamp: true
+            decisions:
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+          - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            order: 0
+            title: title
+            doc_kind: CONTRACT
+            is_required: true
+            signature_required: true
+            assigned_party_ids:
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            progress:
+              status: PENDING
+              active_assigned_party_count: 6
+              decided_party_count: 1
+              completed_at: 2000-01-23T04:56:07.000+00:00
+            sealing:
+              status: NONE
+              has_timestamp: true
+            decisions:
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
       properties:
         success:
           type: boolean
@@ -6279,6 +7219,11 @@ components:
             )"
           type: string
         title:
+          description: |
+            Sözleşme başlığı (boşsa varsayılan bir başlık
+            kullanılır). Başlık, imza davet ve hatırlatma
+            SMS'lerinde imzacının telefon ekranında görünebilir;
+            kişisel veya gizli bilgi yazmayın.
           type: string
         description:
           type: string
@@ -6908,6 +7853,23 @@ components:
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
+          progress: ""
+          sealing: ""
+          decisions:
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
@@ -6922,6 +7884,23 @@ components:
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
+          progress: ""
+          sealing: ""
+          decisions:
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
       properties:
         documents:
           items:
@@ -6947,6 +7926,23 @@ components:
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
+            progress: ""
+            sealing: ""
+            decisions:
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
@@ -6961,6 +7957,23 @@ components:
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
+            progress: ""
+            sealing: ""
+            decisions:
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
       properties:
         success:
           type: boolean
@@ -7014,6 +8027,23 @@ components:
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
+          progress: ""
+          sealing: ""
+          decisions:
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
+          - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            decision: PENDING
+            decided_at: 2000-01-23T04:56:07.000+00:00
+            withdrawn_at: 2000-01-23T04:56:07.000+00:00
+            signature_collected: true
+            recorded: true
+            consent_granted: true
       properties:
         document:
           $ref: "#/components/schemas/EnvelopeDocument"
@@ -7037,6 +8067,23 @@ components:
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
+            progress: ""
+            sealing: ""
+            decisions:
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
+            - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              decision: PENDING
+              decided_at: 2000-01-23T04:56:07.000+00:00
+              withdrawn_at: 2000-01-23T04:56:07.000+00:00
+              signature_collected: true
+              recorded: true
+              consent_granted: true
       properties:
         success:
           type: boolean
@@ -7885,6 +8932,7 @@ components:
         default_source: default_source
         auto_filled: true
         template_party_id: template_party_id
+        template_document_id: template_document_id
         note: note
       properties:
         slug:
@@ -7903,8 +8951,33 @@ components:
         template_party_id:
           nullable: true
           type: string
+        template_document_id:
+          description: |
+            Alanın bulunduğu şablon belgesi (`document_variables`
+            anahtarı). Aynı slug birden fazla belgede geçiyorsa belge
+            başına ayrı satır döner.
+          nullable: true
+          type: string
         note:
           type: string
+      type: object
+    TemplateUsage_documents_inner:
+      example:
+        template_document_id: template_document_id
+        title: title
+        order: 1
+        default_included: true
+      properties:
+        template_document_id:
+          type: string
+        title:
+          type: string
+        order:
+          type: integer
+        default_included:
+          description: '`documents` seçimi gönderilmezse bu belge sözleşmeye girer
+            mi.'
+          type: boolean
       type: object
     TemplateUsage_example_request:
       example:
@@ -7915,8 +8988,9 @@ components:
           description: "curl komutu, slug'lar dolu"
           type: string
         json:
-          description: "JSON payload, multi-party-aware (party_mapping[].variables\
-            \ + root variables)"
+          description: "JSON payload, multi-party ve belge farkında (party_mapping[].variables\
+            \ + root variables; aynı slug birden fazla belgede geçiyorsa document_variables\
+            \ ile belge başına farklı değer)"
           type: object
       type: object
     PartyMappingInput_variables_value:
@@ -7925,6 +8999,7 @@ components:
       - type: string
       - type: number
       - type: boolean
+      - $ref: "#/components/schemas/StampData"
     CreatedDemand_signing_urls_inner:
       example:
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -7950,6 +9025,18 @@ components:
         signing_url:
           example: https://e.imzala.org/imza/<party_id>
           format: uri
+          type: string
+      type: object
+    CreatedDemand_stamps_applied_inner:
+      properties:
+        item_id:
+          type: integer
+        slug:
+          type: string
+        document_id:
+          description: Kaşenin bulunduğu sözleşme belgesi (tek belgeli eski sözleşmede
+            null olabilir).
+          nullable: true
           type: string
       type: object
     CreatedDemandUpload_dispatch_results_inner:
@@ -8250,6 +9337,85 @@ components:
         signing_url:
           format: uri
           type: string
+      type: object
+    DemandStatus_stamp_items_inner:
+      example:
+        item_id: 4821
+        page_id: 12345
+        document_id: document_id
+        slug: firma_kasesi
+        label: Firma kaşesi
+        source: INLINE
+        party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        is_required: true
+      properties:
+        item_id:
+          example: 4821
+          type: integer
+        page_id:
+          example: 12345
+          type: integer
+        document_id:
+          nullable: true
+          type: string
+        slug:
+          example: firma_kasesi
+          nullable: true
+          type: string
+        label:
+          example: Firma kaşesi
+          nullable: true
+          type: string
+        source:
+          enum:
+          - INLINE
+          - FROM_SAVED
+          - FILLER_PROVIDES
+          type: string
+        party_id:
+          description: Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf
+          format: uuid
+          nullable: true
+          type: string
+        is_required:
+          type: boolean
+      type: object
+    PatchStampItemResponse_data:
+      example:
+        item_id: 4821
+        page_id: 12345
+        document_id: document_id
+        party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        source: INLINE
+        is_required: true
+        stamp_data:
+          key: ""
+      properties:
+        item_id:
+          example: 4821
+          type: integer
+        page_id:
+          example: 12345
+          type: integer
+        document_id:
+          nullable: true
+          type: string
+        party_id:
+          format: uuid
+          nullable: true
+          type: string
+        source:
+          description: Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
+          enum:
+          - INLINE
+          - FILLER_PROVIDES
+          type: string
+        is_required:
+          type: boolean
+        stamp_data:
+          additionalProperties: true
+          description: Güncelleme sonrası kaşe verisinin tamamı.
+          type: object
       type: object
     WebhookDataDemandCompleted_parties_inner:
       properties:
