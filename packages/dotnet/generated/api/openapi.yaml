@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.22 · **Son güncelleme:** 2026-09-23
+    **Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -265,7 +265,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.22
+  version: 1.8.23
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -710,10 +710,10 @@ paths:
                   title: Kira Sözleşmesi - Mayıs 2026
                   party_mapping:
                   - template_party_id: <kiraya-veren-id>
-                    first_name: Ali
-                    last_name: Yilmaz
-                    email: ali@x.com
-                    phone: "+905551111111"
+                    first_name: Ayşe
+                    last_name: Yılmaz
+                    email: ayse@example.com
+                    phone: "+905551112233"
                     government_id: "12345678901"
                     variables:
                       address: Kiraya verenin adresi
@@ -721,8 +721,7 @@ paths:
                   - template_party_id: <kiraci-id>
                     first_name: Veli
                     last_name: Demir
-                    email: veli@x.com
-                    phone: "+905552222222"
+                    email: veli@example.com
                     government_id: "10987654321"
                     variables:
                       address: Kiracının adresi
@@ -3780,7 +3779,7 @@ components:
           format: email
           type: string
         phone:
-          description: E.164 format (örn. "+905551234567")
+          description: E.164 format (örn. "+905551112233")
           type: string
         government_id:
           description: TC kimlik no (11 hane)
@@ -6579,7 +6578,7 @@ components:
           format: email
           type: string
         phone:
-          description: "E.164 biçiminde telefon (ör. `+905551234567`). Ülke kodu ile\
+          description: "E.164 biçiminde telefon (ör. `+905551112233`). Ülke kodu ile\
             \ birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, `+90\
             \ 0542…`) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanı\
             r. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir."
@@ -9320,7 +9319,7 @@ components:
           description: Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme
           type: string
         email_masked:
-          description: Maskeli e-posta (ah***@x.com)
+          description: Maskeli e-posta (ay***@example.com)
           type: string
         signed:
           type: boolean

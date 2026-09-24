@@ -3,7 +3,7 @@ apply plugin: 'eclipse'
 apply plugin: 'com.diffplug.spotless'
 
 group = 'org.imzala'
-version = '1.8.22'
+version = '1.8.23'
 
 buildscript {
     repositories {

@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **FirstName** | **string** |  | [optional] 
 **LastName** | **string** |  | [optional] 
 **Email** | **string** |  | [optional] 
-**Phone** | **string** | E.164 biçiminde telefon (ör. &#x60;+905551234567&#x60;). Ülke kodu ile birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, &#x60;+90 0542…&#x60;) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanır. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir. | [optional] 
+**Phone** | **string** | E.164 biçiminde telefon (ör. &#x60;+905551112233&#x60;). Ülke kodu ile birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, &#x60;+90 0542…&#x60;) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanır. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir. | [optional] 
 **GovernmentId** | **string** | T.C. kimlik numarası (11 hane) | [optional] 
 **BirthDate** | **DateOnly** | ISO 8601 (ör. 1990-05-15) | [optional] 
 **SendSms** | **bool** |  | [optional] [default to true]

@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **party_id** | **string** |  | [optional]
 **name** | **string** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme | [optional]
-**email_masked** | **string** | Maskeli e-posta (ah***@x.com) | [optional]
+**email_masked** | **string** | Maskeli e-posta (ay***@example.com) | [optional]
 **signed** | **bool** |  | [optional]
 **signed_at** | **\DateTime** |  | [optional]
 **rejected** | **bool** |  | [optional]

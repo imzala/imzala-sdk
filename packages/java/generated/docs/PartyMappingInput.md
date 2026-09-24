@@ -11,7 +11,7 @@
 |**firstName** | **String** |  |  |
 |**lastName** | **String** |  |  |
 |**email** | **String** | email VEYA phone&#39;dan en az biri zorunlu |  [optional] |
-|**phone** | **String** | E.164 format (örn. \&quot;+905551234567\&quot;) |  [optional] |
+|**phone** | **String** | E.164 format (örn. \&quot;+905551112233\&quot;) |  [optional] |
 |**governmentId** | **String** | TC kimlik no (11 hane) |  [optional] |
 |**birthDate** | **LocalDate** | ISO 8601 (örn. \&quot;1990-05-15\&quot;) |  [optional] |
 |**sendSms** | **Boolean** |  |  [optional] |
