@@ -131,6 +131,7 @@ Tüm metodlar `{ success, data }` zarfını açar ve `data`'yı döndürür; hat
 | `Demands.ResendPartyAsync(Guid id, Guid partyId)` | Tekil tarafa daveti tekrar gönder | ❌ POST |
 | `Demands.DeleteAsync(Guid id)` | Tamamlanmamış sözleşmeyi sil | ❌ DELETE |
 | `Demands.AddItemsAsync(Guid id, UpsertItemsRequest body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | ❌ POST |
+| `Demands.UpdateStampAsync(Guid id, int itemId, PatchStampItemRequest body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `null` bırakılan özellik gönderilmez ve korunur, `""` alanı kaldırır; `DEMAND_PARTIALLY_SIGNED`) | ❌ PATCH |
 | `Demands.SendReminderAsync(Guid id, TriggerReminderRequest? body)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `Force = true` aşar) | ❌ POST |
 | `Demands.DispatchAsync(Guid id)` / `DispatchAsync(id, bool)` / `DispatchAsync(id, string sendInvitations)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | ❌ POST |
 
@@ -320,7 +321,7 @@ Her iki metod da yalnızca `Status == COMPLETED` sözleşmeler için sonuç üre
 
 1. **Okumalar (GET):** `Templates.ListAsync/GetAsync/UsageAsync/ListAllAsync`, `Demands.ListAsync/GetAsync/GetTimelineAsync`, `FieldTemplates.ListAsync/GetAsync`, `Contacts.ListAsync/ListAllAsync`, `Timestamps.ListAsync/GetAsync`, `Reports.GetAsync`, `Demands.Documents.ListAsync` ve `MeAsync` `429` veya `5xx` aldığında en çok `maxRetries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır. Başka her durum (400/401/404/409/422/...) hemen fırlatılır. Binary indirmeler (`GetPdfAsync` / `GetDocumentPdfAsync` / `GetCertificateAsync`) ham akış döndürdükleri için bu kapsamda değildir.
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `Demands.CreateAsync(body, idempotencyKey)`, `UploadDocumentAsync` (`UploadDemandParams.IdempotencyKey`), `Timestamps.CreateAsync` (`CreateTimestampParams.IdempotencyKey`) ve `Demands.Documents.UploadAsync` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İstek (dosya akışları dahil) tekrar için yeniden kurulur, tüketilmiş bir akış boş gönderilmez. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `maxRetries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `CreateBulkAsync`, `Contacts.CreateAsync`, `DispatchAsync`, `SendReminderAsync`, `CancelAsync`, `ResendPartyAsync`, `DeleteAsync`, `AddItemsAsync`, `Templates.UpdateAsync/DeleteAsync`, `Embed.CreateSessionAsync` ve zarf belgesi `CreateAsync/UpdateAsync/DeleteAsync/ReorderAsync/SetAssignmentsAsync`. Tekrarlanan bir `CreateBulkAsync` ikinci bir toplu iş, tekrarlanan bir `SendReminderAsync` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `CreateBulkAsync`, `Contacts.CreateAsync`, `DispatchAsync`, `SendReminderAsync`, `CancelAsync`, `ResendPartyAsync`, `DeleteAsync`, `AddItemsAsync`, `UpdateStampAsync`, `Templates.UpdateAsync/DeleteAsync`, `Embed.CreateSessionAsync` ve zarf belgesi `CreateAsync/UpdateAsync/DeleteAsync/ReorderAsync/SetAssignmentsAsync`. Tekrarlanan bir `CreateBulkAsync` ikinci bir toplu iş, tekrarlanan bir `SendReminderAsync` ikinci bir SMS/e-posta üretir.
 
 ```csharp
 var imzala = new Imzala(apiKey, maxRetries: 2, retryBaseDelayMs: 300); // varsayılanlar

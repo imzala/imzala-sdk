@@ -132,6 +132,7 @@ Tüm resource metodları `{ success, data }` zarfını açar ve `data`'yı (vend
 | `demands()->resendParty($id, $partyId)` | Tekil tarafa daveti tekrar gönder | ❌ POST |
 | `demands()->delete($id)` | Tamamlanmamış sözleşmeyi sil | ❌ DELETE |
 | `demands()->addItems($id, $body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | ❌ POST |
+| `demands()->updateStamp($id, $itemId, $body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `null`/`''` alanı kaldırır, gönderilmeyen korunur; `DEMAND_PARTIALLY_SIGNED`) | ❌ PATCH |
 | `demands()->sendReminder($id, $body?)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `['force' => true]` aşar) | ❌ POST |
 | `demands()->dispatch($id, $sendInvitations?)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | ❌ POST |
 
@@ -364,7 +365,7 @@ file_put_contents('sertifika.pdf', $imzala->demands()->getCertificate($id, 'tr')
 
 1. **Okumalar (GET):** `demands()->list/get/getTimeline`, `templates()->list/get/usage/listAll`, `fieldTemplates()->list/get`, `contacts()->list/listAll`, `timestamps()->list/get`, `reports()->get()`, `demands()->documents()->list()` ve `me()` 429 veya 5xx aldığında en çok `maxRetries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır. Binary indirmeler (`getPdf` / `getDocumentPdf` / `getCertificate`) bu kapsamda değildir.
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `demands()->create($body, $idempotencyKey)`, `uploadDocument()` (`withIdempotencyKey()`), `timestamps()->create()` (`withIdempotencyKey()`) ve `demands()->documents()->upload()` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `maxRetries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts()->create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `templates()->update/delete`, `embed()->createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts()->create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `updateStamp`, `templates()->update/delete`, `embed()->createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
 
 Bekleme süresi `Retry-After` başlığından okunur (saniye ya da HTTP tarihi); başlık yoksa backoff gecikmesi uygulanır. **Bekleme tavanı 60 saniyedir:** sunucu daha uzun bir süre isterse SDK beklemek yerine 429'u fırlatır (`ImzalaRateLimitException::getRetryAfter()` süreyi taşır). `NAN`, sonsuz ve negatif `Retry-After` değerleri yok sayılır.
 

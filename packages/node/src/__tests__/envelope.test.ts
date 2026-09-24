@@ -273,6 +273,31 @@ describe('demands.documents: feature switched off', () => {
   });
 });
 
+describe('demands.updateStamp', () => {
+  it('PATCHes one stamp item with demandId and itemId in their own slots', async () => {
+    const updated = { item_id: 42, source: 'INLINE', stamp_data: { companyName: 'Örnek Ltd.' } };
+    const srv = await startServer([ok(updated)]);
+    const result = await client(srv.baseUrl).demands.updateStamp(DEMAND, 42, {
+      stamp_data: { companyName: 'Örnek Ltd.', companyPhone: '+905551112233', taxOffice: null },
+      document_id: DOC,
+    });
+    expect(result).toEqual(updated);
+    expect(srv.calls[0].method).toBe('PATCH');
+    expect(srv.calls[0].url).toBe(`/api/v1/demands/${DEMAND}/items/42/stamp`);
+    expect(JSON.parse(srv.calls[0].body)).toEqual({
+      stamp_data: { companyName: 'Örnek Ltd.', companyPhone: '+905551112233', taxOffice: null },
+      document_id: DOC,
+    });
+  });
+
+  it('surfaces DEMAND_PARTIALLY_SIGNED as a typed error', async () => {
+    const srv = await startServer([{ status: 409, body: { success: false, error: 'x', code: 'DEMAND_PARTIALLY_SIGNED' } }]);
+    const err = await client(srv.baseUrl).demands.updateStamp(DEMAND, 42, { stamp_data: { companyName: 'X' } }).catch((e) => e);
+    expect(err).toBeInstanceOf(ImzalaError);
+    expect(err.code).toBe('DEMAND_PARTIALLY_SIGNED');
+  });
+});
+
 describe('writes without an idempotency key are never retried', () => {
   it.each([
     ['documents.create', (c: Imzala) => c.demands.documents.create(DEMAND, { title: 'T' })],
@@ -281,6 +306,7 @@ describe('writes without an idempotency key are never retried', () => {
     ['documents.reorder', (c: Imzala) => c.demands.documents.reorder(DEMAND, [DOC])],
     ['documents.setAssignments', (c: Imzala) => c.demands.documents.setAssignments(DEMAND, DOC, [PARTY])],
     ['dispatch', (c: Imzala) => c.demands.dispatch(DEMAND)],
+    ['updateStamp', (c: Imzala) => c.demands.updateStamp(DEMAND, 42, { stamp_data: { companyName: 'X' } })],
   ])('%s: a 429 is thrown after exactly one request', async (_name, call) => {
     const srv = await startServer([rateLimited, ok({})]);
     await expect(call(client(srv.baseUrl))).rejects.toBeInstanceOf(ImzalaRateLimitError);

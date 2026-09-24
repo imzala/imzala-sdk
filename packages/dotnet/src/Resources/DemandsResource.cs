@@ -154,6 +154,21 @@ public sealed class DemandsResource
         Http.Unwrap(_api.ApiV1DemandsIdItemsPostAsync(id, body, cancellationToken), r => r.Success, r => r.Data);
 
     /// <summary>
+    /// Fills ONE existing stamp (kaşe) field with structured data and leaves
+    /// every other field untouched (<see cref="AddItemsAsync"/> rewrites them
+    /// all). <paramref name="itemId"/> is <c>stamp_items[].item_id</c> from
+    /// <see cref="GetAsync"/>. Partial update: a set <see cref="StampData"/>
+    /// property is written, a property left <c>null</c> is not sent (kept as
+    /// is), and an empty string <c>""</c> removes that field. Set
+    /// <c>DocumentId</c> to require the stamp to sit in that envelope
+    /// document. Only <c>DRAFT</c>/<c>PENDING</c> demands with no signature or
+    /// decision yet (<c>DEMAND_PARTIALLY_SIGNED</c> otherwise). PATCH, never
+    /// auto-retried.
+    /// </summary>
+    public Task<PatchStampItemResponseData> UpdateStampAsync(Guid id, int itemId, PatchStampItemRequest body, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(_api.ApiV1DemandsIdItemsItemIdStampPatchAsync(id, itemId, new StampPatchBody(body), cancellationToken), r => r.Success, r => r.Data);
+
+    /// <summary>
     /// Creates a demand directly from an uploaded document (no template) — a
     /// single PDF/DOC/DOCX/ODT/RTF/TXT, or 1-20 images merged into one PDF.
     ///

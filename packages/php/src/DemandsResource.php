@@ -23,6 +23,8 @@ use Imzala\Client\Model\CreatedDemandUpload;
 use Imzala\Client\Model\DemandStatus;
 use Imzala\Client\Model\DocumentSelectionInput;
 use Imzala\Client\Model\TriggerReminderRequest;
+use Imzala\Client\Model\PatchStampItemRequest;
+use Imzala\Client\Model\PatchStampItemResponseData;
 use Imzala\Client\Model\UpsertItemsRequest;
 use Imzala\Client\Model\UpsertItemsResponseData;
 use SplFileObject;
@@ -162,6 +164,26 @@ final class DemandsResource
     {
         $request = $body instanceof UpsertItemsRequest ? $body : new UpsertItemsRequest($body);
         return Http::unwrap(fn () => $this->api->apiV1DemandsIdItemsPostWithHttpInfo($id, $request));
+    }
+
+    /**
+     * Fills ONE existing stamp (kaşe) field with structured data and leaves
+     * every other field untouched ({@see addItems()} rewrites them all).
+     * {@code $itemId} is {@code stamp_items[].item_id} from {@see get()}.
+     * Body: {@code ['stamp_data' => [...], 'document_id' => optional]};
+     * {@code stamp_data} keys are the wire names ({@code companyName},
+     * {@code taxNumber}, ...). Partial update: a sent key is written,
+     * {@code null}/{@code ''} removes it, an omitted key is kept. Only
+     * {@code DRAFT}/{@code PENDING} demands with no signature or decision
+     * yet ({@code DEMAND_PARTIALLY_SIGNED} otherwise). PATCH, never
+     * auto-retried.
+     *
+     * @param PatchStampItemRequest|array<string, mixed> $body
+     */
+    public function updateStamp(string $id, int $itemId, PatchStampItemRequest|array $body): PatchStampItemResponseData
+    {
+        $request = $body instanceof PatchStampItemRequest ? $body : new PatchStampItemRequest($body);
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdItemsItemIdStampPatchWithHttpInfo($id, $itemId, $request));
     }
 
     /**

@@ -66,8 +66,8 @@ const REQUIRED_WEBHOOKS = [
 // 555 exchange (reserved for examples); e-mail addresses use reserved or
 // company domains. Real values never appear in this repository, not even in a
 // deny-list, so the check is an allow-list.
-const FICTIONAL_PHONES = ['+905551112233', '+905551112244', '+905551111111', '+905551234567', '+905552222222'];
-const FICTIONAL_EMAIL_DOMAINS = ['example.com', 'x.com', 'imzala.org'];
+const FICTIONAL_PHONES = ['+905551112233', '+905551112244'];
+const FICTIONAL_EMAIL_DOMAINS = ['example.com', 'example.org', 'example.net', 'imzala.org'];
 
 describe('spec coverage', () => {
   it.each(REQUIRED_PATHS)('%s is defined', (p) => {

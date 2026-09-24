@@ -220,6 +220,41 @@ public class EnvelopeTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateStamp_patches_one_stamp_item_with_ids_in_their_own_slots()
+    {
+        var srv = Server(Ok(new { item_id = 42, source = "INLINE", stamp_data = new { companyName = "Örnek Ltd." } }));
+        var result = await Client(srv).Demands.UpdateStampAsync(Demand, 42,
+            new PatchStampItemRequest(
+                new StampData(companyName: "Örnek Ltd.", companyPhone: "+905551112233", taxOffice: ""),
+                documentId: Doc.ToString()));
+        Assert.Equal(42, result.ItemId);
+        Assert.Equal(PatchStampItemResponseData.SourceEnum.INLINE, result.Source);
+        var call = srv.Calls[0];
+        Assert.Equal("PATCH", call.Method);
+        Assert.Equal($"/api/v1/demands/{Demand}/items/42/stamp", call.Uri);
+        var body = Json(call.Body);
+        Assert.Equal(Doc.ToString(), (string?)body["document_id"]);
+        var stamp = (JObject)body["stamp_data"]!;
+        Assert.Equal("Örnek Ltd.", (string?)stamp["companyName"]);
+        Assert.Equal("+905551112233", (string?)stamp["companyPhone"]);
+        // "" removes the field on the server; it must reach the wire.
+        Assert.Equal("", (string?)stamp["taxOffice"]);
+        // Unset properties must not be sent: on this endpoint null removes a field.
+        Assert.Equal(3, stamp.Count);
+        Assert.False(stamp.ContainsKey("taxNumber"));
+    }
+
+    [Fact]
+    public async Task UpdateStamp_throws_DEMAND_PARTIALLY_SIGNED()
+    {
+        var srv = Server(Conflict("DEMAND_PARTIALLY_SIGNED"));
+        var err = await Assert.ThrowsAsync<ImzalaError>(() => Client(srv).Demands.UpdateStampAsync(Demand, 42,
+            new PatchStampItemRequest(new StampData(companyName: "X"))));
+        Assert.Equal("DEMAND_PARTIALLY_SIGNED", err.Code);
+        Assert.Single(srv.Calls);
+    }
+
+    [Fact]
     public async Task Delete_keeps_demandId_and_docId_in_their_own_slots()
     {
         var srv = Server(Ok(new { id = Doc, deleted = true }));
@@ -416,6 +451,7 @@ public class EnvelopeTests : IDisposable
         "reorder" => c => c.Demands.Documents.ReorderAsync(Demand, new[] { Doc }),
         "setAssignments" => c => c.Demands.Documents.SetAssignmentsAsync(Demand, Doc, new[] { Party }),
         "dispatch" => c => c.Demands.DispatchAsync(Demand),
+        "updateStamp" => c => c.Demands.UpdateStampAsync(Demand, 42, new PatchStampItemRequest(new StampData(companyName: "X"))),
         _ => throw new ArgumentOutOfRangeException(nameof(name)),
     };
 
@@ -441,6 +477,7 @@ public class EnvelopeTests : IDisposable
     [InlineData("reorder")]
     [InlineData("setAssignments")]
     [InlineData("dispatch")]
+    [InlineData("updateStamp")]
     public async Task A_429_is_thrown_after_exactly_one_request(string name)
     {
         var srv = Server(RateLimited(), Ok(new { }));

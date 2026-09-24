@@ -36,7 +36,7 @@ export interface UploadPartyInput {
   last_name: string;
   /** Email or phone (or both) required per party. */
   email?: string;
-  /** E.164 format (e.g. `"+905551234567"`). */
+  /** E.164 format (e.g. `"+905551112233"`). */
   phone?: string;
   /**
    * Field template role for this party. Required on every party when

@@ -9,6 +9,9 @@ import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsGet200Resp
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsPost201ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDocumentsPostRequest;
 import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200ResponseData;
+import org.imzala.client.generated.model.PatchStampItemRequest;
+import org.imzala.client.generated.model.PatchStampItemResponseData;
+import org.imzala.client.generated.model.StampData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -230,6 +233,40 @@ class EnvelopeTest {
   }
 
   @Test
+  void updateStampPatchesOneStampItemWithIdsInTheirOwnSlots() throws IOException {
+    LocalServer srv = server(ok(Map.of("item_id", 42, "source", "INLINE", "stamp_data", Map.of("companyName", "Örnek Ltd."))));
+    PatchStampItemResponseData result = client(srv).demands().updateStamp(DEMAND, 42,
+        new PatchStampItemRequest()
+            .stampData(new StampData().companyName("Örnek Ltd.").companyPhone("+905551112233").taxOffice(null))
+            .documentId(DOC.toString()));
+    assertEquals(42, result.getItemId());
+    assertEquals(PatchStampItemResponseData.SourceEnum.INLINE, result.getSource());
+    Captured call = srv.calls.get(0);
+    assertEquals("PATCH", call.method);
+    assertEquals("/api/v1/demands/" + DEMAND + "/items/42/stamp", call.uri);
+    Map<String, Object> body = json(call.body);
+    assertEquals(DOC.toString(), body.get("document_id"));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> stamp = (Map<String, Object>) body.get("stamp_data");
+    assertEquals("Örnek Ltd.", stamp.get("companyName"));
+    assertEquals("+905551112233", stamp.get("companyPhone"));
+    // An explicit null is sent: it tells the server to remove that key.
+    assertTrue(stamp.containsKey("taxOffice"));
+    assertNull(stamp.get("taxOffice"));
+    assertFalse(stamp.containsKey("taxNumber"), "unset fields must not be sent");
+  }
+
+  @Test
+  void updateStampThrowsDemandPartiallySigned() throws IOException {
+    LocalServer srv = server(conflict("DEMAND_PARTIALLY_SIGNED", false));
+    ImzalaException err = assertThrows(ImzalaException.class, () -> client(srv).demands().updateStamp(DEMAND, 42,
+        new PatchStampItemRequest().stampData(new StampData().companyName("X"))));
+    assertEquals("DEMAND_PARTIALLY_SIGNED", err.getCode());
+    assertEquals(409, err.getStatusCode());
+    assertEquals(1, srv.calls.size());
+  }
+
+  @Test
   void deleteKeepsDemandIdAndDocIdInTheirOwnSlots() throws IOException {
     LocalServer srv = server(ok(Map.of("id", DOC.toString(), "deleted", true)));
     ApiV1TemplatesIdDelete200ResponseData result = client(srv).demands().documents().delete(DEMAND, DOC);
@@ -445,10 +482,12 @@ class EnvelopeTest {
   // --- writes without an idempotency key are never retried -----------------
 
   @ParameterizedTest
-  @ValueSource(strings = {"create", "update", "delete", "reorder", "setAssignments", "dispatch"})
+  @ValueSource(strings = {"create", "update", "delete", "reorder", "setAssignments", "dispatch", "updateStamp"})
   void a429IsThrownAfterExactlyOneRequest(String name) throws IOException {
     LocalServer srv = server(rateLimited("0"), ok(Map.of()));
-    Function<Imzala, Object> call = name.equals("dispatch") ? c -> c.demands().dispatch(DEMAND) : UNKEYED_WRITES.get(name);
+    Function<Imzala, Object> call = name.equals("dispatch") ? c -> c.demands().dispatch(DEMAND)
+        : name.equals("updateStamp") ? c -> c.demands().updateStamp(DEMAND, 42, new PatchStampItemRequest().stampData(new StampData().companyName("X")))
+        : UNKEYED_WRITES.get(name);
     assertThrows(ImzalaRateLimitException.class, () -> call.apply(client(srv)));
     assertEquals(1, srv.calls.size(), "transport or SDK retried an unkeyed write");
   }

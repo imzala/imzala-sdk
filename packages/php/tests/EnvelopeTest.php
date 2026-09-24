@@ -8,6 +8,7 @@ use Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsGet200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsDemandIdDocumentsPost201ResponseData;
 use Imzala\Client\Model\ApiV1TemplatesIdDelete200ResponseData;
+use Imzala\Client\Model\PatchStampItemResponseData;
 use Imzala\FileInput;
 use Imzala\ImzalaClient;
 use Imzala\ImzalaException;
@@ -150,6 +151,42 @@ final class EnvelopeTest extends TestCase
         $this->assertSame('PATCH', $req['method']);
         $this->assertSame('/api/v1/demands/' . self::DEMAND . '/documents/' . self::DOC, $req['uri']);
         $this->assertSame(['title' => 'Yeni başlık'], json_decode($req['body'], true));
+    }
+
+    public function testUpdateStampPatchesOneStampItemWithIdsInTheirOwnSlots(): void
+    {
+        $srv = $this->server([self::ok(['item_id' => 42, 'source' => 'INLINE', 'stamp_data' => ['companyName' => 'Örnek Ltd.']])]);
+        $result = self::client($srv)->demands()->updateStamp(self::DEMAND, 42, [
+            'stamp_data' => ['companyName' => 'Örnek Ltd.', 'companyPhone' => '+905551112233', 'taxOffice' => null],
+            'document_id' => self::DOC,
+        ]);
+        $this->assertInstanceOf(PatchStampItemResponseData::class, $result);
+        $this->assertSame(42, $result->getItemId());
+        $this->assertSame('INLINE', $result->getSource());
+        $req = $srv->requests()[0];
+        $this->assertSame('PATCH', $req['method']);
+        $this->assertSame('/api/v1/demands/' . self::DEMAND . '/items/42/stamp', $req['uri']);
+        // null is sent explicitly: it tells the server to remove that key.
+        $this->assertSame(
+            [
+                'stamp_data' => ['companyName' => 'Örnek Ltd.', 'companyPhone' => '+905551112233', 'taxOffice' => null],
+                'document_id' => self::DOC,
+            ],
+            json_decode($req['body'], true),
+        );
+    }
+
+    public function testUpdateStampThrowsDemandPartiallySigned(): void
+    {
+        $srv = $this->server([self::conflict('DEMAND_PARTIALLY_SIGNED')]);
+        try {
+            self::client($srv)->demands()->updateStamp(self::DEMAND, 42, ['stamp_data' => ['companyName' => 'X']]);
+            $this->fail('expected ImzalaException');
+        } catch (ImzalaException $e) {
+            $this->assertSame('DEMAND_PARTIALLY_SIGNED', $e->getErrorCode());
+            $this->assertSame(409, $e->getStatusCode());
+        }
+        $this->assertCount(1, $srv->requests());
     }
 
     public function testDeleteKeepsDemandIdAndDocIdInTheirOwnSlots(): void
@@ -393,6 +430,7 @@ final class EnvelopeTest extends TestCase
     {
         return self::unkeyedWrites() + [
             'dispatch' => [static fn (ImzalaClient $c) => $c->demands()->dispatch(self::DEMAND)],
+            'updateStamp' => [static fn (ImzalaClient $c) => $c->demands()->updateStamp(self::DEMAND, 42, ['stamp_data' => ['companyName' => 'X']])],
         ];
     }
 

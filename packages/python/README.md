@@ -129,6 +129,7 @@ Dönen değerler tiplenmiş modellerdir; öznitelikle okuyun (`me.email`, `statu
 | `demands.resend_party(demand_id, party_id)` | Tekil tarafa daveti tekrar gönder | Hayır (POST) |
 | `demands.delete(demand_id)` | Tamamlanmamış sözleşmeyi sil | Hayır (DELETE) |
 | `demands.add_items(demand_id, body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | Hayır (POST) |
+| `demands.update_stamp(demand_id, item_id, body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `None`/`""` alanı kaldırır, gönderilmeyen korunur; `DEMAND_PARTIALLY_SIGNED`) | Hayır (PATCH) |
 | `demands.send_reminder(demand_id, body=None)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `{"force": True}` aşar) | Hayır (POST) |
 | `demands.dispatch(demand_id, send_invitations=None)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | Hayır (POST) |
 
@@ -308,7 +309,7 @@ with open("sertifika.pdf", "wb") as fh:
 
 1. **Okumalar (GET):** `demands.list/get/get_timeline/get_pdf/get_document_pdf/get_certificate`, `templates.*` okumaları, `field_templates.list/get`, `contacts.list/list_all`, `timestamps.list/get`, `reports.get()`, `demands.documents.list` ve `me()` 429 veya 5xx aldığında en çok `max_retries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır.
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `demands.create(body, idempotency_key=...)`, `demands.upload_document(idempotency_key=...)`, `timestamps.create(idempotency_key=...)` ve `demands.documents.upload(idempotency_key=...)` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `max_retries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `create_bulk`, `contacts.create`, `dispatch`, `send_reminder`, `cancel`, `resend_party`, `delete`, `add_items`, `templates.update/delete`, `embed.create_session` ve zarf belgesi `create/update/delete/reorder/set_assignments`. Tekrarlanan bir `create_bulk` ikinci bir toplu iş, tekrarlanan bir `send_reminder` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `create_bulk`, `contacts.create`, `dispatch`, `send_reminder`, `cancel`, `resend_party`, `delete`, `add_items`, `update_stamp`, `templates.update/delete`, `embed.create_session` ve zarf belgesi `create/update/delete/reorder/set_assignments`. Tekrarlanan bir `create_bulk` ikinci bir toplu iş, tekrarlanan bir `send_reminder` ikinci bir SMS/e-posta üretir.
 
 ```python
 imzala = Imzala(

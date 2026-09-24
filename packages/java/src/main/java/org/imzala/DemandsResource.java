@@ -22,6 +22,8 @@ import org.imzala.client.generated.model.CreatedDemand;
 import org.imzala.client.generated.model.CreatedDemandUpload;
 import org.imzala.client.generated.model.DemandStatus;
 import org.imzala.client.generated.model.DocumentSelectionInput;
+import org.imzala.client.generated.model.PatchStampItemRequest;
+import org.imzala.client.generated.model.PatchStampItemResponseData;
 import org.imzala.client.generated.model.TriggerReminderRequest;
 import org.imzala.client.generated.model.UpsertItemsRequest;
 import org.imzala.client.generated.model.UpsertItemsResponseData;
@@ -195,6 +197,24 @@ public final class DemandsResource {
   public UpsertItemsResponseData addItems(UUID id, UpsertItemsRequest body) {
     return Http.unwrap(
         () -> api.apiV1DemandsIdItemsPost(id, body),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Fills ONE existing stamp (kaşe) field with structured data and leaves
+   * every other field untouched ({@link #addItems} rewrites them all).
+   * {@code itemId} is {@code stamp_items[].item_id} from {@link #get}.
+   * Partial update: a set {@code StampData} field is written, a field set to
+   * {@code null} (or {@code ""}) is removed, a field never set is kept. Pass
+   * {@code documentId} to require the stamp to sit in that envelope
+   * document. Only {@code DRAFT}/{@code PENDING} demands with no signature or
+   * decision yet ({@code DEMAND_PARTIALLY_SIGNED} otherwise). PATCH, never
+   * auto-retried.
+   */
+  public PatchStampItemResponseData updateStamp(UUID id, int itemId, PatchStampItemRequest body) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdItemsItemIdStampPatch(id, itemId, body),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData());
   }

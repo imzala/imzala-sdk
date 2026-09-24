@@ -658,6 +658,24 @@ class DemandsResource:
             )
         )
 
+    def update_stamp(self, demand_id: str, item_id: int, body: Mapping[str, Any]) -> Any:
+        """Fills ONE existing stamp (kaşe) field with structured data and
+        leaves every other field untouched (`add_items` rewrites them all).
+        `item_id` is `stamp_items[].item_id` from `get(demand_id)`. `body`
+        is `{"stamp_data": {...}, "document_id": optional}`. Partial update:
+        a sent key is written, `None`/`""` removes it, an omitted key is
+        kept. Only `DRAFT`/`PENDING` demands with no signature or decision
+        yet (`DEMAND_PARTIALLY_SIGNED` otherwise). PATCH, never
+        auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_items_item_id_stamp_patch(
+                id=demand_id,
+                item_id=item_id,
+                patch_stamp_item_request=dict(body),
+                _request_timeout=self._timeout,
+            )
+        )
+
     def upload_document(
         self,
         *,

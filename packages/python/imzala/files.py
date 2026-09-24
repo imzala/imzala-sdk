@@ -54,7 +54,7 @@ class UploadPartyInput:
     first_name: str
     last_name: str
     email: Optional[str] = None  # Email or phone (or both) required per party.
-    phone: Optional[str] = None  # E.164 format, e.g. "+905551234567".
+    phone: Optional[str] = None  # E.164 format, e.g. "+905551112233".
     # Field template role. Required on every party when `field_template_id`
     # is set; each role of the template must be mapped exactly once.
     template_party_id: Optional[str] = None

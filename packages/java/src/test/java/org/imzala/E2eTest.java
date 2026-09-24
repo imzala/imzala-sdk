@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @EnabledIfEnvironmentVariable(named = "IMZALA_API_KEY", matches = ".+")
 class E2eTest {
 
-  /** Ham e-posta sızıntısını yakalar (maskeli e-posta {@code a***@x.com} eşleşmez). */
+  /** Ham e-posta sızıntısını yakalar (maskeli e-posta {@code a***@example.com} eşleşmez). */
   private static final Pattern RAW_EMAIL = Pattern.compile("[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}", Pattern.CASE_INSENSITIVE);
 
   private static Imzala imzala;

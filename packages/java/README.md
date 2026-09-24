@@ -147,6 +147,7 @@ Tüm metodlar sunucunun `{ success, data }` zarfını açar ve `data`'yı dönd�
 | `demands().resendParty(UUID id, UUID partyId)` | Tekil tarafa daveti tekrar gönder | ❌ POST |
 | `demands().delete(UUID id)` | Tamamlanmamış sözleşmeyi sil | ❌ DELETE |
 | `demands().addItems(UUID id, UpsertItemsRequest body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | ❌ POST |
+| `demands().updateStamp(UUID id, int itemId, PatchStampItemRequest body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `null`/`""` alanı kaldırır, hiç set edilmeyen korunur; `DEMAND_PARTIALLY_SIGNED`) | ❌ PATCH |
 | `demands().sendReminder(UUID id)` / `sendReminder(UUID id, TriggerReminderRequest body)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `force(true)` aşar) | ❌ POST |
 | `demands().dispatch(UUID id)` / `dispatch(id, boolean)` / `dispatch(id, String sendInvitations)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | ❌ POST |
 
@@ -344,7 +345,7 @@ Yalnızca `status == COMPLETED` sözleşmelerde üretilir. Bu binary indirmeler 
 
 1. **Okumalar (GET):** `demands().list/get/getTimeline`, `templates().list/get/usage/listAll`, `fieldTemplates().list/get`, `contacts().list/listAll`, `timestamps().list/get`, `reports().get()`, `demands().documents().list()` ve `me()` 429 veya 5xx aldığında en çok `maxRetries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır. Binary indirmeler (`getPdf` / `getDocumentPdf` / `getCertificate`) bu kapsamda değildir (yukarıya bakın).
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `demands().create(body, idempotencyKey)`, `uploadDocument()` (`UploadDemandParams.idempotencyKey()`), `timestamps().create()` (`CreateTimestampParams.idempotencyKey()`) ve `demands().documents().upload()` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `maxRetries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts().create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `templates().update/delete`, `embed().createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts().create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `updateStamp`, `templates().update/delete`, `embed().createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
 
 Bekleme süresi `Retry-After` başlığından okunur (saniye ya da HTTP tarihi); başlık yoksa backoff gecikmesi uygulanır. **Bekleme tavanı 60 saniyedir:** sunucu daha uzun bir süre isterse SDK beklemek yerine 429'u fırlatır (`ImzalaRateLimitException.getRetryAfter()` süreyi taşır). `NaN`, sonsuz ve negatif `Retry-After` değerleri yok sayılır.
 

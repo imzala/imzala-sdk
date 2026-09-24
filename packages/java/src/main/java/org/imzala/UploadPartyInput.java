@@ -20,7 +20,7 @@ public final class UploadPartyInput {
   @JsonProperty("email")
   private final String email;
 
-  /** E.164 format (e.g. {@code "+905551234567"}). */
+  /** E.164 format (e.g. {@code "+905551112233"}). */
   @JsonProperty("phone")
   private final String phone;
 

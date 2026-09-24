@@ -41,7 +41,7 @@ public sealed class UploadPartyInput
     [JsonPropertyName("email")]
     public string? Email { get; init; }
 
-    /// <summary>E.164 format (e.g. <c>"+905551234567"</c>).</summary>
+    /// <summary>E.164 format (e.g. <c>"+905551112233"</c>).</summary>
     [JsonPropertyName("phone")]
     public string? Phone { get; init; }
 

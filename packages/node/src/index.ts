@@ -33,6 +33,8 @@ import type {
   CreatedDemand,
   CreatedDemandUpload,
   DemandStatus,
+  PatchStampItemRequest,
+  PatchStampItemResponseData,
   TemplateDetail,
   TemplateSummary,
   TemplateUsage,
@@ -88,6 +90,9 @@ export type {
   CreatedDemandUpload,
   DemandStatus,
   DocumentSelectionInput,
+  PatchStampItemRequest as UpdateStampRequest,
+  PatchStampItemResponseData as UpdatedStamp,
+  StampData,
   TemplateDetail,
   TemplateDocumentSummary,
   TemplateSummary,
@@ -531,6 +536,19 @@ class DemandsResource {
    */
   addItems(id: string, body: UpsertItemsRequest): Promise<UpsertItemsResponseData> {
     return unwrap(this.api.apiV1DemandsIdItemsPost({ id, upsertItemsRequest: body }));
+  }
+
+  /**
+   * Fills ONE existing stamp (kaşe) field with structured data and leaves
+   * every other field untouched (`addItems` rewrites them all). `itemId` is
+   * `stamp_items[].item_id` from `get(id)`. Partial update: a sent key is
+   * written, `null`/`''` removes it, an omitted key is kept. Pass
+   * `document_id` to require the stamp to sit in that envelope document.
+   * Only `DRAFT`/`PENDING` demands with no signature or decision yet
+   * (`DEMAND_PARTIALLY_SIGNED` otherwise). PATCH, never auto-retried.
+   */
+  updateStamp(id: string, itemId: number, body: PatchStampItemRequest): Promise<PatchStampItemResponseData> {
+    return unwrap(this.api.apiV1DemandsIdItemsItemIdStampPatch({ id, itemId, patchStampItemRequest: body }));
   }
 
   /**

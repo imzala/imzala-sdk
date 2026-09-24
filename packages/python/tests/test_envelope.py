@@ -317,6 +317,41 @@ class TestNoRetryWithoutKey:
         assert len(srv.calls) == 2
 
 
+class TestUpdateStamp:
+    def test_patches_one_stamp_item_with_ids_in_their_own_slots(self, serve):
+        updated = {"item_id": 42, "source": "INLINE", "stamp_data": {"companyName": "Örnek Ltd."}}
+        srv = serve(ok(updated))
+        result = client(srv).demands.update_stamp(
+            DEMAND,
+            42,
+            {
+                "stamp_data": {"companyName": "Örnek Ltd.", "companyPhone": "+905551112233", "taxOffice": None},
+                "document_id": DOC,
+            },
+        )
+        assert as_dict(result) == updated
+        assert srv.calls[0]["method"] == "PATCH"
+        assert srv.calls[0]["path"] == f"/api/v1/demands/{DEMAND}/items/42/stamp"
+        # None is sent explicitly: it tells the server to remove that key.
+        assert json_body(srv.calls[0]) == {
+            "stamp_data": {"companyName": "Örnek Ltd.", "companyPhone": "+905551112233", "taxOffice": None},
+            "document_id": DOC,
+        }
+
+    def test_raises_demand_partially_signed_without_retry(self, serve):
+        srv = serve({"status": 409, "body": {"success": False, "error": "x", "code": "DEMAND_PARTIALLY_SIGNED"}})
+        with pytest.raises(ImzalaError) as info:
+            client(srv).demands.update_stamp(DEMAND, 42, {"stamp_data": {"companyName": "X"}})
+        assert info.value.code == "DEMAND_PARTIALLY_SIGNED"
+        assert len(srv.calls) == 1
+
+    def test_rate_limited_write_is_not_retried(self, serve):
+        srv = serve(RATE_LIMITED, ok({}))
+        with pytest.raises(ImzalaRateLimitError):
+            client(srv).demands.update_stamp(DEMAND, 42, {"stamp_data": {"companyName": "X"}})
+        assert len(srv.calls) == 1
+
+
 class TestDispatchErrors:
     @pytest.mark.parametrize("code", ["DISPATCH_NO_PARTIES", "DISPATCH_TOO_MANY", "QES_NOT_SUPPORTED_MULTI_DOCUMENT"])
     def test_raises(self, serve, code):

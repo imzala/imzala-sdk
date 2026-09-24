@@ -11,7 +11,7 @@ final class UploadPartyInput
         public readonly ?string $firstName = null,
         public readonly ?string $lastName = null,
         public readonly ?string $email = null,
-        /** E.164 format (e.g. {@code "+905551234567"}). */
+        /** E.164 format (e.g. {@code "+905551112233"}). */
         public readonly ?string $phone = null,
         /**
          * Field template role for this party. Required on every party when
