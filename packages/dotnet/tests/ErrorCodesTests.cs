@@ -37,6 +37,15 @@ public class ErrorCodesTests
         ["KVKK_NOTICE"] = "doc_kind value",
         ["PRICE_LIST"] = "doc_kind value",
         ["WEBHOOK_TIMEOUT_MS"] = "server environment variable",
+        ["COMMENT_ADDED"] = "timeline event_type value",
+        ["FIELDS_FILLED"] = "timeline event_type value",
+        ["MOBILE_SIGNATURE_CAPTURED"] = "timeline event_type value",
+        ["OTP_LOCKED"] = "timeline event_type value",
+        ["OTP_SENT"] = "timeline event_type value",
+        ["OTP_VERIFIED"] = "timeline event_type value",
+        ["FROM_SAVED"] = "stamp source value",
+        ["FILLER_PROVIDES"] = "stamp source value",
+        ["STAMP_ITEM_ID"] = "shell variable in a curl example",
     };
 
     /// <summary>Prose also contains single upper-case words (API, PDF, KVKK), so the spec-to-catalogue direction only considers underscore tokens.</summary>
@@ -139,7 +148,7 @@ public class ErrorCodesTests
     public void Same_code_set_as_the_node_catalogue()
     {
         Assert.Equal(NodeCatalogue().Keys.OrderBy(k => k, StringComparer.Ordinal), ErrorCodes.Codes.Keys.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(81, ErrorCodes.Codes.Count);
+        Assert.Equal(91, ErrorCodes.Codes.Count);
     }
 
     [Fact]

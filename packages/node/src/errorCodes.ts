@@ -51,6 +51,16 @@ export const IMZALA_ERROR_CODES = {
 
   // Şablon belge seçimi
   SIGNATURE_VARIANTS_PHONE_ONLY: 'İmza yöntemi listesi yalnız phone içeremez; draw, type veya upload yöntemlerinden en az biri gereklidir.',
+  SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE: 'phone_draw yalnız tek başına kullanılabilir; başka bir imza yöntemiyle birlikte gönderilemez.',
+  INVALID_VARIABLES: 'variables değeri geçersiz; details.reason alanı nedeni verir: object_value_for_non_stamp (kaşe olmayan alana nesne değer), unsupported_endpoint (toplu uçlar nesne değer desteklemez).',
+  INVALID_DOCUMENT_VARIABLES: 'document_variables geçersiz; details.reason alanı nedeni verir: shape (biçim hatası), unknown_document (kimlik bu şablonun belgesi değil), unselected_document (belge bu istekte gönderilmiyor), unsupported_endpoint (bu uç desteklemiyor).',
+  INVALID_STAMP_DATA: 'Kaşe verisi geçersiz: bilinmeyen alan veya metin olmayan değer içeriyor.',
+  INVALID_ITEM_ID: 'Alan kimliği (itemId) pozitif bir tam sayı değil.',
+  ITEM_NOT_FOUND: 'Alan bu sözleşmede (veya verilen document_id belgesinde) bulunamadı.',
+  NOT_A_STAMP_ITEM: 'Verilen alan bir kaşe alanı değil.',
+  PARTY_NOT_ASSIGNED_TO_DOCUMENT: 'Kaşeyi dolduracak taraf, kaşenin bulunduğu belgeye atanmamış.',
+  DEMAND_PARTIALLY_SIGNED: 'Taraflardan biri imzaladı veya karar verdi; bu işlem artık yapılamaz.',
+  FIRST_SIGNATURE_OTP_UNSUPPORTED: 'İlk imzada SMS kodu doğrulaması bu taraf veya akış için desteklenmiyor (nitelikli e-imza, onaycı ve kendi kendine imza akışları).',
   INVALID_DOCUMENT_SELECTION:
     'Belge seçimi geçersiz; details.reason alanı nedeni verir: shape (biçim hatası), unknown_document (kimlik bu şablonun belgesi değil), conflict (aynı kimlik iki listede), empty (seçim sonucunda belge kalmadı).',
   PARTY_WITHOUT_DOCUMENTS:

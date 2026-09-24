@@ -45,6 +45,15 @@ NOT_ERROR_CODES = {
     "KVKK_NOTICE": "doc_kind value",
     "PRICE_LIST": "doc_kind value",
     "WEBHOOK_TIMEOUT_MS": "server environment variable",
+    "COMMENT_ADDED": "timeline event_type value",
+    "FIELDS_FILLED": "timeline event_type value",
+    "MOBILE_SIGNATURE_CAPTURED": "timeline event_type value",
+    "OTP_LOCKED": "timeline event_type value",
+    "OTP_SENT": "timeline event_type value",
+    "OTP_VERIFIED": "timeline event_type value",
+    "FROM_SAVED": "stamp source value",
+    "FILLER_PROVIDES": "stamp source value",
+    "STAMP_ITEM_ID": "shell variable in a curl example",
 }
 
 # Prose also contains single upper-case words (API, PDF, KVKK), so the

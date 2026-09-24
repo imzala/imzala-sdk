@@ -388,7 +388,7 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | @imzala/node | Konuştuğu API | Durum |
 |---|---|---|
-| Geliştirme (yayınlanmamış) | v1 (`1.8.18`) | İmza yöntemi listesi ve sırası |
+| Geliştirme (yayınlanmamış) | v1 (`1.8.22`) | İmza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler, `phone_draw` |
 | 1.0.0 | v1 (`1.8.17`) | Önceki sözleşme |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 

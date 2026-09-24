@@ -39,6 +39,15 @@ final class ErrorCodesTest extends TestCase
         'KVKK_NOTICE' => 'doc_kind value',
         'PRICE_LIST' => 'doc_kind value',
         'WEBHOOK_TIMEOUT_MS' => 'server environment variable',
+        'COMMENT_ADDED' => 'timeline event_type value',
+        'FIELDS_FILLED' => 'timeline event_type value',
+        'MOBILE_SIGNATURE_CAPTURED' => 'timeline event_type value',
+        'OTP_LOCKED' => 'timeline event_type value',
+        'OTP_SENT' => 'timeline event_type value',
+        'OTP_VERIFIED' => 'timeline event_type value',
+        'FROM_SAVED' => 'stamp source value',
+        'FILLER_PROVIDES' => 'stamp source value',
+        'STAMP_ITEM_ID' => 'shell variable in a curl example',
     ];
 
     /**
@@ -133,7 +142,7 @@ final class ErrorCodesTest extends TestCase
         sort($node);
         sort($php);
         $this->assertSame($node, $php);
-        $this->assertCount(81, $php);
+        $this->assertCount(91, $php);
     }
 
     public function testSameDescriptionsAsTheNodeCatalogue(): void
