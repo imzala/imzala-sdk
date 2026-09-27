@@ -19,16 +19,20 @@ import type {
   TimestampListItem,
   ApiV1DemandsGet200ResponseData,
   ApiV1DemandsIdCancelPost200ResponseData,
+  ApiV1DemandsIdArchivePost200ResponseData,
   ApiV1DemandsIdCancelPostRequest,
   ApiV1DemandsIdEmbedSessionPost200ResponseData,
   ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData,
   ApiV1DemandsIdRemindersPost200ResponseData,
+  ApiV1DemandsIdTermPatch200ResponseData,
   ApiV1DemandsIdTimelineGet200ResponseData,
+  ApiV1DemandsIdUnarchivePost200ResponseData,
   ApiV1MeGet200ResponseData,
   ApiV1TemplatesGet200ResponseData,
   ApiV1TemplatesIdDelete200ResponseData,
   ApiV1TemplatesIdPatch200ResponseData,
   ApiV1TemplatesIdPatchRequest,
+  ContractTermInput,
   CreateDemandRequest,
   CreatedDemand,
   CreatedDemandUpload,
@@ -81,10 +85,15 @@ export type {
   FieldTemplateListItem,
   FieldTemplateParty,
   TimestampListItem,
+  ApiV1DemandsIdArchivePost200ResponseData as ArchiveResult,
   ApiV1DemandsIdEmbedSessionPost200ResponseData as EmbedSession,
+  ApiV1DemandsIdTermPatch200ResponseData as UpdatedTerm,
+  ApiV1DemandsIdUnarchivePost200ResponseData as UnarchiveResult,
   ApiV1DemandsIdRemindersPost200ResponseData as ReminderDispatchResult,
   ApiV1MeGet200ResponseData as MeInfo,
   ApiV1TemplatesGet200ResponseData as TemplateList,
+  ContractTerm,
+  ContractTermInput,
   CreateDemandRequest,
   CreatedDemand,
   CreatedDemandUpload,
@@ -101,6 +110,7 @@ export type {
   TriggerReminderRequest,
   UpsertItemsRequest,
   UpsertItemsResponseData,
+  WebhookDataContractTerm,
 } from '../generated/api';
 
 const DEFAULT_BASE_URL = 'https://api-prd.imzala.org';
@@ -147,6 +157,11 @@ export interface ListDemandsParams {
   limit?: number;
   /** `field:direction`, e.g. `createdAt:desc`. */
   sort?: string;
+  /**
+   * Archive filter: `exclude` (only unarchived demands), `only` (only
+   * archived ones) or `include` (both). Omitted means `include`, as before.
+   */
+  archived?: 'exclude' | 'only' | 'include';
 }
 
 export interface UpdateTemplateParams {
@@ -610,6 +625,7 @@ class DemandsResource {
           page: params.page,
           limit: params.limit,
           sort: params.sort,
+          archived: params.archived,
         }),
       this.retryConfig,
     );
@@ -685,9 +701,46 @@ class DemandsResource {
   }
 
   /**
+   * Updates the contract term and renewal tracking of a demand. Partial
+   * update: only the keys you send change, `null` clears a key, an omitted
+   * key is kept. Changing a field that affects the end date recalculates
+   * `term.end_date`. The returned `term` is a tracking record for reminders
+   * and visibility; it does not state that the contract was legally renewed
+   * or ended. An invalid combination throws `TERM_INVALID` (the error body's
+   * `field` names the rejected key); an archived demand throws
+   * `DEMAND_ARCHIVED`. PATCH, never auto-retried.
+   */
+  updateTerm(id: string, body: ContractTermInput): Promise<ApiV1DemandsIdTermPatch200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdTermPatch({ id, contractTermInput: body }));
+  }
+
+  /**
+   * Archives a completed, cancelled or expired demand. The status does not
+   * change; the demand gets `archived_at` and becomes read-only (updates and
+   * deletion throw `DEMAND_ARCHIVED` until `unarchive`). Archiving an already
+   * archived demand returns the existing `archived_at`. Other states throw
+   * `DEMAND_NOT_ARCHIVABLE`; a rejected demand still awaiting signatures
+   * throws `DEMAND_REJECTED_CANCEL_FIRST` (cancel it first). POST, never
+   * auto-retried.
+   */
+  archive(id: string): Promise<ApiV1DemandsIdArchivePost200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdArchivePost({ id }));
+  }
+
+  /**
+   * Takes a demand out of the archive (`archived_at` becomes `null`) so it can
+   * be changed again. Unarchiving a demand that is not archived is a no-op.
+   * POST, never auto-retried.
+   */
+  unarchive(id: string): Promise<ApiV1DemandsIdUnarchivePost200ResponseData> {
+    return unwrap(this.api.apiV1DemandsIdUnarchivePost({ id }));
+  }
+
+  /**
    * Deletes a demand and all its data. Only NON-completed demands can be
    * deleted via the API — a `COMPLETED` demand (signed document + audit trail)
-   * returns 409 and must be removed from the dashboard. DELETE — never
+   * returns 409 and must be removed from the dashboard. An archived demand
+   * throws `DEMAND_ARCHIVED`; `unarchive` it first. DELETE — never
    * auto-retried.
    */
   delete(id: string): Promise<ApiV1TemplatesIdDelete200ResponseData> {
