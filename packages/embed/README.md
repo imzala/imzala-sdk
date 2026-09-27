@@ -199,7 +199,7 @@ React (özellikle Next.js App Router) kullanıyorsanız, bu widget'ı bir `<Imza
 
 ## İmza sınıfı
 
-İmzala **dijital imza** üretir; her imza zaman damgalıdır. Gömülü imza akışı yalnızca SES/AES sınıfındadır. Nitelikli/güvenli elektronik imza (QES) **değildir** ve bu widget böyle bir iddiada bulunmaz.
+Gömülü imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza **değildir**; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Bu widget imza seviyesi hakkında ek bir iddiada bulunmaz.
 
 ## Daha fazla
 

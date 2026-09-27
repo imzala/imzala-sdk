@@ -142,7 +142,7 @@ const session = await imzala.embed.createSession(demandId, { partyId });
 // session.embed_url → bir <iframe>'e gömün (bkz. @imzala/embed)
 ```
 
-Gömülü imza yalnızca SES/AES üretir (QES değil). Tarayıcı tarafı için [`@imzala/embed`](../embed).
+Gömülü imza, 5070 sayılı Kanun m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Tarayıcı tarafı için [`@imzala/embed`](../embed).
 
 ### Zaman damgası (timestamps)
 
@@ -253,7 +253,7 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarı sızarsa hesabınız
 
 ## İmza sınıfı
 
-İmzala **dijital imza (SES)** üretir; her imza zaman damgalıdır. Nitelikli/güvenli elektronik imza (QES) DEĞİLDİR. Gömülü imza da SES/AES üretir.
+Bu API ile tarayıcıdan atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza değildir; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Gömülü imza da aynı niteliktedir. Telefon doğrulaması veya T.C. kimlik numarası kontrolü gibi ek adımlar delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez.
 
 ## Daha fazla
 

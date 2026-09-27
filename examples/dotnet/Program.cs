@@ -8,7 +8,7 @@
 // cancel / resendParty / delete / update) yorum satırıdır: gerçek kredi harcar
 // veya durum değiştirir. Açmadan önce ne yaptığını okuyun.
 //
-// İmzala sözleşmeleri varsayılan olarak dijital imza (SES) üretir; SDK imza
+// İmzala sözleşmeleri varsayılan olarak dijital imza üretir; SDK imza
 // geçerliliği hakkında hukuki iddiada bulunmaz.
 
 using ImzalaSdk;

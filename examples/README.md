@@ -28,6 +28,6 @@ webhook imzasını doğrula.
 
 ## İmza sınıfı notu
 
-İmzala sözleşmeleri varsayılan olarak **dijital imza** (SES) üretir. SDK imza
+İmzala sözleşmeleri varsayılan olarak **dijital imza** üretir. SDK imza
 geçerliliği hakkında hukuki iddiada bulunmaz; imza sınıfı sözleşme akışında
 belirlenir. Ayrıntı: `api-docs.imzala.org` ve `/docs/api-sozlesme-yasam-dongusu`.

@@ -8,7 +8,7 @@ Salt-okuma işlemleri doğrudan çalışır. Veri değiştiren işlemler (create
 cancel / resend_party / delete) yorum satırıdır: gerçek kredi harcar / durum
 değiştirir. Açmadan önce ne yaptığını okuyun.
 
-İmzala sözleşmeleri varsayılan olarak dijital imza (SES) üretir; SDK imza
+İmzala sözleşmeleri varsayılan olarak dijital imza üretir; SDK imza
 geçerliliği hakkında hukuki iddiada bulunmaz.
 """
 

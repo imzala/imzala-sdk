@@ -13,7 +13,7 @@ declare(strict_types=1);
 // uploadDocument / cancel / resendParty / delete / sendReminder / timestamps)
 // yorum satırıdır: gerçek kredi harcar / durum değiştirir.
 //
-// İmzala sözleşmeleri varsayılan olarak dijital imza (SES) üretir; SDK imza
+// İmzala sözleşmeleri varsayılan olarak dijital imza üretir; SDK imza
 // geçerliliği hakkında hukuki iddiada bulunmaz.
 
 require __DIR__ . '/../../packages/php/vendor/autoload.php';

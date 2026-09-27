@@ -19,7 +19,7 @@ import org.imzala.ListDemandsParams;
  * uploadDocument / cancel / resendParty / delete / update / timestamps.create)
  * yorum satırıdır: gerçek kredi harcar ya da durum değiştirir.
  *
- * İmzala sözleşmeleri varsayılan olarak dijital imza (SES) üretir; SDK imza
+ * İmzala sözleşmeleri varsayılan olarak dijital imza üretir; SDK imza
  * geçerliliği hakkında hukuki bir iddiada bulunmaz.
  */
 public final class Main {

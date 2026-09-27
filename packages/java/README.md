@@ -201,7 +201,7 @@ ApiV1DemandsIdEmbedSessionPost200ResponseData session =
 // session.getEmbedUrl() -> bir <iframe>'e gömün (bkz. @imzala/embed)
 ```
 
-`partyId`, sözleşmenin create/get yanıtındaki `signing_urls[].party_id` (imza URL'sindeki taraf) değeridir. Gömülü imza yalnızca SES/AES üretir (QES değil). Tarayıcı tarafı için [`@imzala/embed`](../embed).
+`partyId`, sözleşmenin create/get yanıtındaki `signing_urls[].party_id` (imza URL'sindeki taraf) değeridir. Gömülü imza, 5070 sayılı Kanun m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Tarayıcı tarafı için [`@imzala/embed`](../embed).
 
 ### Zaman damgası (timestamps)
 
@@ -311,7 +311,7 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarınız sızarsa hesabı
 
 ## İmza sınıfı
 
-İmzala **dijital imza (SES)** üretir; her imza zaman damgalıdır. Nitelikli ya da güvenli elektronik imza (QES) DEĞİLDİR. Gömülü imza da SES/AES üretir. SDK, imza geçerliliği hakkında hukuki bir iddiada bulunmaz.
+Bu API ile tarayıcıdan atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza değildir; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Gömülü imza da aynı niteliktedir. Telefon doğrulaması veya T.C. kimlik numarası kontrolü gibi ek adımlar delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. SDK, imza geçerliliği hakkında hukuki bir iddiada bulunmaz.
 
 ## Daha fazla
 

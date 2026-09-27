@@ -357,8 +357,11 @@ class EmbedResource {
    * party. The returned `embed_url` is meant for an `<iframe>` — see
    * `@imzala/embed` for a ready-made browser mount helper.
    *
-   * Signatures obtained this way are SES by default (AES if TC/biometric
-   * verification ran) — this flow never produces QES.
+   * Signatures obtained this way are electronic signatures within the
+   * meaning of Turkish Law No. 5070 (Art. 3); they are not secure electronic
+   * signatures and are not presented as advanced or qualified signatures
+   * under EU law. Additional verification steps strengthen evidential value;
+   * they do not change the signature level.
    */
   createSession(
     demandId: string,
