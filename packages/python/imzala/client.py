@@ -769,6 +769,7 @@ class DemandsResource:
         page: Optional[int] = None,
         limit: Optional[int] = None,
         sort: Optional[str] = None,
+        archived: Optional[Literal["exclude", "only", "include"]] = None,
     ) -> Any:
         """Lists your demands — counts-only (id/title/status/timestamps +
         `parties_total`/`parties_signed`, NO party names/emails/phones).
@@ -780,6 +781,9 @@ class DemandsResource:
         `to` is the upper bound. Both are ISO dates (`YYYY-MM-DD`).
         `template_id` filters to demands created from that template.
         `sort` is `field:direction`, e.g. `createdAt:desc`.
+        `archived` filters by archive state: `"exclude"` (only unarchived),
+        `"only"` (only archived) or `"include"` (both); leaving it out means
+        `"include"`, as before.
         """
         return _unwrap_retryable_get(
             lambda: self._api.api_v1_demands_get(
@@ -791,6 +795,7 @@ class DemandsResource:
                 page=page,
                 limit=limit,
                 sort=sort,
+                archived=archived,
                 _request_timeout=self._timeout,
             ),
             self._retry,
@@ -865,10 +870,56 @@ class DemandsResource:
             )
         )
 
+    def update_term(self, demand_id: str, body: Mapping[str, Any]) -> Any:
+        """Updates the contract term and renewal tracking of a demand.
+        `body` takes the `ContractTermInput` keys (`term_start_mode`,
+        `term_duration_months`, `renewal_type`, `notice_days`, ...).
+        Partial update: a sent key is written, `None` clears it, an omitted
+        key is kept. Changing a field that affects the end date recalculates
+        `term.end_date`. The returned `term` is a tracking record for
+        reminders and visibility; it does not state that the contract was
+        legally renewed or ended. An invalid combination raises
+        `TERM_INVALID` (the error body's `field` names the rejected key); an
+        archived demand raises `DEMAND_ARCHIVED`. PATCH, never
+        auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_term_patch(
+                id=demand_id,
+                contract_term_input=dict(body),
+                _request_timeout=self._timeout,
+            )
+        )
+
+    def archive(self, demand_id: str) -> Any:
+        """Archives a completed, cancelled or expired demand. The status
+        does not change; the demand gets `archived_at` and becomes read-only
+        (updates and deletion raise `DEMAND_ARCHIVED` until `unarchive`).
+        Archiving an already archived demand returns the existing
+        `archived_at`. Other states raise `DEMAND_NOT_ARCHIVABLE`; a rejected
+        demand still awaiting signatures raises
+        `DEMAND_REJECTED_CANCEL_FIRST` (cancel it first). POST, never
+        auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_archive_post(
+                id=demand_id, _request_timeout=self._timeout
+            )
+        )
+
+    def unarchive(self, demand_id: str) -> Any:
+        """Takes a demand out of the archive (`archived_at` becomes `None`)
+        so it can be changed again. Unarchiving a demand that is not
+        archived is a no-op. POST, never auto-retried."""
+        return _unwrap(
+            lambda: self._api.api_v1_demands_id_unarchive_post(
+                id=demand_id, _request_timeout=self._timeout
+            )
+        )
+
     def delete(self, demand_id: str) -> Any:
         """Deletes a demand and all its data. Only NON-completed demands can
         be deleted via the API — a `COMPLETED` demand (signed document +
-        audit trail) returns 409 and must be removed from the dashboard.
+        audit trail) returns 409 and must be removed from the dashboard. An
+        archived demand raises `DEMAND_ARCHIVED`; `unarchive` it first.
         DELETE — never auto-retried."""
         return _unwrap(
             lambda: self._api.api_v1_demands_id_delete(
