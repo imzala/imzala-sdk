@@ -54,6 +54,11 @@ NOT_ERROR_CODES = {
     "FROM_SAVED": "stamp source value",
     "FILLER_PROVIDES": "stamp source value",
     "STAMP_ITEM_ID": "shell variable in a curl example",
+    "FIXED_DATE": "term_start_mode value",
+    "ON_FIRST_SIGNATURE": "term_start_mode value",
+    "ON_COMPLETION": "term_start_mode value",
+    "AUTO_RENEW": "renewal_type value",
+    "FIXED_TERM": "renewal_type value",
 }
 
 # Prose also contains single upper-case words (API, PDF, KVKK), so the

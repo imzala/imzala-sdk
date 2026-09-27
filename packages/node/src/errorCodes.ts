@@ -80,6 +80,10 @@ export const IMZALA_ERROR_CODES = {
   ALREADY_COMPLETED: 'Tüm taraflar imzalamış; hatırlatılacak taraf yok.',
   INVALID_EXPIRY_DATE: 'expiry_date çözümlenemiyor veya takvimde olmayan bir gün (ör. 2026-02-30).',
   INVALID_PADES_LEVEL: 'options.qes_pades_level satın alınabilir seviyelerden biri değil.',
+  DEMAND_ARCHIVED: 'Sözleşme arşivde; değiştirilemez ve silinemez. Önce arşivden çıkarın (unarchive).',
+  DEMAND_NOT_ARCHIVABLE: 'Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir.',
+  DEMAND_REJECTED_CANCEL_FIRST: 'Sözleşme reddedilmiş ve imza bekliyor; arşivlemeden önce iptal edin (cancel).',
+  TERM_INVALID: 'Süre veya yenileme takibi alanlarında geçersiz ya da çelişkili bir kombinasyon var; field alanı reddedilen anahtarı gösterir.',
   BULK_MAX_10: 'Toplu oluşturmada rows en fazla 10 satır olabilir.',
 
   // Gönderim ve davet

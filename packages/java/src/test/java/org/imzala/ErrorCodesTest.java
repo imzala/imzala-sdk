@@ -74,6 +74,11 @@ class ErrorCodesTest {
     NOT_ERROR_CODES.put("FROM_SAVED", "stamp source value");
     NOT_ERROR_CODES.put("FILLER_PROVIDES", "stamp source value");
     NOT_ERROR_CODES.put("STAMP_ITEM_ID", "shell variable in a curl example");
+    NOT_ERROR_CODES.put("FIXED_DATE", "term_start_mode value");
+    NOT_ERROR_CODES.put("ON_FIRST_SIGNATURE", "term_start_mode value");
+    NOT_ERROR_CODES.put("ON_COMPLETION", "term_start_mode value");
+    NOT_ERROR_CODES.put("AUTO_RENEW", "renewal_type value");
+    NOT_ERROR_CODES.put("FIXED_TERM", "renewal_type value");
   }
 
   /**
@@ -181,7 +186,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(91, ErrorCodes.CODES.size());
+    assertEquals(95, ErrorCodes.CODES.size());
   }
 
   @Test

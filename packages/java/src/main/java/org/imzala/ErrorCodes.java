@@ -118,6 +118,10 @@ public final class ErrorCodes {
         "expiry_date çözümlenemiyor veya takvimde olmayan bir gün (ör. 2026-02-30).");
     m.put("INVALID_PADES_LEVEL",
         "options.qes_pades_level satın alınabilir seviyelerden biri değil.");
+    m.put("DEMAND_ARCHIVED", "Sözleşme arşivde; değiştirilemez ve silinemez. Önce arşivden çıkarın (unarchive).");
+    m.put("DEMAND_NOT_ARCHIVABLE", "Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir.");
+    m.put("DEMAND_REJECTED_CANCEL_FIRST", "Sözleşme reddedilmiş ve imza bekliyor; arşivlemeden önce iptal edin (cancel).");
+    m.put("TERM_INVALID", "Süre veya yenileme takibi alanlarında geçersiz ya da çelişkili bir kombinasyon var; field alanı reddedilen anahtarı gösterir.");
     m.put("BULK_MAX_10",
         "Toplu oluşturmada rows en fazla 10 satır olabilir.");
     // Gönderim ve davet

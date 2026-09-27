@@ -46,6 +46,11 @@ public class ErrorCodesTests
         ["FROM_SAVED"] = "stamp source value",
         ["FILLER_PROVIDES"] = "stamp source value",
         ["STAMP_ITEM_ID"] = "shell variable in a curl example",
+        ["FIXED_DATE"] = "term_start_mode value",
+        ["ON_FIRST_SIGNATURE"] = "term_start_mode value",
+        ["ON_COMPLETION"] = "term_start_mode value",
+        ["AUTO_RENEW"] = "renewal_type value",
+        ["FIXED_TERM"] = "renewal_type value",
     };
 
     /// <summary>Prose also contains single upper-case words (API, PDF, KVKK), so the spec-to-catalogue direction only considers underscore tokens.</summary>
@@ -148,7 +153,7 @@ public class ErrorCodesTests
     public void Same_code_set_as_the_node_catalogue()
     {
         Assert.Equal(NodeCatalogue().Keys.OrderBy(k => k, StringComparer.Ordinal), ErrorCodes.Codes.Keys.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(91, ErrorCodes.Codes.Count);
+        Assert.Equal(95, ErrorCodes.Codes.Count);
     }
 
     [Fact]
