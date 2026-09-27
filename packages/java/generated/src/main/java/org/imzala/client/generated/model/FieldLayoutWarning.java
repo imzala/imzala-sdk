@@ -36,7 +36,7 @@ import org.imzala.client.generated.ApiClient;
   FieldLayoutWarning.JSON_PROPERTY_CODE,
   FieldLayoutWarning.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class FieldLayoutWarning {
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nonnull

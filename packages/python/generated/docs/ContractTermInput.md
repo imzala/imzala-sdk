@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **renewal_period_months** | **int** |  | [optional] 
 **notice_days** | **int** |  | [optional] 
 **reminder_offsets** | **List[int]** | Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır); temizlemek için &#x60;null&#x60; gönderin.  | [optional] 
-**notify_counterparty** | **bool** |  | [optional] [default to False]
+**notify_counterparty** | **bool** |  | [optional] 
 
 ## Example
 

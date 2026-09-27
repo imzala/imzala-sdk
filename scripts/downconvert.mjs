@@ -79,9 +79,27 @@ function main() {
   const nullOnlyCount = (outText.match(nullOnly) ?? []).length;
   if (nullOnlyCount > 0) {
     outText = outText.replace(nullOnly, '$1nullable: true');
-    writeFileSync(OUTPUT, outText);
     console.log(`[downconvert] ${nullOnlyCount} null-only schema(s) rewritten to nullable: true`);
   }
+
+  // `notify_counterparty` is optional on create (CreateDemandRequest) and on
+  // the partial term update (ContractTermInput). The server reads a missing
+  // key as "keep the template's / the current value", but the spec also
+  // declares `default: false`, and the generated models then send false on
+  // every request. On create that silently overrides a template that notifies
+  // the counterparty; on the partial update it resets the setting. Drop the
+  // default in the generator input only, so the key is sent when the caller
+  // sets it. The vendored 3.1 spec is untouched. Exactly two occurrences are
+  // expected; any other count means the spec changed and this needs a look.
+  const notifyDefault = /(\n {8}notify_counterparty:\n {10}type: boolean\n) {10}default: false\n/g;
+  const notifyCount = (outText.match(notifyDefault) ?? []).length;
+  if (notifyCount !== 2) {
+    console.error(`[downconvert] FAIL: expected 2 notify_counterparty defaults to drop, found ${notifyCount}`);
+    process.exit(1);
+  }
+  outText = outText.replace(notifyDefault, '$1');
+  writeFileSync(OUTPUT, outText);
+  console.log('[downconvert] notify_counterparty default dropped from CreateDemandRequest and ContractTermInput');
 
   const outVersionMatch = outText.match(/^openapi:\s*["']?(\S+?)["']?\s*$/m);
   const outVersion = outVersionMatch ? outVersionMatch[1] : null;

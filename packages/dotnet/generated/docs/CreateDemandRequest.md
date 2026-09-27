@@ -33,7 +33,7 @@ Name | Type | Description | Notes
 **RenewalPeriodMonths** | **int?** | AUTO_RENEW gerektirir; verilmezse term_duration_months&#39;tan devralınır. | [optional] 
 **NoticeDays** | **int?** |  | [optional] 
 **ReminderOffsets** | **List&lt;int&gt;** |  | [optional] 
-**NotifyCounterparty** | **bool** |  | [optional] [default to false]
+**NotifyCounterparty** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

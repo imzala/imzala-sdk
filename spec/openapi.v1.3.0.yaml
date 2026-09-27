@@ -5540,7 +5540,6 @@ components:
             temizlemek için `null` gönderin.
         notify_counterparty:
           type: boolean
-          default: false
     CreateDemandRequest:
       type: object
       required:
@@ -5858,7 +5857,6 @@ components:
             maximum: 3650
         notify_counterparty:
           type: boolean
-          default: false
     ReminderSettings:
       type: object
       description: |

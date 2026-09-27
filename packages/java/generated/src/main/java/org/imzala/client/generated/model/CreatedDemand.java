@@ -56,7 +56,7 @@ import org.imzala.client.generated.ApiClient;
   CreatedDemand.JSON_PROPERTY_VARIABLES_APPLIED_BY_DOCUMENT,
   CreatedDemand.JSON_PROPERTY_VARIABLES_IGNORED_BY_DOCUMENT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreatedDemand {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable

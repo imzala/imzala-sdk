@@ -64,7 +64,7 @@ class CreateDemandRequest(BaseModel):
     renewal_period_months: Optional[Annotated[int, Field(le=600, strict=True, ge=1)]] = Field(default=None, description="AUTO_RENEW gerektirir; verilmezse term_duration_months'tan devralınır.")
     notice_days: Optional[Annotated[int, Field(le=3650, strict=True, ge=0)]] = None
     reminder_offsets: Optional[Annotated[List[Annotated[int, Field(le=3650, strict=True, ge=0)]], Field(max_length=5)]] = None
-    notify_counterparty: Optional[StrictBool] = False
+    notify_counterparty: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["template_id", "title", "description", "idempotency_key", "force", "party_mapping", "documents", "variables", "document_variables", "has_timestamp", "allowed_signature_variants", "dispatch_notifications", "send_sms_notifications", "send_email_notifications", "sms_title", "sms_content", "email_content", "expiry_date", "require_tc_verification", "require_biometric_verification", "reminder_settings", "term_start_mode", "term_start_date", "term_duration_months", "term_fixed_end_date", "renewal_type", "renewal_period_months", "notice_days", "reminder_offsets", "notify_counterparty"]
 
     @field_validator('allowed_signature_variants')
@@ -268,7 +268,7 @@ class CreateDemandRequest(BaseModel):
             "renewal_period_months": obj.get("renewal_period_months"),
             "notice_days": obj.get("notice_days"),
             "reminder_offsets": obj.get("reminder_offsets"),
-            "notify_counterparty": obj.get("notify_counterparty") if obj.get("notify_counterparty") is not None else False
+            "notify_counterparty": obj.get("notify_counterparty")
         })
         return _obj
 

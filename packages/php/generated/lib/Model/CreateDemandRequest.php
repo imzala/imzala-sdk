@@ -501,7 +501,7 @@ class CreateDemandRequest implements ModelInterface, ArrayAccess, \JsonSerializa
         $this->setIfExists('renewal_period_months', $data ?? [], null);
         $this->setIfExists('notice_days', $data ?? [], null);
         $this->setIfExists('reminder_offsets', $data ?? [], null);
-        $this->setIfExists('notify_counterparty', $data ?? [], false);
+        $this->setIfExists('notify_counterparty', $data ?? [], null);
     }
 
     /**

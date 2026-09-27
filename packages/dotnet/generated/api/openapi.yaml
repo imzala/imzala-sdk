@@ -4180,7 +4180,7 @@ components:
         - 2176
         - 2176
         - 2176
-        notify_counterparty: false
+        notify_counterparty: true
       properties:
         term_start_mode:
           enum:
@@ -4231,7 +4231,6 @@ components:
           nullable: true
           type: array
         notify_counterparty:
-          default: false
           type: boolean
       type: object
     CreateDemandRequest:
@@ -4314,7 +4313,7 @@ components:
         - 2176
         - 2176
         - 2176
-        notify_counterparty: false
+        notify_counterparty: true
       properties:
         template_id:
           description: GET /api/v1/templates listesinden veya dashboard'dan kopyalayın
@@ -4554,7 +4553,6 @@ components:
           nullable: true
           type: array
         notify_counterparty:
-          default: false
           type: boolean
       required:
       - party_mapping

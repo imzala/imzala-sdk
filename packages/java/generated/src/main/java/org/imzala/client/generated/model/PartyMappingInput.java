@@ -50,7 +50,7 @@ import org.imzala.client.generated.ApiClient;
   PartyMappingInput.JSON_PROPERTY_VARIABLES,
   PartyMappingInput.JSON_PROPERTY_DOCUMENT_VARIABLES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class PartyMappingInput {
   public static final String JSON_PROPERTY_TEMPLATE_PARTY_ID = "template_party_id";
   @javax.annotation.Nonnull

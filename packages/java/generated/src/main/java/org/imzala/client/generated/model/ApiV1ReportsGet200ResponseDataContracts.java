@@ -40,7 +40,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1ReportsGet200ResponseDataContracts.JSON_PROPERTY_EXPIRED,
   ApiV1ReportsGet200ResponseDataContracts.JSON_PROPERTY_THIS_MONTH
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1ReportsGet200ResponseDataContracts {
   public static final String JSON_PROPERTY_TOTAL = "total";
   @javax.annotation.Nullable

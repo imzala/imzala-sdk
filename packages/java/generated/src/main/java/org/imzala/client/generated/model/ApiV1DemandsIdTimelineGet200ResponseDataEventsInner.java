@@ -46,7 +46,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.JSON_PROPERTY_COMMENT_TEXT,
   ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.JSON_PROPERTY_CREATED_AT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsIdTimelineGet200ResponseDataEventsInner {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable

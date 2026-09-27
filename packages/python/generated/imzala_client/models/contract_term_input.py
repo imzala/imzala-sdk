@@ -38,7 +38,7 @@ class ContractTermInput(BaseModel):
     renewal_period_months: Optional[Annotated[int, Field(le=600, strict=True, ge=1)]] = None
     notice_days: Optional[Annotated[int, Field(le=3650, strict=True, ge=0)]] = None
     reminder_offsets: Optional[Annotated[List[Annotated[int, Field(le=3650, strict=True, ge=0)]], Field(max_length=5)]] = Field(default=None, description="Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır); temizlemek için `null` gönderin. ")
-    notify_counterparty: Optional[StrictBool] = False
+    notify_counterparty: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["term_start_mode", "term_start_date", "term_duration_months", "term_fixed_end_date", "renewal_type", "renewal_period_months", "notice_days", "reminder_offsets", "notify_counterparty"]
 
     @field_validator('term_start_mode')
@@ -160,7 +160,7 @@ class ContractTermInput(BaseModel):
             "renewal_period_months": obj.get("renewal_period_months"),
             "notice_days": obj.get("notice_days"),
             "reminder_offsets": obj.get("reminder_offsets"),
-            "notify_counterparty": obj.get("notify_counterparty") if obj.get("notify_counterparty") is not None else False
+            "notify_counterparty": obj.get("notify_counterparty")
         })
         return _obj
 

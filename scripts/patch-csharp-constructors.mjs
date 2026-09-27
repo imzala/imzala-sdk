@@ -21,7 +21,7 @@ const STRIP = {
   renewalPeriodMonths: { decl: ', int? renewalPeriodMonths = default', prop: 'RenewalPeriodMonths' },
   noticeDays: { decl: ', int? noticeDays = default', prop: 'NoticeDays' },
   reminderOffsets: { decl: ', List<int> reminderOffsets = default', prop: 'ReminderOffsets' },
-  notifyCounterparty: { decl: ', bool notifyCounterparty = false', prop: 'NotifyCounterparty' },
+  notifyCounterparty: { decl: ', bool notifyCounterparty = default', prop: 'NotifyCounterparty' },
 };
 const TERM = [
   'termStartMode', 'termStartDate', 'termDurationMonths', 'termFixedEndDate', 'renewalType',

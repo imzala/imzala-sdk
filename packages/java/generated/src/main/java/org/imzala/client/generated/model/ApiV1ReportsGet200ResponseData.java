@@ -36,7 +36,7 @@ import org.imzala.client.generated.ApiClient;
 @JsonPropertyOrder({
   ApiV1ReportsGet200ResponseData.JSON_PROPERTY_CONTRACTS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1ReportsGet200ResponseData {
   public static final String JSON_PROPERTY_CONTRACTS = "contracts";
   @javax.annotation.Nullable

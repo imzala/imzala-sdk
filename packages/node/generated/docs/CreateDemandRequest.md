@@ -34,7 +34,7 @@ Name | Type | Description | Notes
 **renewal_period_months** | **number** | AUTO_RENEW gerektirir; verilmezse term_duration_months\&#39;tan devralınır. | [optional] [default to undefined]
 **notice_days** | **number** |  | [optional] [default to undefined]
 **reminder_offsets** | **Array&lt;number&gt;** |  | [optional] [default to undefined]
-**notify_counterparty** | **boolean** |  | [optional] [default to false]
+**notify_counterparty** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
 

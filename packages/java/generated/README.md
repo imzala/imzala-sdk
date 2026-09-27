@@ -4,7 +4,7 @@ imzala External API
 
 - API version: 1.9.1
 
-- Build date: 2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]
+- Build date: 2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 

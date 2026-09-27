@@ -79,7 +79,7 @@ import org.imzala.client.generated.ApiClient;
   CreateDemandRequest.JSON_PROPERTY_REMINDER_OFFSETS,
   CreateDemandRequest.JSON_PROPERTY_NOTIFY_COUNTERPARTY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreateDemandRequest {
   public static final String JSON_PROPERTY_TEMPLATE_ID = "template_id";
   @javax.annotation.Nonnull
@@ -303,7 +303,7 @@ public class CreateDemandRequest {
 
   public static final String JSON_PROPERTY_NOTIFY_COUNTERPARTY = "notify_counterparty";
   @javax.annotation.Nullable
-  private Boolean notifyCounterparty = false;
+  private Boolean notifyCounterparty;
 
   public CreateDemandRequest() { 
   }

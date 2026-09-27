@@ -34,7 +34,7 @@ Name | Type | Description | Notes
 **renewal_period_months** | **int** | AUTO_RENEW gerektirir; verilmezse term_duration_months&#39;tan devralınır. | [optional] 
 **notice_days** | **int** |  | [optional] 
 **reminder_offsets** | **List[int]** |  | [optional] 
-**notify_counterparty** | **bool** |  | [optional] [default to False]
+**notify_counterparty** | **bool** |  | [optional] 
 
 ## Example
 

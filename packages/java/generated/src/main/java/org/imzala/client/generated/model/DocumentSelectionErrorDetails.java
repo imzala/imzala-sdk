@@ -38,7 +38,7 @@ import org.imzala.client.generated.ApiClient;
   DocumentSelectionErrorDetails.JSON_PROPERTY_REASON,
   DocumentSelectionErrorDetails.JSON_PROPERTY_DOCUMENT_IDS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentSelectionErrorDetails {
   /**
    * &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı. 

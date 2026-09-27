@@ -100,8 +100,8 @@ namespace ImzalaApiClient.Model
         /// <param name="renewalPeriodMonths">renewalPeriodMonths.</param>
         /// <param name="noticeDays">noticeDays.</param>
         /// <param name="reminderOffsets">Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır); temizlemek için &#x60;null&#x60; gönderin. .</param>
-        /// <param name="notifyCounterparty">notifyCounterparty (default to false).</param>
-        public ContractTermInput(TermStartModeEnum? termStartMode = default, DateOnly? termStartDate = default, int? termDurationMonths = default, DateOnly? termFixedEndDate = default, RenewalTypeEnum? renewalType = default, int? renewalPeriodMonths = default, int? noticeDays = default, List<int> reminderOffsets = default, bool notifyCounterparty = false)
+        /// <param name="notifyCounterparty">notifyCounterparty.</param>
+        public ContractTermInput(TermStartModeEnum? termStartMode = default, DateOnly? termStartDate = default, int? termDurationMonths = default, DateOnly? termFixedEndDate = default, RenewalTypeEnum? renewalType = default, int? renewalPeriodMonths = default, int? noticeDays = default, List<int> reminderOffsets = default, bool notifyCounterparty = default)
         {
             this.TermStartMode = termStartMode;
             this.TermStartDate = termStartDate;

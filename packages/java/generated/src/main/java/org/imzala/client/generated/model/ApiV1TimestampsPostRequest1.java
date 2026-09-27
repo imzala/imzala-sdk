@@ -39,7 +39,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1TimestampsPostRequest1.JSON_PROPERTY_OWNER_FIRST_NAME,
   ApiV1TimestampsPostRequest1.JSON_PROPERTY_OWNER_LAST_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1TimestampsPostRequest1 {
   public static final String JSON_PROPERTY_FILE_BASE64 = "file_base64";
   @javax.annotation.Nonnull

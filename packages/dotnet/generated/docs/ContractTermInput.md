@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **RenewalPeriodMonths** | **int?** |  | [optional] 
 **NoticeDays** | **int?** |  | [optional] 
 **ReminderOffsets** | **List&lt;int&gt;** | Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır); temizlemek için &#x60;null&#x60; gönderin.  | [optional] 
-**NotifyCounterparty** | **bool** |  | [optional] [default to false]
+**NotifyCounterparty** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
