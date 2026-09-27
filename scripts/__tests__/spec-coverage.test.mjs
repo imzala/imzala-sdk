@@ -31,6 +31,9 @@ const REQUIRED_PATHS = [
   '/api/v1/demands/{id}/timeline',
   '/api/v1/demands/{id}/cancel',
   '/api/v1/demands/{id}/parties/{partyId}/resend',
+  '/api/v1/demands/{id}/term',
+  '/api/v1/demands/{id}/archive',
+  '/api/v1/demands/{id}/unarchive',
   '/api/v1/demands/{demandId}/documents',
   '/api/v1/demands/{demandId}/documents/upload',
   '/api/v1/demands/{demandId}/documents/order',
@@ -60,6 +63,9 @@ const REQUIRED_WEBHOOKS = [
   'party.rejected',
   'kyc.completed',
   'kyc.failed',
+  'contract.expiring',
+  'contract.ended',
+  'contract.advanced',
 ];
 
 // Example data in the spec is fictional only. Turkish mobile numbers use the
