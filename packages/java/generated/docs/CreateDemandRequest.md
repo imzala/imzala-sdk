@@ -28,6 +28,15 @@
 |**requireTcVerification** | **Boolean** |  |  [optional] |
 |**requireBiometricVerification** | **Boolean** |  |  [optional] |
 |**reminderSettings** | [**ReminderSettings**](ReminderSettings.md) | Bu sözleşme için hatırlatma ayarlarını **şablon default&#39;unu override** ederek belirtir. Yollanmazsa şablonun &#x60;reminder_*&#x60; alanları kullanılır (PUT /api/templates/:id ile dashboard&#39;dan kaydedilen değerler); şablonda da yoksa &#x60;{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\&quot;email\&quot;]}&#x60; default&#39;u uygulanır. Demand oluşumunda &#x60;ReminderConfig&#x60; satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.  |  [optional] |
+|**termStartMode** | [**TermStartModeEnum**](#TermStartModeEnum) | Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları).  |  [optional] |
+|**termStartDate** | **LocalDate** | Yalnız term_start_mode: FIXED_DATE iken kullanılır. |  [optional] |
+|**termDurationMonths** | **Integer** |  |  [optional] |
+|**termFixedEndDate** | **LocalDate** |  |  [optional] |
+|**renewalType** | [**RenewalTypeEnum**](#RenewalTypeEnum) |  |  [optional] |
+|**renewalPeriodMonths** | **Integer** | AUTO_RENEW gerektirir; verilmezse term_duration_months&#39;tan devralınır. |  [optional] |
+|**noticeDays** | **Integer** |  |  [optional] |
+|**reminderOffsets** | **List&lt;Integer&gt;** |  |  [optional] |
+|**notifyCounterparty** | **Boolean** |  |  [optional] |
 
 
 
@@ -40,6 +49,25 @@
 | UPLOAD | &quot;upload&quot; |
 | PHONE | &quot;phone&quot; |
 | PHONE_DRAW | &quot;phone_draw&quot; |
+
+
+
+## Enum: TermStartModeEnum
+
+| Name | Value |
+|---- | -----|
+| FIXED_DATE | &quot;FIXED_DATE&quot; |
+| ON_FIRST_SIGNATURE | &quot;ON_FIRST_SIGNATURE&quot; |
+| ON_COMPLETION | &quot;ON_COMPLETION&quot; |
+
+
+
+## Enum: RenewalTypeEnum
+
+| Name | Value |
+|---- | -----|
+| AUTO_RENEW | &quot;AUTO_RENEW&quot; |
+| FIXED_TERM | &quot;FIXED_TERM&quot; |
 
 
 

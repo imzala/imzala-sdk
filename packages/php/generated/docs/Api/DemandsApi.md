@@ -16,6 +16,7 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 | [**apiV1DemandsDemandIdDocumentsPost()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsPost) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle |
 | [**apiV1DemandsDemandIdDocumentsUploadPost()**](DemandsApi.md#apiV1DemandsDemandIdDocumentsUploadPost) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya) |
 | [**apiV1DemandsGet()**](DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz) |
+| [**apiV1DemandsIdArchivePost()**](DemandsApi.md#apiV1DemandsIdArchivePost) | **POST** /api/v1/demands/{id}/archive | Sözleşmeyi arşivle |
 | [**apiV1DemandsIdBelgeDocumentIdPdfGet()**](DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGet) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf) |
 | [**apiV1DemandsIdCancelPost()**](DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void) |
 | [**apiV1DemandsIdCertificateGet()**](DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
@@ -26,7 +27,9 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 | [**apiV1DemandsIdItemsPost()**](DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
 | [**apiV1DemandsIdPartiesPartyIdResendPost()**](DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder |
 | [**apiV1DemandsIdPdfGet()**](DemandsApi.md#apiV1DemandsIdPdfGet) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme) |
+| [**apiV1DemandsIdTermPatch()**](DemandsApi.md#apiV1DemandsIdTermPatch) | **PATCH** /api/v1/demands/{id}/term | Sözleşme süre/yenileme takibini güncelle |
 | [**apiV1DemandsIdTimelineGet()**](DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli) |
+| [**apiV1DemandsIdUnarchivePost()**](DemandsApi.md#apiV1DemandsIdUnarchivePost) | **POST** /api/v1/demands/{id}/unarchive | Sözleşmeyi arşivden çıkar |
 | [**apiV1DemandsPost()**](DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan) |
 | [**apiV1DemandsUploadPost()**](DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz) |
 | [**apiV1FieldTemplatesIdPreviewLayoutPost()**](DemandsApi.md#apiV1FieldTemplatesIdPreviewLayoutPost) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener |
@@ -623,7 +626,7 @@ try {
 ## `apiV1DemandsGet()`
 
 ```php
-apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort): \Imzala\Client\Model\ApiV1DemandsGet200Response
+apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort, $archived): \Imzala\Client\Model\ApiV1DemandsGet200Response
 ```
 
 Sözleşme listesi (counts-only, PII'siz)
@@ -657,9 +660,10 @@ $template_id = 'template_id_example'; // string
 $page = 1; // int
 $limit = 20; // int | Sayfa boyutu (page_size ile aynı)
 $sort = 'sort_example'; // string | alan:yön (ör. createdAt:desc)
+$archived = 'archived_example'; // string | Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler. `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).
 
 try {
-    $result = $apiInstance->apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort);
+    $result = $apiInstance->apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort, $archived);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DemandsApi->apiV1DemandsGet: ', $e->getMessage(), PHP_EOL;
@@ -678,10 +682,73 @@ try {
 | **page** | **int**|  | [optional] [default to 1] |
 | **limit** | **int**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
 | **sort** | **string**| alan:yön (ör. createdAt:desc) | [optional] |
+| **archived** | **string**| Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz). | [optional] |
 
 ### Return type
 
 [**\Imzala\Client\Model\ApiV1DemandsGet200Response**](../Model/ApiV1DemandsGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdArchivePost()`
+
+```php
+apiV1DemandsIdArchivePost($id): \Imzala\Client\Model\ApiV1DemandsIdArchivePost200Response
+```
+
+Sözleşmeyi arşivle
+
+Arşiv sözleşmenin `status`'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdArchivePost($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdArchivePost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdArchivePost200Response**](../Model/ApiV1DemandsIdArchivePost200Response.md)
 
 ### Authorization
 
@@ -896,7 +963,7 @@ apiV1DemandsIdDelete($id): \Imzala\Client\Model\ApiV1TemplatesIdDelete200Respons
 
 Sözleşme sil (yalnızca tamamlanmamış)
 
-Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`.
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın.
 
 ### Example
 
@@ -958,7 +1025,7 @@ apiV1DemandsIdEmbedSessionPost($id, $api_v1_demands_id_embed_session_post_reques
 
 Gömülü imza oturumu başlat (embed token mint)
 
-Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner.
+Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner.
 
 ### Example
 
@@ -1332,6 +1399,70 @@ try {
 [[Back to Model list]](../../README.md#models)
 [[Back to README]](../../README.md)
 
+## `apiV1DemandsIdTermPatch()`
+
+```php
+apiV1DemandsIdTermPatch($id, $contract_term_input): \Imzala\Client\Model\ApiV1DemandsIdTermPatch200Response
+```
+
+Sözleşme süre/yenileme takibini güncelle
+
+Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op'tur (otomatik olarak ileri alınmış bitiş korunur).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$contract_term_input = {"term_start_mode":"ON_COMPLETION","term_duration_months":12,"renewal_type":"AUTO_RENEW","notice_days":30}; // \Imzala\Client\Model\ContractTermInput
+
+try {
+    $result = $apiInstance->apiV1DemandsIdTermPatch($id, $contract_term_input);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdTermPatch: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **contract_term_input** | [**\Imzala\Client\Model\ContractTermInput**](../Model/ContractTermInput.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdTermPatch200Response**](../Model/ApiV1DemandsIdTermPatch200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
 ## `apiV1DemandsIdTimelineGet()`
 
 ```php
@@ -1380,6 +1511,68 @@ try {
 ### Return type
 
 [**\Imzala\Client\Model\ApiV1DemandsIdTimelineGet200Response**](../Model/ApiV1DemandsIdTimelineGet200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdUnarchivePost()`
+
+```php
+apiV1DemandsIdUnarchivePost($id): \Imzala\Client\Model\ApiV1DemandsIdUnarchivePost200Response
+```
+
+Sözleşmeyi arşivden çıkar
+
+`archived_at`'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`).
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+
+try {
+    $result = $apiInstance->apiV1DemandsIdUnarchivePost($id);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdUnarchivePost: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdUnarchivePost200Response**](../Model/ApiV1DemandsIdUnarchivePost200Response.md)
 
 ### Authorization
 

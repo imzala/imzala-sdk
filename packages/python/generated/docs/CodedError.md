@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **success** | **bool** |  | [optional] 
 **error** | **str** |  | [optional] 
 **code** | **str** |  | [optional] 
+**var_field** | **str** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  | [optional] 
 
 ## Example
 

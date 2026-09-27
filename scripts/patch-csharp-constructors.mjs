@@ -11,9 +11,32 @@ const STRIP = {
     decl: 'Dictionary<string, Dictionary<string, PartyMappingInputVariablesValue>> documentVariables = default, ',
     prop: 'DocumentVariables',
   },
+  // Contract term fields (API 1.9.1) are appended after the last published
+  // parameter; the leading ", " keeps the remaining list well formed.
+  termStartMode: { decl: ', TermStartModeEnum? termStartMode = default', prop: 'TermStartMode' },
+  termStartDate: { decl: ', DateOnly? termStartDate = default', prop: 'TermStartDate' },
+  termDurationMonths: { decl: ', int? termDurationMonths = default', prop: 'TermDurationMonths' },
+  termFixedEndDate: { decl: ', DateOnly? termFixedEndDate = default', prop: 'TermFixedEndDate' },
+  renewalType: { decl: ', RenewalTypeEnum? renewalType = default', prop: 'RenewalType' },
+  renewalPeriodMonths: { decl: ', int? renewalPeriodMonths = default', prop: 'RenewalPeriodMonths' },
+  noticeDays: { decl: ', int? noticeDays = default', prop: 'NoticeDays' },
+  reminderOffsets: { decl: ', List<int> reminderOffsets = default', prop: 'ReminderOffsets' },
+  notifyCounterparty: { decl: ', bool notifyCounterparty = false', prop: 'NotifyCounterparty' },
 };
+const TERM = [
+  'termStartMode', 'termStartDate', 'termDurationMonths', 'termFixedEndDate', 'renewalType',
+  'renewalPeriodMonths', 'noticeDays', 'reminderOffsets', 'notifyCounterparty',
+];
+// On create an unset term field must not reach the wire: the server fills a
+// missing field from the template, and the generated model would otherwise
+// send null for every unset field and false for notify_counterparty, which
+// overrides a template that notifies the counterparty. Emit them only when set.
+const TERM_WIRE = [
+  'term_start_mode', 'term_start_date', 'term_duration_months', 'term_fixed_end_date', 'renewal_type',
+  'renewal_period_months', 'notice_days', 'reminder_offsets', 'notify_counterparty',
+];
 for (const [model, expectedCount, strip] of [
-  ['CreateDemandRequest', 19, ['allowedSignatureVariants', 'documentVariables']],
+  ['CreateDemandRequest', 19, ['allowedSignatureVariants', 'documentVariables', ...TERM]],
   ['ApiV1DemandsBulkPostRequestOptions', 9, ['allowedSignatureVariants']],
 ]) {
   const file = path.join(directory, 'src/ImzalaApiClient/Model', model + '.cs');
@@ -36,6 +59,13 @@ for (const [model, expectedCount, strip] of [
   const actual = source.match(signature)[1];
   if (strip.some((n) => actual.includes(n)) || (actual.match(/ = /g) ?? []).length !== expectedCount) {
     throw new Error('Unexpected constructor shape: ' + model);
+  }
+  if (model === 'CreateDemandRequest') {
+    for (const wire of TERM_WIRE) {
+      const attr = '[DataMember(Name = "' + wire + '", EmitDefaultValue = true)]';
+      if (!source.includes(attr)) throw new Error('Term attribute not found: ' + wire);
+      source = source.replace(attr, '[DataMember(Name = "' + wire + '", EmitDefaultValue = false)]');
+    }
   }
   fs.writeFileSync(file, source);
 }

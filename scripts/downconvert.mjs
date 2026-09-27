@@ -12,7 +12,7 @@
  * Usage: node scripts/downconvert.mjs
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -66,7 +66,22 @@ function main() {
   );
 
   const srcText = readFileSync(INPUT, 'utf8');
-  const outText = readFileSync(OUTPUT, 'utf8');
+  let outText = readFileSync(OUTPUT, 'utf8');
+
+  // A 3.1 schema that is exactly `type: 'null'` (a property that is always
+  // null, e.g. `archived_at` after unarchive) has no 3.0 equivalent and the
+  // down-converter passes it through untouched. openapi-generator's python
+  // generator then aborts ("Codegen Property not yet supported in
+  // getPydanticType"). Rewrite it to an untyped nullable schema, which every
+  // generator reads as "any value, may be null". List items (`- type: 'null'`
+  // inside oneOf/anyOf) are left alone: the generators already handle them.
+  const nullOnly = /^(\s+)type: ["']null["'][ \t]*$/gm;
+  const nullOnlyCount = (outText.match(nullOnly) ?? []).length;
+  if (nullOnlyCount > 0) {
+    outText = outText.replace(nullOnly, '$1nullable: true');
+    writeFileSync(OUTPUT, outText);
+    console.log(`[downconvert] ${nullOnlyCount} null-only schema(s) rewritten to nullable: true`);
+  }
 
   const outVersionMatch = outText.match(/^openapi:\s*["']?(\S+?)["']?\s*$/m);
   const outVersion = outVersionMatch ? outVersionMatch[1] : null;

@@ -39,6 +39,8 @@ docs/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/ApiV1DemandsGet200Response.md
 docs/ApiV1DemandsGet200ResponseData.md
 docs/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/ApiV1DemandsIdArchivePost200Response.md
+docs/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/ApiV1DemandsIdCancelPost200Response.md
 docs/ApiV1DemandsIdCancelPost200ResponseData.md
 docs/ApiV1DemandsIdCancelPostRequest.md
@@ -55,9 +57,13 @@ docs/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md
 docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md
 docs/ApiV1DemandsIdRemindersPost429Response.md
 docs/ApiV1DemandsIdRemindersPost429ResponseError.md
+docs/ApiV1DemandsIdTermPatch200Response.md
+docs/ApiV1DemandsIdTermPatch200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
+docs/ApiV1DemandsIdUnarchivePost200Response.md
+docs/ApiV1DemandsIdUnarchivePost200ResponseData.md
 docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
@@ -97,6 +103,8 @@ docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
+docs/ContractTerm.md
+docs/ContractTermInput.md
 docs/CreateDemandRequest.md
 docs/CreatedDemand.md
 docs/CreatedDemandSigningUrlsInner.md
@@ -165,6 +173,7 @@ docs/UpsertItemsRequest.md
 docs/UpsertItemsResponse.md
 docs/UpsertItemsResponseData.md
 docs/UpsertItemsResponseDataItemsInner.md
+docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
@@ -237,6 +246,8 @@ src/main/java/org/imzala/client/generated/model/ApiV1DemandsDemandIdDocumentsPos
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsGet200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsGet200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsGet200ResponseDataDemandsInner.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdArchivePost200Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdArchivePost200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPost200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPost200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPostRequest.java
@@ -253,9 +264,13 @@ src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost200Re
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost429Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost429ResponseError.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTermPatch200Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTermPatch200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdUnarchivePost200Response.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsIdUnarchivePost200ResponseData.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost201Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost400Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost402Response.java
@@ -294,6 +309,8 @@ src/main/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1.java
 src/main/java/org/imzala/client/generated/model/CodedError.java
 src/main/java/org/imzala/client/generated/model/ContactSummary.java
 src/main/java/org/imzala/client/generated/model/ContactSummaryCompany.java
+src/main/java/org/imzala/client/generated/model/ContractTerm.java
+src/main/java/org/imzala/client/generated/model/ContractTermInput.java
 src/main/java/org/imzala/client/generated/model/CreateDemandRequest.java
 src/main/java/org/imzala/client/generated/model/CreatedDemand.java
 src/main/java/org/imzala/client/generated/model/CreatedDemandSigningUrlsInner.java
@@ -357,6 +374,7 @@ src/main/java/org/imzala/client/generated/model/UpsertItemsRequest.java
 src/main/java/org/imzala/client/generated/model/UpsertItemsResponse.java
 src/main/java/org/imzala/client/generated/model/UpsertItemsResponseData.java
 src/main/java/org/imzala/client/generated/model/UpsertItemsResponseDataItemsInner.java
+src/main/java/org/imzala/client/generated/model/WebhookDataContractTerm.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCompleted.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCompletedPartiesInner.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCreated.java
@@ -408,6 +426,8 @@ src/test/java/org/imzala/client/generated/model/ApiV1DemandsDemandIdDocumentsPos
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsGet200ResponseDataDemandsInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsGet200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsGet200ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdArchivePost200ResponseDataTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdArchivePost200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPost200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPost200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdCancelPostRequestTest.java
@@ -424,9 +444,13 @@ src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost200Re
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost429ResponseErrorTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdRemindersPost429ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTermPatch200ResponseDataTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTermPatch200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdTimelineGet200ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdUnarchivePost200ResponseDataTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsIdUnarchivePost200ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost201ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost400ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseDataTest.java
@@ -465,6 +489,8 @@ src/test/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1Test.
 src/test/java/org/imzala/client/generated/model/CodedErrorTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryCompanyTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryTest.java
+src/test/java/org/imzala/client/generated/model/ContractTermInputTest.java
+src/test/java/org/imzala/client/generated/model/ContractTermTest.java
 src/test/java/org/imzala/client/generated/model/CreateDemandRequestTest.java
 src/test/java/org/imzala/client/generated/model/CreatedDemandSigningUrlsInnerTest.java
 src/test/java/org/imzala/client/generated/model/CreatedDemandStampsAppliedInnerTest.java
@@ -528,6 +554,7 @@ src/test/java/org/imzala/client/generated/model/UpsertItemsRequestTest.java
 src/test/java/org/imzala/client/generated/model/UpsertItemsResponseDataItemsInnerTest.java
 src/test/java/org/imzala/client/generated/model/UpsertItemsResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/UpsertItemsResponseTest.java
+src/test/java/org/imzala/client/generated/model/WebhookDataContractTermTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCompletedPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCompletedTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCreatedTest.java

@@ -39,6 +39,8 @@ docs/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/ApiV1DemandsGet200Response.md
 docs/ApiV1DemandsGet200ResponseData.md
 docs/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/ApiV1DemandsIdArchivePost200Response.md
+docs/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/ApiV1DemandsIdCancelPost200Response.md
 docs/ApiV1DemandsIdCancelPost200ResponseData.md
 docs/ApiV1DemandsIdCancelPostRequest.md
@@ -55,9 +57,13 @@ docs/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md
 docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md
 docs/ApiV1DemandsIdRemindersPost429Response.md
 docs/ApiV1DemandsIdRemindersPost429ResponseError.md
+docs/ApiV1DemandsIdTermPatch200Response.md
+docs/ApiV1DemandsIdTermPatch200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
+docs/ApiV1DemandsIdUnarchivePost200Response.md
+docs/ApiV1DemandsIdUnarchivePost200ResponseData.md
 docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
@@ -97,6 +103,8 @@ docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
+docs/ContractTerm.md
+docs/ContractTermInput.md
 docs/CreateDemandRequest.md
 docs/CreatedDemand.md
 docs/CreatedDemandSigningUrlsInner.md
@@ -165,6 +173,7 @@ docs/UpsertItemsRequest.md
 docs/UpsertItemsResponse.md
 docs/UpsertItemsResponseData.md
 docs/UpsertItemsResponseDataItemsInner.md
+docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md

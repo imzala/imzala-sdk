@@ -2,9 +2,9 @@
 /* eslint-disable */
 /**
  * imzala External API
- * imzala.org dış API\'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24  ## Auth Tüm istekler `X-API-Key` header\'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field\'lar) `POST /api/v1/demands` payload\'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field\'lar   (örn. Kira sözleşmesinde Kiraya Veren\'in `address`, `iban` field\'ları) - `variables` (root) — **partilerden bağımsız** field\'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item\'ın template_party_id\'si var ve o parti slug\'ı göndermişse → uygula 2. Yoksa root `variables`\'tan ara → varsa uygula 3. Yoksa atla  Dashboard\'daki **API Kullanımı** tab\'ı (`/sablonlar/<id>`) hangi field\'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint\'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array\'ı, gönderdiğiniz ama şablonda eşleşmeyen slug\'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log\'ta veya dashboard\'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard\'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta\'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker\'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body\'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default\'unu   ezer, sadece bu demand\'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint\'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response\'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility\'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d \'{}\'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d \'{\"channels\": [\"sms\"], \"force\": true}\' ```  Detay için **Reminders** tag\'i altındaki endpoint\'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL\'ye `POST` ile JSON payload gönderir. Webhook\'lar dashboard\'dan yönetilir: **Ayarlar -> Webhook\'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook\'u** (org workspace\'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event\'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace\'te) → sadece sizin kendi   event\'lerinizde tetiklenir  ### Olay tipleri (8) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |  ### Header\'lar Her istekte aşağıdaki header\'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB\'de unique key). - `type` — yukarıdaki 8 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header\'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require(\'crypto\');  function verify(rawBody, header, secret) {   const expected = \'sha256=\' + crypto     .createHmac(\'sha256\', secret)     .update(rawBody, \'utf8\')     .digest(\'hex\');   return crypto.timingSafeEqual(     Buffer.from(header || \'\', \'utf8\'),     Buffer.from(expected, \'utf8\')   ); }  // Express app.post(\'/webhook\', express.raw({ type: \'application/json\' }), (req, res) => {   const sig = req.header(\'X-Imzala-Signature-256\');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send(\'invalid signature\');   }   const event = JSON.parse(req.body.toString(\'utf8\'));   // ... event\'i kuyruğa koy ve hemen 2xx dön   res.status(200).send(\'ok\'); }); ```  > **Önemli:** Body\'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware\'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard\'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint\'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB\'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix\'inden sonra kayıp event\'leri yakalamak) için bazı payload\'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow\'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send(\'replay accepted\'); } ```  ### Manuel yeniden gönderim Dashboard\'da `Ayarlar -> Webhook\'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5\'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`\'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn\'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload\'larda side-effect\'leri atla. 5. `X-Imzala-Delivery` UUID\'sini log\'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret\'i env var\'da sakla, koda gömme. 
+ * imzala.org dış API\'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27  ## Auth Tüm istekler `X-API-Key` header\'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field\'lar) `POST /api/v1/demands` payload\'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field\'lar   (örn. Kira sözleşmesinde Kiraya Veren\'in `address`, `iban` field\'ları) - `variables` (root) — **partilerden bağımsız** field\'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item\'ın template_party_id\'si var ve o parti slug\'ı göndermişse → uygula 2. Yoksa root `variables`\'tan ara → varsa uygula 3. Yoksa atla  Dashboard\'daki **API Kullanımı** tab\'ı (`/sablonlar/<id>`) hangi field\'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint\'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array\'ı, gönderdiğiniz ama şablonda eşleşmeyen slug\'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log\'ta veya dashboard\'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard\'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta\'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker\'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body\'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default\'unu   ezer, sadece bu demand\'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint\'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response\'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility\'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d \'{}\'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d \'{\"channels\": [\"sms\"], \"force\": true}\' ```  Detay için **Reminders** tag\'i altındaki endpoint\'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL\'ye `POST` ile JSON payload gönderir. Webhook\'lar dashboard\'dan yönetilir: **Ayarlar -> Webhook\'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook\'u** (org workspace\'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event\'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace\'te) → sadece sizin kendi   event\'lerinizde tetiklenir  ### Olay tipleri (11) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header\'lar Her istekte aşağıdaki header\'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB\'de unique key). - `type`: yukarıdaki 11 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header\'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require(\'crypto\');  function verify(rawBody, header, secret) {   const expected = \'sha256=\' + crypto     .createHmac(\'sha256\', secret)     .update(rawBody, \'utf8\')     .digest(\'hex\');   return crypto.timingSafeEqual(     Buffer.from(header || \'\', \'utf8\'),     Buffer.from(expected, \'utf8\')   ); }  // Express app.post(\'/webhook\', express.raw({ type: \'application/json\' }), (req, res) => {   const sig = req.header(\'X-Imzala-Signature-256\');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send(\'invalid signature\');   }   const event = JSON.parse(req.body.toString(\'utf8\'));   // ... event\'i kuyruğa koy ve hemen 2xx dön   res.status(200).send(\'ok\'); }); ```  > **Önemli:** Body\'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware\'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard\'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint\'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB\'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix\'inden sonra kayıp event\'leri yakalamak) için bazı payload\'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow\'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send(\'replay accepted\'); } ```  ### Manuel yeniden gönderim Dashboard\'da `Ayarlar -> Webhook\'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5\'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`\'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn\'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload\'larda side-effect\'leri atla. 5. `X-Imzala-Delivery` UUID\'sini log\'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret\'i env var\'da sakla, koda gömme. 
  *
- * The version of the OpenAPI document: 1.8.23
+ * The version of the OpenAPI document: 1.9.1
  * Contact: destek@imzala.org
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -405,12 +405,24 @@ export interface ApiV1DemandsGet200ResponseDataDemandsInner {
     'status'?: string;
     'created_at'?: string;
     'completed_at'?: string | null;
+    /**
+     * Takip edilen bitiş tarihi; takip yoksa `null` (bkz. `GET /demands/{id}` → `term`).
+     */
+    'term_end_date'?: string | null;
+    'archived_at'?: string | null;
     'parties_total'?: number;
     'parties_signed'?: number;
     /**
      * COMPLETED ise imzalı PDF public URL\'i
      */
     'pdf_url'?: string | null;
+}
+export interface ApiV1DemandsIdArchivePost200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdArchivePost200ResponseData;
+}
+export interface ApiV1DemandsIdArchivePost200ResponseData {
+    'archived_at'?: string;
 }
 export interface ApiV1DemandsIdCancelPost200Response {
     'success'?: boolean;
@@ -432,8 +444,16 @@ export interface ApiV1DemandsIdCancelPostRequest {
 export interface ApiV1DemandsIdDelete409Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: string;
+    'code'?: ApiV1DemandsIdDelete409ResponseCodeEnum;
 }
+
+export const ApiV1DemandsIdDelete409ResponseCodeEnum = {
+    DemandCompleted: 'DEMAND_COMPLETED',
+    DemandArchived: 'DEMAND_ARCHIVED',
+} as const;
+
+export type ApiV1DemandsIdDelete409ResponseCodeEnum = typeof ApiV1DemandsIdDelete409ResponseCodeEnum[keyof typeof ApiV1DemandsIdDelete409ResponseCodeEnum];
+
 export interface ApiV1DemandsIdEmbedSessionPost200Response {
     'success'?: boolean;
     'data'?: ApiV1DemandsIdEmbedSessionPost200ResponseData;
@@ -523,6 +543,13 @@ export const ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = {
 
 export type ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum[keyof typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum];
 
+export interface ApiV1DemandsIdTermPatch200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdTermPatch200ResponseData;
+}
+export interface ApiV1DemandsIdTermPatch200ResponseData {
+    'term'?: ContractTerm;
+}
 export interface ApiV1DemandsIdTimelineGet200Response {
     'success'?: boolean;
     'data'?: ApiV1DemandsIdTimelineGet200ResponseData;
@@ -539,6 +566,13 @@ export interface ApiV1DemandsIdTimelineGet200ResponseDataEventsInner {
     'comment_text'?: string | null;
     'created_at'?: string;
 }
+export interface ApiV1DemandsIdUnarchivePost200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdUnarchivePost200ResponseData;
+}
+export interface ApiV1DemandsIdUnarchivePost200ResponseData {
+    'archived_at'?: any | null;
+}
 export interface ApiV1DemandsPost201Response {
     'success'?: boolean;
     'data'?: CreatedDemand;
@@ -547,6 +581,10 @@ export interface ApiV1DemandsPost400Response {
     'success'?: boolean;
     'error'?: string;
     'code'?: ApiV1DemandsPost400ResponseCodeEnum;
+    /**
+     * Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR. 
+     */
+    'field'?: string | null;
     'details'?: DocumentSelectionErrorDetails;
 }
 
@@ -761,6 +799,10 @@ export interface CodedError {
     'success'?: boolean;
     'error'?: string;
     'code'?: string;
+    /**
+     * Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR. 
+     */
+    'field'?: string | null;
 }
 /**
  * Kişi (Contact) public görünümü. İç eşleşme alanları (matched_user_id / match_via / matched_at) ve şifreleme sütunları (*_enc / *_hash) DÂHİL DEĞİLDİR. 
@@ -789,6 +831,111 @@ export interface ContactSummaryCompany {
     'id'?: string;
     'name'?: string;
 }
+/**
+ * Sözleşme süre/yenileme takibi. Sözleşmede takip hiç tanımlanmadıysa (`start_mode` VE `end_date` boşsa) bu alan `null` döner.  Bu, hukuki bir yenileme veya sona erme beyanı değildir; platformun takip amaçlı kaydıdır. Sözleşmenin fiilen ne zaman sona erdiği veya yenilendiği, tarafların kendi sözleşme hükümlerine ve yürürlükteki hukuka tabidir. Bu alan yalnız hatırlatma ve görünürlük sağlar. 
+ */
+export interface ContractTerm {
+    /**
+     * Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`\'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez). 
+     */
+    'start_mode': ContractTermStartModeEnum | null;
+    'start_date': string | null;
+    'duration_months': number | null;
+    'fixed_end_date': string | null;
+    /**
+     * Takip edilen bitiş tarihi. `renewal_type: AUTO_RENEW` sözleşmelerde her dönemde (günlük olarak) bir sonraki döneme ileri alınır; bkz. `contract.advanced` webhook olayı. 
+     */
+    'end_date': string | null;
+    /**
+     * İmzalanan belge metninde bitiş tarihi bir değişken olarak yazılıysa, sözleşme tamamlandığı anda `end_date`\'in dondurulmuş kopyası. `end_date` sonradan ileri alınsa bile bu alan DEĞİŞMEZ. İmzalanan metinle takip değeri arasındaki tarihsel referans budur. 
+     */
+    'end_date_signed': string | null;
+    'renewal_type': ContractTermRenewalTypeEnum | null;
+    'renewal_period_months': number | null;
+    /**
+     * Fesih ihbarı için bitişten önce kaç gün gerektiği.
+     */
+    'notice_days': number | null;
+    /**
+     * Hesaplanır (`end_date - notice_days`); `end_date` veya `notice_days` boşsa `null`.
+     */
+    'notice_deadline': string | null;
+    /**
+     * Bitişten kaç gün önce hatırlatma gönderileceği (gün sayıları).
+     */
+    'reminder_offsets': Array<number> | null;
+    /**
+     * Karşı tarafa da hatırlatma gönderilsin mi.
+     */
+    'notify_counterparty': boolean;
+    /**
+     * `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu. 
+     */
+    'state': ContractTermStateEnum;
+    /**
+     * Bugünden `end_date`\'e gün sayısı (negatifse geçmişte).
+     */
+    'days_left': number | null;
+    'renewal_stopped_at': string | null;
+}
+
+export const ContractTermStartModeEnum = {
+    FixedDate: 'FIXED_DATE',
+    OnFirstSignature: 'ON_FIRST_SIGNATURE',
+    OnCompletion: 'ON_COMPLETION',
+} as const;
+
+export type ContractTermStartModeEnum = typeof ContractTermStartModeEnum[keyof typeof ContractTermStartModeEnum];
+export const ContractTermRenewalTypeEnum = {
+    AutoRenew: 'AUTO_RENEW',
+    FixedTerm: 'FIXED_TERM',
+} as const;
+
+export type ContractTermRenewalTypeEnum = typeof ContractTermRenewalTypeEnum[keyof typeof ContractTermRenewalTypeEnum];
+export const ContractTermStateEnum = {
+    Untracked: 'UNTRACKED',
+    Active: 'ACTIVE',
+    Ended: 'ENDED',
+    Stopped: 'STOPPED',
+} as const;
+
+export type ContractTermStateEnum = typeof ContractTermStateEnum[keyof typeof ContractTermStateEnum];
+
+/**
+ * Sözleşme süre/yenileme takibi girdisi. `POST /demands` üzerinde oluştururken ve `PATCH /demands/{id}/term` üzerinde güncellerken AYNI alan adları kullanılır. `PATCH`\'te kısmi güncelleme uygulanır: yalnız gövdede GÖNDERİLEN anahtarlar değiştirilir; bir anahtarı `null` göndermek o alanı temizler, hiç göndermemek dokunmaz.  Doğrulama kuralları: - `term_fixed_end_date` ile `term_duration_months` birlikte gönderilemez. - `term_start_mode: FIXED_DATE` ise oluştururken `term_start_date` ya   da `term_fixed_end_date` gerekir; `ON_FIRST_SIGNATURE` /   `ON_COMPLETION` modlarında `term_start_date` gönderilse de yok   sayılır (başlangıç imza anında otomatik yazılır). - `renewal_type: AUTO_RENEW` ise `renewal_period_months` gerekir;   gönderilmezse `term_duration_months`\'tan devralınır. - Geçersiz kombinasyon 400 `TERM_INVALID` + hangi alanı işaret eden   `field` ile döner. 
+ */
+export interface ContractTermInput {
+    'term_start_mode'?: ContractTermInputTermStartModeEnum | null;
+    /**
+     * Yalnız `term_start_mode: FIXED_DATE` iken kullanılır.
+     */
+    'term_start_date'?: string | null;
+    'term_duration_months'?: number | null;
+    'term_fixed_end_date'?: string | null;
+    'renewal_type'?: ContractTermInputRenewalTypeEnum | null;
+    'renewal_period_months'?: number | null;
+    'notice_days'?: number | null;
+    /**
+     * Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır); temizlemek için `null` gönderin. 
+     */
+    'reminder_offsets'?: Array<number> | null;
+    'notify_counterparty'?: boolean;
+}
+
+export const ContractTermInputTermStartModeEnum = {
+    FixedDate: 'FIXED_DATE',
+    OnFirstSignature: 'ON_FIRST_SIGNATURE',
+    OnCompletion: 'ON_COMPLETION',
+} as const;
+
+export type ContractTermInputTermStartModeEnum = typeof ContractTermInputTermStartModeEnum[keyof typeof ContractTermInputTermStartModeEnum];
+export const ContractTermInputRenewalTypeEnum = {
+    AutoRenew: 'AUTO_RENEW',
+    FixedTerm: 'FIXED_TERM',
+} as const;
+
+export type ContractTermInputRenewalTypeEnum = typeof ContractTermInputRenewalTypeEnum[keyof typeof ContractTermInputRenewalTypeEnum];
+
 export interface CreateDemandRequest {
     /**
      * GET /api/v1/templates listesinden veya dashboard\'dan kopyalayın
@@ -850,6 +997,24 @@ export interface CreateDemandRequest {
      * Bu sözleşme için hatırlatma ayarlarını **şablon default\'unu override** ederek belirtir. Yollanmazsa şablonun `reminder_*` alanları kullanılır (PUT /api/templates/:id ile dashboard\'dan kaydedilen değerler); şablonda da yoksa `{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\"email\"]}` default\'u uygulanır. Demand oluşumunda `ReminderConfig` satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır. 
      */
     'reminder_settings'?: ReminderSettings;
+    /**
+     * Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için `ContractTermInput` şemasına bakın (`PATCH /demands/{id}/term` ile AYNI alan adları). 
+     */
+    'term_start_mode'?: CreateDemandRequestTermStartModeEnum | null;
+    /**
+     * Yalnız term_start_mode: FIXED_DATE iken kullanılır.
+     */
+    'term_start_date'?: string | null;
+    'term_duration_months'?: number | null;
+    'term_fixed_end_date'?: string | null;
+    'renewal_type'?: CreateDemandRequestRenewalTypeEnum | null;
+    /**
+     * AUTO_RENEW gerektirir; verilmezse term_duration_months\'tan devralınır.
+     */
+    'renewal_period_months'?: number | null;
+    'notice_days'?: number | null;
+    'reminder_offsets'?: Array<number> | null;
+    'notify_counterparty'?: boolean;
 }
 
 export const CreateDemandRequestAllowedSignatureVariantsEnum = {
@@ -861,6 +1026,19 @@ export const CreateDemandRequestAllowedSignatureVariantsEnum = {
 } as const;
 
 export type CreateDemandRequestAllowedSignatureVariantsEnum = typeof CreateDemandRequestAllowedSignatureVariantsEnum[keyof typeof CreateDemandRequestAllowedSignatureVariantsEnum];
+export const CreateDemandRequestTermStartModeEnum = {
+    FixedDate: 'FIXED_DATE',
+    OnFirstSignature: 'ON_FIRST_SIGNATURE',
+    OnCompletion: 'ON_COMPLETION',
+} as const;
+
+export type CreateDemandRequestTermStartModeEnum = typeof CreateDemandRequestTermStartModeEnum[keyof typeof CreateDemandRequestTermStartModeEnum];
+export const CreateDemandRequestRenewalTypeEnum = {
+    AutoRenew: 'AUTO_RENEW',
+    FixedTerm: 'FIXED_TERM',
+} as const;
+
+export type CreateDemandRequestRenewalTypeEnum = typeof CreateDemandRequestRenewalTypeEnum[keyof typeof CreateDemandRequestRenewalTypeEnum];
 
 export interface CreatedDemand {
     'id'?: string;
@@ -1059,6 +1237,11 @@ export interface DemandStatus {
      * Zarftaki belgelerin her biri için ayrı durum, `order` sırasıyla. Zarf genelindeki `status` alanı değişmez; bu liste hangi belgenin ne zaman tamamlandığını, hangisinin beklediğini, mühür durumunu ve her tarafın belge başına kararını ayrıca gösterir. Belge kaydı bulunmayan eski sözleşmelerde boş dizi döner. 
      */
     'documents'?: Array<DemandDocumentStatus>;
+    /**
+     * Sözleşmede süre/yenileme takibi tanımlı değilse `null`.
+     */
+    'term'?: ContractTerm | null;
+    'archived_at'?: string | null;
 }
 
 export const DemandStatusStatusEnum = {
@@ -1958,6 +2141,45 @@ export interface UpsertItemsResponseDataItemsInner {
     'label'?: string | null;
     'config'?: object | null;
 }
+/**
+ * `contract.expiring` / `contract.ended` / `contract.advanced` olaylarının ortak verisi. Yalnız takip alanlarını taşır; taraf adı, e-postası veya sözleşme başlığı BU GÖVDEDE YER ALMAZ. 
+ */
+export interface WebhookDataContractTerm {
+    'demand_id': string;
+    /**
+     * Olay anında platformda kayıtlı takip bitiş tarihi.
+     */
+    'term_end_date': string | null;
+    'renewal_type': WebhookDataContractTermRenewalTypeEnum | null;
+    /**
+     * İhbar için son gün (`term_end_date - notice_days`); tanımsızsa `null`.
+     */
+    'notice_deadline': string | null;
+    /**
+     * Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+     */
+    'term_state': WebhookDataContractTermTermStateEnum;
+    /**
+     * İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için `id` alanını kullanın. 
+     */
+    'due_key': string | null;
+}
+
+export const WebhookDataContractTermRenewalTypeEnum = {
+    AutoRenew: 'AUTO_RENEW',
+    FixedTerm: 'FIXED_TERM',
+} as const;
+
+export type WebhookDataContractTermRenewalTypeEnum = typeof WebhookDataContractTermRenewalTypeEnum[keyof typeof WebhookDataContractTermRenewalTypeEnum];
+export const WebhookDataContractTermTermStateEnum = {
+    Untracked: 'UNTRACKED',
+    Active: 'ACTIVE',
+    Ended: 'ENDED',
+    Stopped: 'STOPPED',
+} as const;
+
+export type WebhookDataContractTermTermStateEnum = typeof WebhookDataContractTermTermStateEnum[keyof typeof WebhookDataContractTermTermStateEnum];
+
 export interface WebhookDataDemandCompleted {
     'demand_id': string;
     'title': string;
@@ -2090,6 +2312,9 @@ export const WebhookEnvelopeTypeEnum = {
     PartySigned: 'party.signed',
     PartyViewed: 'party.viewed',
     PartyRejected: 'party.rejected',
+    ContractExpiring: 'contract.expiring',
+    ContractEnded: 'contract.ended',
+    ContractAdvanced: 'contract.advanced',
 } as const;
 
 export type WebhookEnvelopeTypeEnum = typeof WebhookEnvelopeTypeEnum[keyof typeof WebhookEnvelopeTypeEnum];
@@ -2860,10 +3085,11 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [page] 
          * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
          * @param {string} [sort] alan:yön (ör. createdAt:desc)
+         * @param {ApiV1DemandsGetArchivedEnum} [archived] Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz). 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1DemandsGet: async (status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1DemandsGet: async (status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/demands`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2914,6 +3140,47 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             if (sort !== undefined) {
                 localVarQueryParameter['sort'] = sort;
             }
+
+            if (archived !== undefined) {
+                localVarQueryParameter['archived'] = archived;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+         * @summary Sözleşmeyi arşivle
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdArchivePost: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdArchivePost', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/archive`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -3050,7 +3317,7 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
          * @summary Sözleşme sil (yalnızca tamamlanmamış)
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -3087,7 +3354,7 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {string} id Sözleşme (demand) ID
          * @param {ApiV1DemandsIdEmbedSessionPostRequest} apiV1DemandsIdEmbedSessionPostRequest 
@@ -3332,6 +3599,48 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard\'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op\'tur (otomatik olarak ileri alınmış bitiş korunur). 
+         * @summary Sözleşme süre/yenileme takibini güncelle
+         * @param {string} id 
+         * @param {ContractTermInput} contractTermInput 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdTermPatch: async (id: string, contractTermInput: ContractTermInput, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdTermPatch', 'id', id)
+            // verify required parameter 'contractTermInput' is not null or undefined
+            assertParamExists('apiV1DemandsIdTermPatch', 'contractTermInput', contractTermInput)
+            const localVarPath = `/api/v1/demands/{id}/term`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(contractTermInput, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
          * @summary İmza denetim izi (maskeli)
          * @param {string} id 
@@ -3351,6 +3660,43 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             }
 
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * `archived_at`\'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+         * @summary Sözleşmeyi arşivden çıkar
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdUnarchivePost: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdUnarchivePost', 'id', id)
+            const localVarPath = `/api/v1/demands/{id}/unarchive`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -3707,13 +4053,27 @@ export const DemandsApiFp = function(configuration?: Configuration) {
          * @param {number} [page] 
          * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
          * @param {string} [sort] alan:yön (ör. createdAt:desc)
+         * @param {ApiV1DemandsGetArchivedEnum} [archived] Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz). 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1DemandsGet(status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsGet200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort, options);
+        async apiV1DemandsGet(status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort, archived, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+         * @summary Sözleşmeyi arşivle
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdArchivePost(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdArchivePost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdArchivePost(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdArchivePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3759,7 +4119,7 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
          * @summary Sözleşme sil (yalnızca tamamlanmamış)
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -3772,7 +4132,7 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {string} id Sözleşme (demand) ID
          * @param {ApiV1DemandsIdEmbedSessionPostRequest} apiV1DemandsIdEmbedSessionPostRequest 
@@ -3855,6 +4215,20 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard\'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op\'tur (otomatik olarak ileri alınmış bitiş korunur). 
+         * @summary Sözleşme süre/yenileme takibini güncelle
+         * @param {string} id 
+         * @param {ContractTermInput} contractTermInput 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdTermPatch(id: string, contractTermInput: ContractTermInput, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdTermPatch200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdTermPatch(id, contractTermInput, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdTermPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
          * @summary İmza denetim izi (maskeli)
          * @param {string} id 
@@ -3865,6 +4239,19 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdTimelineGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdTimelineGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * `archived_at`\'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+         * @summary Sözleşmeyi arşivden çıkar
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdUnarchivePost(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdUnarchivePost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdUnarchivePost(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdUnarchivePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4025,7 +4412,17 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsGet200Response> {
-            return localVarFp.apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, options).then((request) => request(axios, basePath));
+            return localVarFp.apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+         * @summary Sözleşmeyi arşivle
+         * @param {DemandsApiApiV1DemandsIdArchivePostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdArchivePost(requestParameters: DemandsApiApiV1DemandsIdArchivePostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdArchivePost200Response> {
+            return localVarFp.apiV1DemandsIdArchivePost(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * Çok-belgeli zarfta TEK bir belgenin imzalı PDF\'ini indirir. Zarf-geneli `/demands/{id}/pdf` ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND\'lenir (başka zarfın belgesi istenirse 404). 
@@ -4058,7 +4455,7 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1DemandsIdCertificateGet(requestParameters.id, requestParameters.lang, options).then((request) => request(axios, basePath));
         },
         /**
-         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+         * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
          * @summary Sözleşme sil (yalnızca tamamlanmamış)
          * @param {DemandsApiApiV1DemandsIdDeleteRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -4068,7 +4465,7 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1DemandsIdDelete(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+         * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
          * @summary Gömülü imza oturumu başlat (embed token mint)
          * @param {DemandsApiApiV1DemandsIdEmbedSessionPostRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -4128,6 +4525,16 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1DemandsIdPdfGet(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
+         * Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard\'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op\'tur (otomatik olarak ileri alınmış bitiş korunur). 
+         * @summary Sözleşme süre/yenileme takibini güncelle
+         * @param {DemandsApiApiV1DemandsIdTermPatchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdTermPatch(requestParameters: DemandsApiApiV1DemandsIdTermPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdTermPatch200Response> {
+            return localVarFp.apiV1DemandsIdTermPatch(requestParameters.id, requestParameters.contractTermInput, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
          * @summary İmza denetim izi (maskeli)
          * @param {DemandsApiApiV1DemandsIdTimelineGetRequest} requestParameters Request parameters.
@@ -4136,6 +4543,16 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
          */
         apiV1DemandsIdTimelineGet(requestParameters: DemandsApiApiV1DemandsIdTimelineGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdTimelineGet200Response> {
             return localVarFp.apiV1DemandsIdTimelineGet(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * `archived_at`\'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+         * @summary Sözleşmeyi arşivden çıkar
+         * @param {DemandsApiApiV1DemandsIdUnarchivePostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdUnarchivePost(requestParameters: DemandsApiApiV1DemandsIdUnarchivePostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdUnarchivePost200Response> {
+            return localVarFp.apiV1DemandsIdUnarchivePost(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field\'ları `variables` payload\'undan doldurur ve imzalama URL\'lerini döner.  **Variable resolution:** - Item\'ın `template_party_id` non-null → `party_mapping[i].variables`\'ta   o slug var ise oradan uygulanır - Yoksa root `variables`\'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value\'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı  **Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa (her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30, 3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.  **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü atlamak için `dispatch_notifications: false` gönderip belge atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden uygular). 
@@ -4306,6 +4723,18 @@ export interface DemandsApiApiV1DemandsGetRequest {
      * alan:yön (ör. createdAt:desc)
      */
     readonly sort?: string
+
+    /**
+     * Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz). 
+     */
+    readonly archived?: ApiV1DemandsGetArchivedEnum
+}
+
+/**
+ * Request parameters for apiV1DemandsIdArchivePost operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdArchivePostRequest {
+    readonly id: string
 }
 
 /**
@@ -4407,9 +4836,25 @@ export interface DemandsApiApiV1DemandsIdPdfGetRequest {
 }
 
 /**
+ * Request parameters for apiV1DemandsIdTermPatch operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdTermPatchRequest {
+    readonly id: string
+
+    readonly contractTermInput: ContractTermInput
+}
+
+/**
  * Request parameters for apiV1DemandsIdTimelineGet operation in DemandsApi.
  */
 export interface DemandsApiApiV1DemandsIdTimelineGetRequest {
+    readonly id: string
+}
+
+/**
+ * Request parameters for apiV1DemandsIdUnarchivePost operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdUnarchivePostRequest {
     readonly id: string
 }
 
@@ -4608,7 +5053,18 @@ export class DemandsApi extends BaseAPI {
      * @throws {RequiredError}
      */
     public apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return DemandsApiFp(this.configuration).apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, options).then((request) => request(this.axios, this.basePath));
+        return DemandsApiFp(this.configuration).apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+     * @summary Sözleşmeyi arşivle
+     * @param {DemandsApiApiV1DemandsIdArchivePostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdArchivePost(requestParameters: DemandsApiApiV1DemandsIdArchivePostRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdArchivePost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4645,7 +5101,7 @@ export class DemandsApi extends BaseAPI {
     }
 
     /**
-     * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+     * Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
      * @summary Sözleşme sil (yalnızca tamamlanmamış)
      * @param {DemandsApiApiV1DemandsIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -4656,7 +5112,7 @@ export class DemandsApi extends BaseAPI {
     }
 
     /**
-     * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+     * Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
      * @summary Gömülü imza oturumu başlat (embed token mint)
      * @param {DemandsApiApiV1DemandsIdEmbedSessionPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -4722,6 +5178,17 @@ export class DemandsApi extends BaseAPI {
     }
 
     /**
+     * Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard\'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op\'tur (otomatik olarak ileri alınmış bitiş korunur). 
+     * @summary Sözleşme süre/yenileme takibini güncelle
+     * @param {DemandsApiApiV1DemandsIdTermPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdTermPatch(requestParameters: DemandsApiApiV1DemandsIdTermPatchRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdTermPatch(requestParameters.id, requestParameters.contractTermInput, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
      * @summary İmza denetim izi (maskeli)
      * @param {DemandsApiApiV1DemandsIdTimelineGetRequest} requestParameters Request parameters.
@@ -4730,6 +5197,17 @@ export class DemandsApi extends BaseAPI {
      */
     public apiV1DemandsIdTimelineGet(requestParameters: DemandsApiApiV1DemandsIdTimelineGetRequest, options?: RawAxiosRequestConfig) {
         return DemandsApiFp(this.configuration).apiV1DemandsIdTimelineGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * `archived_at`\'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+     * @summary Sözleşmeyi arşivden çıkar
+     * @param {DemandsApiApiV1DemandsIdUnarchivePostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdUnarchivePost(requestParameters: DemandsApiApiV1DemandsIdUnarchivePostRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdUnarchivePost(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4792,6 +5270,12 @@ export const ApiV1DemandsGetStatusEnum = {
     Expired: 'EXPIRED',
 } as const;
 export type ApiV1DemandsGetStatusEnum = typeof ApiV1DemandsGetStatusEnum[keyof typeof ApiV1DemandsGetStatusEnum];
+export const ApiV1DemandsGetArchivedEnum = {
+    Exclude: 'exclude',
+    Only: 'only',
+    Include: 'include',
+} as const;
+export type ApiV1DemandsGetArchivedEnum = typeof ApiV1DemandsGetArchivedEnum[keyof typeof ApiV1DemandsGetArchivedEnum];
 export const ApiV1DemandsUploadPostForceEnum = {
     True: 'true',
     _1: '1',

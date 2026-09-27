@@ -14,6 +14,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 |[**apiV1DemandsDemandIdDocumentsPost**](#apiv1demandsdemandiddocumentspost) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle|
 |[**apiV1DemandsDemandIdDocumentsUploadPost**](#apiv1demandsdemandiddocumentsuploadpost) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya)|
 |[**apiV1DemandsGet**](#apiv1demandsget) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII\&#39;siz)|
+|[**apiV1DemandsIdArchivePost**](#apiv1demandsidarchivepost) | **POST** /api/v1/demands/{id}/archive | Sözleşmeyi arşivle|
 |[**apiV1DemandsIdBelgeDocumentIdPdfGet**](#apiv1demandsidbelgedocumentidpdfget) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)|
 |[**apiV1DemandsIdCancelPost**](#apiv1demandsidcancelpost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)|
 |[**apiV1DemandsIdCertificateGet**](#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)|
@@ -24,7 +25,9 @@ All URIs are relative to *https://api-prd.imzala.org*
 |[**apiV1DemandsIdItemsPost**](#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)|
 |[**apiV1DemandsIdPartiesPartyIdResendPost**](#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder|
 |[**apiV1DemandsIdPdfGet**](#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF\&#39;i (auth\&#39;lu indirme)|
+|[**apiV1DemandsIdTermPatch**](#apiv1demandsidtermpatch) | **PATCH** /api/v1/demands/{id}/term | Sözleşme süre/yenileme takibini güncelle|
 |[**apiV1DemandsIdTimelineGet**](#apiv1demandsidtimelineget) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)|
+|[**apiV1DemandsIdUnarchivePost**](#apiv1demandsidunarchivepost) | **POST** /api/v1/demands/{id}/unarchive | Sözleşmeyi arşivden çıkar|
 |[**apiV1DemandsPost**](#apiv1demandspost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)|
 |[**apiV1DemandsUploadPost**](#apiv1demandsuploadpost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)|
 |[**apiV1FieldTemplatesIdPreviewLayoutPost**](#apiv1fieldtemplatesidpreviewlayoutpost) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener|
@@ -599,6 +602,7 @@ let templateId: string; // (optional) (default to undefined)
 let page: number; // (optional) (default to 1)
 let limit: number; //Sayfa boyutu (page_size ile aynı) (optional) (default to 20)
 let sort: string; //alan:yön (ör. createdAt:desc) (optional) (default to undefined)
+let archived: 'exclude' | 'only' | 'include'; //Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler. `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).  (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1DemandsGet(
     status,
@@ -608,7 +612,8 @@ const { status, data } = await apiInstance.apiV1DemandsGet(
     templateId,
     page,
     limit,
-    sort
+    sort,
+    archived
 );
 ```
 
@@ -624,6 +629,7 @@ const { status, data } = await apiInstance.apiV1DemandsGet(
 | **page** | [**number**] |  | (optional) defaults to 1|
 | **limit** | [**number**] | Sayfa boyutu (page_size ile aynı) | (optional) defaults to 20|
 | **sort** | [**string**] | alan:yön (ör. createdAt:desc) | (optional) defaults to undefined|
+| **archived** | [**&#39;exclude&#39; | &#39;only&#39; | &#39;include&#39;**]**Array<&#39;exclude&#39; &#124; &#39;only&#39; &#124; &#39;include&#39;>** | Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  | (optional) defaults to undefined|
 
 
 ### Return type
@@ -645,6 +651,59 @@ const { status, data } = await apiInstance.apiV1DemandsGet(
 |-------------|-------------|------------------|
 |**200** | Başarılı |  -  |
 |**401** | API key geçersiz veya eksik |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdArchivePost**
+> ApiV1DemandsIdArchivePost200Response apiV1DemandsIdArchivePost()
+
+Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdArchivePost(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdArchivePost200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Arşivlendi (veya zaten arşivliydi) |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | &#x60;DEMAND_NOT_ARCHIVABLE&#x60;: sözleşme henüz tamamlanmadı/iptal edilmedi/süresi dolmadı. &#x60;DEMAND_REJECTED_CANCEL_FIRST&#x60;: sözleşme reddedilmiş ve imza bekliyor; önce &#x60;POST .../cancel&#x60; ile iptal edin.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -819,7 +878,7 @@ const { status, data } = await apiInstance.apiV1DemandsIdCertificateGet(
 # **apiV1DemandsIdDelete**
 > ApiV1TemplatesIdDelete200Response apiV1DemandsIdDelete()
 
-Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. 
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
 
 ### Example
 
@@ -865,14 +924,14 @@ const { status, data } = await apiInstance.apiV1DemandsIdDelete(
 |-------------|-------------|------------------|
 |**200** | Silindi |  -  |
 |**404** | Kayıt bulunamadı |  -  |
-|**409** | Tamamlanmış sözleşme silinemez |  -  |
+|**409** | Tamamlanmış (&#x60;DEMAND_COMPLETED&#x60;) veya arşivlenmiş (&#x60;DEMAND_ARCHIVED&#x60;) sözleşme silinemez |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1DemandsIdEmbedSessionPost**
 > ApiV1DemandsIdEmbedSessionPost200Response apiV1DemandsIdEmbedSessionPost(apiV1DemandsIdEmbedSessionPostRequest)
 
-Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \"güvenli\" veya \"nitelikli\" sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token\'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin\'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header\'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace\'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
 
 ### Example
 
@@ -1214,6 +1273,64 @@ const { status, data } = await apiInstance.apiV1DemandsIdPdfGet(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **apiV1DemandsIdTermPatch**
+> ApiV1DemandsIdTermPatch200Response apiV1DemandsIdTermPatch(contractTermInput)
+
+Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard\'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op\'tur (otomatik olarak ileri alınmış bitiş korunur). 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration,
+    ContractTermInput
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+let contractTermInput: ContractTermInput; //
+
+const { status, data } = await apiInstance.apiV1DemandsIdTermPatch(
+    id,
+    contractTermInput
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **contractTermInput** | **ContractTermInput**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdTermPatch200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Güncellendi |  -  |
+|**400** | &#x60;TERM_INVALID&#x60;: geçersiz veya çelişkili alan kombinasyonu, ya da gövdede hiç term alanı yok. &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir (gövde boşsa &#x60;null&#x60;).  |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+|**409** | Arşivlenmiş sözleşme değiştirilemez (&#x60;DEMAND_ARCHIVED&#x60;); önce &#x60;POST .../unarchive&#x60; çağırın. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **apiV1DemandsIdTimelineGet**
 > ApiV1DemandsIdTimelineGet200Response apiV1DemandsIdTimelineGet()
 
@@ -1262,6 +1379,58 @@ const { status, data } = await apiInstance.apiV1DemandsIdTimelineGet(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Başarılı |  -  |
+|**404** | Kayıt bulunamadı |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1DemandsIdUnarchivePost**
+> ApiV1DemandsIdUnarchivePost200Response apiV1DemandsIdUnarchivePost()
+
+`archived_at`\'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+
+### Example
+
+```typescript
+import {
+    DemandsApi,
+    Configuration
+} from '@imzala/server-sdk-node';
+
+const configuration = new Configuration();
+const apiInstance = new DemandsApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1DemandsIdUnarchivePost(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1DemandsIdUnarchivePost200Response**
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Arşivden çıkarıldı (veya zaten arşivsizdi) |  -  |
 |**404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1318,7 +1487,7 @@ const { status, data } = await apiInstance.apiV1DemandsPost(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**201** | Sözleşme oluşturuldu |  -  |
-|**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value\&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate\&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20\&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20\&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  |  -  |
+|**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value\&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate\&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20\&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20\&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir.  |  -  |
 |**401** | API key geçersiz veya eksik |  -  |
 |**402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 |**403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body\&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config\&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |

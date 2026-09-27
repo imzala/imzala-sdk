@@ -37,6 +37,8 @@ docs/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/ApiV1DemandsGet200Response.md
 docs/ApiV1DemandsGet200ResponseData.md
 docs/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/ApiV1DemandsIdArchivePost200Response.md
+docs/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/ApiV1DemandsIdCancelPost200Response.md
 docs/ApiV1DemandsIdCancelPost200ResponseData.md
 docs/ApiV1DemandsIdCancelPostRequest.md
@@ -53,9 +55,13 @@ docs/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md
 docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md
 docs/ApiV1DemandsIdRemindersPost429Response.md
 docs/ApiV1DemandsIdRemindersPost429ResponseError.md
+docs/ApiV1DemandsIdTermPatch200Response.md
+docs/ApiV1DemandsIdTermPatch200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200Response.md
 docs/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
+docs/ApiV1DemandsIdUnarchivePost200Response.md
+docs/ApiV1DemandsIdUnarchivePost200ResponseData.md
 docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
@@ -95,6 +101,8 @@ docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
+docs/ContractTerm.md
+docs/ContractTermInput.md
 docs/CreateDemandRequest.md
 docs/CreatedDemand.md
 docs/CreatedDemandSigningUrlsInner.md
@@ -163,6 +171,7 @@ docs/UpsertItemsRequest.md
 docs/UpsertItemsResponse.md
 docs/UpsertItemsResponseData.md
 docs/UpsertItemsResponseDataItemsInner.md
+docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
@@ -216,6 +225,8 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsDemandIdDocumentsPostRequestTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseDataDemandsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdArchivePost200ResponseDataTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdArchivePost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdCancelPost200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdCancelPost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdCancelPostRequestTests.cs
@@ -232,9 +243,13 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsIdRemindersPost200ResponseDataTests.c
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdRemindersPost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdRemindersPost429ResponseErrorTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdRemindersPost429ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTermPatch200ResponseDataTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTermPatch200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdTimelineGet200ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdUnarchivePost200ResponseDataTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdUnarchivePost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost201ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost400ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost402ResponseDataTests.cs
@@ -273,6 +288,8 @@ src/ImzalaApiClient.Test/Model/ApiV1TimestampsPostRequest1Tests.cs
 src/ImzalaApiClient.Test/Model/CodedErrorTests.cs
 src/ImzalaApiClient.Test/Model/ContactSummaryCompanyTests.cs
 src/ImzalaApiClient.Test/Model/ContactSummaryTests.cs
+src/ImzalaApiClient.Test/Model/ContractTermInputTests.cs
+src/ImzalaApiClient.Test/Model/ContractTermTests.cs
 src/ImzalaApiClient.Test/Model/CreateDemandRequestTests.cs
 src/ImzalaApiClient.Test/Model/CreatedDemandSigningUrlsInnerTests.cs
 src/ImzalaApiClient.Test/Model/CreatedDemandStampsAppliedInnerTests.cs
@@ -336,6 +353,7 @@ src/ImzalaApiClient.Test/Model/UpsertItemsRequestTests.cs
 src/ImzalaApiClient.Test/Model/UpsertItemsResponseDataItemsInnerTests.cs
 src/ImzalaApiClient.Test/Model/UpsertItemsResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/UpsertItemsResponseTests.cs
+src/ImzalaApiClient.Test/Model/WebhookDataContractTermTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCompletedPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCompletedTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCreatedTests.cs
@@ -406,6 +424,8 @@ src/ImzalaApiClient/Model/ApiV1DemandsDemandIdDocumentsPostRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200ResponseDataDemandsInner.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdArchivePost200Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdArchivePost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdCancelPost200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdCancelPost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdCancelPostRequest.cs
@@ -422,9 +442,13 @@ src/ImzalaApiClient/Model/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedIn
 src/ImzalaApiClient/Model/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdRemindersPost429Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdRemindersPost429ResponseError.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdTermPatch200Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdTermPatch200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdUnarchivePost200Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdUnarchivePost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost201Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost400Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost402Response.cs
@@ -463,6 +487,8 @@ src/ImzalaApiClient/Model/ApiV1TimestampsPostRequest1.cs
 src/ImzalaApiClient/Model/CodedError.cs
 src/ImzalaApiClient/Model/ContactSummary.cs
 src/ImzalaApiClient/Model/ContactSummaryCompany.cs
+src/ImzalaApiClient/Model/ContractTerm.cs
+src/ImzalaApiClient/Model/ContractTermInput.cs
 src/ImzalaApiClient/Model/CreateDemandRequest.cs
 src/ImzalaApiClient/Model/CreatedDemand.cs
 src/ImzalaApiClient/Model/CreatedDemandSigningUrlsInner.cs
@@ -526,6 +552,7 @@ src/ImzalaApiClient/Model/UpsertItemsRequest.cs
 src/ImzalaApiClient/Model/UpsertItemsResponse.cs
 src/ImzalaApiClient/Model/UpsertItemsResponseData.cs
 src/ImzalaApiClient/Model/UpsertItemsResponseDataItemsInner.cs
+src/ImzalaApiClient/Model/WebhookDataContractTerm.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCompleted.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCompletedPartiesInner.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCreated.cs

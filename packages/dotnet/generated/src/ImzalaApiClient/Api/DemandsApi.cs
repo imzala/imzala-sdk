@@ -1,9 +1,9 @@
 /*
  * imzala External API
  *
- * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |- -- -|- -- -- --|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (8) | Olay | Tetikleyici | |- -- -- -|- -- -- -- -- -- --| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type` — yukarıdaki 8 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); - - INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme. 
+ * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |- -- -|- -- -- --|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (11) | Olay | Tetikleyici | |- -- -- -|- -- -- -- -- -- --| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type`: yukarıdaki 11 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); - - INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme. 
  *
- * The version of the OpenAPI document: 1.8.23
+ * The version of the OpenAPI document: 1.9.1
  * Contact: destek@imzala.org
  * Generated by: https://github.com/openapitools/openapi-generator.git
  */
@@ -262,8 +262,9 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <returns>ApiV1DemandsGet200Response</returns>
-        ApiV1DemandsGet200Response ApiV1DemandsGet(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default);
+        ApiV1DemandsGet200Response ApiV1DemandsGet(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default);
 
         /// <summary>
         /// Sözleşme listesi (counts-only, PII&#39;siz)
@@ -280,8 +281,30 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <returns>ApiResponse of ApiV1DemandsGet200Response</returns>
-        ApiResponse<ApiV1DemandsGet200Response> ApiV1DemandsGetWithHttpInfo(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default);
+        ApiResponse<ApiV1DemandsGet200Response> ApiV1DemandsGetWithHttpInfo(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default);
+        /// <summary>
+        /// Sözleşmeyi arşivle
+        /// </summary>
+        /// <remarks>
+        /// Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiV1DemandsIdArchivePost200Response</returns>
+        ApiV1DemandsIdArchivePost200Response ApiV1DemandsIdArchivePost(Guid id);
+
+        /// <summary>
+        /// Sözleşmeyi arşivle
+        /// </summary>
+        /// <remarks>
+        /// Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdArchivePost200Response</returns>
+        ApiResponse<ApiV1DemandsIdArchivePost200Response> ApiV1DemandsIdArchivePostWithHttpInfo(Guid id);
         /// <summary>
         /// Belge-özgü imzalı PDF (çok-belgeli zarf)
         /// </summary>
@@ -355,7 +378,7 @@ namespace ImzalaApiClient.Api
         /// Sözleşme sil (yalnızca tamamlanmamış)
         /// </summary>
         /// <remarks>
-        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -366,7 +389,7 @@ namespace ImzalaApiClient.Api
         /// Sözleşme sil (yalnızca tamamlanmamış)
         /// </summary>
         /// <remarks>
-        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -376,7 +399,7 @@ namespace ImzalaApiClient.Api
         /// Gömülü imza oturumu başlat (embed token mint)
         /// </summary>
         /// <remarks>
-        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -388,7 +411,7 @@ namespace ImzalaApiClient.Api
         /// Gömülü imza oturumu başlat (embed token mint)
         /// </summary>
         /// <remarks>
-        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -509,6 +532,29 @@ namespace ImzalaApiClient.Api
         /// <returns>ApiResponse of FileParameter</returns>
         ApiResponse<FileParameter> ApiV1DemandsIdPdfGetWithHttpInfo(Guid id);
         /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle
+        /// </summary>
+        /// <remarks>
+        /// Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <returns>ApiV1DemandsIdTermPatch200Response</returns>
+        ApiV1DemandsIdTermPatch200Response ApiV1DemandsIdTermPatch(Guid id, ContractTermInput contractTermInput);
+
+        /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle
+        /// </summary>
+        /// <remarks>
+        /// Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdTermPatch200Response</returns>
+        ApiResponse<ApiV1DemandsIdTermPatch200Response> ApiV1DemandsIdTermPatchWithHttpInfo(Guid id, ContractTermInput contractTermInput);
+        /// <summary>
         /// İmza denetim izi (maskeli)
         /// </summary>
         /// <remarks>
@@ -529,6 +575,27 @@ namespace ImzalaApiClient.Api
         /// <param name="id"></param>
         /// <returns>ApiResponse of ApiV1DemandsIdTimelineGet200Response</returns>
         ApiResponse<ApiV1DemandsIdTimelineGet200Response> ApiV1DemandsIdTimelineGetWithHttpInfo(Guid id);
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar
+        /// </summary>
+        /// <remarks>
+        /// &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiV1DemandsIdUnarchivePost200Response</returns>
+        ApiV1DemandsIdUnarchivePost200Response ApiV1DemandsIdUnarchivePost(Guid id);
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar
+        /// </summary>
+        /// <remarks>
+        /// &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdUnarchivePost200Response</returns>
+        ApiResponse<ApiV1DemandsIdUnarchivePost200Response> ApiV1DemandsIdUnarchivePostWithHttpInfo(Guid id);
         /// <summary>
         /// Sözleşme oluştur (şablondan)
         /// </summary>
@@ -877,9 +944,10 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiV1DemandsGet200Response</returns>
-        System.Threading.Tasks.Task<ApiV1DemandsGet200Response> ApiV1DemandsGetAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiV1DemandsGet200Response> ApiV1DemandsGetAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sözleşme listesi (counts-only, PII&#39;siz)
@@ -896,9 +964,33 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (ApiV1DemandsGet200Response)</returns>
-        System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsGet200Response>> ApiV1DemandsGetWithHttpInfoAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsGet200Response>> ApiV1DemandsGetWithHttpInfoAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default, System.Threading.CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Sözleşmeyi arşivle
+        /// </summary>
+        /// <remarks>
+        /// Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdArchivePost200Response</returns>
+        System.Threading.Tasks.Task<ApiV1DemandsIdArchivePost200Response> ApiV1DemandsIdArchivePostAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sözleşmeyi arşivle
+        /// </summary>
+        /// <remarks>
+        /// Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdArchivePost200Response)</returns>
+        System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsIdArchivePost200Response>> ApiV1DemandsIdArchivePostWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
         /// Belge-özgü imzalı PDF (çok-belgeli zarf)
         /// </summary>
@@ -978,7 +1070,7 @@ namespace ImzalaApiClient.Api
         /// Sözleşme sil (yalnızca tamamlanmamış)
         /// </summary>
         /// <remarks>
-        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -990,7 +1082,7 @@ namespace ImzalaApiClient.Api
         /// Sözleşme sil (yalnızca tamamlanmamış)
         /// </summary>
         /// <remarks>
-        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -1001,7 +1093,7 @@ namespace ImzalaApiClient.Api
         /// Gömülü imza oturumu başlat (embed token mint)
         /// </summary>
         /// <remarks>
-        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -1014,7 +1106,7 @@ namespace ImzalaApiClient.Api
         /// Gömülü imza oturumu başlat (embed token mint)
         /// </summary>
         /// <remarks>
-        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </remarks>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -1146,6 +1238,31 @@ namespace ImzalaApiClient.Api
         /// <returns>Task of ApiResponse (FileParameter)</returns>
         System.Threading.Tasks.Task<ApiResponse<FileParameter>> ApiV1DemandsIdPdfGetWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle
+        /// </summary>
+        /// <remarks>
+        /// Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdTermPatch200Response</returns>
+        System.Threading.Tasks.Task<ApiV1DemandsIdTermPatch200Response> ApiV1DemandsIdTermPatchAsync(Guid id, ContractTermInput contractTermInput, System.Threading.CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle
+        /// </summary>
+        /// <remarks>
+        /// Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdTermPatch200Response)</returns>
+        System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsIdTermPatch200Response>> ApiV1DemandsIdTermPatchWithHttpInfoAsync(Guid id, ContractTermInput contractTermInput, System.Threading.CancellationToken cancellationToken = default);
+        /// <summary>
         /// İmza denetim izi (maskeli)
         /// </summary>
         /// <remarks>
@@ -1168,6 +1285,29 @@ namespace ImzalaApiClient.Api
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (ApiV1DemandsIdTimelineGet200Response)</returns>
         System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsIdTimelineGet200Response>> ApiV1DemandsIdTimelineGetWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar
+        /// </summary>
+        /// <remarks>
+        /// &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdUnarchivePost200Response</returns>
+        System.Threading.Tasks.Task<ApiV1DemandsIdUnarchivePost200Response> ApiV1DemandsIdUnarchivePostAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar
+        /// </summary>
+        /// <remarks>
+        /// &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </remarks>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdUnarchivePost200Response)</returns>
+        System.Threading.Tasks.Task<ApiResponse<ApiV1DemandsIdUnarchivePost200Response>> ApiV1DemandsIdUnarchivePostWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
         /// Sözleşme oluştur (şablondan)
         /// </summary>
@@ -2731,10 +2871,11 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <returns>ApiV1DemandsGet200Response</returns>
-        public ApiV1DemandsGet200Response ApiV1DemandsGet(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default)
+        public ApiV1DemandsGet200Response ApiV1DemandsGet(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default)
         {
-            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> localVarResponse = ApiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort);
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> localVarResponse = ApiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort, archived);
             return localVarResponse.Data;
         }
 
@@ -2750,8 +2891,9 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <returns>ApiResponse of ApiV1DemandsGet200Response</returns>
-        public ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> ApiV1DemandsGetWithHttpInfo(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default)
+        public ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> ApiV1DemandsGetWithHttpInfo(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default)
         {
             ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
 
@@ -2800,6 +2942,10 @@ namespace ImzalaApiClient.Api
             if (sort != null)
             {
                 localVarRequestOptions.QueryParameters.Add(ImzalaApiClient.Client.ClientUtils.ParameterToMultiMap("", "sort", sort));
+            }
+            if (archived != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(ImzalaApiClient.Client.ClientUtils.ParameterToMultiMap("", "archived", archived));
             }
 
             // authentication (ApiKeyAuth) required
@@ -2832,11 +2978,12 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiV1DemandsGet200Response</returns>
-        public async System.Threading.Tasks.Task<ApiV1DemandsGet200Response> ApiV1DemandsGetAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<ApiV1DemandsGet200Response> ApiV1DemandsGetAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default, System.Threading.CancellationToken cancellationToken = default)
         {
-            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> localVarResponse = await ApiV1DemandsGetWithHttpInfoAsync(status, q, from, to, templateId, page, limit, sort, cancellationToken).ConfigureAwait(false);
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response> localVarResponse = await ApiV1DemandsGetWithHttpInfoAsync(status, q, from, to, templateId, page, limit, sort, archived, cancellationToken).ConfigureAwait(false);
             return localVarResponse.Data;
         }
 
@@ -2852,9 +2999,10 @@ namespace ImzalaApiClient.Api
         /// <param name="page"> (optional, default to 1)</param>
         /// <param name="limit">Sayfa boyutu (page_size ile aynı) (optional, default to 20)</param>
         /// <param name="sort">alan:yön (ör. createdAt:desc) (optional)</param>
+        /// <param name="archived">Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (ApiV1DemandsGet200Response)</returns>
-        public async System.Threading.Tasks.Task<ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response>> ApiV1DemandsGetWithHttpInfoAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<ImzalaApiClient.Client.ApiResponse<ApiV1DemandsGet200Response>> ApiV1DemandsGetWithHttpInfoAsync(string? status = default, string? q = default, DateOnly? from = default, DateOnly? to = default, Guid? templateId = default, int? page = default, int? limit = default, string? sort = default, string? archived = default, System.Threading.CancellationToken cancellationToken = default)
         {
 
             ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
@@ -2906,6 +3054,10 @@ namespace ImzalaApiClient.Api
             {
                 localVarRequestOptions.QueryParameters.Add(ImzalaApiClient.Client.ClientUtils.ParameterToMultiMap("", "sort", sort));
             }
+            if (archived != null)
+            {
+                localVarRequestOptions.QueryParameters.Add(ImzalaApiClient.Client.ClientUtils.ParameterToMultiMap("", "archived", archived));
+            }
 
             // authentication (ApiKeyAuth) required
             if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
@@ -2920,6 +3072,123 @@ namespace ImzalaApiClient.Api
             if (this.ExceptionFactory != null)
             {
                 Exception _exception = this.ExceptionFactory("ApiV1DemandsGet", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivle Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiV1DemandsIdArchivePost200Response</returns>
+        public ApiV1DemandsIdArchivePost200Response ApiV1DemandsIdArchivePost(Guid id)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdArchivePost200Response> localVarResponse = ApiV1DemandsIdArchivePostWithHttpInfo(id);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivle Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdArchivePost200Response</returns>
+        public ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdArchivePost200Response> ApiV1DemandsIdArchivePostWithHttpInfo(Guid id)
+        {
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Post<ApiV1DemandsIdArchivePost200Response>("/api/v1/demands/{id}/archive", localVarRequestOptions, this.Configuration);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdArchivePost", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivle Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdArchivePost200Response</returns>
+        public async System.Threading.Tasks.Task<ApiV1DemandsIdArchivePost200Response> ApiV1DemandsIdArchivePostAsync(Guid id, System.Threading.CancellationToken cancellationToken = default)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdArchivePost200Response> localVarResponse = await ApiV1DemandsIdArchivePostWithHttpInfoAsync(id, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivle Arşiv sözleşmenin &#x60;status&#x60;&#39;unu DEĞİŞTİRMEZ; yalnız &#x60;archived_at&#x60; damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (&#x60;PATCH .../term&#x60; gibi mutasyonlar 409 &#x60;DEMAND_ARCHIVED&#x60; ile reddedilir; &#x60;GET&#x60; uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut &#x60;archived_at&#x60; ile). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdArchivePost200Response)</returns>
+        public async System.Threading.Tasks.Task<ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdArchivePost200Response>> ApiV1DemandsIdArchivePostWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default)
+        {
+
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+
+            var localVarResponse = await this.AsynchronousClient.PostAsync<ApiV1DemandsIdArchivePost200Response>("/api/v1/demands/{id}/archive", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdArchivePost", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -3308,7 +3577,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -3320,7 +3589,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -3364,7 +3633,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -3377,7 +3646,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. 
+        /// Sözleşme sil (yalnızca tamamlanmamış) Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API&#39;den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 &#x60;DEMAND_COMPLETED&#x60;. Arşivlenmiş sözleşme de silinemez → 409 &#x60;DEMAND_ARCHIVED&#x60;; önce &#x60;POST /api/v1/demands/{id}/unarchive&#x60; ile arşivden çıkarın. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id"></param>
@@ -3425,7 +3694,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -3438,7 +3707,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -3489,7 +3758,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -3503,7 +3772,7 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
-        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri) yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış nitelikli elektronik imza (QES) üretmez — \&quot;güvenli\&quot; veya \&quot;nitelikli\&quot; sınıf için ayrı QES akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+        /// Gömülü imza oturumu başlat (embed token mint) Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token&#39;ı üretir. Dönen &#x60;embed_url&#x60; bir &#x60;&lt;iframe&gt;&#x60; içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: &#x60;expires_at&#x60; alanında belirtilen sürede geçersiz olur. - &#x60;embed_allowed_origins&#x60; kısıtı: API anahtarına tanımlanmış   izin verilen origin&#39;ler dışından &#x60;&lt;iframe&gt;&#x60; açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** &#x60;X-Workspace-Id&#x60; header&#39;ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace&#39;in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="id">Sözleşme (demand) ID</param>
@@ -4189,6 +4458,139 @@ namespace ImzalaApiClient.Api
         }
 
         /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <returns>ApiV1DemandsIdTermPatch200Response</returns>
+        public ApiV1DemandsIdTermPatch200Response ApiV1DemandsIdTermPatch(Guid id, ContractTermInput contractTermInput)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdTermPatch200Response> localVarResponse = ApiV1DemandsIdTermPatchWithHttpInfo(id, contractTermInput);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdTermPatch200Response</returns>
+        public ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdTermPatch200Response> ApiV1DemandsIdTermPatchWithHttpInfo(Guid id, ContractTermInput contractTermInput)
+        {
+            // verify the required parameter 'contractTermInput' is set
+            if (contractTermInput == null)
+                throw new ImzalaApiClient.Client.ApiException(400, "Missing required parameter 'contractTermInput' when calling DemandsApi->ApiV1DemandsIdTermPatch");
+
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+                "application/json"
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+            localVarRequestOptions.Data = contractTermInput;
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Patch<ApiV1DemandsIdTermPatch200Response>("/api/v1/demands/{id}/term", localVarRequestOptions, this.Configuration);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdTermPatch", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdTermPatch200Response</returns>
+        public async System.Threading.Tasks.Task<ApiV1DemandsIdTermPatch200Response> ApiV1DemandsIdTermPatchAsync(Guid id, ContractTermInput contractTermInput, System.Threading.CancellationToken cancellationToken = default)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdTermPatch200Response> localVarResponse = await ApiV1DemandsIdTermPatchWithHttpInfoAsync(id, contractTermInput, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşme süre/yenileme takibini güncelle Kısmi güncelleme: yalnız gövdede gönderilen &#x60;ContractTermInput&#x60; anahtarları değiştirilir; bir anahtarı &#x60;null&#x60; göndermek o alanı temizler. Dashboard&#39;daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (&#x60;term_start_mode&#x60;, &#x60;term_start_date&#x60;, &#x60;term_duration_months&#x60;, &#x60;term_fixed_end_date&#x60;) kayıttakinden farklı bir DEĞERLE gönderilirse &#x60;term_end_date&#x60; bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op&#39;tur (otomatik olarak ileri alınmış bitiş korunur). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="contractTermInput"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdTermPatch200Response)</returns>
+        public async System.Threading.Tasks.Task<ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdTermPatch200Response>> ApiV1DemandsIdTermPatchWithHttpInfoAsync(Guid id, ContractTermInput contractTermInput, System.Threading.CancellationToken cancellationToken = default)
+        {
+            // verify the required parameter 'contractTermInput' is set
+            if (contractTermInput == null)
+                throw new ImzalaApiClient.Client.ApiException(400, "Missing required parameter 'contractTermInput' when calling DemandsApi->ApiV1DemandsIdTermPatch");
+
+
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+                "application/json"
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+            localVarRequestOptions.Data = contractTermInput;
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+
+            var localVarResponse = await this.AsynchronousClient.PatchAsync<ApiV1DemandsIdTermPatch200Response>("/api/v1/demands/{id}/term", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdTermPatch", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
         /// İmza denetim izi (maskeli) Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP &#x60;ip_masked&#x60; (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  &#x60;event_type&#x60; değerleri: &#x60;CREATED&#x60;, &#x60;SENT&#x60;, &#x60;VIEWED&#x60;, &#x60;FIELDS_FILLED&#x60;, &#x60;COMMENT_ADDED&#x60;, &#x60;SIGNED&#x60;, &#x60;APPROVED&#x60;, &#x60;REJECTED&#x60;, &#x60;TIMESTAMPED&#x60;, &#x60;COMPLETED&#x60;, &#x60;OTP_SENT&#x60; (SMS doğrulama kodu gönderildi), &#x60;OTP_VERIFIED&#x60; (SMS doğrulama kodu doğrulandı), &#x60;OTP_LOCKED&#x60; (deneme sınırı doldu), &#x60;MOBILE_SIGNATURE_CAPTURED&#x60; (imza QR kod ile telefonda çizildi; bu olayın &#x60;ip_masked&#x60; ve &#x60;device_label&#x60; alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
         /// </summary>
         /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
@@ -4299,6 +4701,123 @@ namespace ImzalaApiClient.Api
             if (this.ExceptionFactory != null)
             {
                 Exception _exception = this.ExceptionFactory("ApiV1DemandsIdTimelineGet", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiV1DemandsIdUnarchivePost200Response</returns>
+        public ApiV1DemandsIdUnarchivePost200Response ApiV1DemandsIdUnarchivePost(Guid id)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdUnarchivePost200Response> localVarResponse = ApiV1DemandsIdUnarchivePostWithHttpInfo(id);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <returns>ApiResponse of ApiV1DemandsIdUnarchivePost200Response</returns>
+        public ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdUnarchivePost200Response> ApiV1DemandsIdUnarchivePostWithHttpInfo(Guid id)
+        {
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Post<ApiV1DemandsIdUnarchivePost200Response>("/api/v1/demands/{id}/unarchive", localVarRequestOptions, this.Configuration);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdUnarchivePost", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiV1DemandsIdUnarchivePost200Response</returns>
+        public async System.Threading.Tasks.Task<ApiV1DemandsIdUnarchivePost200Response> ApiV1DemandsIdUnarchivePostAsync(Guid id, System.Threading.CancellationToken cancellationToken = default)
+        {
+            ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdUnarchivePost200Response> localVarResponse = await ApiV1DemandsIdUnarchivePostWithHttpInfoAsync(id, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Sözleşmeyi arşivden çıkar &#x60;archived_at&#x60;&#39;i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, &#x60;archived_at: null&#x60;). 
+        /// </summary>
+        /// <exception cref="ImzalaApiClient.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (ApiV1DemandsIdUnarchivePost200Response)</returns>
+        public async System.Threading.Tasks.Task<ImzalaApiClient.Client.ApiResponse<ApiV1DemandsIdUnarchivePost200Response>> ApiV1DemandsIdUnarchivePostWithHttpInfoAsync(Guid id, System.Threading.CancellationToken cancellationToken = default)
+        {
+
+            ImzalaApiClient.Client.RequestOptions localVarRequestOptions = new ImzalaApiClient.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+
+            var localVarContentType = ImzalaApiClient.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = ImzalaApiClient.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("id", ImzalaApiClient.Client.ClientUtils.ParameterToString(id)); // path parameter
+
+            // authentication (ApiKeyAuth) required
+            if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("X-API-Key")))
+            {
+                localVarRequestOptions.HeaderParameters.Add("X-API-Key", this.Configuration.GetApiKeyWithPrefix("X-API-Key"));
+            }
+
+            // make the HTTP request
+
+            var localVarResponse = await this.AsynchronousClient.PostAsync<ApiV1DemandsIdUnarchivePost200Response>("/api/v1/demands/{id}/unarchive", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("ApiV1DemandsIdUnarchivePost", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 

@@ -25,6 +25,9 @@ Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre de�
 | PARTY_SIGNED | &quot;party.signed&quot; |
 | PARTY_VIEWED | &quot;party.viewed&quot; |
 | PARTY_REJECTED | &quot;party.rejected&quot; |
+| CONTRACT_EXPIRING | &quot;contract.expiring&quot; |
+| CONTRACT_ENDED | &quot;contract.ended&quot; |
+| CONTRACT_ADVANCED | &quot;contract.advanced&quot; |
 
 
 

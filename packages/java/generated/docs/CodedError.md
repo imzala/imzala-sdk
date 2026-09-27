@@ -11,6 +11,7 @@
 |**success** | **Boolean** |  |  [optional] |
 |**error** | **String** |  |  [optional] |
 |**code** | **String** |  |  [optional] |
+|**field** | **String** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  |  [optional] |
 
 
 

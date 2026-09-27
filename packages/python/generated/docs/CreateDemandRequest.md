@@ -26,6 +26,15 @@ Name | Type | Description | Notes
 **require_tc_verification** | **bool** |  | [optional] [default to False]
 **require_biometric_verification** | **bool** |  | [optional] [default to False]
 **reminder_settings** | [**ReminderSettings**](ReminderSettings.md) | Bu sözleşme için hatırlatma ayarlarını **şablon default&#39;unu override** ederek belirtir. Yollanmazsa şablonun &#x60;reminder_*&#x60; alanları kullanılır (PUT /api/templates/:id ile dashboard&#39;dan kaydedilen değerler); şablonda da yoksa &#x60;{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\&quot;email\&quot;]}&#x60; default&#39;u uygulanır. Demand oluşumunda &#x60;ReminderConfig&#x60; satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.  | [optional] 
+**term_start_mode** | **str** | Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları).  | [optional] 
+**term_start_date** | **date** | Yalnız term_start_mode: FIXED_DATE iken kullanılır. | [optional] 
+**term_duration_months** | **int** |  | [optional] 
+**term_fixed_end_date** | **date** |  | [optional] 
+**renewal_type** | **str** |  | [optional] 
+**renewal_period_months** | **int** | AUTO_RENEW gerektirir; verilmezse term_duration_months&#39;tan devralınır. | [optional] 
+**notice_days** | **int** |  | [optional] 
+**reminder_offsets** | **List[int]** |  | [optional] 
+**notify_counterparty** | **bool** |  | [optional] [default to False]
 
 ## Example
 

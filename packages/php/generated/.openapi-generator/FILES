@@ -43,6 +43,8 @@ docs/Model/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/Model/ApiV1DemandsGet200Response.md
 docs/Model/ApiV1DemandsGet200ResponseData.md
 docs/Model/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/Model/ApiV1DemandsIdArchivePost200Response.md
+docs/Model/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/Model/ApiV1DemandsIdCancelPost200Response.md
 docs/Model/ApiV1DemandsIdCancelPost200ResponseData.md
 docs/Model/ApiV1DemandsIdCancelPostRequest.md
@@ -59,9 +61,13 @@ docs/Model/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.md
 docs/Model/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md
 docs/Model/ApiV1DemandsIdRemindersPost429Response.md
 docs/Model/ApiV1DemandsIdRemindersPost429ResponseError.md
+docs/Model/ApiV1DemandsIdTermPatch200Response.md
+docs/Model/ApiV1DemandsIdTermPatch200ResponseData.md
 docs/Model/ApiV1DemandsIdTimelineGet200Response.md
 docs/Model/ApiV1DemandsIdTimelineGet200ResponseData.md
 docs/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md
+docs/Model/ApiV1DemandsIdUnarchivePost200Response.md
+docs/Model/ApiV1DemandsIdUnarchivePost200ResponseData.md
 docs/Model/ApiV1DemandsPost201Response.md
 docs/Model/ApiV1DemandsPost400Response.md
 docs/Model/ApiV1DemandsPost402Response.md
@@ -100,6 +106,8 @@ docs/Model/ApiV1TimestampsPostRequest1.md
 docs/Model/CodedError.md
 docs/Model/ContactSummary.md
 docs/Model/ContactSummaryCompany.md
+docs/Model/ContractTerm.md
+docs/Model/ContractTermInput.md
 docs/Model/CreateDemandRequest.md
 docs/Model/CreatedDemand.md
 docs/Model/CreatedDemandSigningUrlsInner.md
@@ -163,6 +171,7 @@ docs/Model/UpsertItemsRequest.md
 docs/Model/UpsertItemsResponse.md
 docs/Model/UpsertItemsResponseData.md
 docs/Model/UpsertItemsResponseDataItemsInner.md
+docs/Model/WebhookDataContractTerm.md
 docs/Model/WebhookDataDemandCompleted.md
 docs/Model/WebhookDataDemandCompletedPartiesInner.md
 docs/Model/WebhookDataDemandCreated.md
@@ -219,6 +228,8 @@ lib/Model/ApiV1DemandsDemandIdDocumentsPostRequest.php
 lib/Model/ApiV1DemandsGet200Response.php
 lib/Model/ApiV1DemandsGet200ResponseData.php
 lib/Model/ApiV1DemandsGet200ResponseDataDemandsInner.php
+lib/Model/ApiV1DemandsIdArchivePost200Response.php
+lib/Model/ApiV1DemandsIdArchivePost200ResponseData.php
 lib/Model/ApiV1DemandsIdCancelPost200Response.php
 lib/Model/ApiV1DemandsIdCancelPost200ResponseData.php
 lib/Model/ApiV1DemandsIdCancelPostRequest.php
@@ -235,9 +246,13 @@ lib/Model/ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.php
 lib/Model/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.php
 lib/Model/ApiV1DemandsIdRemindersPost429Response.php
 lib/Model/ApiV1DemandsIdRemindersPost429ResponseError.php
+lib/Model/ApiV1DemandsIdTermPatch200Response.php
+lib/Model/ApiV1DemandsIdTermPatch200ResponseData.php
 lib/Model/ApiV1DemandsIdTimelineGet200Response.php
 lib/Model/ApiV1DemandsIdTimelineGet200ResponseData.php
 lib/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.php
+lib/Model/ApiV1DemandsIdUnarchivePost200Response.php
+lib/Model/ApiV1DemandsIdUnarchivePost200ResponseData.php
 lib/Model/ApiV1DemandsPost201Response.php
 lib/Model/ApiV1DemandsPost400Response.php
 lib/Model/ApiV1DemandsPost402Response.php
@@ -276,6 +291,8 @@ lib/Model/ApiV1TimestampsPostRequest1.php
 lib/Model/CodedError.php
 lib/Model/ContactSummary.php
 lib/Model/ContactSummaryCompany.php
+lib/Model/ContractTerm.php
+lib/Model/ContractTermInput.php
 lib/Model/CreateDemandRequest.php
 lib/Model/CreatedDemand.php
 lib/Model/CreatedDemandSigningUrlsInner.php
@@ -340,6 +357,7 @@ lib/Model/UpsertItemsRequest.php
 lib/Model/UpsertItemsResponse.php
 lib/Model/UpsertItemsResponseData.php
 lib/Model/UpsertItemsResponseDataItemsInner.php
+lib/Model/WebhookDataContractTerm.php
 lib/Model/WebhookDataDemandCompleted.php
 lib/Model/WebhookDataDemandCompletedPartiesInner.php
 lib/Model/WebhookDataDemandCreated.php
@@ -393,6 +411,8 @@ test/Model/ApiV1DemandsDemandIdDocumentsPostRequestTest.php
 test/Model/ApiV1DemandsGet200ResponseDataDemandsInnerTest.php
 test/Model/ApiV1DemandsGet200ResponseDataTest.php
 test/Model/ApiV1DemandsGet200ResponseTest.php
+test/Model/ApiV1DemandsIdArchivePost200ResponseDataTest.php
+test/Model/ApiV1DemandsIdArchivePost200ResponseTest.php
 test/Model/ApiV1DemandsIdCancelPost200ResponseDataTest.php
 test/Model/ApiV1DemandsIdCancelPost200ResponseTest.php
 test/Model/ApiV1DemandsIdCancelPostRequestTest.php
@@ -409,9 +429,13 @@ test/Model/ApiV1DemandsIdRemindersPost200ResponseDataTest.php
 test/Model/ApiV1DemandsIdRemindersPost200ResponseTest.php
 test/Model/ApiV1DemandsIdRemindersPost429ResponseErrorTest.php
 test/Model/ApiV1DemandsIdRemindersPost429ResponseTest.php
+test/Model/ApiV1DemandsIdTermPatch200ResponseDataTest.php
+test/Model/ApiV1DemandsIdTermPatch200ResponseTest.php
 test/Model/ApiV1DemandsIdTimelineGet200ResponseDataEventsInnerTest.php
 test/Model/ApiV1DemandsIdTimelineGet200ResponseDataTest.php
 test/Model/ApiV1DemandsIdTimelineGet200ResponseTest.php
+test/Model/ApiV1DemandsIdUnarchivePost200ResponseDataTest.php
+test/Model/ApiV1DemandsIdUnarchivePost200ResponseTest.php
 test/Model/ApiV1DemandsPost201ResponseTest.php
 test/Model/ApiV1DemandsPost400ResponseTest.php
 test/Model/ApiV1DemandsPost402ResponseDataTest.php
@@ -450,6 +474,8 @@ test/Model/ApiV1TimestampsPostRequest1Test.php
 test/Model/CodedErrorTest.php
 test/Model/ContactSummaryCompanyTest.php
 test/Model/ContactSummaryTest.php
+test/Model/ContractTermInputTest.php
+test/Model/ContractTermTest.php
 test/Model/CreateDemandRequestTest.php
 test/Model/CreatedDemandSigningUrlsInnerTest.php
 test/Model/CreatedDemandStampsAppliedInnerTest.php
@@ -513,6 +539,7 @@ test/Model/UpsertItemsRequestTest.php
 test/Model/UpsertItemsResponseDataItemsInnerTest.php
 test/Model/UpsertItemsResponseDataTest.php
 test/Model/UpsertItemsResponseTest.php
+test/Model/WebhookDataContractTermTest.php
 test/Model/WebhookDataDemandCompletedPartiesInnerTest.php
 test/Model/WebhookDataDemandCompletedTest.php
 test/Model/WebhookDataDemandCreatedTest.php

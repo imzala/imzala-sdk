@@ -3404,7 +3404,7 @@ paths:
                     type: object
                     properties:
                       archived_at:
-                        type: 'null'
+                        nullable: true
                         example: null
         '404':
           $ref: '#/components/responses/NotFound'

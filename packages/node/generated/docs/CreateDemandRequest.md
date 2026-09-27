@@ -26,6 +26,15 @@ Name | Type | Description | Notes
 **require_tc_verification** | **boolean** |  | [optional] [default to false]
 **require_biometric_verification** | **boolean** |  | [optional] [default to false]
 **reminder_settings** | [**ReminderSettings**](ReminderSettings.md) | Bu sözleşme için hatırlatma ayarlarını **şablon default\&#39;unu override** ederek belirtir. Yollanmazsa şablonun &#x60;reminder_*&#x60; alanları kullanılır (PUT /api/templates/:id ile dashboard\&#39;dan kaydedilen değerler); şablonda da yoksa &#x60;{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\&quot;email\&quot;]}&#x60; default\&#39;u uygulanır. Demand oluşumunda &#x60;ReminderConfig&#x60; satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.  | [optional] [default to undefined]
+**term_start_mode** | **string** | Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları).  | [optional] [default to undefined]
+**term_start_date** | **string** | Yalnız term_start_mode: FIXED_DATE iken kullanılır. | [optional] [default to undefined]
+**term_duration_months** | **number** |  | [optional] [default to undefined]
+**term_fixed_end_date** | **string** |  | [optional] [default to undefined]
+**renewal_type** | **string** |  | [optional] [default to undefined]
+**renewal_period_months** | **number** | AUTO_RENEW gerektirir; verilmezse term_duration_months\&#39;tan devralınır. | [optional] [default to undefined]
+**notice_days** | **number** |  | [optional] [default to undefined]
+**reminder_offsets** | **Array&lt;number&gt;** |  | [optional] [default to undefined]
+**notify_counterparty** | **boolean** |  | [optional] [default to false]
 
 ## Example
 
@@ -54,6 +63,15 @@ const instance: CreateDemandRequest = {
     require_tc_verification,
     require_biometric_verification,
     reminder_settings,
+    term_start_mode,
+    term_start_date,
+    term_duration_months,
+    term_fixed_end_date,
+    renewal_type,
+    renewal_period_months,
+    notice_days,
+    reminder_offsets,
+    notify_counterparty,
 };
 ```
 

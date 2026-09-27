@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.8.23
+## @imzala/server-sdk-node@1.9.1
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.8.23 --save
+npm install @imzala/server-sdk-node@1.9.1 --save
 ```
 
 _unPublished (not recommended):_
@@ -64,6 +64,7 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsDemandIdDocumentsPost**](docs/DemandsApi.md#apiv1demandsdemandiddocumentspost) | **POST** /api/v1/demands/{demandId}/documents | Zarfa metadata-only belge ekle
 *DemandsApi* | [**apiV1DemandsDemandIdDocumentsUploadPost**](docs/DemandsApi.md#apiv1demandsdemandiddocumentsuploadpost) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya)
 *DemandsApi* | [**apiV1DemandsGet**](docs/DemandsApi.md#apiv1demandsget) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII\&#39;siz)
+*DemandsApi* | [**apiV1DemandsIdArchivePost**](docs/DemandsApi.md#apiv1demandsidarchivepost) | **POST** /api/v1/demands/{id}/archive | Sözleşmeyi arşivle
 *DemandsApi* | [**apiV1DemandsIdBelgeDocumentIdPdfGet**](docs/DemandsApi.md#apiv1demandsidbelgedocumentidpdfget) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)
 *DemandsApi* | [**apiV1DemandsIdCancelPost**](docs/DemandsApi.md#apiv1demandsidcancelpost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
 *DemandsApi* | [**apiV1DemandsIdCertificateGet**](docs/DemandsApi.md#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
@@ -74,7 +75,9 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
 *DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPost**](docs/DemandsApi.md#apiv1demandsidpartiespartyidresendpost) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
 *DemandsApi* | [**apiV1DemandsIdPdfGet**](docs/DemandsApi.md#apiv1demandsidpdfget) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF\&#39;i (auth\&#39;lu indirme)
+*DemandsApi* | [**apiV1DemandsIdTermPatch**](docs/DemandsApi.md#apiv1demandsidtermpatch) | **PATCH** /api/v1/demands/{id}/term | Sözleşme süre/yenileme takibini güncelle
 *DemandsApi* | [**apiV1DemandsIdTimelineGet**](docs/DemandsApi.md#apiv1demandsidtimelineget) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
+*DemandsApi* | [**apiV1DemandsIdUnarchivePost**](docs/DemandsApi.md#apiv1demandsidunarchivepost) | **POST** /api/v1/demands/{id}/unarchive | Sözleşmeyi arşivden çıkar
 *DemandsApi* | [**apiV1DemandsPost**](docs/DemandsApi.md#apiv1demandspost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsUploadPost**](docs/DemandsApi.md#apiv1demandsuploadpost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
 *DemandsApi* | [**apiV1FieldTemplatesIdPreviewLayoutPost**](docs/DemandsApi.md#apiv1fieldtemplatesidpreviewlayoutpost) | **POST** /api/v1/field-templates/{id}/preview-layout | Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
@@ -126,6 +129,8 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
  - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
  - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+ - [ApiV1DemandsIdArchivePost200Response](docs/ApiV1DemandsIdArchivePost200Response.md)
+ - [ApiV1DemandsIdArchivePost200ResponseData](docs/ApiV1DemandsIdArchivePost200ResponseData.md)
  - [ApiV1DemandsIdCancelPost200Response](docs/ApiV1DemandsIdCancelPost200Response.md)
  - [ApiV1DemandsIdCancelPost200ResponseData](docs/ApiV1DemandsIdCancelPost200ResponseData.md)
  - [ApiV1DemandsIdCancelPostRequest](docs/ApiV1DemandsIdCancelPostRequest.md)
@@ -142,9 +147,13 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner](docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md)
  - [ApiV1DemandsIdRemindersPost429Response](docs/ApiV1DemandsIdRemindersPost429Response.md)
  - [ApiV1DemandsIdRemindersPost429ResponseError](docs/ApiV1DemandsIdRemindersPost429ResponseError.md)
+ - [ApiV1DemandsIdTermPatch200Response](docs/ApiV1DemandsIdTermPatch200Response.md)
+ - [ApiV1DemandsIdTermPatch200ResponseData](docs/ApiV1DemandsIdTermPatch200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200Response](docs/ApiV1DemandsIdTimelineGet200Response.md)
  - [ApiV1DemandsIdTimelineGet200ResponseData](docs/ApiV1DemandsIdTimelineGet200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
+ - [ApiV1DemandsIdUnarchivePost200Response](docs/ApiV1DemandsIdUnarchivePost200Response.md)
+ - [ApiV1DemandsIdUnarchivePost200ResponseData](docs/ApiV1DemandsIdUnarchivePost200ResponseData.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
  - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
  - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
@@ -183,6 +192,8 @@ Class | Method | HTTP request | Description
  - [CodedError](docs/CodedError.md)
  - [ContactSummary](docs/ContactSummary.md)
  - [ContactSummaryCompany](docs/ContactSummaryCompany.md)
+ - [ContractTerm](docs/ContractTerm.md)
+ - [ContractTermInput](docs/ContractTermInput.md)
  - [CreateDemandRequest](docs/CreateDemandRequest.md)
  - [CreatedDemand](docs/CreatedDemand.md)
  - [CreatedDemandSigningUrlsInner](docs/CreatedDemandSigningUrlsInner.md)
@@ -246,6 +257,7 @@ Class | Method | HTTP request | Description
  - [UpsertItemsResponse](docs/UpsertItemsResponse.md)
  - [UpsertItemsResponseData](docs/UpsertItemsResponseData.md)
  - [UpsertItemsResponseDataItemsInner](docs/UpsertItemsResponseDataItemsInner.md)
+ - [WebhookDataContractTerm](docs/WebhookDataContractTerm.md)
  - [WebhookDataDemandCompleted](docs/WebhookDataDemandCompleted.md)
  - [WebhookDataDemandCompletedPartiesInner](docs/WebhookDataDemandCompletedPartiesInner.md)
  - [WebhookDataDemandCreated](docs/WebhookDataDemandCreated.md)

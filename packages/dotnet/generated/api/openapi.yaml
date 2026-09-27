@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24
+    **Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -129,7 +129,7 @@ info:
     - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
       event'lerinizde tetiklenir
 
-    ### Olay tipleri (8)
+    ### Olay tipleri (11)
     | Olay | Tetikleyici |
     |------|-------------|
     | `demand.created` | Yeni sözleşme oluşturuldu |
@@ -140,6 +140,13 @@ info:
     | `party.rejected` | Bir taraf reddetti |
     | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı |
     | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |
+    | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor |
+    | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti |
+    | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |
+
+    > **Not (contract.\* olayları):** Bunlar platformun **takip amaçlı**
+    > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini
+    > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.
 
     ### Header'lar
     Her istekte aşağıdaki header'lar gönderilir:
@@ -165,7 +172,7 @@ info:
     ```
 
     - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-    - `type` — yukarıdaki 8 olay tipinden biri (lowercase).
+    - `type`: yukarıdaki 11 olay tipinden biri (lowercase).
     - `created_at` — olay zamanı (ISO 8601 UTC).
     - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
@@ -265,7 +272,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.8.23
+  version: 1.9.1
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -598,6 +605,21 @@ paths:
         schema:
           type: string
         style: form
+      - description: |
+          Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler.
+          `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse
+          varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).
+        explode: true
+        in: query
+        name: archived
+        required: false
+        schema:
+          enum:
+          - exclude
+          - only
+          - include
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -811,6 +833,12 @@ paths:
             `allowed_signature_variants` içinde `phone_draw` başka bir
             yöntemle birlikte gönderildi. `phone_draw` yalnız tek başına
             kullanılabilir (`["phone_draw"]`).
+
+            `TERM_INVALID`: sözleşme süre/yenileme (`ContractTermInput`)
+            alanlarında geçersiz veya çelişkili bir kombinasyon (ör.
+            `term_fixed_end_date` ile `term_duration_months` birlikte, veya
+            `renewal_type: AUTO_RENEW` periyotsuz). `field` hangi anahtarın
+            reddedildiğini gösterir.
         "401":
           content:
             application/json:
@@ -1072,6 +1100,8 @@ paths:
         Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴
         Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge +
         denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`.
+        Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce
+        `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın.
       parameters:
       - explode: false
         in: path
@@ -1099,7 +1129,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/_api_v1_demands__id__delete_409_response"
-          description: Tamamlanmış sözleşme silinemez
+          description: Tamamlanmış (`DEMAND_COMPLETED`) veya arşivlenmiş (`DEMAND_ARCHIVED`)
+            sözleşme silinemez
       summary: Sözleşme sil (yalnızca tamamlanmamış)
       tags:
       - Demands
@@ -1922,11 +1953,14 @@ paths:
         gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine
         yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.
 
-        **İmza sınıfı:** Bu akışla elde edilen imzalar **SES** (Basit Elektronik
-        İmza) sınıfında değerlendirilir; doğrulama (TC kimlik veya biyometri)
-        yapılmışsa **AES** (Gelişmiş Elektronik İmza) olabilir. Bu akış
-        nitelikli elektronik imza (QES) üretmez — "güvenli" veya "nitelikli"
-        sınıf için ayrı QES akışını kullanın.
+        **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik
+        İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza
+        değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak
+        sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya
+        biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini
+        güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya
+        dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine
+        nitelikli elektronik sertifika ile imzalama akışını kullanın.
 
         **Token özellikleri:**
         - Tek kullanımlık: imza sayfası açıldığında token tüketilir.
@@ -2216,6 +2250,147 @@ paths:
         "409":
           description: Tamamlanmış/iptal edilmiş sözleşme
       summary: Sözleşme iptal (void)
+      tags:
+      - Demands
+      x-required-scope: demands:write
+  /api/v1/demands/{id}/term:
+    patch:
+      description: |
+        Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput`
+        anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı
+        temizler. Dashboard'daki sözleşme detay sayfasıyla AYNI çekirdek
+        kuralı uygular.
+
+        Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`,
+        `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı
+        bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden
+        hesaplanır; aynı değerle gelen alan no-op'tur (otomatik olarak ileri
+        alınmış bitiş korunur).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              term_start_mode: ON_COMPLETION
+              term_duration_months: 12
+              renewal_type: AUTO_RENEW
+              notice_days: 30
+            schema:
+              $ref: "#/components/schemas/ContractTermInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__term_patch_200_response"
+          description: Güncellendi
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            `TERM_INVALID`: geçersiz veya çelişkili alan kombinasyonu, ya da
+            gövdede hiç term alanı yok. `field` hangi anahtarın reddedildiğini
+            gösterir (gövde boşsa `null`).
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: Arşivlenmiş sözleşme değiştirilemez (`DEMAND_ARCHIVED`); önce
+            `POST .../unarchive` çağırın.
+      summary: Sözleşme süre/yenileme takibini güncelle
+      tags:
+      - Demands
+      x-required-scope: demands:write
+  /api/v1/demands/{id}/archive:
+    post:
+      description: |
+        Arşiv sözleşmenin `status`'unu DEĞİŞTİRMEZ; yalnız `archived_at`
+        damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar
+        (`PATCH .../term` gibi mutasyonlar 409
+        `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız
+        tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir.
+        Zaten arşivliyse idempotent (200, mevcut `archived_at` ile).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__archive_post_200_response"
+          description: Arşivlendi (veya zaten arşivliydi)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            `DEMAND_NOT_ARCHIVABLE`: sözleşme henüz tamamlanmadı/iptal
+            edilmedi/süresi dolmadı. `DEMAND_REJECTED_CANCEL_FIRST`: sözleşme
+            reddedilmiş ve imza bekliyor; önce `POST .../cancel` ile iptal edin.
+      summary: Sözleşmeyi arşivle
+      tags:
+      - Demands
+      x-required-scope: demands:write
+  /api/v1/demands/{id}/unarchive:
+    post:
+      description: |
+        `archived_at`'i temizler; sözleşme yeniden mutasyona açılır.
+        Zaten arşivsizse idempotent (200, `archived_at: null`).
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__unarchive_post_200_response"
+          description: Arşivden çıkarıldı (veya zaten arşivsizdi)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: Sözleşmeyi arşivden çıkar
       tags:
       - Demands
       x-required-scope: demands:write
@@ -3830,6 +4005,235 @@ components:
         istekte gönderilen (`documents` seçimi sonrası) bir belgesi olmalıdır.
       maxProperties: 20
       type: object
+    ContractTerm:
+      description: |
+        Sözleşme süre/yenileme takibi. Sözleşmede takip hiç tanımlanmadıysa
+        (`start_mode` VE `end_date` boşsa) bu alan `null` döner.
+
+        Bu, hukuki bir yenileme veya sona erme beyanı değildir; platformun
+        takip amaçlı kaydıdır. Sözleşmenin fiilen ne zaman sona erdiği veya
+        yenilendiği, tarafların kendi sözleşme hükümlerine ve yürürlükteki
+        hukuka tabidir. Bu alan yalnız hatırlatma ve görünürlük sağlar.
+      example:
+        start_mode: FIXED_DATE
+        start_date: 2000-01-23
+        duration_months: 48
+        fixed_end_date: 2000-01-23
+        end_date: 2000-01-23
+        end_date_signed: 2000-01-23
+        renewal_type: AUTO_RENEW
+        renewal_period_months: 362
+        notice_days: 535
+        notice_deadline: 2000-01-23
+        reminder_offsets:
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        notify_counterparty: true
+        state: UNTRACKED
+        days_left: 5
+        renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        start_mode:
+          description: |
+            Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten.
+            `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar
+            tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).
+          enum:
+          - FIXED_DATE
+          - ON_FIRST_SIGNATURE
+          - ON_COMPLETION
+          nullable: true
+          type: string
+        start_date:
+          format: date
+          nullable: true
+          type: string
+        duration_months:
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        fixed_end_date:
+          format: date
+          nullable: true
+          type: string
+        end_date:
+          description: |
+            Takip edilen bitiş tarihi. `renewal_type: AUTO_RENEW` sözleşmelerde
+            her dönemde (günlük olarak) bir sonraki döneme ileri alınır;
+            bkz. `contract.advanced` webhook olayı.
+          format: date
+          nullable: true
+          type: string
+        end_date_signed:
+          description: |
+            İmzalanan belge metninde bitiş tarihi bir değişken olarak
+            yazılıysa, sözleşme tamamlandığı anda `end_date`'in dondurulmuş
+            kopyası. `end_date` sonradan ileri alınsa bile bu alan DEĞİŞMEZ.
+            İmzalanan metinle takip değeri arasındaki tarihsel referans budur.
+          format: date
+          nullable: true
+          type: string
+        renewal_type:
+          enum:
+          - AUTO_RENEW
+          - FIXED_TERM
+          nullable: true
+          type: string
+        renewal_period_months:
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        notice_days:
+          description: Fesih ihbarı için bitişten önce kaç gün gerektiği.
+          maximum: 3650
+          minimum: 0
+          nullable: true
+          type: integer
+        notice_deadline:
+          description: Hesaplanır (`end_date - notice_days`); `end_date` veya `notice_days`
+            boşsa `null`.
+          format: date
+          nullable: true
+          type: string
+        reminder_offsets:
+          description: Bitişten kaç gün önce hatırlatma gönderileceği (gün sayıları).
+          items:
+            maximum: 3650
+            minimum: 0
+            type: integer
+          maxItems: 5
+          nullable: true
+          type: array
+        notify_counterparty:
+          description: Karşı tarafa da hatırlatma gönderilsin mi.
+          type: boolean
+        state:
+          description: |
+            `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip
+            sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti.
+            `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
+          enum:
+          - UNTRACKED
+          - ACTIVE
+          - ENDED
+          - STOPPED
+          type: string
+        days_left:
+          description: Bugünden `end_date`'e gün sayısı (negatifse geçmişte).
+          nullable: true
+          type: integer
+        renewal_stopped_at:
+          format: date-time
+          nullable: true
+          type: string
+      required:
+      - days_left
+      - duration_months
+      - end_date
+      - end_date_signed
+      - fixed_end_date
+      - notice_days
+      - notice_deadline
+      - notify_counterparty
+      - reminder_offsets
+      - renewal_period_months
+      - renewal_stopped_at
+      - renewal_type
+      - start_date
+      - start_mode
+      - state
+      type: object
+    ContractTermInput:
+      description: |
+        Sözleşme süre/yenileme takibi girdisi. `POST /demands` üzerinde
+        oluştururken ve `PATCH /demands/{id}/term` üzerinde güncellerken AYNI
+        alan adları kullanılır. `PATCH`'te kısmi güncelleme uygulanır: yalnız
+        gövdede GÖNDERİLEN anahtarlar değiştirilir; bir anahtarı `null`
+        göndermek o alanı temizler, hiç göndermemek dokunmaz.
+
+        Doğrulama kuralları:
+        - `term_fixed_end_date` ile `term_duration_months` birlikte gönderilemez.
+        - `term_start_mode: FIXED_DATE` ise oluştururken `term_start_date` ya
+          da `term_fixed_end_date` gerekir; `ON_FIRST_SIGNATURE` /
+          `ON_COMPLETION` modlarında `term_start_date` gönderilse de yok
+          sayılır (başlangıç imza anında otomatik yazılır).
+        - `renewal_type: AUTO_RENEW` ise `renewal_period_months` gerekir;
+          gönderilmezse `term_duration_months`'tan devralınır.
+        - Geçersiz kombinasyon 400 `TERM_INVALID` + hangi alanı işaret eden
+          `field` ile döner.
+      example:
+        term_start_mode: FIXED_DATE
+        term_start_date: 2000-01-23
+        term_duration_months: 48
+        term_fixed_end_date: 2000-01-23
+        renewal_type: AUTO_RENEW
+        renewal_period_months: 362
+        notice_days: 535
+        reminder_offsets:
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        notify_counterparty: false
+      properties:
+        term_start_mode:
+          enum:
+          - FIXED_DATE
+          - ON_FIRST_SIGNATURE
+          - ON_COMPLETION
+          nullable: true
+          type: string
+        term_start_date:
+          description: "Yalnız `term_start_mode: FIXED_DATE` iken kullanılır."
+          format: date
+          nullable: true
+          type: string
+        term_duration_months:
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        term_fixed_end_date:
+          format: date
+          nullable: true
+          type: string
+        renewal_type:
+          enum:
+          - AUTO_RENEW
+          - FIXED_TERM
+          nullable: true
+          type: string
+        renewal_period_months:
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        notice_days:
+          maximum: 3650
+          minimum: 0
+          nullable: true
+          type: integer
+        reminder_offsets:
+          description: |
+            Boş dizi göndermek şablon/önceki değeri SİLMEZ (yok sayılır);
+            temizlemek için `null` gönderin.
+          items:
+            maximum: 3650
+            minimum: 0
+            type: integer
+          maxItems: 5
+          nullable: true
+          type: array
+        notify_counterparty:
+          default: false
+          type: boolean
+      type: object
     CreateDemandRequest:
       example:
         template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -3897,6 +4301,20 @@ components:
         require_tc_verification: false
         require_biometric_verification: false
         reminder_settings: ""
+        term_start_mode: FIXED_DATE
+        term_start_date: 2000-01-23
+        term_duration_months: 48
+        term_fixed_end_date: 2000-01-23
+        renewal_type: AUTO_RENEW
+        renewal_period_months: 362
+        notice_days: 535
+        reminder_offsets:
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        - 2176
+        notify_counterparty: false
       properties:
         template_id:
           description: GET /api/v1/templates listesinden veya dashboard'dan kopyalayın
@@ -4083,6 +4501,61 @@ components:
             şablonda da yoksa `{enabled:true, intervals_hours:[48], max_reminders:1, channels:["email"]}`
             default'u uygulanır. Demand oluşumunda `ReminderConfig` satırı yaratılır
             ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.
+        term_start_mode:
+          description: |
+            Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip
+            politikası kullanılır. Tam alan kümesi ve doğrulama kuralları
+            için `ContractTermInput` şemasına bakın (`PATCH /demands/{id}/term`
+            ile AYNI alan adları).
+          enum:
+          - FIXED_DATE
+          - ON_FIRST_SIGNATURE
+          - ON_COMPLETION
+          nullable: true
+          type: string
+        term_start_date:
+          description: "Yalnız term_start_mode: FIXED_DATE iken kullanılır."
+          format: date
+          nullable: true
+          type: string
+        term_duration_months:
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        term_fixed_end_date:
+          format: date
+          nullable: true
+          type: string
+        renewal_type:
+          enum:
+          - AUTO_RENEW
+          - FIXED_TERM
+          nullable: true
+          type: string
+        renewal_period_months:
+          description: AUTO_RENEW gerektirir; verilmezse term_duration_months'tan
+            devralınır.
+          maximum: 600
+          minimum: 1
+          nullable: true
+          type: integer
+        notice_days:
+          maximum: 3650
+          minimum: 0
+          nullable: true
+          type: integer
+        reminder_offsets:
+          items:
+            maximum: 3650
+            minimum: 0
+            type: integer
+          maxItems: 5
+          nullable: true
+          type: array
+        notify_counterparty:
+          default: false
+          type: boolean
       required:
       - party_mapping
       - template_id
@@ -5056,6 +5529,8 @@ components:
             signature_collected: true
             recorded: true
             consent_granted: true
+        term: ""
+        archived_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: uuid
@@ -5106,6 +5581,15 @@ components:
           items:
             $ref: "#/components/schemas/DemandDocumentStatus"
           type: array
+        term:
+          allOf:
+          - $ref: "#/components/schemas/ContractTerm"
+          description: Sözleşmede süre/yenileme takibi tanımlı değilse `null`.
+          nullable: true
+        archived_at:
+          format: date-time
+          nullable: true
+          type: string
       type: object
     DemandDocumentStatus:
       description: Zarftaki tek bir belgenin durumu.
@@ -5413,6 +5897,9 @@ components:
           - party.signed
           - party.viewed
           - party.rejected
+          - contract.expiring
+          - contract.ended
+          - contract.advanced
           type: string
         created_at:
           description: Olay zamanı (ISO 8601 UTC).
@@ -5533,6 +6020,55 @@ components:
       - party
       - rejected_at
       type: object
+    WebhookDataContractTerm:
+      description: |
+        `contract.expiring` / `contract.ended` / `contract.advanced`
+        olaylarının ortak verisi. Yalnız takip alanlarını taşır; taraf adı,
+        e-postası veya sözleşme başlığı BU GÖVDEDE YER ALMAZ.
+      properties:
+        demand_id:
+          format: uuid
+          type: string
+        term_end_date:
+          description: Olay anında platformda kayıtlı takip bitiş tarihi.
+          format: date
+          nullable: true
+          type: string
+        renewal_type:
+          enum:
+          - AUTO_RENEW
+          - FIXED_TERM
+          nullable: true
+          type: string
+        notice_deadline:
+          description: İhbar için son gün (`term_end_date - notice_days`); tanımsızsa
+            `null`.
+          format: date
+          nullable: true
+          type: string
+        term_state:
+          description: Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+          enum:
+          - UNTRACKED
+          - ACTIVE
+          - ENDED
+          - STOPPED
+          type: string
+        due_key:
+          description: |
+            İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için
+            kullandığı dahili kayıt). Formatı sabit değildir, opak string
+            olarak ele alın; idempotency için `id` alanını kullanın.
+          nullable: true
+          type: string
+      required:
+      - demand_id
+      - due_key
+      - notice_deadline
+      - renewal_type
+      - term_end_date
+      - term_state
+      type: object
     KycWebhookEnvelope:
       description: |
         KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır;
@@ -5604,6 +6140,7 @@ components:
         success: false
         error: Geçersiz sayfa numarası (page >= 1 olmalı)
         code: INVALID_PAGE
+        field: field
       properties:
         success:
           example: false
@@ -5613,6 +6150,13 @@ components:
           type: string
         code:
           example: INVALID_PAGE
+          type: string
+        field:
+          description: |
+            Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini
+            gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde
+            YOKTUR.
+          nullable: true
           type: string
       type: object
     StandardError:
@@ -6280,6 +6824,8 @@ components:
         status: status
         created_at: 2000-01-23T04:56:07.000+00:00
         completed_at: 2000-01-23T04:56:07.000+00:00
+        term_end_date: 2000-01-23
+        archived_at: 2000-01-23T04:56:07.000+00:00
         parties_total: 0
         parties_signed: 6
         pdf_url: https://openapi-generator.tech
@@ -6296,6 +6842,16 @@ components:
           format: date-time
           type: string
         completed_at:
+          format: date-time
+          nullable: true
+          type: string
+        term_end_date:
+          description: "Takip edilen bitiş tarihi; takip yoksa `null` (bkz. `GET /demands/{id}`\
+            \ → `term`)."
+          format: date
+          nullable: true
+          type: string
+        archived_at:
           format: date-time
           nullable: true
           type: string
@@ -6317,6 +6873,8 @@ components:
           status: status
           created_at: 2000-01-23T04:56:07.000+00:00
           completed_at: 2000-01-23T04:56:07.000+00:00
+          term_end_date: 2000-01-23
+          archived_at: 2000-01-23T04:56:07.000+00:00
           parties_total: 0
           parties_signed: 6
           pdf_url: https://openapi-generator.tech
@@ -6325,6 +6883,8 @@ components:
           status: status
           created_at: 2000-01-23T04:56:07.000+00:00
           completed_at: 2000-01-23T04:56:07.000+00:00
+          term_end_date: 2000-01-23
+          archived_at: 2000-01-23T04:56:07.000+00:00
           parties_total: 0
           parties_signed: 6
           pdf_url: https://openapi-generator.tech
@@ -6353,6 +6913,8 @@ components:
             status: status
             created_at: 2000-01-23T04:56:07.000+00:00
             completed_at: 2000-01-23T04:56:07.000+00:00
+            term_end_date: 2000-01-23
+            archived_at: 2000-01-23T04:56:07.000+00:00
             parties_total: 0
             parties_signed: 6
             pdf_url: https://openapi-generator.tech
@@ -6361,6 +6923,8 @@ components:
             status: status
             created_at: 2000-01-23T04:56:07.000+00:00
             completed_at: 2000-01-23T04:56:07.000+00:00
+            term_end_date: 2000-01-23
+            archived_at: 2000-01-23T04:56:07.000+00:00
             parties_total: 0
             parties_signed: 6
             pdf_url: https://openapi-generator.tech
@@ -7045,6 +7609,8 @@ components:
               signature_collected: true
               recorded: true
               consent_granted: true
+          term: ""
+          archived_at: 2000-01-23T04:56:07.000+00:00
       properties:
         success:
           type: boolean
@@ -7064,6 +7630,9 @@ components:
           example: Tamamlanmış sözleşme API üzerinden silinemez
           type: string
         code:
+          enum:
+          - DEMAND_COMPLETED
+          - DEMAND_ARCHIVED
           example: DEMAND_COMPLETED
           type: string
       type: object
@@ -7809,6 +8378,102 @@ components:
           type: boolean
         data:
           $ref: "#/components/schemas/_api_v1_demands__id__cancel_post_200_response_data"
+      type: object
+    _api_v1_demands__id__term_patch_200_response_data:
+      example:
+        term:
+          start_mode: FIXED_DATE
+          start_date: 2000-01-23
+          duration_months: 48
+          fixed_end_date: 2000-01-23
+          end_date: 2000-01-23
+          end_date_signed: 2000-01-23
+          renewal_type: AUTO_RENEW
+          renewal_period_months: 362
+          notice_days: 535
+          notice_deadline: 2000-01-23
+          reminder_offsets:
+          - 2176
+          - 2176
+          - 2176
+          - 2176
+          - 2176
+          notify_counterparty: true
+          state: UNTRACKED
+          days_left: 5
+          renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        term:
+          $ref: "#/components/schemas/ContractTerm"
+      type: object
+    _api_v1_demands__id__term_patch_200_response:
+      example:
+        success: true
+        data:
+          term:
+            start_mode: FIXED_DATE
+            start_date: 2000-01-23
+            duration_months: 48
+            fixed_end_date: 2000-01-23
+            end_date: 2000-01-23
+            end_date_signed: 2000-01-23
+            renewal_type: AUTO_RENEW
+            renewal_period_months: 362
+            notice_days: 535
+            notice_deadline: 2000-01-23
+            reminder_offsets:
+            - 2176
+            - 2176
+            - 2176
+            - 2176
+            - 2176
+            notify_counterparty: true
+            state: UNTRACKED
+            days_left: 5
+            renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__term_patch_200_response_data"
+      type: object
+    _api_v1_demands__id__archive_post_200_response_data:
+      example:
+        archived_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        archived_at:
+          format: date-time
+          type: string
+      type: object
+    _api_v1_demands__id__archive_post_200_response:
+      example:
+        success: true
+        data:
+          archived_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__archive_post_200_response_data"
+      type: object
+    _api_v1_demands__id__unarchive_post_200_response_data:
+      example:
+        archived_at: ""
+      properties:
+        archived_at:
+          nullable: true
+          example: null
+      type: object
+    _api_v1_demands__id__unarchive_post_200_response:
+      example:
+        success: true
+        data:
+          archived_at: ""
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__unarchive_post_200_response_data"
       type: object
     _api_v1_demands__id__parties__partyId__resend_post_200_response_data:
       example:

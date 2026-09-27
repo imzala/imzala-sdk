@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.8.23
+- API version: 1.9.1
 
-- Build date: 2026-09-24T21:08:42.698703+03:00[Europe/Istanbul]
+- Build date: 2026-09-28T01:11:50.840889+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.8.23 · **Son güncelleme:** 2026-09-24
+**Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -132,7 +132,7 @@ dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
 - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
   event'lerinizde tetiklenir
 
-### Olay tipleri (8)
+### Olay tipleri (11)
 | Olay | Tetikleyici |
 |------|-------------|
 | `demand.created` | Yeni sözleşme oluşturuldu |
@@ -143,6 +143,13 @@ dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
 | `party.rejected` | Bir taraf reddetti |
 | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı |
 | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |
+| `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor |
+| `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti |
+| `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |
+
+> **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı**
+> kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini
+> BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.
 
 ### Header'lar
 Her istekte aşağıdaki header'lar gönderilir:
@@ -168,7 +175,7 @@ Tüm olaylar aynı zarfı kullanır:
 ```
 
 - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-- `type` — yukarıdaki 8 olay tipinden biri (lowercase).
+- `type`: yukarıdaki 11 olay tipinden biri (lowercase).
 - `created_at` — olay zamanı (ISO 8601 UTC).
 - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
@@ -302,7 +309,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.8.23</version>
+  <version>1.9.1</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -312,7 +319,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.8.23"
+compile "org.imzala:imzala-client-generated:1.9.1"
 ```
 
 ### Others
@@ -325,7 +332,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.8.23.jar`
+- `target/imzala-client-generated-1.9.1.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -392,6 +399,8 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsDemandIdDocumentsUploadPostWithHttpInfo) | **POST** /api/v1/demands/{demandId}/documents/upload | Zarfa dosya yükle (belge başına tek dosya)
 *DemandsApi* | [**apiV1DemandsGet**](docs/DemandsApi.md#apiV1DemandsGet) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
 *DemandsApi* | [**apiV1DemandsGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsGetWithHttpInfo) | **GET** /api/v1/demands | Sözleşme listesi (counts-only, PII&#39;siz)
+*DemandsApi* | [**apiV1DemandsIdArchivePost**](docs/DemandsApi.md#apiV1DemandsIdArchivePost) | **POST** /api/v1/demands/{id}/archive | Sözleşmeyi arşivle
+*DemandsApi* | [**apiV1DemandsIdArchivePostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdArchivePostWithHttpInfo) | **POST** /api/v1/demands/{id}/archive | Sözleşmeyi arşivle
 *DemandsApi* | [**apiV1DemandsIdBelgeDocumentIdPdfGet**](docs/DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGet) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)
 *DemandsApi* | [**apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdBelgeDocumentIdPdfGetWithHttpInfo) | **GET** /api/v1/demands/{id}/belge/{document_id}/pdf | Belge-özgü imzalı PDF (çok-belgeli zarf)
 *DemandsApi* | [**apiV1DemandsIdCancelPost**](docs/DemandsApi.md#apiV1DemandsIdCancelPost) | **POST** /api/v1/demands/{id}/cancel | Sözleşme iptal (void)
@@ -412,8 +421,12 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdPartiesPartyIdResendPostWithHttpInfo) | **POST** /api/v1/demands/{id}/parties/{partyId}/resend | Tekil tarafa imza davetini tekrar gönder
 *DemandsApi* | [**apiV1DemandsIdPdfGet**](docs/DemandsApi.md#apiV1DemandsIdPdfGet) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
 *DemandsApi* | [**apiV1DemandsIdPdfGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdPdfGetWithHttpInfo) | **GET** /api/v1/demands/{id}/pdf | İmzalı sözleşme PDF&#39;i (auth&#39;lu indirme)
+*DemandsApi* | [**apiV1DemandsIdTermPatch**](docs/DemandsApi.md#apiV1DemandsIdTermPatch) | **PATCH** /api/v1/demands/{id}/term | Sözleşme süre/yenileme takibini güncelle
+*DemandsApi* | [**apiV1DemandsIdTermPatchWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdTermPatchWithHttpInfo) | **PATCH** /api/v1/demands/{id}/term | Sözleşme süre/yenileme takibini güncelle
 *DemandsApi* | [**apiV1DemandsIdTimelineGet**](docs/DemandsApi.md#apiV1DemandsIdTimelineGet) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
 *DemandsApi* | [**apiV1DemandsIdTimelineGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdTimelineGetWithHttpInfo) | **GET** /api/v1/demands/{id}/timeline | İmza denetim izi (maskeli)
+*DemandsApi* | [**apiV1DemandsIdUnarchivePost**](docs/DemandsApi.md#apiV1DemandsIdUnarchivePost) | **POST** /api/v1/demands/{id}/unarchive | Sözleşmeyi arşivden çıkar
+*DemandsApi* | [**apiV1DemandsIdUnarchivePostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdUnarchivePostWithHttpInfo) | **POST** /api/v1/demands/{id}/unarchive | Sözleşmeyi arşivden çıkar
 *DemandsApi* | [**apiV1DemandsPost**](docs/DemandsApi.md#apiV1DemandsPost) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsPostWithHttpInfo) | **POST** /api/v1/demands | Sözleşme oluştur (şablondan)
 *DemandsApi* | [**apiV1DemandsUploadPost**](docs/DemandsApi.md#apiV1DemandsUploadPost) | **POST** /api/v1/demands/upload | Dosya upload ile sözleşme oluştur (şablonsuz)
@@ -480,6 +493,8 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
  - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
  - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+ - [ApiV1DemandsIdArchivePost200Response](docs/ApiV1DemandsIdArchivePost200Response.md)
+ - [ApiV1DemandsIdArchivePost200ResponseData](docs/ApiV1DemandsIdArchivePost200ResponseData.md)
  - [ApiV1DemandsIdCancelPost200Response](docs/ApiV1DemandsIdCancelPost200Response.md)
  - [ApiV1DemandsIdCancelPost200ResponseData](docs/ApiV1DemandsIdCancelPost200ResponseData.md)
  - [ApiV1DemandsIdCancelPostRequest](docs/ApiV1DemandsIdCancelPostRequest.md)
@@ -496,9 +511,13 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner](docs/ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner.md)
  - [ApiV1DemandsIdRemindersPost429Response](docs/ApiV1DemandsIdRemindersPost429Response.md)
  - [ApiV1DemandsIdRemindersPost429ResponseError](docs/ApiV1DemandsIdRemindersPost429ResponseError.md)
+ - [ApiV1DemandsIdTermPatch200Response](docs/ApiV1DemandsIdTermPatch200Response.md)
+ - [ApiV1DemandsIdTermPatch200ResponseData](docs/ApiV1DemandsIdTermPatch200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200Response](docs/ApiV1DemandsIdTimelineGet200Response.md)
  - [ApiV1DemandsIdTimelineGet200ResponseData](docs/ApiV1DemandsIdTimelineGet200ResponseData.md)
  - [ApiV1DemandsIdTimelineGet200ResponseDataEventsInner](docs/ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md)
+ - [ApiV1DemandsIdUnarchivePost200Response](docs/ApiV1DemandsIdUnarchivePost200Response.md)
+ - [ApiV1DemandsIdUnarchivePost200ResponseData](docs/ApiV1DemandsIdUnarchivePost200ResponseData.md)
  - [ApiV1DemandsPost201Response](docs/ApiV1DemandsPost201Response.md)
  - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
  - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
@@ -537,6 +556,8 @@ Class | Method | HTTP request | Description
  - [CodedError](docs/CodedError.md)
  - [ContactSummary](docs/ContactSummary.md)
  - [ContactSummaryCompany](docs/ContactSummaryCompany.md)
+ - [ContractTerm](docs/ContractTerm.md)
+ - [ContractTermInput](docs/ContractTermInput.md)
  - [CreateDemandRequest](docs/CreateDemandRequest.md)
  - [CreatedDemand](docs/CreatedDemand.md)
  - [CreatedDemandSigningUrlsInner](docs/CreatedDemandSigningUrlsInner.md)
@@ -600,6 +621,7 @@ Class | Method | HTTP request | Description
  - [UpsertItemsResponse](docs/UpsertItemsResponse.md)
  - [UpsertItemsResponseData](docs/UpsertItemsResponseData.md)
  - [UpsertItemsResponseDataItemsInner](docs/UpsertItemsResponseDataItemsInner.md)
+ - [WebhookDataContractTerm](docs/WebhookDataContractTerm.md)
  - [WebhookDataDemandCompleted](docs/WebhookDataDemandCompleted.md)
  - [WebhookDataDemandCompletedPartiesInner](docs/WebhookDataDemandCompletedPartiesInner.md)
  - [WebhookDataDemandCreated](docs/WebhookDataDemandCreated.md)
