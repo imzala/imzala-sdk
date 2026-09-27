@@ -173,7 +173,7 @@ Bu paket tarayıcı için tasarlanmıştır ve API anahtarı **içermez**. Embed
 
 ## İmza sınıfı
 
-Gömülü imza **dijital imza (SES/AES)** üretir; her imza zaman damgalıdır. Nitelikli veya güvenli elektronik imza (QES) **değildir**. İmza sınıfı sözleşme akışında belirlenir; bu bileşen imza geçerliliği hakkında ek hukuki iddiada bulunmaz.
+Gömülü imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza **değildir**; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. İmza sınıfı sözleşme akışında belirlenir; bu bileşen imza geçerliliği hakkında ek hukuki iddiada bulunmaz.
 
 ## Daha fazla
 

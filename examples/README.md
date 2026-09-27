@@ -73,5 +73,5 @@ ortamını (`IMZALA_BASE_URL=https://test-api.imzala.org`) kullanmanız önerili
 
 ## İmza sınıfı notu
 
-İmzala sözleşmeleri varsayılan olarak **dijital imza** (SES) üretir. SDK imza geçerliliği hakkında
+İmzala sözleşmeleri varsayılan olarak **dijital imza** üretir. SDK imza geçerliliği hakkında
 hukuki iddiada bulunmaz; imza sınıfı sözleşme akışında belirlenir. Ayrıntı: `api-docs.imzala.org`.

@@ -889,8 +889,11 @@ class EmbedResource:
         demand's party. The returned `embed_url` is meant for an
         `<iframe>`.
 
-        Signatures obtained this way are SES by default (AES if TC/
-        biometric verification ran) — this flow never produces QES.
+        Signatures obtained this way are electronic signatures within the
+        meaning of Turkish Law No. 5070 (Art. 3); they are not secure electronic
+        signatures and are not presented as advanced or qualified signatures
+        under EU law. Additional verification steps strengthen evidential value;
+        they do not change the signature level.
         """
         return _unwrap(
             lambda: self._api.api_v1_demands_id_embed_session_post(

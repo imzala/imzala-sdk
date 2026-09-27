@@ -20,8 +20,11 @@ final class EmbedResource
      * party. The returned {@code embed_url} is meant for an
      * {@code <iframe>}.
      *
-     * <p>Signatures obtained this way are SES by default (AES if TC/biometric
-     * verification ran) — this flow never produces QES.
+     * <p>Signatures obtained this way are electronic signatures within the
+     * meaning of Turkish Law No. 5070 (Art. 3); they are not secure electronic
+     * signatures and are not presented as advanced or qualified signatures
+     * under EU law. Additional verification steps strengthen evidential value;
+     * they do not change the signature level.
      *
      * @param string $demandId the demand to mint a session for
      * @param string $partyId the party to mint an embed session for — from {@code signing_urls[].party_id} in the demand's create/get response

@@ -78,5 +78,6 @@ export default function App() {
   );
 }
 
-// İmza sinifi notu: gömülü imza dijital imza (SES/AES) üretir; her imza zaman
-// damgalidir. Nitelikli veya güvenli elektronik imza (QES) degildir.
+// İmza sinifi notu: gömülü imza, 5070 sayili Kanun m.3 anlaminda elektronik
+// imzadir ve her imza zaman damgalidir. Güvenli elektronik imza degildir; AB
+// hukuku bakimindan gelismis veya nitelikli imza olarak sunulmaz.

@@ -14,8 +14,11 @@ public sealed class EmbedResource
     /// Mints a short-lived, single-use embed signing token for a demand's
     /// party. The returned <c>embed_url</c> is meant for an <c>&lt;iframe&gt;</c>.
     ///
-    /// Signatures obtained this way are SES by default (AES if TC/biometric
-    /// verification ran) — this flow never produces QES.
+    /// Signatures obtained this way are electronic signatures within the
+    /// meaning of Turkish Law No. 5070 (Art. 3); they are not secure electronic
+    /// signatures and are not presented as advanced or qualified signatures
+    /// under EU law. Additional verification steps strengthen evidential value;
+    /// they do not change the signature level.
     /// </summary>
     /// <param name="demandId">The demand to mint a session for.</param>
     /// <param name="partyId">The party to mint an embed session for — from <c>signing_urls[].party_id</c> in the demand's create/get response.</param>
