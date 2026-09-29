@@ -11,12 +11,16 @@ use Imzala\Client\Model\ApiV1DemandsBulkPostRequest;
 use Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsDemandIdDispatchPostRequest;
 use Imzala\Client\Model\ApiV1DemandsGet200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdArchivePost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdCancelPostRequest;
 use Imzala\Client\Model\ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdRemindersPost200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdTermPatch200ResponseData;
 use Imzala\Client\Model\ApiV1DemandsIdTimelineGet200ResponseData;
+use Imzala\Client\Model\ApiV1DemandsIdUnarchivePost200ResponseData;
 use Imzala\Client\Model\ApiV1TemplatesIdDelete200ResponseData;
+use Imzala\Client\Model\ContractTermInput;
 use Imzala\Client\Model\CreateDemandRequest;
 use Imzala\Client\Model\CreatedDemand;
 use Imzala\Client\Model\CreatedDemandUpload;
@@ -297,6 +301,7 @@ final class DemandsResource
      * @param string|null $to         ISO date (YYYY-MM-DD) upper bound on creation
      * @param string|null $templateId only demands created from this template
      * @param string|null $sort       {@code field:direction}, e.g. {@code createdAt:desc}
+     * @param string|null $archived   archive filter: {@code exclude} (only unarchived), {@code only} (only archived) or {@code include} (both); null means {@code include}, as before
      */
     public function list(
         ?string $status = null,
@@ -307,9 +312,10 @@ final class DemandsResource
         ?int $page = null,
         ?int $limit = null,
         ?string $sort = null,
+        ?string $archived = null,
     ): ApiV1DemandsGet200ResponseData {
         return Http::unwrapRetryableGet(
-            fn () => $this->api->apiV1DemandsGetWithHttpInfo($status, $q, $from, $to, $templateId, $page, $limit, $sort),
+            fn () => $this->api->apiV1DemandsGetWithHttpInfo($status, $q, $from, $to, $templateId, $page, $limit, $sort, $archived),
             $this->retryConfig,
         );
     }
@@ -390,9 +396,56 @@ final class DemandsResource
     }
 
     /**
+     * Updates the contract term and renewal tracking of a demand. Body: the
+     * {@code ContractTermInput} keys ({@code term_start_mode},
+     * {@code term_duration_months}, {@code renewal_type}, {@code notice_days},
+     * ...). Partial update: a sent key is written, {@code null} clears it, an
+     * omitted key is kept. Changing a field that affects the end date
+     * recalculates {@code term.end_date}. The returned {@code term} is a
+     * tracking record for reminders and visibility; it does not state that
+     * the contract was legally renewed or ended. An invalid combination
+     * throws {@code TERM_INVALID} (the error body's {@code field} names the
+     * rejected key); an archived demand throws {@code DEMAND_ARCHIVED}. PATCH,
+     * never auto-retried.
+     *
+     * @param ContractTermInput|array<string, mixed> $body
+     */
+    public function updateTerm(string $id, ContractTermInput|array $body): ApiV1DemandsIdTermPatch200ResponseData
+    {
+        $request = $body instanceof ContractTermInput ? $body : new ContractTermInput($body);
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdTermPatchWithHttpInfo($id, $request));
+    }
+
+    /**
+     * Archives a completed, cancelled or expired demand. The status does not
+     * change; the demand gets {@code archived_at} and becomes read-only
+     * (updates and deletion throw {@code DEMAND_ARCHIVED} until
+     * {@see self::unarchive()}). Archiving an already archived demand returns
+     * the existing {@code archived_at}. Other states throw
+     * {@code DEMAND_NOT_ARCHIVABLE}; a rejected demand still awaiting
+     * signatures throws {@code DEMAND_REJECTED_CANCEL_FIRST} (cancel it
+     * first). POST, never auto-retried.
+     */
+    public function archive(string $id): ApiV1DemandsIdArchivePost200ResponseData
+    {
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdArchivePostWithHttpInfo($id));
+    }
+
+    /**
+     * Takes a demand out of the archive ({@code archived_at} becomes null) so
+     * it can be changed again. Unarchiving a demand that is not archived is a
+     * no-op. POST, never auto-retried.
+     */
+    public function unarchive(string $id): ApiV1DemandsIdUnarchivePost200ResponseData
+    {
+        return Http::unwrap(fn () => $this->api->apiV1DemandsIdUnarchivePostWithHttpInfo($id));
+    }
+
+    /**
      * Deletes a demand and all its data. Only NON-completed demands can be
      * deleted via the API — a {@code COMPLETED} demand (signed document + audit
-     * trail) returns 409 and must be removed from the dashboard. DELETE —
+     * trail) returns 409 and must be removed from the dashboard. An archived
+     * demand throws {@code DEMAND_ARCHIVED}; unarchive it first. DELETE —
      * never auto-retried.
      */
     public function delete(string $id): ApiV1TemplatesIdDelete200ResponseData
