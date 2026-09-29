@@ -82,7 +82,7 @@ class LifecycleTest {
   void list_forwards_filters_and_unwraps_counts_only_data() throws ApiException {
     UUID d1 = UUID.randomUUID();
     UUID templateId = UUID.randomUUID();
-    when(demandsApi.apiV1DemandsGet("PENDING", null, null, null, templateId, 1, 20, null)).thenReturn(
+    when(demandsApi.apiV1DemandsGet("PENDING", null, null, null, templateId, 1, 20, null, null)).thenReturn(
         new ApiV1DemandsGet200Response().success(true).data(new ApiV1DemandsGet200ResponseData()
             .demands(List.of(new ApiV1DemandsGet200ResponseDataDemandsInner().id(d1).partiesTotal(2).partiesSigned(1)))
             .total(1)
@@ -92,7 +92,7 @@ class LifecycleTest {
     ApiV1DemandsGet200ResponseData res = demands().list(
         new ListDemandsParams().status("PENDING").templateId(templateId).page(1).limit(20));
 
-    verify(demandsApi).apiV1DemandsGet("PENDING", null, null, null, templateId, 1, 20, null);
+    verify(demandsApi).apiV1DemandsGet("PENDING", null, null, null, templateId, 1, 20, null, null);
     assertEquals(1, res.getTotal());
     assertEquals(1, res.getDemands().size());
     assertEquals(d1, res.getDemands().get(0).getId());
@@ -102,12 +102,12 @@ class LifecycleTest {
 
   @Test
   void list_with_no_params_forwards_all_nulls() throws ApiException {
-    when(demandsApi.apiV1DemandsGet(null, null, null, null, null, null, null, null)).thenReturn(
+    when(demandsApi.apiV1DemandsGet(null, null, null, null, null, null, null, null, null)).thenReturn(
         new ApiV1DemandsGet200Response().success(true).data(new ApiV1DemandsGet200ResponseData().total(0)));
 
     ApiV1DemandsGet200ResponseData res = demands().list();
 
-    verify(demandsApi).apiV1DemandsGet(null, null, null, null, null, null, null, null);
+    verify(demandsApi).apiV1DemandsGet(null, null, null, null, null, null, null, null, null);
     assertEquals(0, res.getTotal());
   }
 

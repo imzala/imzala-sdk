@@ -11,12 +11,16 @@ import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPost200Resp
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPostRequest;
 import org.imzala.client.generated.model.ApiV1DemandsDemandIdDispatchPostRequestSendInvitations;
 import org.imzala.client.generated.model.ApiV1DemandsGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdArchivePost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdCancelPostRequest;
 import org.imzala.client.generated.model.ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdRemindersPost200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdTermPatch200ResponseData;
 import org.imzala.client.generated.model.ApiV1DemandsIdTimelineGet200ResponseData;
+import org.imzala.client.generated.model.ApiV1DemandsIdUnarchivePost200ResponseData;
 import org.imzala.client.generated.model.ApiV1TemplatesIdDelete200ResponseData;
+import org.imzala.client.generated.model.ContractTermInput;
 import org.imzala.client.generated.model.CreateDemandRequest;
 import org.imzala.client.generated.model.CreatedDemand;
 import org.imzala.client.generated.model.CreatedDemandUpload;
@@ -332,7 +336,8 @@ public final class DemandsResource {
             p.getTemplateId(),
             p.getPage(),
             p.getLimit(),
-            p.getSort()),
+            p.getSort(),
+            p.getArchived()),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData(),
         retryConfig);
@@ -432,9 +437,57 @@ public final class DemandsResource {
   }
 
   /**
+   * Updates the contract term and renewal tracking of a demand. Partial
+   * update: a field you set is written, a field set to {@code null} is
+   * cleared, a field never set is kept. Changing a field that affects the end
+   * date recalculates {@code term.end_date}. The returned {@code term} is a
+   * tracking record for reminders and visibility; it does not state that the
+   * contract was legally renewed or ended. An invalid combination throws
+   * {@code TERM_INVALID} (the error body's {@code field} names the rejected
+   * key); an archived demand throws {@code DEMAND_ARCHIVED}. PATCH, never
+   * auto-retried.
+   */
+  public ApiV1DemandsIdTermPatch200ResponseData updateTerm(UUID id, ContractTermInput body) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdTermPatch(id, body),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Archives a completed, cancelled or expired demand. The status does not
+   * change; the demand gets {@code archived_at} and becomes read-only
+   * (updates and deletion throw {@code DEMAND_ARCHIVED} until
+   * {@link #unarchive}). Archiving an already archived demand returns the
+   * existing {@code archived_at}. Other states throw {@code
+   * DEMAND_NOT_ARCHIVABLE}; a rejected demand still awaiting signatures
+   * throws {@code DEMAND_REJECTED_CANCEL_FIRST} (cancel it first). POST,
+   * never auto-retried.
+   */
+  public ApiV1DemandsIdArchivePost200ResponseData archive(UUID id) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdArchivePost(id),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
+   * Takes a demand out of the archive ({@code archived_at} becomes {@code
+   * null}) so it can be changed again. Unarchiving a demand that is not
+   * archived is a no-op. POST, never auto-retried.
+   */
+  public ApiV1DemandsIdUnarchivePost200ResponseData unarchive(UUID id) {
+    return Http.unwrap(
+        () -> api.apiV1DemandsIdUnarchivePost(id),
+        r -> Boolean.TRUE.equals(r.getSuccess()),
+        r -> r.getData());
+  }
+
+  /**
    * Deletes a demand and all its data. Only NON-completed demands can be
    * deleted via the API — a {@code COMPLETED} demand (signed document +
-   * audit trail) returns 409 and must be removed from the dashboard. The
+   * audit trail) returns 409 and must be removed from the dashboard. An
+   * archived demand throws {@code DEMAND_ARCHIVED}; unarchive it first. The
    * deletion result reuses the shared {@code
    * ApiV1TemplatesIdDelete200ResponseData} shape ({@code id}/{@code
    * deleted}). DELETE — never auto-retried.

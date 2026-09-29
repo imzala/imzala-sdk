@@ -30,6 +30,7 @@ public final class ListDemandsParams {
   private Integer page;
   private Integer limit;
   private String sort;
+  private String archived;
 
   /** Filter by demand status (DRAFT / PENDING / COMPLETED / CANCELLED / EXPIRED). */
   public ListDemandsParams status(String status) {
@@ -107,5 +108,19 @@ public final class ListDemandsParams {
 
   public String getSort() {
     return sort;
+  }
+
+  /**
+   * Archive filter: {@code exclude} (only unarchived demands), {@code only}
+   * (only archived ones) or {@code include} (both). Left unset, the server
+   * uses {@code include}, as before.
+   */
+  public ListDemandsParams archived(String archived) {
+    this.archived = archived;
+    return this;
+  }
+
+  public String getArchived() {
+    return archived;
   }
 }
