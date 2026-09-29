@@ -262,6 +262,48 @@ public sealed class DemandsResource
             cancellationToken);
 
     /// <summary>
+    /// Lists your demands with an archive filter; otherwise the same as
+    /// <see cref="ListAsync(string?, string?, DateOnly?, DateOnly?, Guid?, int?, int?, string?, CancellationToken)"/>,
+    /// which leaves the filter out (the server then returns archived and
+    /// unarchived demands). GET, safe to auto-retry.
+    /// </summary>
+    /// <param name="archived">Which demands to return by archive state.</param>
+    /// <param name="status">Filter by demand status (DRAFT / PENDING / COMPLETED / CANCELLED / EXPIRED).</param>
+    /// <param name="q">Title search.</param>
+    /// <param name="from">Lower bound (inclusive) on creation date.</param>
+    /// <param name="to">Upper bound (inclusive) on creation date.</param>
+    /// <param name="templateId">Only demands created from this template.</param>
+    /// <param name="page">1-based page number.</param>
+    /// <param name="limit">Page size.</param>
+    /// <param name="sort"><c>field:direction</c>, e.g. <c>createdAt:desc</c>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public Task<ApiV1DemandsGet200ResponseData> ListAsync(
+        DemandArchiveFilter archived,
+        string? status = null,
+        string? q = null,
+        DateOnly? from = null,
+        DateOnly? to = null,
+        Guid? templateId = null,
+        int? page = null,
+        int? limit = null,
+        string? sort = null,
+        CancellationToken cancellationToken = default) =>
+        Http.UnwrapRetryableGet(
+            () => _api.ApiV1DemandsGetAsync(status: status, q: q, from: from, to: to, templateId: templateId, page: page, limit: limit, sort: sort, archived: ToWire(archived), cancellationToken: cancellationToken),
+            r => r.Success,
+            r => r.Data,
+            _retry,
+            cancellationToken);
+
+    private static string ToWire(DemandArchiveFilter archived) => archived switch
+    {
+        DemandArchiveFilter.Include => "include",
+        DemandArchiveFilter.Exclude => "exclude",
+        DemandArchiveFilter.Only => "only",
+        _ => throw new ArgumentOutOfRangeException(nameof(archived), archived, null),
+    };
+
+    /// <summary>
     /// Downloads the signed contract PDF (only once <c>Status == COMPLETED</c>) as
     /// the raw bytes — write them to disk or stream them on. Requires the API
     /// key's owner to own the demand. GET — safe to auto-retry.
@@ -319,11 +361,61 @@ public sealed class DemandsResource
             r => r.Data);
 
     /// <summary>
+    /// Updates the contract term and renewal tracking of a demand. Partial
+    /// update: only the properties you set are sent, fields listed in
+    /// <see cref="ContractTermUpdate.Clear"/> are cleared, everything else is
+    /// kept. Changing a field that affects the end date recalculates
+    /// <c>term.end_date</c>. The returned <c>Term</c> is a tracking record for
+    /// reminders and visibility; it does not state that the contract was
+    /// legally renewed or ended. An invalid combination throws
+    /// <c>TERM_INVALID</c> (the error body's <c>field</c> names the rejected
+    /// key); an archived demand throws <c>DEMAND_ARCHIVED</c>. PATCH, never
+    /// auto-retried.
+    /// </summary>
+    public Task<ApiV1DemandsIdTermPatch200ResponseData> UpdateTermAsync(Guid id, ContractTermUpdate update, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(_api.ApiV1DemandsIdTermPatchAsync(id, new TermPatchBody(update), cancellationToken), r => r.Success, r => r.Data);
+
+    /// <summary>
+    /// Archives a completed, cancelled or expired demand. The status does not
+    /// change; the demand gets <c>ArchivedAt</c> and becomes read-only (updates
+    /// and deletion throw <c>DEMAND_ARCHIVED</c> until
+    /// <see cref="UnarchiveAsync"/>). Archiving an already archived demand
+    /// returns the existing <c>ArchivedAt</c>. Other states throw
+    /// <c>DEMAND_NOT_ARCHIVABLE</c>; a rejected demand still awaiting
+    /// signatures throws <c>DEMAND_REJECTED_CANCEL_FIRST</c> (cancel it first).
+    /// POST, never auto-retried.
+    /// </summary>
+    public Task<ApiV1DemandsIdArchivePost200ResponseData> ArchiveAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(_api.ApiV1DemandsIdArchivePostAsync(id, cancellationToken), r => r.Success, r => r.Data);
+
+    /// <summary>
+    /// Takes a demand out of the archive (<c>ArchivedAt</c> becomes
+    /// <c>null</c>) so it can be changed again. Unarchiving a demand that is
+    /// not archived is a no-op. POST, never auto-retried.
+    /// </summary>
+    public Task<ApiV1DemandsIdUnarchivePost200ResponseData> UnarchiveAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Http.Unwrap(_api.ApiV1DemandsIdUnarchivePostAsync(id, cancellationToken), r => r.Success, r => r.Data);
+
+    /// <summary>
     /// Deletes a demand and all its data. Only NON-completed demands can be
     /// deleted via the API — a <c>COMPLETED</c> demand (signed document + audit
-    /// trail) returns 409 and must be removed from the dashboard. DELETE — never
+    /// trail) returns 409 and must be removed from the dashboard. An archived
+    /// demand throws <c>DEMAND_ARCHIVED</c>; unarchive it first. DELETE — never
     /// auto-retried.
     /// </summary>
     public Task<ApiV1TemplatesIdDelete200ResponseData> DeleteAsync(Guid id, CancellationToken cancellationToken = default) =>
         Http.Unwrap(_api.ApiV1DemandsIdDeleteAsync(id, cancellationToken), r => r.Success, r => r.Data);
+}
+
+/// <summary>Archive filter for <see cref="DemandsResource.ListAsync(DemandArchiveFilter, string?, string?, DateOnly?, DateOnly?, Guid?, int?, int?, string?, CancellationToken)"/>.</summary>
+public enum DemandArchiveFilter
+{
+    /// <summary>Archived and unarchived demands (the server default).</summary>
+    Include,
+
+    /// <summary>Only demands that are not archived.</summary>
+    Exclude,
+
+    /// <summary>Only archived demands.</summary>
+    Only,
 }

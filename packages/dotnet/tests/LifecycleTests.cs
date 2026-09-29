@@ -34,7 +34,7 @@ public class LifecycleTests
         mock
             .Setup(a => a.ApiV1DemandsGetAsync(
                 "PENDING", It.IsAny<string?>(), It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(),
-                templateId, 1, 20, It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                templateId, 1, 20, It.IsAny<string?>(), (string?)null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1DemandsGet200Response(true, new ApiV1DemandsGet200ResponseData(
                 demands: new List<ApiV1DemandsGet200ResponseDataDemandsInner>
                 {
@@ -48,7 +48,7 @@ public class LifecycleTests
 
         mock.Verify(a => a.ApiV1DemandsGetAsync(
             "PENDING", It.IsAny<string?>(), It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(),
-            templateId, 1, 20, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+            templateId, 1, 20, It.IsAny<string?>(), (string?)null, It.IsAny<CancellationToken>()), Times.Once);
         Assert.Equal(1, result.Total);
         Assert.Single(result.Demands);
         Assert.Equal(demandId, result.Demands[0].Id);
