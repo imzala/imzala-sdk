@@ -153,7 +153,7 @@ Her callback, imza yüzeyinden gelen olayın payload'ını alır:
 
 | @imzala/embed-react | @imzala/embed | Konuştuğu API | Not |
 |---|---|---|---|
-| 1.0.0 | 1.0.0 | v1 (1.8.17) | React bileşeni `@imzala/embed` üzerine ince bir sarmalayıcıdır |
+| 1.0.0 | 1.0.0 | v1 (1.9.1) | React bileşeni `@imzala/embed` üzerine ince bir sarmalayıcıdır |
 
 İmza oturumu yine **sunucuda** üretilir; bileşene yalnız kısa ömürlü, tek kullanımlık `token` verilir. API anahtarı hiçbir koşulda tarayıcıya konmaz.
 

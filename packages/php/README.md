@@ -122,7 +122,7 @@ Tüm resource metodları `{ success, data }` zarfını açar ve `data`'yı (vend
 | `demands()->create($body, $idempotencyKey?)` | Şablondan sözleşme oluştur + imza daveti gönder (`dispatch_notifications: false` ile sessiz taslak) | Anahtar varsa 429'da 1 kez |
 | `demands()->createBulk($body)` | Tek istekte en çok 10 sözleşme; her satır bağımsız, `failed` sayısını ve her satırın durumunu kontrol edin | ❌ POST |
 | `demands()->uploadDocument($params)` | Şablonsuz, dosya yükleyerek sözleşme (1 PDF/DOC ya da 1-20 görsel) | Anahtar varsa 429'da 1 kez |
-| `demands()->list($status?, $q?, $from?, $to?, $templateId?, $page?, $limit?, $sort?)` | Sözleşme listesi (counts-only, taraf PII'siz); `$sort` biçimi `alan:yön` (ör. `createdAt:desc`) | ✅ GET |
+| `demands()->list($status?, $q?, $from?, $to?, $templateId?, $page?, $limit?, $sort?, $archived?)` | Sözleşme listesi (counts-only, taraf PII'siz); `$sort` biçimi `alan:yön` (ör. `createdAt:desc`); `$archived`: `'exclude'` / `'only'` / `'include'` (verilmezse `include`) | ✅ GET |
 | `demands()->get($id)` | Sözleşme detayı + taraf imza durumu (maskeli) | ✅ GET |
 | `demands()->getPdf($id)` | İmzalı sözleşme PDF'i → ham bayt (`string`) | GET (binary, retry yok) |
 | `demands()->getDocumentPdf($id, $documentId)` | Çok belgeli zarfta tek belgenin imzalı PDF'i → ham bayt (`string`) | GET (binary, retry yok) |
@@ -133,6 +133,8 @@ Tüm resource metodları `{ success, data }` zarfını açar ve `data`'yı (vend
 | `demands()->delete($id)` | Tamamlanmamış sözleşmeyi sil | ❌ DELETE |
 | `demands()->addItems($id, $body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | ❌ POST |
 | `demands()->updateStamp($id, $itemId, $body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `null`/`''` alanı kaldırır, gönderilmeyen korunur; `DEMAND_PARTIALLY_SIGNED`) | ❌ PATCH |
+| `demands()->updateTerm($id, $body)` | Süre ve yenileme takibini güncelle (kısmi: gönderilen anahtar yazılır, `null` temizler, gönderilmeyen korunur; `TERM_INVALID`, `DEMAND_ARCHIVED`) | ❌ PATCH |
+| `demands()->archive($id)` / `demands()->unarchive($id)` | Tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeyi arşivle / arşivden çıkar (durum değişmez; arşivdeki sözleşme değiştirilemez ve silinemez) | ❌ POST |
 | `demands()->sendReminder($id, $body?)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `['force' => true]` aşar) | ❌ POST |
 | `demands()->dispatch($id, $sendInvitations?)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | ❌ POST |
 
@@ -365,7 +367,7 @@ file_put_contents('sertifika.pdf', $imzala->demands()->getCertificate($id, 'tr')
 
 1. **Okumalar (GET):** `demands()->list/get/getTimeline`, `templates()->list/get/usage/listAll`, `fieldTemplates()->list/get`, `contacts()->list/listAll`, `timestamps()->list/get`, `reports()->get()`, `demands()->documents()->list()` ve `me()` 429 veya 5xx aldığında en çok `maxRetries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır. Binary indirmeler (`getPdf` / `getDocumentPdf` / `getCertificate`) bu kapsamda değildir.
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `demands()->create($body, $idempotencyKey)`, `uploadDocument()` (`withIdempotencyKey()`), `timestamps()->create()` (`withIdempotencyKey()`) ve `demands()->documents()->upload()` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `maxRetries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts()->create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `updateStamp`, `templates()->update/delete`, `embed()->createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `createBulk`, `contacts()->create`, `dispatch`, `sendReminder`, `cancel`, `resendParty`, `delete`, `addItems`, `updateStamp`, `updateTerm`, `archive`, `unarchive`, `templates()->update/delete`, `embed()->createSession` ve zarf belgesi `create/update/delete/reorder/setAssignments`. Tekrarlanan bir `createBulk` ikinci bir toplu iş, tekrarlanan bir `sendReminder` ikinci bir SMS/e-posta üretir.
 
 Bekleme süresi `Retry-After` başlığından okunur (saniye ya da HTTP tarihi); başlık yoksa backoff gecikmesi uygulanır. **Bekleme tavanı 60 saniyedir:** sunucu daha uzun bir süre isterse SDK beklemek yerine 429'u fırlatır (`ImzalaRateLimitException::getRetryAfter()` süreyi taşır). `NAN`, sonsuz ve negatif `Retry-After` değerleri yok sayılır.
 
@@ -407,7 +409,8 @@ if (!$valid) {
 
 $event = json_decode($rawBody, true);
 // $event['type']: demand.created / demand.completed / demand.expired /
-//                 party.signed / party.viewed / party.rejected / kyc.completed / kyc.failed
+//                 party.signed / party.viewed / party.rejected / kyc.completed / kyc.failed /
+//                 contract.expiring / contract.ended / contract.advanced
 http_response_code(200);
 ```
 
@@ -477,8 +480,7 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | imzala/imzala-php | Konuştuğu API | Durum |
 |---|---|---|
-| Geliştirme (yayınlanmamış) | v1 (`1.8.22`) | İmza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler, `phone_draw` |
-| 1.0.0 | v1 (`1.8.17`) | Önceki sözleşme |
+| 1.0.0 | v1 (`1.9.1`) | Güncel: süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 
 İmzala dış API'si **v1**'dir ve geriye dönük uyumludur: yeni alanlar opsiyonel, yeni davranışlar

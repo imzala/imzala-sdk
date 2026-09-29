@@ -121,7 +121,7 @@ Tüm metodlar `{ success, data }` zarfını açar ve `data`'yı döndürür; hat
 | `Demands.CreateAsync(CreateDemandRequest body)` / `CreateAsync(body, string? idempotencyKey)` | Şablondan sözleşme oluştur + imza daveti gönder (`dispatchNotifications: false` ile sessiz taslak) | Anahtar varsa 429'da 1 kez |
 | `Demands.CreateBulkAsync(ApiV1DemandsBulkPostRequest body)` | Tek istekte en çok 10 sözleşme; her satır bağımsız, `Failed` sayısını ve her satırın durumunu kontrol edin | ❌ POST |
 | `Demands.UploadDocumentAsync(UploadDemandParams request)` | Şablonsuz, dosya yükleyerek sözleşme (1 PDF/DOC ya da 1-20 görsel) | Anahtar varsa 429'da 1 kez |
-| `Demands.ListAsync(status?, q?, from?, to?, templateId?, page?, limit?, sort?)` | Sözleşme listesi (counts-only, taraf PII'siz); `sort` biçimi `alan:yön` (ör. `createdAt:desc`) | ✅ GET |
+| `Demands.ListAsync(status?, q?, from?, to?, templateId?, page?, limit?, sort?)` / `Demands.ListAsync(DemandArchiveFilter archived, ...)` | Sözleşme listesi (counts-only, taraf PII'siz); `sort` biçimi `alan:yön` (ör. `createdAt:desc`); arşiv filtresi ikinci aşırı yüklemeyle verilir (`Include` / `Exclude` / `Only`) | ✅ GET |
 | `Demands.GetAsync(Guid id)` | Sözleşme detayı + taraf imza durumu (maskeli) | ✅ GET |
 | `Demands.GetPdfAsync(Guid id)` | İmzalı sözleşme PDF'i → `byte[]` | GET (binary) |
 | `Demands.GetDocumentPdfAsync(Guid id, Guid documentId)` | Çok belgeli zarfta tek belgenin imzalı PDF'i → `byte[]` | GET (binary) |
@@ -132,6 +132,8 @@ Tüm metodlar `{ success, data }` zarfını açar ve `data`'yı döndürür; hat
 | `Demands.DeleteAsync(Guid id)` | Tamamlanmamış sözleşmeyi sil | ❌ DELETE |
 | `Demands.AddItemsAsync(Guid id, UpsertItemsRequest body)` | Sayfa alanlarını (imza/form) yerleştir (`PAGE_ID_REQUIRED`, `INVALID_ITEM_TYPE`) | ❌ POST |
 | `Demands.UpdateStampAsync(Guid id, int itemId, PatchStampItemRequest body)` | Tek bir kaşe alanını `StampData` ile doldur (kısmi güncelleme: `null` bırakılan özellik gönderilmez ve korunur, `""` alanı kaldırır; `DEMAND_PARTIALLY_SIGNED`) | ❌ PATCH |
+| `Demands.UpdateTermAsync(Guid id, ContractTermUpdate update)` | Süre ve yenileme takibini güncelle (kısmi: yalnız set edilen özellikler gönderilir, `Clear` listesindeki alanlar temizlenir, diğerleri korunur; `TERM_INVALID`, `DEMAND_ARCHIVED`) | ❌ PATCH |
+| `Demands.ArchiveAsync(Guid id)` / `Demands.UnarchiveAsync(Guid id)` | Tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeyi arşivle / arşivden çıkar (durum değişmez; arşivdeki sözleşme değiştirilemez ve silinemez) | ❌ POST |
 | `Demands.SendReminderAsync(Guid id, TriggerReminderRequest? body)` | İmzalamamış taraflara hatırlatma (5 dk pencerede `RATE_LIMITED`, `Force = true` aşar) | ❌ POST |
 | `Demands.DispatchAsync(Guid id)` / `DispatchAsync(id, bool)` / `DispatchAsync(id, string sendInvitations)` | Sessiz hazırlanmış sözleşmeyi yayına al, davetleri gönder | ❌ POST |
 
@@ -321,7 +323,7 @@ Her iki metod da yalnızca `Status == COMPLETED` sözleşmeler için sonuç üre
 
 1. **Okumalar (GET):** `Templates.ListAsync/GetAsync/UsageAsync/ListAllAsync`, `Demands.ListAsync/GetAsync/GetTimelineAsync`, `FieldTemplates.ListAsync/GetAsync`, `Contacts.ListAsync/ListAllAsync`, `Timestamps.ListAsync/GetAsync`, `Reports.GetAsync`, `Demands.Documents.ListAsync` ve `MeAsync` `429` veya `5xx` aldığında en çok `maxRetries` kez (varsayılan 2) jitter'lı exponential backoff ile yeniden denenir. `0` kapatır. Başka her durum (400/401/404/409/422/...) hemen fırlatılır. Binary indirmeler (`GetPdfAsync` / `GetDocumentPdfAsync` / `GetCertificateAsync`) ham akış döndürdükleri için bu kapsamda değildir.
 2. **`Idempotency-Key` ile gönderilen yazmalar:** `Demands.CreateAsync(body, idempotencyKey)`, `UploadDocumentAsync` (`UploadDemandParams.IdempotencyKey`), `Timestamps.CreateAsync` (`CreateTimestampParams.IdempotencyKey`) ve `Demands.Documents.UploadAsync` bir 429 sonrasında **tam bir kez** yeniden denenir; sunucu aynı anahtar için ikinci kayıt oluşturmaz. İstek (dosya akışları dahil) tekrar için yeniden kurulur, tüketilmiş bir akış boş gönderilmez. İkinci 429, 5xx ve diğer tüm hatalar doğrudan fırlatılır. Anahtar verilmezse tek denemedir. `maxRetries` bu kuralı etkilemez.
-3. **Diğer yazmalar hiç yeniden denenmez:** `CreateBulkAsync`, `Contacts.CreateAsync`, `DispatchAsync`, `SendReminderAsync`, `CancelAsync`, `ResendPartyAsync`, `DeleteAsync`, `AddItemsAsync`, `UpdateStampAsync`, `Templates.UpdateAsync/DeleteAsync`, `Embed.CreateSessionAsync` ve zarf belgesi `CreateAsync/UpdateAsync/DeleteAsync/ReorderAsync/SetAssignmentsAsync`. Tekrarlanan bir `CreateBulkAsync` ikinci bir toplu iş, tekrarlanan bir `SendReminderAsync` ikinci bir SMS/e-posta üretir.
+3. **Diğer yazmalar hiç yeniden denenmez:** `CreateBulkAsync`, `Contacts.CreateAsync`, `DispatchAsync`, `SendReminderAsync`, `CancelAsync`, `ResendPartyAsync`, `DeleteAsync`, `AddItemsAsync`, `UpdateStampAsync`, `UpdateTermAsync`, `ArchiveAsync`, `UnarchiveAsync`, `Templates.UpdateAsync/DeleteAsync`, `Embed.CreateSessionAsync` ve zarf belgesi `CreateAsync/UpdateAsync/DeleteAsync/ReorderAsync/SetAssignmentsAsync`. Tekrarlanan bir `CreateBulkAsync` ikinci bir toplu iş, tekrarlanan bir `SendReminderAsync` ikinci bir SMS/e-posta üretir.
 
 ```csharp
 var imzala = new Imzala(apiKey, maxRetries: 2, retryBaseDelayMs: 300); // varsayılanlar
@@ -362,7 +364,8 @@ public async Task<IActionResult> HandleWebhook()
 
     var evt = JsonSerializer.Deserialize<WebhookEvent>(rawBody);
     // evt.Type: demand.created / demand.completed / demand.expired /
-    //           party.signed / party.viewed / party.rejected / kyc.completed / kyc.failed
+    //           party.signed / party.viewed / party.rejected / kyc.completed / kyc.failed /
+    //           contract.expiring / contract.ended / contract.advanced
     return Ok();
 }
 ```
@@ -433,8 +436,7 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | Imzala (NuGet) | Konuştuğu API | Durum |
 |---|---|---|
-| Geliştirme (yayınlanmamış) | v1 (`1.8.22`) | İmza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler, `phone_draw` |
-| 1.0.0 | v1 (`1.8.17`) | Önceki sözleşme |
+| 1.0.0 | v1 (`1.9.1`) | Güncel: süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 
 İmzala dış API'si **v1**'dir ve geriye dönük uyumludur: yeni alanlar opsiyonel, yeni davranışlar

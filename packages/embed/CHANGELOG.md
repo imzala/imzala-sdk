@@ -8,5 +8,5 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler.
 
 ### Değişti
 
-- Sürüm uyumu notu: bu sürüm API v1 `1.8.17` ile birlikte kullanılır (README'deki "Sürüm uyumu" tablosu). İmza oturumu sunucuda `@imzala/node` veya diğer sunucu SDK'larıyla üretilir; tarayıcıya yalnız kısa ömürlü, tek kullanımlık token iner.
+- Sürüm uyumu notu: bu sürüm API v1 `1.9.1` ile birlikte kullanılır (README'deki "Sürüm uyumu" tablosu). İmza oturumu sunucuda `@imzala/node` veya diğer sunucu SDK'larıyla üretilir; tarayıcıya yalnız kısa ömürlü, tek kullanımlık token iner.
 - Paketin API yüzeyi (iframe ve `postMessage` olayları) **değişmedi**; 0.x'ten yükseltme kod değişikliği gerektirmez.

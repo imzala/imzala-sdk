@@ -2,20 +2,27 @@
 
 Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm uyumu için README'deki "Sürüm uyumu" tablosuna bakın.
 
-## Yayınlanmamış
+## 1.0.0
 
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.9.1`.
+
+**0.x'ten yükseltme, facade (`ImzalaSdk.Imzala` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
+
+### API 1.8.18 - 1.9.1 ile gelenler
+
+- API 1.9.1: sözleşme süresi ve yenileme takibi. Sözleşme oluşturma gövdesinde isteğe bağlı `term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`, `renewal_type`, `renewal_period_months`, `notice_days`, `reminder_offsets` ve `notify_counterparty`; gönderilmeyen alanlar için şablonun takip ayarı kullanılır. Sözleşme detayında `term` ve `archived_at`, listede `term_end_date` ve `archived_at` alanları. `term` platformun takip kaydıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini belirtmez.
+- API 1.9.1: arşivleme. Arşiv sözleşmenin durumunu değiştirmez; arşivdeki sözleşme değiştirilemez ve silinemez (`DEMAND_ARCHIVED`). Liste ucunda `archived` filtresi; verilmezse eskisi gibi arşivli ve arşivsiz tüm sözleşmeler döner.
+- API 1.9.1: yeni webhook olayları `contract.expiring`, `contract.ended` ve `contract.advanced` (ortak veri: `WebhookDataContractTerm`). Bunlar da takip kaydıdır.
+- Facade yardımcıları: `Demands.UpdateTermAsync(Guid, ContractTermUpdate)` (`PATCH /api/v1/demands/{id}/term`): yalnız set edilen özellikleri gönderir, `ContractTermUpdate.Clear` içindeki alan adlarını `null` olarak gönderip temizler. `Demands.ArchiveAsync(Guid)`, `Demands.UnarchiveAsync(Guid)` ve arşiv filtresi için yeni `Demands.ListAsync(DemandArchiveFilter archived, ...)` aşırı yüklemesi; mevcut `ListAsync` imzası değişmedi. Yazmalar otomatik yeniden denenmez.
+- `CreateDemandRequest` içindeki yeni süre alanları kurucuya eklenmedi (yayımlanmış kurucu imzası korunur); nesne başlatıcısıyla ayarlanır ve yalnız ayarlandıklarında gönderilir. `NotifyCounterparty` yalnız `true` olduğunda gönderilir; şablonun ayarını `false` ile kapatmak için oluşturduktan sonra `UpdateTermAsync` kullanın.
+- Hata kataloğuna 4 yeni kod eklendi: `TERM_INVALID`, `DEMAND_ARCHIVED`, `DEMAND_NOT_ARCHIVABLE`, `DEMAND_REJECTED_CANCEL_FIRST`. `TERM_INVALID` yanıt gövdesindeki `field` alanı reddedilen anahtarı gösterir.
+- Gömülü imza ucunun açıklaması güncellendi: bu akışla atılan dijital imza 5070 sayılı Kanun m.3 anlamında elektronik imzadır; ek doğrulama adımları delil değerini güçlendirir, imza seviyesini değiştirmez.
 - Kaşe alanını doldurma ucu için facade yardımcısı: `Demands.UpdateStampAsync(Guid, int, PatchStampItemRequest)` (`PATCH /api/v1/demands/{id}/items/{itemId}/stamp`). PATCH, otomatik yeniden denenmez. Bu ucu `null` alanları göndermeden saran ayrı bir sarmalayıcı kullanır; üretilmiş `StampData` modeli ayarlanmamış alanları `null` olarak yollar ve bu uçta `null` alanı siler.
 - API 1.8.23: örnek verilerdeki gerçek alan adlı e-posta adresleri ve standart dışı telefon numaraları kurgusal değerlerle değiştirildi (sözleşme değişmedi).
 - API 1.8.19 - 1.8.22: yeni uç `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` (kaşe alanını doldurma); `variables`, `party_mapping[].variables` ve `document_variables` değerlerinde kaşe için yapılandırılmış `StampData` nesnesi; belge başına `document_variables`; yanıtta `stamps_applied`; `allowed_signature_variants` için `phone_draw` (yalnız tek başına) ve zaman akışında `MOBILE_SIGNATURE_CAPTURED` olayı. Alanlar şimdilik üretilmiş istemci modelleri üzerinden kullanılır; uç için facade yardımcısı üstteki maddede.
 - Hata kataloğuna 10 yeni kod eklendi: `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE`, `INVALID_VARIABLES`, `INVALID_DOCUMENT_VARIABLES`, `INVALID_STAMP_DATA`, `INVALID_ITEM_ID`, `ITEM_NOT_FOUND`, `NOT_A_STAMP_ITEM`, `PARTY_NOT_ASSIGNED_TO_DOCUMENT`, `DEMAND_PARTIALLY_SIGNED`, `FIRST_SIGNATURE_OTP_UNSUPPORTED`.
 - API 1.8.18: tek sözleşme isteğinde `allowed_signature_variants` ve toplu istekte `options.allowed_signature_variants`. Sıra korunur; `null` veya atlanan alan sunucu varsayılanını devralır. Yalnız `phone` seçimi `SIGNATURE_VARIANTS_PHONE_ONLY` ile reddedilir.
 - Üretilmiş istemci modelleri ve hata kataloğu aynı sözleşmeyle güncellendi.
-
-## 1.0.0
-
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.8.17`.
-
-**0.x'ten yükseltme, facade (`ImzalaSdk.Imzala` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
 
 ### Eklendi
 
