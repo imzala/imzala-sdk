@@ -1,0 +1,46 @@
+# Forgejo CI (ci.imzala.org) — YAYIN ÖNKOŞUL KONTROLÜ.
+#
+# Neden: SDK'nın 5 yayın workflow'u .github/workflows/ altında duruyor ve GitHub
+# Actions bu hesapta koşmuyor (4-5 Eki 2026: tag run'ı oluşuyor, iş 2 saniyede
+# 0 adımla, runner atanmadan düşüyor). Yayını Forgejo'ya taşımadan önce iki şeyi
+# bilmek gerekiyor: (1) imzala-linux runner'ında hangi diller kurulu, (2) job
+# konteynerinden paket kayıt defterlerine çıkış var mı (host nft'si dar).
+#
+# Bu workflow HİÇBİR ŞEY YAYINLAMAZ ve secret İSTEMEZ. Yalnız envanter basar.
+# Sonucuna göre publish.yml'nin hangi setup adımlarına ihtiyacı olduğu belli olur.
+name: publish-preflight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: imzala-linux
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+
+      - name: Araç envanteri
+        run: |
+          echo "## araçlar"
+          for c in node npm yarn python3 pip3 dotnet java mvn php composer twine crane git; do
+            if command -v "$c" >/dev/null 2>&1; then
+              printf '%-10s %s\n' "$c" "$("$c" --version 2>&1 | head -1)"
+            else
+              printf '%-10s YOK\n' "$c"
+            fi
+          done
+
+      - name: Kayıt defterlerine çıkış (yalnız HEAD, kimlik yok)
+        run: |
+          echo "## ağ"
+          for u in https://registry.npmjs.org/ https://upload.pypi.org/legacy/ \
+                   https://api.nuget.org/v3/index.json https://central.sonatype.com/ \
+                   https://repo.maven.apache.org/maven2/ https://packagist.org/; do
+            code=$(curl -sS -o /dev/null -m 20 -w '%{http_code}' "$u" 2>/dev/null || echo "BAGLANAMADI")
+            printf '%-45s %s\n' "$u" "$code"
+          done
+
+      - name: DNS
+        run: |
+          echo "## resolv.conf"; cat /etc/resolv.conf || true
