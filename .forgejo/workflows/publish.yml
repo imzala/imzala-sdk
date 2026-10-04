@@ -1,0 +1,135 @@
+# Forgejo CI (ci.imzala.org) — PAKET YAYINI.
+#
+# Neden burada: .github/workflows/*-publish.yml tag tetikli ve GitHub Actions bu
+# hesapta koşmuyor (4-5 Eki 2026: run oluşuyor, iş 2 sn'de 0 adımla, runner
+# atanmadan düşüyor). O dosyalara DOKUNULMADI; Actions borcu ödenirse paralel
+# çalışırlar (Forgejo .forgejo/workflows varken .github/workflows'u yok sayar).
+#
+# 🔴 TETİK: yalnız workflow_dispatch. fci-sync mirror'ı `git fetch --no-tags` ile
+# YALNIZ main+test dallarını taşır (scripts/forgejo-ci/vma/units/ci_sync.py), yani
+# Forgejo'ya tag hiç gelmez — tag tetikli yayın bu ortamda imkansızdır. Yayın her
+# zaman elle başlatılır; zaten geri alınamaz bir işlem olduğu için doğrusu da bu.
+#
+# Önkoşul ölçümü (publish-preflight, run 5865, 4 Eki): imzala-linux runner'ında
+# node + npm + yarn + python3 + git VAR; pip3/dotnet/java/mvn/php/composer YOK
+# (setup-* action'larıyla geliyor). Altı paket kayıt defterinin hepsine HTTP 200.
+#
+# Secret'lar Forgejo repo secret'ı olarak girilir (src/imzala-sdk → Settings →
+# Actions → Secrets). npm'de OTP'li klasik token DEĞİL, **automation token**
+# kullanılır (2FA'yı atlar, CI içindir).
+name: publish
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Yayınlanacak paket'
+        required: true
+        type: choice
+        options: [npm-node, npm-embed, npm-embed-react, pypi, nuget, maven]
+      dry_run:
+        description: 'Kuru koşum (yayın YOK, yalnız paketle ve doğrula)'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: imzala-linux
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+
+      - name: Seçim özeti
+        run: echo "paket=${{ inputs.package }} dry_run=${{ inputs.dry_run }}"
+
+      # ---------- npm (3 paket; aynı token) ----------
+      - name: npm paketini hazırla
+        if: startsWith(inputs.package, 'npm-')
+        run: |
+          case "${{ inputs.package }}" in
+            npm-node)        echo "PKG_DIR=packages/node" >> "$GITHUB_ENV" ;;
+            npm-embed)       echo "PKG_DIR=packages/embed" >> "$GITHUB_ENV" ;;
+            npm-embed-react) echo "PKG_DIR=packages/embed-react" >> "$GITHUB_ENV" ;;
+          esac
+      - name: npm derle + test
+        if: startsWith(inputs.package, 'npm-')
+        run: |
+          npm ci
+          cd "$PKG_DIR"
+          npm run build
+          npx vitest run
+      - name: npm yayın
+        if: startsWith(inputs.package, 'npm-')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd "$PKG_DIR"
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm publish --access public --dry-run
+          else
+            npm publish --access public
+          fi
+          rm -f ~/.npmrc
+
+      # ---------- PyPI ----------
+      - name: Python kur
+        if: inputs.package == 'pypi'
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
+        with: { python-version: '3.11' }
+      - name: PyPI derle + yayın
+        if: inputs.package == 'pypi'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m pip install --upgrade pip build twine
+          cd packages/python
+          python -m build
+          twine check dist/*
+          if [ "${{ inputs.dry_run }}" = "false" ]; then twine upload dist/*; fi
+
+      # ---------- NuGet ----------
+      - name: .NET kur
+        if: inputs.package == 'nuget'
+        uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab  # v4.3.0
+        with: { dotnet-version: '8.0.x' }
+      - name: NuGet paketle + yayın
+        if: inputs.package == 'nuget'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          cd packages/dotnet
+          dotnet test -v q --nologo
+          dotnet pack src/Imzala.csproj -c Release -o ./nupkg
+          if [ "${{ inputs.dry_run }}" = "false" ]; then
+            dotnet nuget push ./nupkg/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+          fi
+
+      # ---------- Maven Central (en son; portalda son onay elle) ----------
+      - name: Java kur
+        if: inputs.package == 'maven'
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b  # v4.6.0
+        with:
+          distribution: temurin
+          java-version: '17'
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Maven paketle + yükle
+        if: inputs.package == 'maven'
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          cd packages/java
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            mvn -B -ntp package
+            unzip -l target/*.jar | grep -E 'META-INF/(LICENSE|NOTICE)'
+          else
+            mvn -B -ntp -Prelease deploy \
+              -DaltDeploymentRepository= \
+              -Dgpg.passphrase="$MAVEN_GPG_PASSPHRASE"
+          fi
