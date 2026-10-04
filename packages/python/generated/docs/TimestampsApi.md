@@ -210,7 +210,7 @@ imzalar ve bir zaman damgası kaydı oluşturur.
 - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;
   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.
 
-Damga elektronik imza DEĞİLDİR. Nitelikli elektronik imza (QES) için
+Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için
 ayrı imzalama akışını kullanın.
 
 **İdempotency:** `Idempotency-Key` header'ı (UUID önerilir) ile aynı

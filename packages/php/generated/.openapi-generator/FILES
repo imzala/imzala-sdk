@@ -147,6 +147,7 @@ docs/Model/PatchStampItemRequest.md
 docs/Model/PatchStampItemResponse.md
 docs/Model/PatchStampItemResponseData.md
 docs/Model/ReminderSettings.md
+docs/Model/SignerLocale.md
 docs/Model/StampData.md
 docs/Model/StandardError.md
 docs/Model/StandardErrorError.md
@@ -333,6 +334,7 @@ lib/Model/PatchStampItemRequest.php
 lib/Model/PatchStampItemResponse.php
 lib/Model/PatchStampItemResponseData.php
 lib/Model/ReminderSettings.php
+lib/Model/SignerLocale.php
 lib/Model/StampData.php
 lib/Model/StandardError.php
 lib/Model/StandardErrorError.php
@@ -515,6 +517,7 @@ test/Model/PatchStampItemRequestTest.php
 test/Model/PatchStampItemResponseDataTest.php
 test/Model/PatchStampItemResponseTest.php
 test/Model/ReminderSettingsTest.php
+test/Model/SignerLocaleTest.php
 test/Model/StampDataTest.php
 test/Model/StandardErrorErrorTest.php
 test/Model/StandardErrorTest.php

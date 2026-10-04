@@ -145,6 +145,7 @@ docs/PatchStampItemResponseData.md
 docs/ReminderSettings.md
 docs/RemindersApi.md
 docs/ReportsApi.md
+docs/SignerLocale.md
 docs/StampData.md
 docs/StandardError.md
 docs/StandardErrorError.md
@@ -329,6 +330,7 @@ src/ImzalaApiClient.Test/Model/PatchStampItemRequestTests.cs
 src/ImzalaApiClient.Test/Model/PatchStampItemResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/PatchStampItemResponseTests.cs
 src/ImzalaApiClient.Test/Model/ReminderSettingsTests.cs
+src/ImzalaApiClient.Test/Model/SignerLocaleTests.cs
 src/ImzalaApiClient.Test/Model/StampDataTests.cs
 src/ImzalaApiClient.Test/Model/StandardErrorErrorTests.cs
 src/ImzalaApiClient.Test/Model/StandardErrorTests.cs
@@ -528,6 +530,7 @@ src/ImzalaApiClient/Model/PatchStampItemRequest.cs
 src/ImzalaApiClient/Model/PatchStampItemResponse.cs
 src/ImzalaApiClient/Model/PatchStampItemResponseData.cs
 src/ImzalaApiClient/Model/ReminderSettings.cs
+src/ImzalaApiClient/Model/SignerLocale.cs
 src/ImzalaApiClient/Model/StampData.cs
 src/ImzalaApiClient/Model/StandardError.cs
 src/ImzalaApiClient/Model/StandardErrorError.cs

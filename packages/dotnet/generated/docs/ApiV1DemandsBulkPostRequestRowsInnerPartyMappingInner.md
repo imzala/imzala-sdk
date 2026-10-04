@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **BirthDate** | **DateOnly** | ISO 8601 (ör. 1990-05-15) | [optional] 
 **SendSms** | **bool** |  | [optional] [default to true]
 **SendEmail** | **bool** |  | [optional] [default to true]
+**Locale** | **SignerLocale** |  | [optional] 
 **CustomMessage** | **string** | Bu tarafa özel davet mesajı | [optional] 
 **Variables** | **Object** | Bu tarafa özel değişkenler | [optional] 
 

@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **birth_date** | **date** | ISO 8601 (ör. 1990-05-15) | [optional] 
 **send_sms** | **bool** |  | [optional] [default to True]
 **send_email** | **bool** |  | [optional] [default to True]
+**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
 **custom_message** | **str** | Bu tarafa özel davet mesajı | [optional] 
 **variables** | **object** | Bu tarafa özel değişkenler | [optional] 
 

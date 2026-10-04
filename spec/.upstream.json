@@ -8,13 +8,13 @@
     "source.branch is where the backend currently publishes the lock and public artefact. It is \"test\" until they are promoted to \"main\"; then change this one field. Override at runtime with IMZALA_UPSTREAM_BRANCH or --branch.",
     "Verify with: npm run upstream:check"
   ],
-  "version": "1.9.1",
-  "upstream_ssot_sha256": "4802f20804ef8a0672fc63e35b1d62e2a4c9f8288a5200bd948f4e63684db86c",
-  "public_sha256": "8eb4a6a1241c827795b8591f072a97919697c4795abb1cde542747d3b598dcd7",
-  "fetched_at": "2026-09-27T22:07:10Z",
+  "version": "1.10.1",
+  "upstream_ssot_sha256": "0c95adba49a678eba127341a4eef3e67c2f03738d51961880c8c1a1bda8f488e",
+  "public_sha256": "7cad9f0436efc5165a7ebddbe592da073027f0dac825bbabf97489b027bd3799",
+  "fetched_at": "2026-10-04T22:04:33Z",
   "source": {
     "repo": "imzala/imzala-service",
-    "commit": "713e1c4332af1d00c6792a303799b73458166023",
+    "commit": "c5dc6b90118d290b75bba45a68ef9ef724e5c1af",
     "branch": "main",
     "lock": "openapi/openapi.v1.lock.json",
     "spec": "openapi/openapi.v1.public.yaml"

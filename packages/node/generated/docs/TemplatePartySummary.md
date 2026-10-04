@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **order** | **number** |  | [optional] [default to undefined]
 **label** | **string** |  | [optional] [default to undefined]
 **is_required** | **boolean** |  | [optional] [default to undefined]
+**default_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -20,6 +21,7 @@ const instance: TemplatePartySummary = {
     order,
     label,
     is_required,
+    default_locale,
 };
 ```
 

@@ -12,5 +12,7 @@ Name | Type | Description | Notes
 **rejected** | **bool** |  | [optional]
 **rejected_at** | **\DateTime** |  | [optional]
 **signing_url** | **string** |  | [optional]
+**locale** | [**\Imzala\Client\Model\SignerLocale**](SignerLocale.md) |  | [optional]
+**signed_locale** | [**\Imzala\Client\Model\SignerLocale**](SignerLocale.md) |  | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

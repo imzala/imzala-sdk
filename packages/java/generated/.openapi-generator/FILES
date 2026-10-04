@@ -147,6 +147,7 @@ docs/PatchStampItemResponseData.md
 docs/ReminderSettings.md
 docs/RemindersApi.md
 docs/ReportsApi.md
+docs/SignerLocale.md
 docs/StampData.md
 docs/StandardError.md
 docs/StandardErrorError.md
@@ -350,6 +351,7 @@ src/main/java/org/imzala/client/generated/model/PatchStampItemRequest.java
 src/main/java/org/imzala/client/generated/model/PatchStampItemResponse.java
 src/main/java/org/imzala/client/generated/model/PatchStampItemResponseData.java
 src/main/java/org/imzala/client/generated/model/ReminderSettings.java
+src/main/java/org/imzala/client/generated/model/SignerLocale.java
 src/main/java/org/imzala/client/generated/model/StampData.java
 src/main/java/org/imzala/client/generated/model/StandardError.java
 src/main/java/org/imzala/client/generated/model/StandardErrorError.java
@@ -530,6 +532,7 @@ src/test/java/org/imzala/client/generated/model/PatchStampItemRequestTest.java
 src/test/java/org/imzala/client/generated/model/PatchStampItemResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/PatchStampItemResponseTest.java
 src/test/java/org/imzala/client/generated/model/ReminderSettingsTest.java
+src/test/java/org/imzala/client/generated/model/SignerLocaleTest.java
 src/test/java/org/imzala/client/generated/model/StampDataTest.java
 src/test/java/org/imzala/client/generated/model/StandardErrorErrorTest.java
 src/test/java/org/imzala/client/generated/model/StandardErrorTest.java

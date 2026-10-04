@@ -15,6 +15,8 @@
 |**rejected** | **Boolean** |  |  [optional] |
 |**rejectedAt** | **OffsetDateTime** |  |  [optional] |
 |**signingUrl** | **URI** |  |  [optional] |
+|**locale** | **SignerLocale** |  |  [optional] |
+|**signedLocale** | **SignerLocale** |  |  [optional] |
 
 
 

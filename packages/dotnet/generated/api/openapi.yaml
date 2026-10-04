@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27
+    **Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -64,6 +64,20 @@ info:
     ## Hatalar
     Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki),
     404 (yok), 429 (rate limit), 500 (sunucu)
+
+    `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun
+    yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP
+    istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler)
+    tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır.
+    Yanıt gövdesi:
+
+    ```json
+    {
+      "error": "AI_TOOL_ACCESS_DISABLED",
+      "code": "AI_TOOL_ACCESS_DISABLED",
+      "message": "Kurumunuz yapay zekâ araçlarının erişimini kapattı."
+    }
+    ```
 
     ## Loglar
     Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında
@@ -272,7 +286,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.9.1
+  version: 1.10.1
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -805,6 +819,10 @@ paths:
             olmayan bir gün (ör. `2026-02-30`). Bu hatada `error` insan-okur
             mesajı, `code` alanı makinece okunur kodu taşır.
 
+            `INVALID_LOCALE`: `party_mapping[i].locale` `tr`, `en` veya `null`
+            değil. `error` hatalı alanın yolunu taşır; sözleşme oluşturulmaz,
+            kredi düşülmez.
+
             `INVALID_DOCUMENT_SELECTION`: belge seçimi hatası; `details.reason`
             şu değerlerden biridir: `shape` (biçim: nesne değil, bilinmeyen
             alan, kimlik metin değil, 20'den fazla kimlik), `unknown_document`
@@ -1082,7 +1100,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
           description: |
-            `QES_NOT_SUPPORTED_MULTI_DOCUMENT`: nitelikli imza (QES) birden
+            `QES_NOT_SUPPORTED_MULTI_DOCUMENT`: güvenli elektronik imza birden
             çok belge içeren zarflarda henüz desteklenmiyor.
         "429":
           content:
@@ -1173,6 +1191,15 @@ paths:
         hatırlatması anlık olarak gönderir. Şablon-/sözleşme-seviyesi
         `reminder_settings` ayarından **bağımsız** olarak çalışır — istediğiniz
         zaman elle tetiklenebilir.
+
+        **Kimlere gitmez:** İmzayı reddetmiş, onayını vermiş, açık düzeltme
+        talebi olan, imza alanı olmayan (bilgi tarafı) taraflara ve imza ekranı
+        henüz açılmamış taraflara (sıralı imzada sırası gelmemiş; onay bekleyen
+        bir onaylayan varken imzacılar) hatırlatma gönderilmez; bu taraflar
+        `details[]` içinde yer almaz, sayıları `reminders_ineligible` alanında
+        döner. Onay bekleyen onaylayan hatırlatma alır. Çok belgeli zarfta bir
+        taraf, zarftaki tüm belgelere kararını verene kadar hatırlatma almaya
+        devam eder.
 
         **Anti-spam koruması:** Aynı sözleşme için son hatırlatmanın üzerinden
         5 dakika geçmemişse 429 `RATE_LIMITED` döner ve `Retry-After` header'ı
@@ -1282,7 +1309,9 @@ paths:
                 $ref: "#/components/schemas/StandardError"
           description: |
             **ALREADY_COMPLETED** — Tüm taraflar imzalamış. Hatırlatılacak
-            imzalanmamış parti yok.
+            imzalanmamış parti yok. İmzalamamış taraf varsa ama hiçbiri
+            hatırlatma almıyorsa (ör. yalnız reddeden taraf kaldıysa) bu kod
+            dönmez; yanıt 200 ve gönderim sayısı 0 olur.
 
             **DEMAND_NOT_DISPATCHED**: sözleşme henüz imzaya gönderilmedi (taslak).
 
@@ -2010,7 +2039,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
           description: |
-            `party_id` eksik veya geçersiz format.
+            `party_id` eksik veya geçersiz format. `INVALID_LOCALE` (`code`
+            alanında): `locale` `tr`, `en` veya `null` değil.
         "401":
           content:
             application/json:
@@ -2398,8 +2428,10 @@ paths:
     post:
       description: |
         Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme
-        ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa veya sıralı
-        imzada sırası gelmemiş tarafa gönderilemez (409).
+        ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa, onayını
+        vermiş onaylayana, açık düzeltme talebi olan tarafa veya sıralı imzada
+        sırası gelmemiş tarafa gönderilemez (409). Sıralı imzada onaylayanın onayı o adımı tamamlar;
+        sıra bir sonraki tarafa geçer.
       parameters:
       - explode: false
         in: path
@@ -2437,8 +2469,10 @@ paths:
                 $ref: "#/components/schemas/CodedError"
           description: |
             Tekrar gönderim yapılamaz. `error` insan-okur mesajı taşır.
-            - İmzalamış, reddetmiş veya sıralı imzada sırası gelmemiş taraf
-              (`code` alanı yok)
+            - İmzalamış, reddetmiş, onayını vermiş veya sıralı imzada sırası
+              gelmemiş taraf (`code` alanı yok)
+            - `CHANGE_REQUEST_PENDING`: tarafın açık bir düzeltme talebi var;
+              talep çözüldükten sonra tekrar gönderilebilir
             - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
             - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
             - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
@@ -3079,7 +3113,7 @@ paths:
         - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;
           sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.
 
-        Damga elektronik imza DEĞİLDİR. Nitelikli elektronik imza (QES) için
+        Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için
         ayrı imzalama akışını kullanın.
 
         **İdempotency:** `Idempotency-Key` header'ı (UUID önerilir) ile aynı
@@ -3510,10 +3544,12 @@ components:
           order: 6
           label: Musteri
           is_required: true
+          default_locale: en
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 6
           label: Musteri
           is_required: true
+          default_locale: en
         pages_count: 1
         variables:
         - slug: adres
@@ -3586,6 +3622,7 @@ components:
         order: 6
         label: Musteri
         is_required: true
+        default_locale: en
       properties:
         id:
           format: uuid
@@ -3597,6 +3634,8 @@ components:
           type: string
         is_required:
           type: boolean
+        default_locale:
+          $ref: "#/components/schemas/SignerLocale"
       type: object
     TemplateDocumentSummary:
       description: |
@@ -3926,6 +3965,16 @@ components:
         example_request:
           $ref: "#/components/schemas/TemplateUsage_example_request"
       type: object
+    SignerLocale:
+      description: "İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı\
+        )."
+      enum:
+      - tr
+      - en
+      - null
+      example: en
+      nullable: true
+      type: string
     PartyMappingInput:
       example:
         template_party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -3937,6 +3986,7 @@ components:
         birth_date: 2000-01-23
         send_sms: true
         send_email: true
+        locale: en
         variables:
           key: PartyMappingInput_variables_value
         document_variables: ""
@@ -3969,6 +4019,8 @@ components:
         send_email:
           default: true
           type: boolean
+        locale:
+          $ref: "#/components/schemas/SignerLocale"
         variables:
           additionalProperties:
             $ref: "#/components/schemas/PartyMappingInput_variables_value"
@@ -4250,6 +4302,7 @@ components:
           birth_date: 2000-01-23
           send_sms: true
           send_email: true
+          locale: en
           variables:
             key: PartyMappingInput_variables_value
           document_variables: ""
@@ -4262,6 +4315,7 @@ components:
           birth_date: 2000-01-23
           send_sms: true
           send_email: true
+          locale: en
           variables:
             key: PartyMappingInput_variables_value
           document_variables: ""
@@ -5323,7 +5377,7 @@ components:
               bağlı bir belgeyi onaylamamak) ayrı bir SMS koduyla
               doğrulanır; bu durumda ilk imzada yeniden kod istenir. Yalnız
               imzacı tarafa atanmış imza alanında ve geçerli cep telefonu
-              numarası olan tarafta kullanılabilir. Nitelikli e-imza (NES),
+              numarası olan tarafta kullanılabilir. Güvenli elektronik imza,
               onaycı ve kendi kendine imza akışlarında desteklenmez; bu
               durumda gönderim ya da alan kaydı imza bağlantısı
               üretilmeden `400 FIRST_SIGNATURE_OTP_UNSUPPORTED` ile
@@ -5435,6 +5489,8 @@ components:
           rejected: true
           rejected_at: 2000-01-23T04:56:07.000+00:00
           signing_url: https://openapi-generator.tech
+          locale: en
+          signed_locale: en
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           name: name
           email_masked: email_masked
@@ -5443,6 +5499,8 @@ components:
           rejected: true
           rejected_at: 2000-01-23T04:56:07.000+00:00
           signing_url: https://openapi-generator.tech
+          locale: en
+          signed_locale: en
         stamp_items:
         - item_id: 4821
           page_id: 12345
@@ -6597,10 +6655,12 @@ components:
             order: 6
             label: Musteri
             is_required: true
+            default_locale: en
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 6
             label: Musteri
             is_required: true
+            default_locale: en
           pages_count: 1
           variables:
           - slug: adres
@@ -7077,8 +7137,8 @@ components:
           example: tr
           type: string
         enable_qes:
-          description: 🔴 Faturayı etkiler. Nitelikli imza (QES) sınıfı; imzacı başına
-            taban ücret 1 yerine 2 kredi.
+          description: 🔴 Faturayı etkiler. Güvenli elektronik imza sınıfı; imzacı
+            başına taban ücret 1 yerine 2 kredi.
           type: boolean
         qes_pades_level:
           description: "🔴 Faturayı etkiler. Yalnız enable_qes ile anlamlıdır: B-T\
@@ -7158,6 +7218,8 @@ components:
         send_email:
           default: true
           type: boolean
+        locale:
+          $ref: "#/components/schemas/SignerLocale"
         custom_message:
           description: Bu tarafa özel davet mesajı
           type: string
@@ -7319,10 +7381,10 @@ components:
           description: Gönderilen davet (SMS+e-posta) sayısı
           type: integer
         error:
-          description: "status=failed ise makinece okunabilir kod (VALIDATION, INSUFFICIENT_CREDITS,\
-            \ MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION,\
-            \ INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,\
-            \ RECONCILE_FAILED, CREATE_FAILED vb.)"
+          description: "status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE,\
+            \ INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS,\
+            \ INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY,\
+            \ DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, CREATE_FAILED vb.)"
           type: string
         message:
           description: status=failed ise açıklama
@@ -7515,6 +7577,8 @@ components:
             rejected: true
             rejected_at: 2000-01-23T04:56:07.000+00:00
             signing_url: https://openapi-generator.tech
+            locale: en
+            signed_locale: en
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             name: name
             email_masked: email_masked
@@ -7523,6 +7587,8 @@ components:
             rejected: true
             rejected_at: 2000-01-23T04:56:07.000+00:00
             signing_url: https://openapi-generator.tech
+            locale: en
+            signed_locale: en
           stamp_items:
           - item_id: 4821
             page_id: 12345
@@ -7673,6 +7739,7 @@ components:
     _api_v1_demands__id__reminders_post_200_response_data:
       example:
         demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        reminders_ineligible: 0
         dispatched:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           first_name: first_name
@@ -7696,6 +7763,15 @@ components:
         demand_id:
           format: uuid
           type: string
+        reminders_ineligible:
+          description: |
+            İmzasını veya onayını tamamlamamış ama bu çağrıda
+            hatırlatma almayan taraf sayısı (reddetmiş, açık
+            düzeltme talebi olan ya da imza ekranı henüz açılmamış).
+            Gönderim sayısı 0 iken sözleşmenin tamamlanıp
+            tamamlanmadığını ayırt etmek için kullanılabilir.
+          minimum: 0
+          type: integer
         dispatched:
           items:
             $ref: "#/components/schemas/_api_v1_demands__id__reminders_post_200_response_data_dispatched_inner"
@@ -7715,6 +7791,7 @@ components:
         success: true
         data:
           demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          reminders_ineligible: 0
           dispatched:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             first_name: first_name
@@ -7745,7 +7822,7 @@ components:
       example:
         code: RATE_LIMITED
         message: message
-        retry_after_seconds: 0
+        retry_after_seconds: 6
       properties:
         code:
           enum:
@@ -7764,7 +7841,7 @@ components:
         error:
           code: RATE_LIMITED
           message: message
-          retry_after_seconds: 0
+          retry_after_seconds: 6
       properties:
         success:
           example: false
@@ -7801,6 +7878,12 @@ components:
             `field_template_id` gönderildiğinde her party AYRICA
             `template_party_id` (Alan Şablonu rolü) taşımak zorundadır
             ve şablondaki her rol tam olarak bir kez eşlenmelidir.
+
+            Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının
+            dijital imza sayfasını ve bildirimlerini göreceği dil (bkz.
+            `PartyMappingInput.locale`). Alan Şablonu kullanılırken
+            gönderilmezse rolün varsayılan dili uygulanır. Geçersiz
+            değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz.
           example: "[{\"first_name\":\"Ayşe\",\"last_name\":\"Yılmaz\",\"email\":\"\
             ayse@example.com\"}]"
           type: string
@@ -8214,6 +8297,8 @@ components:
             alanından alınır.
           format: uuid
           type: string
+        locale:
+          $ref: "#/components/schemas/SignerLocale"
       required:
       - party_id
       type: object
@@ -9974,6 +10059,8 @@ components:
         rejected: true
         rejected_at: 2000-01-23T04:56:07.000+00:00
         signing_url: https://openapi-generator.tech
+        locale: en
+        signed_locale: en
       properties:
         party_id:
           format: uuid
@@ -9999,6 +10086,10 @@ components:
         signing_url:
           format: uri
           type: string
+        locale:
+          $ref: "#/components/schemas/SignerLocale"
+        signed_locale:
+          $ref: "#/components/schemas/SignerLocale"
       type: object
     DemandStatus_stamp_items_inner:
       example:

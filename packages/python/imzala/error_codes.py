@@ -114,6 +114,9 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
     "DEMAND_COMPLETED": "Tamamlanmış sözleşme API üzerinden silinemez.",
     "DEMAND_NOT_DISPATCHED": "Sözleşme henüz imzaya gönderilmedi (taslak).",
     "DEMAND_NOT_DISPATCHABLE": "Sözleşme tamamlanmış veya iptal edilmiş; tekrar gönderilemez.",
+    "AI_TOOL_ACCESS_DISABLED": "Kurum yapay zekâ araçlarının erişimini kapatmış; istek organizasyon çalışma alanına yapılamaz.",
+    "INVALID_LOCALE": "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.",
+    "CHANGE_REQUEST_PENDING": "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.",
     "DEMAND_EXPIRED": "Sözleşmenin imza süresi geçmiş.",
     "ALREADY_COMPLETED": "Tüm taraflar imzalamış; hatırlatılacak taraf yok.",
     "INVALID_EXPIRY_DATE": (

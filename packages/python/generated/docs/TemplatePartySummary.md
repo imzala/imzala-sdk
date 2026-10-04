@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **order** | **int** |  | [optional] 
 **label** | **str** |  | [optional] 
 **is_required** | **bool** |  | [optional] 
+**default_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
 
 ## Example
 

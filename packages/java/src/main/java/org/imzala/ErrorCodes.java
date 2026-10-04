@@ -110,6 +110,12 @@ public final class ErrorCodes {
         "Sözleşme henüz imzaya gönderilmedi (taslak).");
     m.put("DEMAND_NOT_DISPATCHABLE",
         "Sözleşme tamamlanmış veya iptal edilmiş; tekrar gönderilemez.");
+    m.put("AI_TOOL_ACCESS_DISABLED",
+        "Kurum yapay zekâ araçlarının erişimini kapatmış; istek organizasyon çalışma alanına yapılamaz.");
+    m.put("INVALID_LOCALE",
+        "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.");
+    m.put("CHANGE_REQUEST_PENDING",
+        "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.");
     m.put("DEMAND_EXPIRED",
         "Sözleşmenin imza süresi geçmiş.");
     m.put("ALREADY_COMPLETED",

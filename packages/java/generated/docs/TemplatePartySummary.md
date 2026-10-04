@@ -11,6 +11,7 @@
 |**order** | **Integer** |  |  [optional] |
 |**label** | **String** |  |  [optional] |
 |**isRequired** | **Boolean** |  |  [optional] |
+|**defaultLocale** | **SignerLocale** |  |  [optional] |
 
 
 

@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **rejected** | **bool** |  | [optional] 
 **rejected_at** | **datetime** |  | [optional] 
 **signing_url** | **str** |  | [optional] 
+**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
+**signed_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
 
 ## Example
 

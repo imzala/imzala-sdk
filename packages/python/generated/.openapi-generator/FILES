@@ -145,6 +145,7 @@ docs/PatchStampItemResponseData.md
 docs/ReminderSettings.md
 docs/RemindersApi.md
 docs/ReportsApi.md
+docs/SignerLocale.md
 docs/StampData.md
 docs/StandardError.md
 docs/StandardErrorError.md
@@ -335,6 +336,7 @@ imzala_client/models/patch_stamp_item_request.py
 imzala_client/models/patch_stamp_item_response.py
 imzala_client/models/patch_stamp_item_response_data.py
 imzala_client/models/reminder_settings.py
+imzala_client/models/signer_locale.py
 imzala_client/models/stamp_data.py
 imzala_client/models/standard_error.py
 imzala_client/models/standard_error_error.py
@@ -521,6 +523,7 @@ test/test_patch_stamp_item_response_data.py
 test/test_reminder_settings.py
 test/test_reminders_api.py
 test/test_reports_api.py
+test/test_signer_locale.py
 test/test_stamp_data.py
 test/test_standard_error.py
 test/test_standard_error_error.py

@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **birth_date** | **\DateTime** | ISO 8601 (ör. 1990-05-15) | [optional]
 **send_sms** | **bool** |  | [optional] [default to true]
 **send_email** | **bool** |  | [optional] [default to true]
+**locale** | [**\Imzala\Client\Model\SignerLocale**](SignerLocale.md) |  | [optional]
 **custom_message** | **string** | Bu tarafa özel davet mesajı | [optional]
 **variables** | **object** | Bu tarafa özel değişkenler | [optional]
 

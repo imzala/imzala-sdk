@@ -12,6 +12,8 @@ Name | Type | Description | Notes
 **Rejected** | **bool** |  | [optional] 
 **RejectedAt** | **DateTime?** |  | [optional] 
 **SigningUrl** | **string** |  | [optional] 
+**Locale** | **SignerLocale** |  | [optional] 
+**SignedLocale** | **SignerLocale** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **birth_date** | **string** | ISO 8601 (ör. 1990-05-15) | [optional] [default to undefined]
 **send_sms** | **boolean** |  | [optional] [default to true]
 **send_email** | **boolean** |  | [optional] [default to true]
+**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
 **custom_message** | **string** | Bu tarafa özel davet mesajı | [optional] [default to undefined]
 **variables** | **object** | Bu tarafa özel değişkenler | [optional] [default to undefined]
 
@@ -32,6 +33,7 @@ const instance: ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner = {
     birth_date,
     send_sms,
     send_email,
+    locale,
     custom_message,
     variables,
 };

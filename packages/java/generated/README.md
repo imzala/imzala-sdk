@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.9.1
+- API version: 1.10.1
 
-- Build date: 2026-09-28T01:16:51.997481+03:00[Europe/Istanbul]
+- Build date: 2026-10-05T01:06:12.119322+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.9.1 · **Son güncelleme:** 2026-09-27
+**Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -67,6 +67,20 @@ yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
 ## Hatalar
 Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki),
 404 (yok), 429 (rate limit), 500 (sunucu)
+
+`403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun
+yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP
+istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler)
+tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır.
+Yanıt gövdesi:
+
+```json
+{
+  \"error\": \"AI_TOOL_ACCESS_DISABLED\",
+  \"code\": \"AI_TOOL_ACCESS_DISABLED\",
+  \"message\": \"Kurumunuz yapay zekâ araçlarının erişimini kapattı.\"
+}
+```
 
 ## Loglar
 Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında
@@ -309,7 +323,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.9.1</version>
+  <version>1.10.1</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -319,7 +333,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.9.1"
+compile "org.imzala:imzala-client-generated:1.10.1"
 ```
 
 ### Others
@@ -332,7 +346,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.9.1.jar`
+- `target/imzala-client-generated-1.10.1.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -597,6 +611,7 @@ Class | Method | HTTP request | Description
  - [PatchStampItemResponse](docs/PatchStampItemResponse.md)
  - [PatchStampItemResponseData](docs/PatchStampItemResponseData.md)
  - [ReminderSettings](docs/ReminderSettings.md)
+ - [SignerLocale](docs/SignerLocale.md)
  - [StampData](docs/StampData.md)
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)

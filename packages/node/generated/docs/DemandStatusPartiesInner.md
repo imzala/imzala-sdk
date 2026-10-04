@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **rejected** | **boolean** |  | [optional] [default to undefined]
 **rejected_at** | **string** |  | [optional] [default to undefined]
 **signing_url** | **string** |  | [optional] [default to undefined]
+**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
+**signed_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -28,6 +30,8 @@ const instance: DemandStatusPartiesInner = {
     rejected,
     rejected_at,
     signing_url,
+    locale,
+    signed_locale,
 };
 ```
 

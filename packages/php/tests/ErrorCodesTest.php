@@ -147,7 +147,7 @@ final class ErrorCodesTest extends TestCase
         sort($node);
         sort($php);
         $this->assertSame($node, $php);
-        $this->assertCount(95, $php);
+        $this->assertCount(98, $php);
     }
 
     public function testSameDescriptionsAsTheNodeCatalogue(): void
