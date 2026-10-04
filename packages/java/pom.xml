@@ -152,6 +152,30 @@
   </dependencies>
 
   <build>
+    <!-- LICENSE + NOTICE must ship INSIDE the artifact: the published
+         Developer and API Terms (§6) state that the full licence text is
+         contained in every package. The <licenses> block above is POM
+         metadata only and puts no file in the jar — every other SDK
+         package does carry the files (npm "files", setuptools
+         license_files, composer subtree, NuGet PackageLicenseFile), so
+         without this block the Java jar would be the one artifact that
+         contradicts the Terms. -->
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>${project.basedir}</directory>
+        <targetPath>META-INF</targetPath>
+        <filtering>false</filtering>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <!-- Adds generated/src/main/java as an extra source root, so the
            vendored openapi-generator output compiles straight into this
