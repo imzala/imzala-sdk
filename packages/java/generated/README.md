@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.10.1
+- API version: 1.10.2
 
-- Build date: 2026-10-05T01:06:12.119322+03:00[Europe/Istanbul]
+- Build date: 2026-10-06T23:27:17.689888+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01
+**Sürüm:** 1.10.2 · **Son güncelleme:** 2026-10-06
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -45,6 +45,23 @@ endpoint'i aynı bilgiyi JSON olarak döner.
 `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz
 ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası
 yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
+
+## Onaylayan (onay adımı)
+Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan
+oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan
+içeren sözleşmelerde davetler iki aşamada gönderilir:
+- Sözleşme oluşturulurken (`POST /api/v1/demands`,
+  `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`
+  çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.
+  Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla
+  davet edilir.
+- İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet
+  edilir.
+- Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;
+  `dispatch` çağrısı da kimseye davet göndermez.
+- Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
+
+Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
 
 ## Rate Limit
 - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -118,6 +135,10 @@ geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.
   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya
   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder.
 - `force: true` bu kişi-başı sınırları override etmez.
+- Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan
+  onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş
+  taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde
+  `skipped` olarak `reason: \"party_not_eligible\"` ile döner.
 
 ```bash
 # Default — SMS + e-posta birlikte (parti eligibility'sine göre)
@@ -323,7 +344,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.10.1</version>
+  <version>1.10.2</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -333,7 +354,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.10.1"
+compile "org.imzala:imzala-client-generated:1.10.2"
 ```
 
 ### Others
@@ -346,7 +367,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.10.1.jar`
+- `target/imzala-client-generated-1.10.2.jar`
 - `target/lib/*.jar`
 
 ## Getting Started

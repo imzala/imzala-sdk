@@ -42,6 +42,11 @@ Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve
 her birine imza daveti gönderir (DocuSign "bulk send" modeli). Her
 satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
 
+**Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa her
+satırda önce yalnızca onay bekleyen onaylayanlar davet edilir;
+imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+onaylayan reddederse imzacılar davet edilmez.
+
 **Davranış:**
 - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler
   istemci tarafında 10'arlı parçalara bölünür.
@@ -188,6 +193,11 @@ Zarfı imzaya gönder (yayınla + davet)
 Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise
 sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/
 WhatsApp) ile bilgilendirir.
+
+**Onaylayan:** Sözleşmede Onaylayan varsa bu uç önce yalnızca onay
+bekleyen onaylayanları davet eder; imzacılar tüm onaylayanlar
+onayladıktan sonra davet edilir. Bir onaylayan reddettiyse bu uç
+kimseye davet göndermez; onay vermiş onaylayan yeniden davet edilmez.
 
 🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı
 (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim
@@ -2088,7 +2098,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | Gönderildi |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş, onayını vermiş veya sıralı imzada sırası   gelmemiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
+**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış veya reddetmiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;PARTY_NOT_ELIGIBLE&#x60;: tarafa şu an davet gönderilemez. Şu   durumlarda döner: taraf zaten onay vermiş bir onaylayan   olduğunda, sözleşme bir onaylayanın reddiyle durdurulduğunda,   onaylayan katmanının onayı tamamlanmadan imzacıya gönderim   denendiğinde veya sıralı imzada henüz bu tarafın sırası   gelmediğinde. - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
 **429** | İki ayrı sınır vardır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek (dispatch ucuyla ortak sınır). Gövdede &#x60;retry_after_seconds&#x60; döner.  &#x60;RECIPIENT_RESEND_LIMIT&#x60;: aynı alıcıya saatte en fazla 3, günde en fazla 10 davet tekrarı gönderilebilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -2283,7 +2293,10 @@ IP/cihaz asla döndürülmez.
 `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
 (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
 `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
-olayın `ip_masked` ve `device_label` alanları telefona aittir).
+olayın `ip_masked` ve `device_label` alanları telefona aittir),
+`REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında
+sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve
+onaylayanların yeniden onay vermesi gerekiyor).
 Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
 
 
@@ -2450,6 +2463,12 @@ Sözleşme oluştur (şablondan)
 Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini
 kaydeder, dynamic field'ları `variables` payload'undan doldurur ve
 imzalama URL'lerini döner.
+
+**Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa
+oluşturma anında yalnızca onay bekleyen onaylayanlar davet edilir;
+imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+onaylayan reddederse imzacılar davet edilmez. Ayrıntı: açıklamadaki
+"Onaylayan (onay adımı)" bölümü.
 
 **Variable resolution:**
 - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta

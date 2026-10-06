@@ -41,6 +41,7 @@ public class ErrorCodesTests
         ["FIELDS_FILLED"] = "timeline event_type value",
         ["MOBILE_SIGNATURE_CAPTURED"] = "timeline event_type value",
         ["OTP_LOCKED"] = "timeline event_type value",
+        ["REAPPROVAL_REQUIRED"] = "timeline event_type value",
         ["OTP_SENT"] = "timeline event_type value",
         ["OTP_VERIFIED"] = "timeline event_type value",
         ["FROM_SAVED"] = "stamp source value",
@@ -153,7 +154,7 @@ public class ErrorCodesTests
     public void Same_code_set_as_the_node_catalogue()
     {
         Assert.Equal(NodeCatalogue().Keys.OrderBy(k => k, StringComparer.Ordinal), ErrorCodes.Codes.Keys.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(98, ErrorCodes.Codes.Count);
+        Assert.Equal(99, ErrorCodes.Codes.Count);
     }
 
     [Fact]

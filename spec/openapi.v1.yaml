@@ -5,11 +5,11 @@
 openapi: 3.1.0
 info:
   title: imzala External API
-  version: 1.10.1
+  version: 1.10.2
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01
+    **Sürüm:** 1.10.2 · **Son güncelleme:** 2026-10-06
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -44,6 +44,23 @@ info:
     `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz
     ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası
     yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
+
+    ## Onaylayan (onay adımı)
+    Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan
+    oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan
+    içeren sözleşmelerde davetler iki aşamada gönderilir:
+    - Sözleşme oluşturulurken (`POST /api/v1/demands`,
+      `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`
+      çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.
+      Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla
+      davet edilir.
+    - İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet
+      edilir.
+    - Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;
+      `dispatch` çağrısı da kimseye davet göndermez.
+    - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
+
+    Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
 
     ## Rate Limit
     - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -117,6 +134,10 @@ info:
       `skipped` olarak görünür (`reason: "party_sms_cap_reached (3)"` veya
       `"party_email_cap_reached (3)"`); diğer kişilere gönderim devam eder.
     - `force: true` bu kişi-başı sınırları override etmez.
+    - Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan
+      onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş
+      taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde
+      `skipped` olarak `reason: "party_not_eligible"` ile döner.
 
     ```bash
     # Default — SMS + e-posta birlikte (parti eligibility'sine göre)
@@ -568,6 +589,12 @@ paths:
         Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini
         kaydeder, dynamic field'ları `variables` payload'undan doldurur ve
         imzalama URL'lerini döner.
+
+        **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa
+        oluşturma anında yalnızca onay bekleyen onaylayanlar davet edilir;
+        imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+        onaylayan reddederse imzacılar davet edilmez. Ayrıntı: açıklamadaki
+        "Onaylayan (onay adımı)" bölümü.
 
         **Variable resolution:**
         - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta
@@ -1028,6 +1055,11 @@ paths:
         Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve
         her birine imza daveti gönderir (DocuSign "bulk send" modeli). Her
         satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
+
+        **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa her
+        satırda önce yalnızca onay bekleyen onaylayanlar davet edilir;
+        imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+        onaylayan reddederse imzacılar davet edilmez.
 
         **Davranış:**
         - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler
@@ -1536,6 +1568,12 @@ paths:
           cap'i ASLA — sert kural.
         - Sözleşme başına global cap pratikte yok (`999` safety net) — kural
           kişi başınadır.
+
+        **Davet sırası:** Hatırlatma yalnızca davet sırası gelmiş taraflara
+        gönderilir. Onaylayan onayını beklerken imzacılar, sıralı sözleşmede
+        sırası henüz gelmemiş taraflar ve bir onaylayan reddettiyse tüm
+        taraflar `details[]` içinde `skipped` olarak
+        `reason: "party_not_eligible"` ile döner.
 
         Sayım kaynağı: `ReminderLog` tablosu (channel + party_id, `status='SENT'`).
         Hem otomatik scheduled (ReminderWorker) hem manuel trigger reminders
@@ -2830,7 +2868,10 @@ paths:
         `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
         (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
         `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
-        olayın `ip_masked` ve `device_label` alanları telefona aittir).
+        olayın `ip_masked` ve `device_label` alanları telefona aittir),
+        `REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında
+        sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve
+        onaylayanların yeniden onay vermesi gerekiyor).
         Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
       parameters:
         - name: id
@@ -3135,10 +3176,15 @@ paths:
         '409':
           description: |
             Tekrar gönderim yapılamaz. `error` insan-okur mesajı taşır.
-            - İmzalamış, reddetmiş, onayını vermiş veya sıralı imzada sırası
-              gelmemiş taraf (`code` alanı yok)
+            - İmzalamış veya reddetmiş taraf (`code` alanı yok)
             - `CHANGE_REQUEST_PENDING`: tarafın açık bir düzeltme talebi var;
               talep çözüldükten sonra tekrar gönderilebilir
+            - `PARTY_NOT_ELIGIBLE`: tarafa şu an davet gönderilemez. Şu
+              durumlarda döner: taraf zaten onay vermiş bir onaylayan
+              olduğunda, sözleşme bir onaylayanın reddiyle durdurulduğunda,
+              onaylayan katmanının onayı tamamlanmadan imzacıya gönderim
+              denendiğinde veya sıralı imzada henüz bu tarafın sırası
+              gelmediğinde.
             - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
             - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
             - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
@@ -3659,6 +3705,11 @@ paths:
         Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise
         sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/
         WhatsApp) ile bilgilendirir.
+
+        **Onaylayan:** Sözleşmede Onaylayan varsa bu uç önce yalnızca onay
+        bekleyen onaylayanları davet eder; imzacılar tüm onaylayanlar
+        onayladıktan sonra davet edilir. Bir onaylayan reddettiyse bu uç
+        kimseye davet göndermez; onay vermiş onaylayan yeniden davet edilmez.
 
         🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı
         (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim

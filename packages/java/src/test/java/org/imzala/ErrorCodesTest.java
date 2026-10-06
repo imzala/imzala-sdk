@@ -69,6 +69,7 @@ class ErrorCodesTest {
     NOT_ERROR_CODES.put("FIELDS_FILLED", "timeline event_type value");
     NOT_ERROR_CODES.put("MOBILE_SIGNATURE_CAPTURED", "timeline event_type value");
     NOT_ERROR_CODES.put("OTP_LOCKED", "timeline event_type value");
+    NOT_ERROR_CODES.put("REAPPROVAL_REQUIRED", "timeline event_type value");
     NOT_ERROR_CODES.put("OTP_SENT", "timeline event_type value");
     NOT_ERROR_CODES.put("OTP_VERIFIED", "timeline event_type value");
     NOT_ERROR_CODES.put("FROM_SAVED", "stamp source value");
@@ -186,7 +187,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(98, ErrorCodes.CODES.size());
+    assertEquals(99, ErrorCodes.CODES.size());
   }
 
   @Test

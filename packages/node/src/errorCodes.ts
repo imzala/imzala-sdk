@@ -79,6 +79,7 @@ export const IMZALA_ERROR_CODES = {
   AI_TOOL_ACCESS_DISABLED: 'Kurum yapay zekâ araçlarının erişimini kapatmış; istek organizasyon çalışma alanına yapılamaz.',
   INVALID_LOCALE: 'İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.',
   CHANGE_REQUEST_PENDING: 'Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.',
+  PARTY_NOT_ELIGIBLE: 'Tarafa şu an davet gönderilemez (onay vermiş onaylayan, onaylayan reddi, onay adımı tamamlanmadı veya sıralı imzada sırası gelmedi).',
   DEMAND_EXPIRED: 'Sözleşmenin imza süresi geçmiş.',
   ALREADY_COMPLETED: 'Tüm taraflar imzalamış; hatırlatılacak taraf yok.',
   INVALID_EXPIRY_DATE: 'expiry_date çözümlenemiyor veya takvimde olmayan bir gün (ör. 2026-02-30).',

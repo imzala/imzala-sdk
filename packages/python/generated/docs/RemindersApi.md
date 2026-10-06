@@ -46,6 +46,12 @@ reputasyon koruması için kişi-başına reminder sayısı sınırlıdır:
 - Sözleşme başına global cap pratikte yok (`999` safety net) — kural
   kişi başınadır.
 
+**Davet sırası:** Hatırlatma yalnızca davet sırası gelmiş taraflara
+gönderilir. Onaylayan onayını beklerken imzacılar, sıralı sözleşmede
+sırası henüz gelmemiş taraflar ve bir onaylayan reddettiyse tüm
+taraflar `details[]` içinde `skipped` olarak
+`reason: "party_not_eligible"` ile döner.
+
 Sayım kaynağı: `ReminderLog` tablosu (channel + party_id, `status='SENT'`).
 Hem otomatik scheduled (ReminderWorker) hem manuel trigger reminders
 tek toplamda sayılır.
