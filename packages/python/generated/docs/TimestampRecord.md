@@ -5,14 +5,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**timestamp_time** | **datetime** | TÜBİTAK KAMU SM&#39;nin onayladığı damga zamanı (UTC) | [optional] 
-**tsa_authority** | **str** | Zaman damgası sağlayıcısı | [optional] 
-**file_sha256** | **str** | Damgalanan dosyanın SHA-256 hash değeri (hex, 64 karakter) | [optional] 
-**verify_url** | **str** | Damgayı doğrulamak için URL | [optional] 
-**certificate_url** | **str** | Damga sertifikası URL&#39;i | [optional] 
-**credits_used** | **int** | Bu damga için harcanan kredi miktarı | [optional] 
-**credits_remaining** | **int** | İşlem sonrası kalan kredi bakiyesi | [optional] 
+**id** | **UUID** |  | [optional]
+**timestamp_time** | **datetime** | TÜBİTAK KAMU SM&#39;nin onayladığı damga zamanı (UTC) | [optional]
+**tsa_authority** | **str** | Zaman damgası sağlayıcısı | [optional]
+**file_sha256** | **str** | Damgalanan dosyanın SHA-256 hash değeri (hex, 64 karakter) | [optional]
+**verify_url** | **str** | Damgayı doğrulamak için URL | [optional]
+**certificate_url** | **str** | Damga sertifikası URL&#39;i | [optional]
+**credits_used** | **int** | Bu damga için harcanan kredi miktarı | [optional]
+**credits_remaining** | **int** | İşlem sonrası kalan kredi bakiyesi | [optional]
 
 ## Example
 

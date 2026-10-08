@@ -1,15 +1,15 @@
 # KycWebhookEnvelope
 
-KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type` enum'u yalnız KYC olaylarını içerir. 
+KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type` enum'u yalnız KYC olaylarını içerir.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** | Olay id&#39;si: receiver tarafında idempotency anahtarı. | 
-**type** | **str** |  | 
-**created_at** | **datetime** | Olay zamanı (ISO 8601 UTC). | 
-**data** | **object** | Olay verisi (WebhookDataKycTerminal) | 
+**id** | **str** | Olay id&#39;si: receiver tarafında idempotency anahtarı. |
+**type** | **str** |  |
+**created_at** | **datetime** | Olay zamanı (ISO 8601 UTC). |
+**data** | **object** | Olay verisi (WebhookDataKycTerminal) |
 
 ## Example
 

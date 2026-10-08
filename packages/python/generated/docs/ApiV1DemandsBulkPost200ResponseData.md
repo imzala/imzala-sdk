@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template_id** | **UUID** |  | [optional] 
-**total** | **int** |  | [optional] 
-**created** | **int** |  | [optional] 
-**failed** | **int** |  | [optional] 
-**results** | [**List[ApiV1DemandsBulkPost200ResponseDataResultsInner]**](ApiV1DemandsBulkPost200ResponseDataResultsInner.md) |  | [optional] 
+**template_id** | **UUID** |  | [optional]
+**total** | **int** |  | [optional]
+**created** | **int** |  | [optional]
+**failed** | **int** |  | [optional]
+**results** | [**List[ApiV1DemandsBulkPost200ResponseDataResultsInner]**](ApiV1DemandsBulkPost200ResponseDataResultsInner.md) |  | [optional]
 
 ## Example
 

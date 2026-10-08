@@ -12,7 +12,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key'in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope'a sahip olursa olsun, ör. sadece `demands:read`) bu endpoint'i çağırabilir. 
+Çağrıyı yapan API key'in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope'a sahip olursa olsun, ör. sadece `demands:read`) bu endpoint'i çağırabilir.
 
 ### Example
 ```csharp

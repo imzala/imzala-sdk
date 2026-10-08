@@ -17,7 +17,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Kişi listesi
 
-API key sahibinin workspace&#39;indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org&#39;un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz. 
+API key sahibinin workspace&#39;indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org&#39;un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz.
 
 ### Example
 
@@ -34,7 +34,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -42,11 +42,11 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         ContactsApi apiInstance = new ContactsApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 25; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 25; // Integer |
         String q = "q_example"; // String | Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter)
         String sort = "-createdAt"; // String | Sıralama: createdAt | updatedAt | first_name | last_name | email ('-' öneki azalan)
-        UUID companyId = UUID.randomUUID(); // UUID | 
+        UUID companyId = UUID.randomUUID(); // UUID |
         Boolean archived = false; // Boolean | true → yalnızca arşivlenmiş kişiler; varsayılan false (aktif)
         try {
             ApiV1ContactsGet200Response result = apiInstance.apiV1ContactsGet(page, limit, q, sort, companyId, archived);
@@ -101,7 +101,7 @@ public class Example {
 
 Kişi listesi
 
-API key sahibinin workspace&#39;indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org&#39;un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz. 
+API key sahibinin workspace&#39;indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org&#39;un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz.
 
 ### Example
 
@@ -119,7 +119,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -127,11 +127,11 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         ContactsApi apiInstance = new ContactsApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 25; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 25; // Integer |
         String q = "q_example"; // String | Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter)
         String sort = "-createdAt"; // String | Sıralama: createdAt | updatedAt | first_name | last_name | email ('-' öneki azalan)
-        UUID companyId = UUID.randomUUID(); // UUID | 
+        UUID companyId = UUID.randomUUID(); // UUID |
         Boolean archived = false; // Boolean | true → yalnızca arşivlenmiş kişiler; varsayılan false (aktif)
         try {
             ApiResponse<ApiV1ContactsGet200Response> response = apiInstance.apiV1ContactsGetWithHttpInfo(page, limit, q, sort, companyId, archived);
@@ -189,7 +189,7 @@ ApiResponse<[**ApiV1ContactsGet200Response**](ApiV1ContactsGet200Response.md)>
 
 Kişi oluştur
 
-Workspace&#39;e yeni bir kişi ekler. Aynı workspace&#39;te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir. 
+Workspace&#39;e yeni bir kişi ekler. Aynı workspace&#39;te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir.
 
 ### Example
 
@@ -206,7 +206,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -214,7 +214,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         ContactsApi apiInstance = new ContactsApi(defaultClient);
-        ApiV1ContactsPostRequest apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest | 
+        ApiV1ContactsPostRequest apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest |
         try {
             ApiV1ContactsPost201Response result = apiInstance.apiV1ContactsPost(apiV1ContactsPostRequest);
             System.out.println(result);
@@ -265,7 +265,7 @@ public class Example {
 
 Kişi oluştur
 
-Workspace&#39;e yeni bir kişi ekler. Aynı workspace&#39;te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir. 
+Workspace&#39;e yeni bir kişi ekler. Aynı workspace&#39;te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir.
 
 ### Example
 
@@ -283,7 +283,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -291,7 +291,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         ContactsApi apiInstance = new ContactsApi(defaultClient);
-        ApiV1ContactsPostRequest apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest | 
+        ApiV1ContactsPostRequest apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest |
         try {
             ApiResponse<ApiV1ContactsPost201Response> response = apiInstance.apiV1ContactsPostWithHttpInfo(apiV1ContactsPostRequest);
             System.out.println("Status code: " + response.getStatusCode());

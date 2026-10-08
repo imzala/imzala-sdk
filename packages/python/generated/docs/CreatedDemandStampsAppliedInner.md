@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**item_id** | **int** |  | [optional] 
-**slug** | **str** |  | [optional] 
-**document_id** | **str** | Kaşenin bulunduğu sözleşme belgesi (tek belgeli eski sözleşmede null olabilir). | [optional] 
+**item_id** | **int** |  | [optional]
+**slug** | **str** |  | [optional]
+**document_id** | **str** | Kaşenin bulunduğu sözleşme belgesi (tek belgeli eski sözleşmede null olabilir). | [optional]
 
 ## Example
 

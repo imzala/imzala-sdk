@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template_party_id** | **UUID** |  | [optional] 
-**order** | **int** |  | [optional] 
-**label** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**field_count** | **int** | Rolün doldurduğu alan sayısı. Yalnız Alan Şablonu rehberinde döner, bu uçta bulunmaz.  | [optional] 
-**supported_fields** | [**List[TemplateUsagePartiesInnerSupportedFieldsInner]**](TemplateUsagePartiesInnerSupportedFieldsInner.md) |  | [optional] 
+**template_party_id** | **UUID** |  | [optional]
+**order** | **int** |  | [optional]
+**label** | **str** |  | [optional]
+**is_required** | **bool** |  | [optional]
+**field_count** | **int** | Rolün doldurduğu alan sayısı. Yalnız Alan Şablonu rehberinde döner, bu uçta bulunmaz.  | [optional]
+**supported_fields** | [**List[TemplateUsagePartiesInnerSupportedFieldsInner]**](TemplateUsagePartiesInnerSupportedFieldsInner.md) |  | [optional]
 
 ## Example
 

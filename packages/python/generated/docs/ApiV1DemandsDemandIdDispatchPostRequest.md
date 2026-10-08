@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**send_invitations** | [**ApiV1DemandsDemandIdDispatchPostRequestSendInvitations**](ApiV1DemandsDemandIdDispatchPostRequestSendInvitations.md) |  | [optional] 
+**send_invitations** | [**ApiV1DemandsDemandIdDispatchPostRequestSendInvitations**](ApiV1DemandsDemandIdDispatchPostRequestSendInvitations.md) |  | [optional]
 
 ## Example
 

@@ -21,6 +21,7 @@ docs/Model/ApiV1DemandsBulkPost200ResponseData.md
 docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
 docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
+docs/Model/ApiV1DemandsBulkPost400Response.md
 docs/Model/ApiV1DemandsBulkPostRequest.md
 docs/Model/ApiV1DemandsBulkPostRequestOptions.md
 docs/Model/ApiV1DemandsBulkPostRequestRowsInner.md
@@ -72,6 +73,7 @@ docs/Model/ApiV1DemandsPost201Response.md
 docs/Model/ApiV1DemandsPost400Response.md
 docs/Model/ApiV1DemandsPost402Response.md
 docs/Model/ApiV1DemandsPost402ResponseData.md
+docs/Model/ApiV1DemandsPost404Response.md
 docs/Model/ApiV1DemandsPost500Response.md
 docs/Model/ApiV1DemandsUploadPost201Response.md
 docs/Model/ApiV1DemandsUploadPost402Response.md
@@ -121,6 +123,7 @@ docs/Model/DemandPage.md
 docs/Model/DemandStatus.md
 docs/Model/DemandStatusPartiesInner.md
 docs/Model/DemandStatusStampItemsInner.md
+docs/Model/DocumentCollectionPolicyError.md
 docs/Model/DocumentPartyDecision.md
 docs/Model/DocumentProgress.md
 docs/Model/DocumentScopedSlugs.md
@@ -128,6 +131,7 @@ docs/Model/DocumentSealing.md
 docs/Model/DocumentSelectionError.md
 docs/Model/DocumentSelectionErrorDetails.md
 docs/Model/DocumentSelectionInput.md
+docs/Model/DocumentVerificationDisabledError.md
 docs/Model/EnvelopeDocument.md
 docs/Model/FieldLayoutDiagnostic.md
 docs/Model/FieldLayoutPreview.md
@@ -207,6 +211,7 @@ lib/Model/ApiV1DemandsBulkPost200ResponseData.php
 lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.php
 lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.php
 lib/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.php
+lib/Model/ApiV1DemandsBulkPost400Response.php
 lib/Model/ApiV1DemandsBulkPostRequest.php
 lib/Model/ApiV1DemandsBulkPostRequestOptions.php
 lib/Model/ApiV1DemandsBulkPostRequestRowsInner.php
@@ -258,6 +263,7 @@ lib/Model/ApiV1DemandsPost201Response.php
 lib/Model/ApiV1DemandsPost400Response.php
 lib/Model/ApiV1DemandsPost402Response.php
 lib/Model/ApiV1DemandsPost402ResponseData.php
+lib/Model/ApiV1DemandsPost404Response.php
 lib/Model/ApiV1DemandsPost500Response.php
 lib/Model/ApiV1DemandsUploadPost201Response.php
 lib/Model/ApiV1DemandsUploadPost402Response.php
@@ -307,6 +313,7 @@ lib/Model/DemandPage.php
 lib/Model/DemandStatus.php
 lib/Model/DemandStatusPartiesInner.php
 lib/Model/DemandStatusStampItemsInner.php
+lib/Model/DocumentCollectionPolicyError.php
 lib/Model/DocumentPartyDecision.php
 lib/Model/DocumentProgress.php
 lib/Model/DocumentScopedSlugs.php
@@ -314,6 +321,7 @@ lib/Model/DocumentSealing.php
 lib/Model/DocumentSelectionError.php
 lib/Model/DocumentSelectionErrorDetails.php
 lib/Model/DocumentSelectionInput.php
+lib/Model/DocumentVerificationDisabledError.php
 lib/Model/EnvelopeDocument.php
 lib/Model/FieldLayoutDiagnostic.php
 lib/Model/FieldLayoutPreview.php
@@ -391,6 +399,7 @@ test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInnerTest.p
 test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTest.php
 test/Model/ApiV1DemandsBulkPost200ResponseDataTest.php
 test/Model/ApiV1DemandsBulkPost200ResponseTest.php
+test/Model/ApiV1DemandsBulkPost400ResponseTest.php
 test/Model/ApiV1DemandsBulkPostRequestOptionsTest.php
 test/Model/ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInnerTest.php
 test/Model/ApiV1DemandsBulkPostRequestRowsInnerTest.php
@@ -442,6 +451,7 @@ test/Model/ApiV1DemandsPost201ResponseTest.php
 test/Model/ApiV1DemandsPost400ResponseTest.php
 test/Model/ApiV1DemandsPost402ResponseDataTest.php
 test/Model/ApiV1DemandsPost402ResponseTest.php
+test/Model/ApiV1DemandsPost404ResponseTest.php
 test/Model/ApiV1DemandsPost500ResponseTest.php
 test/Model/ApiV1DemandsUploadPost201ResponseTest.php
 test/Model/ApiV1DemandsUploadPost402ResponseTest.php
@@ -491,6 +501,7 @@ test/Model/DemandPageTest.php
 test/Model/DemandStatusPartiesInnerTest.php
 test/Model/DemandStatusStampItemsInnerTest.php
 test/Model/DemandStatusTest.php
+test/Model/DocumentCollectionPolicyErrorTest.php
 test/Model/DocumentPartyDecisionTest.php
 test/Model/DocumentProgressTest.php
 test/Model/DocumentScopedSlugsTest.php
@@ -498,6 +509,7 @@ test/Model/DocumentSealingTest.php
 test/Model/DocumentSelectionErrorDetailsTest.php
 test/Model/DocumentSelectionErrorTest.php
 test/Model/DocumentSelectionInputTest.php
+test/Model/DocumentVerificationDisabledErrorTest.php
 test/Model/EnvelopeDocumentTest.php
 test/Model/FieldLayoutDiagnosticTest.php
 test/Model/FieldLayoutPreviewPlacementsSummaryByPageInnerTest.php

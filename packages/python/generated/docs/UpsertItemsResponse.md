@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**UpsertItemsResponseData**](UpsertItemsResponseData.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**UpsertItemsResponseData**](UpsertItemsResponseData.md) |  | [optional]
 
 ## Example
 

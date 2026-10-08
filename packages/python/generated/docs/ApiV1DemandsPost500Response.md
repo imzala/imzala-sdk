@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | **str** |  | [optional] 
-**code** | **str** |  | [optional] 
-**data** | [**ApiV1DemandsPost402ResponseData**](ApiV1DemandsPost402ResponseData.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**code** | **str** |  | [optional]
+**data** | [**ApiV1DemandsPost402ResponseData**](ApiV1DemandsPost402ResponseData.md) |  | [optional]
 
 ## Example
 

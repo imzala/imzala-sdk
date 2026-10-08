@@ -1,16 +1,16 @@
 # WebhookDataKycTerminal
 
-KYC terminal olay verisi. Yalnız doğrulamanın sonucunu taşır: kimlik numarası, telefon, ad soyad ve belge görüntüleri bu gövdede YER ALMAZ. 
+KYC terminal olay verisi. Yalnız doğrulamanın sonucunu taşır: kimlik numarası, telefon, ad soyad ve belge görüntüleri bu gövdede YER ALMAZ.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** | Doğrulama kaydının kimliği. Talep oluşturulurken dönen kimlikle aynıdır; aynı doğrulamaya ait olayları bu değerle ilişkilendirin.  | 
-**verified** | **bool** | Doğrulamanın toplam sonucu. | 
-**methods** | **List[str]** | Talepte istenen yöntemler (örn. &#x60;id_card&#x60;, &#x60;phone_otp&#x60;). | 
-**steps** | [**List[WebhookDataKycTerminalStepsInner]**](WebhookDataKycTerminalStepsInner.md) |  | 
-**external_ref** | **str** | Talep oluşturulurken verilen dış referans. | 
+**id** | **UUID** | Doğrulama kaydının kimliği. Talep oluşturulurken dönen kimlikle aynıdır; aynı doğrulamaya ait olayları bu değerle ilişkilendirin.  |
+**verified** | **bool** | Doğrulamanın toplam sonucu. |
+**methods** | **List[str]** | Talepte istenen yöntemler (örn. &#x60;id_card&#x60;, &#x60;phone_otp&#x60;). |
+**steps** | [**List[WebhookDataKycTerminalStepsInner]**](WebhookDataKycTerminalStepsInner.md) |  |
+**external_ref** | **str** | Talep oluşturulurken verilen dış referans. |
 
 ## Example
 

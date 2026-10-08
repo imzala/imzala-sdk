@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**items** | [**List[UpsertItemsResponseDataItemsInner]**](UpsertItemsResponseDataItemsInner.md) |  | [optional] 
-**items_count** | **int** |  | [optional] 
+**items** | [**List[UpsertItemsResponseDataItemsInner]**](UpsertItemsResponseDataItemsInner.md) |  | [optional]
+**items_count** | **int** |  | [optional]
 
 ## Example
 

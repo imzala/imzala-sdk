@@ -17,6 +17,7 @@ docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
+docs/ApiV1DemandsBulkPost400Response.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
 docs/ApiV1DemandsBulkPostRequestRowsInner.md
@@ -68,6 +69,7 @@ docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
 docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost404Response.md
 docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
 docs/ApiV1DemandsUploadPost402Response.md
@@ -119,6 +121,7 @@ docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandStatusStampItemsInner.md
 docs/DemandsApi.md
+docs/DocumentCollectionPolicyError.md
 docs/DocumentPartyDecision.md
 docs/DocumentProgress.md
 docs/DocumentScopedSlugs.md
@@ -126,6 +129,7 @@ docs/DocumentSealing.md
 docs/DocumentSelectionError.md
 docs/DocumentSelectionErrorDetails.md
 docs/DocumentSelectionInput.md
+docs/DocumentVerificationDisabledError.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -225,6 +229,7 @@ src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseD
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInner.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost400Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequest.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestOptions.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestRowsInner.java
@@ -276,6 +281,7 @@ src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost201Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost400Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost402Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseData.java
+src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost404Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsPost500Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost201Response.java
 src/main/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost402Response.java
@@ -325,6 +331,7 @@ src/main/java/org/imzala/client/generated/model/DemandPage.java
 src/main/java/org/imzala/client/generated/model/DemandStatus.java
 src/main/java/org/imzala/client/generated/model/DemandStatusPartiesInner.java
 src/main/java/org/imzala/client/generated/model/DemandStatusStampItemsInner.java
+src/main/java/org/imzala/client/generated/model/DocumentCollectionPolicyError.java
 src/main/java/org/imzala/client/generated/model/DocumentPartyDecision.java
 src/main/java/org/imzala/client/generated/model/DocumentProgress.java
 src/main/java/org/imzala/client/generated/model/DocumentScopedSlugs.java
@@ -332,6 +339,7 @@ src/main/java/org/imzala/client/generated/model/DocumentSealing.java
 src/main/java/org/imzala/client/generated/model/DocumentSelectionError.java
 src/main/java/org/imzala/client/generated/model/DocumentSelectionErrorDetails.java
 src/main/java/org/imzala/client/generated/model/DocumentSelectionInput.java
+src/main/java/org/imzala/client/generated/model/DocumentVerificationDisabledError.java
 src/main/java/org/imzala/client/generated/model/EnvelopeDocument.java
 src/main/java/org/imzala/client/generated/model/FieldLayoutDiagnostic.java
 src/main/java/org/imzala/client/generated/model/FieldLayoutPreview.java
@@ -406,6 +414,7 @@ src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseD
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost200ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPost400ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestOptionsTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInnerTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsBulkPostRequestRowsInnerTest.java
@@ -457,6 +466,7 @@ src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost201ResponseTest.
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost400ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseDataTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost402ResponseTest.java
+src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost404ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsPost500ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost201ResponseTest.java
 src/test/java/org/imzala/client/generated/model/ApiV1DemandsUploadPost402ResponseTest.java
@@ -506,6 +516,7 @@ src/test/java/org/imzala/client/generated/model/DemandPageTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusStampItemsInnerTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusTest.java
+src/test/java/org/imzala/client/generated/model/DocumentCollectionPolicyErrorTest.java
 src/test/java/org/imzala/client/generated/model/DocumentPartyDecisionTest.java
 src/test/java/org/imzala/client/generated/model/DocumentProgressTest.java
 src/test/java/org/imzala/client/generated/model/DocumentScopedSlugsTest.java
@@ -513,6 +524,7 @@ src/test/java/org/imzala/client/generated/model/DocumentSealingTest.java
 src/test/java/org/imzala/client/generated/model/DocumentSelectionErrorDetailsTest.java
 src/test/java/org/imzala/client/generated/model/DocumentSelectionErrorTest.java
 src/test/java/org/imzala/client/generated/model/DocumentSelectionInputTest.java
+src/test/java/org/imzala/client/generated/model/DocumentVerificationDisabledErrorTest.java
 src/test/java/org/imzala/client/generated/model/EnvelopeDocumentTest.java
 src/test/java/org/imzala/client/generated/model/FieldLayoutDiagnosticTest.java
 src/test/java/org/imzala/client/generated/model/FieldLayoutPreviewPlacementsSummaryByPageInnerTest.java

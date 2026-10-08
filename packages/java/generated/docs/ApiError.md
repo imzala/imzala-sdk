@@ -2,7 +2,7 @@
 
 # ApiError
 
-Standart hata zarfı. `success: false`, `error` makinece okunabilir hata kodu, `message` kullanıcıya dönük açıklama. 
+Standart hata zarfı. `success: false`, `error` makinece okunabilir hata kodu, `message` kullanıcıya dönük açıklama.
 
 ## Properties
 

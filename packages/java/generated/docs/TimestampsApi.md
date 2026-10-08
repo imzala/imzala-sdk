@@ -19,7 +19,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Zaman damgası listesi
 
-Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key&#39;in kendi workspace&#39;indeki kayıtlar döner (IDOR-safe).  &#x60;timestamp_file_url&#x60; doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir). 
+Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key&#39;in kendi workspace&#39;indeki kayıtlar döner (IDOR-safe).  &#x60;timestamp_file_url&#x60; doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir).
 
 ### Example
 
@@ -36,7 +36,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -44,8 +44,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 25; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 25; // Integer |
         String q = "q_example"; // String | Dosya adı / açıklamada arama (max 100 karakter)
         String status = "status_example"; // String | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID
         LocalDate from = LocalDate.now(); // LocalDate | Damga günü alt sınırı (YYYY-MM-DD)
@@ -105,7 +105,7 @@ public class Example {
 
 Zaman damgası listesi
 
-Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key&#39;in kendi workspace&#39;indeki kayıtlar döner (IDOR-safe).  &#x60;timestamp_file_url&#x60; doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir). 
+Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key&#39;in kendi workspace&#39;indeki kayıtlar döner (IDOR-safe).  &#x60;timestamp_file_url&#x60; doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir).
 
 ### Example
 
@@ -123,7 +123,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -131,8 +131,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 25; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 25; // Integer |
         String q = "q_example"; // String | Dosya adı / açıklamada arama (max 100 karakter)
         String status = "status_example"; // String | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID
         LocalDate from = LocalDate.now(); // LocalDate | Damga günü alt sınırı (YYYY-MM-DD)
@@ -195,7 +195,7 @@ ApiResponse<[**ApiV1TimestampsGet200Response**](ApiV1TimestampsGet200Response.md
 
 Zaman damgası detayı
 
-Tek bir zaman damgası kaydının detayını döner. Yalnızca API key&#39;in kendi workspace&#39;indeki kayıt getirilebilir (IDOR-safe); başka bir workspace&#39;in kaydı 404 döner. 
+Tek bir zaman damgası kaydının detayını döner. Yalnızca API key&#39;in kendi workspace&#39;indeki kayıt getirilebilir (IDOR-safe); başka bir workspace&#39;in kaydı 404 döner.
 
 ### Example
 
@@ -212,7 +212,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -220,7 +220,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiV1TimestampsIdGet200Response result = apiInstance.apiV1TimestampsIdGet(id);
             System.out.println(result);
@@ -269,7 +269,7 @@ public class Example {
 
 Zaman damgası detayı
 
-Tek bir zaman damgası kaydının detayını döner. Yalnızca API key&#39;in kendi workspace&#39;indeki kayıt getirilebilir (IDOR-safe); başka bir workspace&#39;in kaydı 404 döner. 
+Tek bir zaman damgası kaydının detayını döner. Yalnızca API key&#39;in kendi workspace&#39;indeki kayıt getirilebilir (IDOR-safe); başka bir workspace&#39;in kaydı 404 döner.
 
 ### Example
 
@@ -287,7 +287,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -295,7 +295,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiResponse<ApiV1TimestampsIdGet200Response> response = apiInstance.apiV1TimestampsIdGetWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
@@ -347,7 +347,7 @@ ApiResponse<[**ApiV1TimestampsIdGet200Response**](ApiV1TimestampsIdGet200Respons
 
 Zaman damgası oluştur (eser tescil)
 
-Dosyanın SHA-256 hash&#39;ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - &#x60;owner_first_name&#x60; / &#x60;owner_last_name&#x60; alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** &#x60;Idempotency-Key&#x60; header&#39;ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı &#x60;id&#x60; döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - &#x60;multipart/form-data&#x60;: &#x60;file&#x60; alanıyla ikili dosya yükleme - &#x60;application/json&#x60;: &#x60;file_base64&#x60; alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez) 
+Dosyanın SHA-256 hash&#39;ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - &#x60;owner_first_name&#x60; / &#x60;owner_last_name&#x60; alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** &#x60;Idempotency-Key&#x60; header&#39;ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı &#x60;id&#x60; döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - &#x60;multipart/form-data&#x60;: &#x60;file&#x60; alanıyla ikili dosya yükleme - &#x60;application/json&#x60;: &#x60;file_base64&#x60; alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez)
 
 ### Example
 
@@ -364,7 +364,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -373,7 +373,7 @@ public class Example {
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
         File _file = new File("/path/to/file"); // File | Damgalanacak dosya (maks. 50 MB)
-        String idempotencyKey = "idempotencyKey_example"; // String | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez. 
+        String idempotencyKey = "idempotencyKey_example"; // String | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.
         String description = "description_example"; // String | Kayıt açıklaması (opsiyonel, max 500 karakter)
         String ownerFirstName = "ownerFirstName_example"; // String | Dosya sahibinin adı (opsiyonel, kullanıcı beyanı)
         String ownerLastName = "ownerLastName_example"; // String | Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı)
@@ -435,7 +435,7 @@ public class Example {
 
 Zaman damgası oluştur (eser tescil)
 
-Dosyanın SHA-256 hash&#39;ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - &#x60;owner_first_name&#x60; / &#x60;owner_last_name&#x60; alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** &#x60;Idempotency-Key&#x60; header&#39;ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı &#x60;id&#x60; döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - &#x60;multipart/form-data&#x60;: &#x60;file&#x60; alanıyla ikili dosya yükleme - &#x60;application/json&#x60;: &#x60;file_base64&#x60; alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez) 
+Dosyanın SHA-256 hash&#39;ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - &#x60;owner_first_name&#x60; / &#x60;owner_last_name&#x60; alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** &#x60;Idempotency-Key&#x60; header&#39;ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı &#x60;id&#x60; döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - &#x60;multipart/form-data&#x60;: &#x60;file&#x60; alanıyla ikili dosya yükleme - &#x60;application/json&#x60;: &#x60;file_base64&#x60; alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez)
 
 ### Example
 
@@ -453,7 +453,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -462,7 +462,7 @@ public class Example {
 
         TimestampsApi apiInstance = new TimestampsApi(defaultClient);
         File _file = new File("/path/to/file"); // File | Damgalanacak dosya (maks. 50 MB)
-        String idempotencyKey = "idempotencyKey_example"; // String | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez. 
+        String idempotencyKey = "idempotencyKey_example"; // String | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.
         String description = "description_example"; // String | Kayıt açıklaması (opsiyonel, max 500 karakter)
         String ownerFirstName = "ownerFirstName_example"; // String | Dosya sahibinin adı (opsiyonel, kullanıcı beyanı)
         String ownerLastName = "ownerLastName_example"; // String | Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı)

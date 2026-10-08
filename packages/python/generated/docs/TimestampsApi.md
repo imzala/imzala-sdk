@@ -80,10 +80,10 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **page** | **int**|  | [optional] [default to 1]
  **limit** | **int**|  | [optional] [default to 25]
- **q** | **str**| Dosya adı / açıklamada arama (max 100 karakter) | [optional] 
- **status** | **str**| Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID | [optional] 
- **var_from** | **date**| Damga günü alt sınırı (YYYY-MM-DD) | [optional] 
- **to** | **date**| Damga günü üst sınırı (YYYY-MM-DD) | [optional] 
+ **q** | **str**| Dosya adı / açıklamada arama (max 100 karakter) | [optional]
+ **status** | **str**| Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID | [optional]
+ **var_from** | **date**| Damga günü alt sınırı (YYYY-MM-DD) | [optional]
+ **to** | **date**| Damga günü üst sınırı (YYYY-MM-DD) | [optional]
  **sort** | **str**| Sıralama: createdAt | timestamp_date | original_file_name | original_file_size | status (&#39;-&#39; öneki azalan) | [optional] [default to &#39;-createdAt&#39;]
 
 ### Return type
@@ -150,7 +150,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TimestampsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Zaman damgası detayı
@@ -168,7 +168,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -276,11 +276,11 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **file** | **bytes**| Damgalanacak dosya (maks. 50 MB) | 
- **idempotency_key** | **str**| Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.  | [optional] 
- **description** | **str**| Kayıt açıklaması (opsiyonel, max 500 karakter) | [optional] 
- **owner_first_name** | **str**| Dosya sahibinin adı (opsiyonel, kullanıcı beyanı) | [optional] 
- **owner_last_name** | **str**| Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı) | [optional] 
+ **file** | **bytes**| Damgalanacak dosya (maks. 50 MB) |
+ **idempotency_key** | **str**| Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.  | [optional]
+ **description** | **str**| Kayıt açıklaması (opsiyonel, max 500 karakter) | [optional]
+ **owner_first_name** | **str**| Dosya sahibinin adı (opsiyonel, kullanıcı beyanı) | [optional]
+ **owner_last_name** | **str**| Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı) | [optional]
 
 ### Return type
 

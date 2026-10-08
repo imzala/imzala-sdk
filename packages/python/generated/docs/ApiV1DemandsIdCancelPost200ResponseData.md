@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**title** | **str** |  | [optional] 
-**status** | **str** |  | [optional] 
-**cancelled_at** | **datetime** |  | [optional] 
-**cancellation_reason** | **str** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**title** | **str** |  | [optional]
+**status** | **str** |  | [optional]
+**cancelled_at** | **datetime** |  | [optional]
+**cancellation_reason** | **str** |  | [optional]
 
 ## Example
 

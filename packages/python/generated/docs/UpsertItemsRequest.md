@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**items** | [**List[PageItem]**](PageItem.md) |  | 
-**page_ids** | **List[int]** | **Opsiyonel.** Verilirse sadece bu sayfaların item&#39;ları replace edilir; diğer sayfalardaki item&#39;lar korunur. Body&#39;deki &#x60;items[].page_id&#x60; değerleri bu listede olmalıdır. Omitted ise tüm sayfaların item&#39;ları replace edilir.  | [optional] 
+**items** | [**List[PageItem]**](PageItem.md) |  |
+**page_ids** | **List[int]** | **Opsiyonel.** Verilirse sadece bu sayfaların item&#39;ları replace edilir; diğer sayfalardaki item&#39;lar korunur. Body&#39;deki &#x60;items[].page_id&#x60; değerleri bu listede olmalıdır. Omitted ise tüm sayfaların item&#39;ları replace edilir.  | [optional]
 
 ## Example
 

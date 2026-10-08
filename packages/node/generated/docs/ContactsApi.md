@@ -10,7 +10,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 # **apiV1ContactsGet**
 > ApiV1ContactsGet200Response apiV1ContactsGet()
 
-API key sahibinin workspace\'indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org\'un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz. 
+API key sahibinin workspace\'indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org\'un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz.
 
 ### Example
 
@@ -78,7 +78,7 @@ const { status, data } = await apiInstance.apiV1ContactsGet(
 # **apiV1ContactsPost**
 > ApiV1ContactsPost201Response apiV1ContactsPost(apiV1ContactsPostRequest)
 
-Workspace\'e yeni bir kişi ekler. Aynı workspace\'te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir. 
+Workspace\'e yeni bir kişi ekler. Aynı workspace\'te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir.
 
 ### Example
 

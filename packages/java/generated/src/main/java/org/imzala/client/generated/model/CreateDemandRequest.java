@@ -1,8 +1,8 @@
 /*
  * imzala External API
- * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler) tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır. Yanıt gövdesi:  ```json {   \"error\": \"AI_TOOL_ACCESS_DISABLED\",   \"code\": \"AI_TOOL_ACCESS_DISABLED\",   \"message\": \"Kurumunuz yapay zekâ araçlarının erişimini kapattı.\" } ```  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (11) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type`: yukarıdaki 11 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme. 
+ * imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.10.3 · **Son güncelleme:** 2026-10-08  ## Auth Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field'lar) `POST /api/v1/demands` payload'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field'lar   (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları) - `variables` (root) — **partilerden bağımsız** field'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula 2. Yoksa root `variables`'tan ara → varsa uygula 3. Yoksa atla  Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.  ## Onaylayan (onay adımı) Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan içeren sözleşmelerde davetler iki aşamada gönderilir: - Sözleşme oluşturulurken (`POST /api/v1/demands`,   `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`   çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.   Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla   davet edilir. - İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet   edilir. - Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;   `dispatch` çağrısı da kimseye davet göndermez. - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.  Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler) tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır. Yanıt gövdesi:  ```json {   \"error\": \"AI_TOOL_ACCESS_DISABLED\",   \"code\": \"AI_TOOL_ACCESS_DISABLED\",   \"message\": \"Kurumunuz yapay zekâ araçlarının erişimini kapattı.\" } ```  ## Loglar Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu   ezer, sadece bu demand'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez. - Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan   onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş   taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde   `skipped` olarak `reason: \"party_not_eligible\"` ile döner.  ```bash # Default — SMS + e-posta birlikte (parti eligibility'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d '{}'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{\"channels\": [\"sms\"], \"force\": true}' ```  Detay için **Reminders** tag'i altındaki endpoint'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar dashboard'dan yönetilir: **Ayarlar -> Webhook'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi   event'lerinizde tetiklenir  ### Olay tipleri (11) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header'lar Her istekte aşağıdaki header'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key). - `type`: yukarıdaki 11 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require('crypto');  function verify(rawBody, header, secret) {   const expected = 'sha256=' + crypto     .createHmac('sha256', secret)     .update(rawBody, 'utf8')     .digest('hex');   return crypto.timingSafeEqual(     Buffer.from(header || '', 'utf8'),     Buffer.from(expected, 'utf8')   ); }  // Express app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {   const sig = req.header('X-Imzala-Signature-256');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send('invalid signature');   }   const event = JSON.parse(req.body.toString('utf8'));   // ... event'i kuyruğa koy ve hemen 2xx dön   res.status(200).send('ok'); }); ```  > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send('replay accepted'); } ```  ### Manuel yeniden gönderim Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload'larda side-effect'leri atla. 5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme.
  *
- * The version of the OpenAPI document: 1.10.1
+ * The version of the OpenAPI document: 1.10.3
  * Contact: destek@imzala.org
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -48,6 +48,10 @@ import org.imzala.client.generated.ApiClient;
  * CreateDemandRequest
  */
 @JsonPropertyOrder({
+  CreateDemandRequest.JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED,
+  CreateDemandRequest.JSON_PROPERTY_DOCUMENT_COLLECTION_TEMPLATE_ID,
+  CreateDemandRequest.JSON_PROPERTY_DOCUMENT_COLLECTION_TIMING,
+  CreateDemandRequest.JSON_PROPERTY_DOCUMENT_COLLECTION_BLOCK_SIGNING,
   CreateDemandRequest.JSON_PROPERTY_TEMPLATE_ID,
   CreateDemandRequest.JSON_PROPERTY_TITLE,
   CreateDemandRequest.JSON_PROPERTY_DESCRIPTION,
@@ -79,8 +83,55 @@ import org.imzala.client.generated.ApiClient;
   CreateDemandRequest.JSON_PROPERTY_REMINDER_OFFSETS,
   CreateDemandRequest.JSON_PROPERTY_NOTIFY_COUNTERPARTY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-05T01:06:12.119322+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreateDemandRequest {
+  public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED = "document_collection_enabled";
+  private JsonNullable<Boolean> documentCollectionEnabled = JsonNullable.<Boolean>undefined();
+
+  public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_TEMPLATE_ID = "document_collection_template_id";
+  private JsonNullable<UUID> documentCollectionTemplateId = JsonNullable.<UUID>undefined();
+
+  /**
+   * Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.
+   */
+  public enum DocumentCollectionTimingEnum {
+    BEFORE_SIGNING(String.valueOf("BEFORE_SIGNING")),
+
+    AFTER_SIGNING(String.valueOf("AFTER_SIGNING"));
+
+    private String value;
+
+    DocumentCollectionTimingEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static DocumentCollectionTimingEnum fromValue(String value) {
+      for (DocumentCollectionTimingEnum b : DocumentCollectionTimingEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      return null;
+    }
+  }
+
+  public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_TIMING = "document_collection_timing";
+  private JsonNullable<DocumentCollectionTimingEnum> documentCollectionTiming = JsonNullable.<DocumentCollectionTimingEnum>undefined();
+
+  public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_BLOCK_SIGNING = "document_collection_block_signing";
+  private JsonNullable<Boolean> documentCollectionBlockSigning = JsonNullable.<Boolean>undefined();
+
   public static final String JSON_PROPERTY_TEMPLATE_ID = "template_id";
   @javax.annotation.Nonnull
   private UUID templateId;
@@ -126,13 +177,13 @@ public class CreateDemandRequest {
    */
   public enum AllowedSignatureVariantsEnum {
     DRAW(String.valueOf("draw")),
-    
+
     TYPE(String.valueOf("type")),
-    
+
     UPLOAD(String.valueOf("upload")),
-    
+
     PHONE(String.valueOf("phone")),
-    
+
     PHONE_DRAW(String.valueOf("phone_draw"));
 
     private String value;
@@ -206,13 +257,13 @@ public class CreateDemandRequest {
   private ReminderSettings reminderSettings;
 
   /**
-   * Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları). 
+   * Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları).
    */
   public enum TermStartModeEnum {
     FIXED_DATE(String.valueOf("FIXED_DATE")),
-    
+
     ON_FIRST_SIGNATURE(String.valueOf("ON_FIRST_SIGNATURE")),
-    
+
     ON_COMPLETION(String.valueOf("ON_COMPLETION"));
 
     private String value;
@@ -259,7 +310,7 @@ public class CreateDemandRequest {
    */
   public enum RenewalTypeEnum {
     AUTO_RENEW(String.valueOf("AUTO_RENEW")),
-    
+
     FIXED_TERM(String.valueOf("FIXED_TERM"));
 
     private String value;
@@ -305,8 +356,136 @@ public class CreateDemandRequest {
   @javax.annotation.Nullable
   private Boolean notifyCounterparty;
 
-  public CreateDemandRequest() { 
+  public CreateDemandRequest() {
   }
+
+  public CreateDemandRequest documentCollectionEnabled(@javax.annotation.Nullable Boolean documentCollectionEnabled) {
+    this.documentCollectionEnabled = JsonNullable.<Boolean>of(documentCollectionEnabled);
+    return this;
+  }
+
+  /**
+   * Belge Toplama açılsın mı? Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin değer true ise bir Belge Toplama şablonu gerekir. false devralınan toplamayı kapatır; açıkça verilen document_collection_template_id yine doğrulanır.
+   * @return documentCollectionEnabled
+   */
+  @javax.annotation.Nullable
+  @JsonIgnore
+  public Boolean getDocumentCollectionEnabled() {
+        return documentCollectionEnabled.orElse(null);
+  }
+
+  @JsonProperty(value = JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<Boolean> getDocumentCollectionEnabled_JsonNullable() {
+    return documentCollectionEnabled;
+  }
+
+  @JsonProperty(JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED)
+  public void setDocumentCollectionEnabled_JsonNullable(JsonNullable<Boolean> documentCollectionEnabled) {
+    this.documentCollectionEnabled = documentCollectionEnabled;
+  }
+
+  public void setDocumentCollectionEnabled(@javax.annotation.Nullable Boolean documentCollectionEnabled) {
+    this.documentCollectionEnabled = JsonNullable.<Boolean>of(documentCollectionEnabled);
+  }
+
+
+  public CreateDemandRequest documentCollectionTemplateId(@javax.annotation.Nullable UUID documentCollectionTemplateId) {
+    this.documentCollectionTemplateId = JsonNullable.<UUID>of(documentCollectionTemplateId);
+    return this;
+  }
+
+  /**
+   * Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya boş dize ise etkin toplama açıkken sözleşme şablonundaki seçim devralınır. Açıkça verilen dolu kimlik, toplama false olsa da doğrulanır. Seçim aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa, arşivliyse, kapsam dışıysa veya kimlik metin değilse 404 DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND döner.
+   * @return documentCollectionTemplateId
+   */
+  @javax.annotation.Nullable
+  @JsonIgnore
+  public UUID getDocumentCollectionTemplateId() {
+        return documentCollectionTemplateId.orElse(null);
+  }
+
+  @JsonProperty(value = JSON_PROPERTY_DOCUMENT_COLLECTION_TEMPLATE_ID, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<UUID> getDocumentCollectionTemplateId_JsonNullable() {
+    return documentCollectionTemplateId;
+  }
+
+  @JsonProperty(JSON_PROPERTY_DOCUMENT_COLLECTION_TEMPLATE_ID)
+  public void setDocumentCollectionTemplateId_JsonNullable(JsonNullable<UUID> documentCollectionTemplateId) {
+    this.documentCollectionTemplateId = documentCollectionTemplateId;
+  }
+
+  public void setDocumentCollectionTemplateId(@javax.annotation.Nullable UUID documentCollectionTemplateId) {
+    this.documentCollectionTemplateId = JsonNullable.<UUID>of(documentCollectionTemplateId);
+  }
+
+
+  public CreateDemandRequest documentCollectionTiming(@javax.annotation.Nullable DocumentCollectionTimingEnum documentCollectionTiming) {
+    this.documentCollectionTiming = JsonNullable.<DocumentCollectionTimingEnum>of(documentCollectionTiming);
+    return this;
+  }
+
+  /**
+   * Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.
+   * @return documentCollectionTiming
+   */
+  @javax.annotation.Nullable
+  @JsonIgnore
+  public DocumentCollectionTimingEnum getDocumentCollectionTiming() {
+        return documentCollectionTiming.orElse(null);
+  }
+
+  @JsonProperty(value = JSON_PROPERTY_DOCUMENT_COLLECTION_TIMING, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<DocumentCollectionTimingEnum> getDocumentCollectionTiming_JsonNullable() {
+    return documentCollectionTiming;
+  }
+
+  @JsonProperty(JSON_PROPERTY_DOCUMENT_COLLECTION_TIMING)
+  public void setDocumentCollectionTiming_JsonNullable(JsonNullable<DocumentCollectionTimingEnum> documentCollectionTiming) {
+    this.documentCollectionTiming = documentCollectionTiming;
+  }
+
+  public void setDocumentCollectionTiming(@javax.annotation.Nullable DocumentCollectionTimingEnum documentCollectionTiming) {
+    this.documentCollectionTiming = JsonNullable.<DocumentCollectionTimingEnum>of(documentCollectionTiming);
+  }
+
+
+  public CreateDemandRequest documentCollectionBlockSigning(@javax.annotation.Nullable Boolean documentCollectionBlockSigning) {
+    this.documentCollectionBlockSigning = JsonNullable.<Boolean>of(documentCollectionBlockSigning);
+    return this;
+  }
+
+  /**
+   * Zorunlu belgeler tamamlanana kadar imzalamayı engelleme ayarı. Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin AFTER_SIGNING zamanında true false olarak normalleştirilir. Boolean alanlara boolean veya null dışında değer verilirse 400 INVALID_DOCUMENT_COLLECTION_FLAG döner.
+   * @return documentCollectionBlockSigning
+   */
+  @javax.annotation.Nullable
+  @JsonIgnore
+  public Boolean getDocumentCollectionBlockSigning() {
+        return documentCollectionBlockSigning.orElse(null);
+  }
+
+  @JsonProperty(value = JSON_PROPERTY_DOCUMENT_COLLECTION_BLOCK_SIGNING, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<Boolean> getDocumentCollectionBlockSigning_JsonNullable() {
+    return documentCollectionBlockSigning;
+  }
+
+  @JsonProperty(JSON_PROPERTY_DOCUMENT_COLLECTION_BLOCK_SIGNING)
+  public void setDocumentCollectionBlockSigning_JsonNullable(JsonNullable<Boolean> documentCollectionBlockSigning) {
+    this.documentCollectionBlockSigning = documentCollectionBlockSigning;
+  }
+
+  public void setDocumentCollectionBlockSigning(@javax.annotation.Nullable Boolean documentCollectionBlockSigning) {
+    this.documentCollectionBlockSigning = JsonNullable.<Boolean>of(documentCollectionBlockSigning);
+  }
+
 
   public CreateDemandRequest templateId(@javax.annotation.Nonnull UUID templateId) {
     this.templateId = templateId;
@@ -338,7 +517,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Sözleşme başlığı (yoksa template adı kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın. 
+   * Sözleşme başlığı (yoksa template adı kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.
    * @return title
    */
   @javax.annotation.Nullable
@@ -386,7 +565,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * &#x60;Idempotency-Key&#x60; başlığının gövde karşılığı; başlık ekleyemeyen istemciler için. İkisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;. 
+   * &#x60;Idempotency-Key&#x60; başlığının gövde karşılığı; başlık ekleyemeyen istemciler için. İkisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.
    * @return idempotencyKey
    */
   @javax.annotation.Nullable
@@ -410,7 +589,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Kopya kapısını bilerek geç. Yalnız idempotency anahtarı GÖNDERİLMEYEN çağrılarda anlamlıdır: aynı şablondan aynı taraflara aynı başlık ve değişkenlerle 10 dakika içinde ikinci bir sözleşmeyi kasten göndermek için. 
+   * Kopya kapısını bilerek geç. Yalnız idempotency anahtarı GÖNDERİLMEYEN çağrılarda anlamlıdır: aynı şablondan aynı taraflara aynı başlık ve değişkenlerle 10 dakika içinde ikinci bir sözleşmeyi kasten göndermek için.
    * @return force
    */
   @javax.annotation.Nullable
@@ -498,7 +677,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * **Root scope** — partilerden bağımsız field&#39;lara gönderilen değerler. Item&#39;ın template_party_id&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field&#39;lar.  **Kaşe alanları:** Değer bir &#x60;StampData&#x60; NESNESİ ise ve slug bir kaşe alanına aitse, sözleşme oluşturulurken o kaşe &#x60;PATCH /api/v1/demands/{id}/items/{itemId}/stamp&#x60; ile aynı kurallarla doldurulur (gönderenin kaşesi yapılandırılmış veriyle; imzalayanın dolduracağı kaşeye düzenlenebilir ön değer). Aynı slug birden fazla belgede geçiyorsa hepsine yazılır; öncelik kuralları &#x60;variables&#x60; ile aynıdır (bkz. &#x60;document_variables&#x60;). Nesne değer yalnız kaşe slug&#39;ına verilebilir: kaşe olmayan ya da gönderilecek belgelerde bulunmayan slug 400 &#x60;INVALID_VARIABLES&#x60; (&#x60;details.reason: object_value_for_non_stamp&#x60;), geçersiz kaşe verisi 400 &#x60;INVALID_STAMP_DATA&#x60; döner; ikisinde de sözleşme oluşturulmaz, kredi düşülmez. Kaşe slug&#39;ına düz metin gönderilirse kaşeye yazılmaz ve &#x60;variables_ignored&#x60; içinde görünür. Toplu uçlar nesne değeri desteklemez (400 &#x60;INVALID_VARIABLES&#x60;, &#x60;details.reason: unsupported_endpoint&#x60;). 
+   * **Root scope** — partilerden bağımsız field&#39;lara gönderilen değerler. Item&#39;ın template_party_id&#39;si NULL ise (partisiz) buradan dolar. Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field&#39;lar.  **Kaşe alanları:** Değer bir &#x60;StampData&#x60; NESNESİ ise ve slug bir kaşe alanına aitse, sözleşme oluşturulurken o kaşe &#x60;PATCH /api/v1/demands/{id}/items/{itemId}/stamp&#x60; ile aynı kurallarla doldurulur (gönderenin kaşesi yapılandırılmış veriyle; imzalayanın dolduracağı kaşeye düzenlenebilir ön değer). Aynı slug birden fazla belgede geçiyorsa hepsine yazılır; öncelik kuralları &#x60;variables&#x60; ile aynıdır (bkz. &#x60;document_variables&#x60;). Nesne değer yalnız kaşe slug&#39;ına verilebilir: kaşe olmayan ya da gönderilecek belgelerde bulunmayan slug 400 &#x60;INVALID_VARIABLES&#x60; (&#x60;details.reason: object_value_for_non_stamp&#x60;), geçersiz kaşe verisi 400 &#x60;INVALID_STAMP_DATA&#x60; döner; ikisinde de sözleşme oluşturulmaz, kredi düşülmez. Kaşe slug&#39;ına düz metin gönderilirse kaşeye yazılmaz ve &#x60;variables_ignored&#x60; içinde görünür. Toplu uçlar nesne değeri desteklemez (400 &#x60;INVALID_VARIABLES&#x60;, &#x60;details.reason: unsupported_endpoint&#x60;).
    * @return variables
    */
   @javax.annotation.Nullable
@@ -530,7 +709,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Çok belgeli şablonda BELGE BAŞINA ortak değerler (o belgedeki tüm taraflar ve partisiz alanlar için). Opsiyoneldir; göndermezseniz &#x60;variables&#x60; ve &#x60;party_mapping[].variables&#x60; eskisi gibi çalışır.  Öncelik (alan bazında; bir seviyede anahtar yoksa bir alttakine düşer, açıkça gönderilen boş metin ya da null o seviyede kalır): 1. &#x60;party_mapping[i].document_variables[belge][slug]&#x60; 2. &#x60;document_variables[belge][slug]&#x60; 3. &#x60;party_mapping[i].variables[slug]&#x60; 4. &#x60;variables[slug]&#x60;  Şablona ait olmayan ya da bu istekte gönderilmeyen belge kimliği 400 &#x60;INVALID_DOCUMENT_VARIABLES&#x60; ile reddedilir; sözleşme oluşturulmaz, kredi düşülmez, davet gönderilmez. 
+   * Çok belgeli şablonda BELGE BAŞINA ortak değerler (o belgedeki tüm taraflar ve partisiz alanlar için). Opsiyoneldir; göndermezseniz &#x60;variables&#x60; ve &#x60;party_mapping[].variables&#x60; eskisi gibi çalışır.  Öncelik (alan bazında; bir seviyede anahtar yoksa bir alttakine düşer, açıkça gönderilen boş metin ya da null o seviyede kalır): 1. &#x60;party_mapping[i].document_variables[belge][slug]&#x60; 2. &#x60;document_variables[belge][slug]&#x60; 3. &#x60;party_mapping[i].variables[slug]&#x60; 4. &#x60;variables[slug]&#x60;  Şablona ait olmayan ya da bu istekte gönderilmeyen belge kimliği 400 &#x60;INVALID_DOCUMENT_VARIABLES&#x60; ile reddedilir; sözleşme oluşturulmaz, kredi düşülmez, davet gönderilmez.
    * @return documentVariables
    */
   @javax.annotation.Nullable
@@ -590,7 +769,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * İmzacının kullanabileceği dijital imza yöntemleri ve görünme sırası. Dizinin SIRASI imza ekranındaki sekme sırasıdır; listede olmayan yöntem o sözleşmede kapalıdır. Değerler: &#x60;draw&#x60; (parmakla veya fareyle çizerek), &#x60;type&#x60; (adını yazarak), &#x60;upload&#x60; (imza görselini dosya olarak yükleyerek), &#x60;phone&#x60; (telefonda çizerek).  Gönderilmezse (veya &#x60;null&#x60; gönderilirse) şablonun ayarı, şablonda da tanımlı değilse organizasyonun ayarı geçerli olur; hiçbiri tanımlı değilse dört yöntem varsayılan sırayla açıktır.  Bu alan toleranslı okunur: boş dizi, dizi olmayan bir değer veya tanınmayan bir değer gönderilirse alan YOK SAYILIR ve üst katmandan devralınır. Yani boş dizi göndermek \&quot;tüm yöntemleri kapat\&quot; anlamına GELMEZ; en az bir yöntem her zaman açık kalır. Büyük harfli değerler (&#x60;DRAW&#x60;) kabul edilir, tekrar eden değerler teke indirilir.  Yalnız &#x60;phone&#x60; içeren bir liste reddedilir (400 &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;): telefonda çizim mobil cihazda kullanılamadığı için tek başına bırakılırsa imzacı yöntemsiz kalır. En az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;phone_draw&#x60; (\&quot;Yalnız telefonda çizerek\&quot;) ayrı bir moddur ve YALNIZ tek başına gönderilir: &#x60;[\&quot;phone_draw\&quot;]&#x60;. Bilgisayardan açan imzacı yalnız QR kod ile telefona yönlendirilir ve imzasını telefonda çizer; telefondan açan imzacı yalnız çizerek imzalar. Başka bir yöntemle birlikte gönderilirse 400 &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60; döner.  Ayar sözleşme düzeyindedir; imzacı bazında farklılaştırılamaz. &#x60;party_mapping&#x60; girdilerine yazılan böyle bir alan yok sayılır. 
+   * İmzacının kullanabileceği dijital imza yöntemleri ve görünme sırası. Dizinin SIRASI imza ekranındaki sekme sırasıdır; listede olmayan yöntem o sözleşmede kapalıdır. Değerler: &#x60;draw&#x60; (parmakla veya fareyle çizerek), &#x60;type&#x60; (adını yazarak), &#x60;upload&#x60; (imza görselini dosya olarak yükleyerek), &#x60;phone&#x60; (telefonda çizerek).  Gönderilmezse (veya &#x60;null&#x60; gönderilirse) şablonun ayarı, şablonda da tanımlı değilse organizasyonun ayarı geçerli olur; hiçbiri tanımlı değilse dört yöntem varsayılan sırayla açıktır.  Bu alan toleranslı okunur: boş dizi, dizi olmayan bir değer veya tanınmayan bir değer gönderilirse alan YOK SAYILIR ve üst katmandan devralınır. Yani boş dizi göndermek \&quot;tüm yöntemleri kapat\&quot; anlamına GELMEZ; en az bir yöntem her zaman açık kalır. Büyük harfli değerler (&#x60;DRAW&#x60;) kabul edilir, tekrar eden değerler teke indirilir.  Yalnız &#x60;phone&#x60; içeren bir liste reddedilir (400 &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;): telefonda çizim mobil cihazda kullanılamadığı için tek başına bırakılırsa imzacı yöntemsiz kalır. En az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;phone_draw&#x60; (\&quot;Yalnız telefonda çizerek\&quot;) ayrı bir moddur ve YALNIZ tek başına gönderilir: &#x60;[\&quot;phone_draw\&quot;]&#x60;. Bilgisayardan açan imzacı yalnız QR kod ile telefona yönlendirilir ve imzasını telefonda çizer; telefondan açan imzacı yalnız çizerek imzalar. Başka bir yöntemle birlikte gönderilirse 400 &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60; döner.  Ayar sözleşme düzeyindedir; imzacı bazında farklılaştırılamaz. &#x60;party_mapping&#x60; girdilerine yazılan böyle bir alan yok sayılır.
    * @return allowedSignatureVariants
    */
   @javax.annotation.Nullable
@@ -605,7 +784,7 @@ public class CreateDemandRequest {
   public JsonNullable<List<AllowedSignatureVariantsEnum>> getAllowedSignatureVariants_JsonNullable() {
     return allowedSignatureVariants;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_ALLOWED_SIGNATURE_VARIANTS)
   public void setAllowedSignatureVariants_JsonNullable(JsonNullable<List<AllowedSignatureVariantsEnum>> allowedSignatureVariants) {
     this.allowedSignatureVariants = allowedSignatureVariants;
@@ -622,7 +801,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * &#x60;false&#x60; verilirse sözleşme yalnız oluşturulur, davet gönderilmez; daha sonra &#x60;POST /api/v1/demands/{demandId}/dispatch&#x60; ile gönderilir (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan açık: davetler oluşturma anında gider. 
+   * &#x60;false&#x60; verilirse sözleşme yalnız oluşturulur, davet gönderilmez; daha sonra &#x60;POST /api/v1/demands/{demandId}/dispatch&#x60; ile gönderilir (çok-belgeli zarf akışında belgeler bu arada eklenir). Varsayılan açık: davetler oluşturma anında gider.
    * @return dispatchNotifications
    */
   @javax.annotation.Nullable
@@ -718,7 +897,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Custom SMS gövdesi. **Sadece** çağıran organizasyon **PRO veya ENTERPRISE planda** ise ve aktif &#x60;OrganizationSmsConfig&#x60; (sender_name dolu) varsa kabul edilir; aksi halde 403 &#x60;SMS_CUSTOMIZATION_NOT_ALLOWED&#x60; döner.  FREE/BASIC planda olan veya kendi SMS sağlayıcısı tanımlı olmayan müşterilerin marka itibarını korumak için sistem default sağlayıcısı (Codeck NetGSM) ile gönderim yapılır ve özel metin reddedilir. Kendi sağlayıcınızı tanımlamak için Dashboard → Organizasyon → SMS Ayarları sayfasını kullanın.  Boş string / null gönderirseniz \&quot;clear\&quot; olarak yorumlanır (gating&#39;den geçer). 
+   * Custom SMS gövdesi. **Sadece** çağıran organizasyon **PRO veya ENTERPRISE planda** ise ve aktif &#x60;OrganizationSmsConfig&#x60; (sender_name dolu) varsa kabul edilir; aksi halde 403 &#x60;SMS_CUSTOMIZATION_NOT_ALLOWED&#x60; döner.  FREE/BASIC planda olan veya kendi SMS sağlayıcısı tanımlı olmayan müşterilerin marka itibarını korumak için sistem default sağlayıcısı (Codeck NetGSM) ile gönderim yapılır ve özel metin reddedilir. Kendi sağlayıcınızı tanımlamak için Dashboard → Organizasyon → SMS Ayarları sayfasını kullanın.  Boş string / null gönderirseniz \&quot;clear\&quot; olarak yorumlanır (gating&#39;den geçer).
    * @return smsContent
    */
   @javax.annotation.Nullable
@@ -838,7 +1017,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Bu sözleşme için hatırlatma ayarlarını **şablon default&#39;unu override** ederek belirtir. Yollanmazsa şablonun &#x60;reminder_*&#x60; alanları kullanılır (PUT /api/templates/:id ile dashboard&#39;dan kaydedilen değerler); şablonda da yoksa &#x60;{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\&quot;email\&quot;]}&#x60; default&#39;u uygulanır. Demand oluşumunda &#x60;ReminderConfig&#x60; satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır. 
+   * Bu sözleşme için hatırlatma ayarlarını **şablon default&#39;unu override** ederek belirtir. Yollanmazsa şablonun &#x60;reminder_*&#x60; alanları kullanılır (PUT /api/templates/:id ile dashboard&#39;dan kaydedilen değerler); şablonda da yoksa &#x60;{enabled:true, intervals_hours:[48], max_reminders:1, channels:[\&quot;email\&quot;]}&#x60; default&#39;u uygulanır. Demand oluşumunda &#x60;ReminderConfig&#x60; satırı yaratılır ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.
    * @return reminderSettings
    */
   @javax.annotation.Nullable
@@ -862,7 +1041,7 @@ public class CreateDemandRequest {
   }
 
   /**
-   * Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları). 
+   * Sözleşme süre/yenileme takibi. Gönderilmezse şablonun takip politikası kullanılır. Tam alan kümesi ve doğrulama kuralları için &#x60;ContractTermInput&#x60; şemasına bakın (&#x60;PATCH /demands/{id}/term&#x60; ile AYNI alan adları).
    * @return termStartMode
    */
   @javax.annotation.Nullable
@@ -877,7 +1056,7 @@ public class CreateDemandRequest {
   public JsonNullable<TermStartModeEnum> getTermStartMode_JsonNullable() {
     return termStartMode;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_TERM_START_MODE)
   public void setTermStartMode_JsonNullable(JsonNullable<TermStartModeEnum> termStartMode) {
     this.termStartMode = termStartMode;
@@ -909,7 +1088,7 @@ public class CreateDemandRequest {
   public JsonNullable<LocalDate> getTermStartDate_JsonNullable() {
     return termStartDate;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_TERM_START_DATE)
   public void setTermStartDate_JsonNullable(JsonNullable<LocalDate> termStartDate) {
     this.termStartDate = termStartDate;
@@ -943,7 +1122,7 @@ public class CreateDemandRequest {
   public JsonNullable<Integer> getTermDurationMonths_JsonNullable() {
     return termDurationMonths;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_TERM_DURATION_MONTHS)
   public void setTermDurationMonths_JsonNullable(JsonNullable<Integer> termDurationMonths) {
     this.termDurationMonths = termDurationMonths;
@@ -975,7 +1154,7 @@ public class CreateDemandRequest {
   public JsonNullable<LocalDate> getTermFixedEndDate_JsonNullable() {
     return termFixedEndDate;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_TERM_FIXED_END_DATE)
   public void setTermFixedEndDate_JsonNullable(JsonNullable<LocalDate> termFixedEndDate) {
     this.termFixedEndDate = termFixedEndDate;
@@ -1007,7 +1186,7 @@ public class CreateDemandRequest {
   public JsonNullable<RenewalTypeEnum> getRenewalType_JsonNullable() {
     return renewalType;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_RENEWAL_TYPE)
   public void setRenewalType_JsonNullable(JsonNullable<RenewalTypeEnum> renewalType) {
     this.renewalType = renewalType;
@@ -1041,7 +1220,7 @@ public class CreateDemandRequest {
   public JsonNullable<Integer> getRenewalPeriodMonths_JsonNullable() {
     return renewalPeriodMonths;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_RENEWAL_PERIOD_MONTHS)
   public void setRenewalPeriodMonths_JsonNullable(JsonNullable<Integer> renewalPeriodMonths) {
     this.renewalPeriodMonths = renewalPeriodMonths;
@@ -1075,7 +1254,7 @@ public class CreateDemandRequest {
   public JsonNullable<Integer> getNoticeDays_JsonNullable() {
     return noticeDays;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_NOTICE_DAYS)
   public void setNoticeDays_JsonNullable(JsonNullable<Integer> noticeDays) {
     this.noticeDays = noticeDays;
@@ -1119,7 +1298,7 @@ public class CreateDemandRequest {
   public JsonNullable<List<Integer>> getReminderOffsets_JsonNullable() {
     return reminderOffsets;
   }
-  
+
   @JsonProperty(JSON_PROPERTY_REMINDER_OFFSETS)
   public void setReminderOffsets_JsonNullable(JsonNullable<List<Integer>> reminderOffsets) {
     this.reminderOffsets = reminderOffsets;
@@ -1166,7 +1345,11 @@ public class CreateDemandRequest {
       return false;
     }
     CreateDemandRequest createDemandRequest = (CreateDemandRequest) o;
-    return Objects.equals(this.templateId, createDemandRequest.templateId) &&
+    return equalsNullable(this.documentCollectionEnabled, createDemandRequest.documentCollectionEnabled) &&
+        equalsNullable(this.documentCollectionTemplateId, createDemandRequest.documentCollectionTemplateId) &&
+        equalsNullable(this.documentCollectionTiming, createDemandRequest.documentCollectionTiming) &&
+        equalsNullable(this.documentCollectionBlockSigning, createDemandRequest.documentCollectionBlockSigning) &&
+        Objects.equals(this.templateId, createDemandRequest.templateId) &&
         Objects.equals(this.title, createDemandRequest.title) &&
         Objects.equals(this.description, createDemandRequest.description) &&
         Objects.equals(this.idempotencyKey, createDemandRequest.idempotencyKey) &&
@@ -1204,7 +1387,7 @@ public class CreateDemandRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(templateId, title, description, idempotencyKey, force, partyMapping, documents, variables, documentVariables, hasTimestamp, hashCodeNullable(allowedSignatureVariants), dispatchNotifications, sendSmsNotifications, sendEmailNotifications, smsTitle, smsContent, emailContent, expiryDate, requireTcVerification, requireBiometricVerification, reminderSettings, hashCodeNullable(termStartMode), hashCodeNullable(termStartDate), hashCodeNullable(termDurationMonths), hashCodeNullable(termFixedEndDate), hashCodeNullable(renewalType), hashCodeNullable(renewalPeriodMonths), hashCodeNullable(noticeDays), hashCodeNullable(reminderOffsets), notifyCounterparty);
+    return Objects.hash(hashCodeNullable(documentCollectionEnabled), hashCodeNullable(documentCollectionTemplateId), hashCodeNullable(documentCollectionTiming), hashCodeNullable(documentCollectionBlockSigning), templateId, title, description, idempotencyKey, force, partyMapping, documents, variables, documentVariables, hasTimestamp, hashCodeNullable(allowedSignatureVariants), dispatchNotifications, sendSmsNotifications, sendEmailNotifications, smsTitle, smsContent, emailContent, expiryDate, requireTcVerification, requireBiometricVerification, reminderSettings, hashCodeNullable(termStartMode), hashCodeNullable(termStartDate), hashCodeNullable(termDurationMonths), hashCodeNullable(termFixedEndDate), hashCodeNullable(renewalType), hashCodeNullable(renewalPeriodMonths), hashCodeNullable(noticeDays), hashCodeNullable(reminderOffsets), notifyCounterparty);
   }
 
   private static <T> int hashCodeNullable(JsonNullable<T> a) {
@@ -1218,6 +1401,10 @@ public class CreateDemandRequest {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class CreateDemandRequest {\n");
+    sb.append("    documentCollectionEnabled: ").append(toIndentedString(documentCollectionEnabled)).append("\n");
+    sb.append("    documentCollectionTemplateId: ").append(toIndentedString(documentCollectionTemplateId)).append("\n");
+    sb.append("    documentCollectionTiming: ").append(toIndentedString(documentCollectionTiming)).append("\n");
+    sb.append("    documentCollectionBlockSigning: ").append(toIndentedString(documentCollectionBlockSigning)).append("\n");
     sb.append("    templateId: ").append(toIndentedString(templateId)).append("\n");
     sb.append("    title: ").append(toIndentedString(title)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
@@ -1291,6 +1478,26 @@ public class CreateDemandRequest {
     }
 
     StringJoiner joiner = new StringJoiner("&");
+
+    // add `document_collection_enabled` to the URL query string
+    if (getDocumentCollectionEnabled() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdocument_collection_enabled%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDocumentCollectionEnabled()))));
+    }
+
+    // add `document_collection_template_id` to the URL query string
+    if (getDocumentCollectionTemplateId() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdocument_collection_template_id%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDocumentCollectionTemplateId()))));
+    }
+
+    // add `document_collection_timing` to the URL query string
+    if (getDocumentCollectionTiming() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdocument_collection_timing%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDocumentCollectionTiming()))));
+    }
+
+    // add `document_collection_block_signing` to the URL query string
+    if (getDocumentCollectionBlockSigning() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdocument_collection_block_signing%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDocumentCollectionBlockSigning()))));
+    }
 
     // add `template_id` to the URL query string
     if (getTemplateId() != null) {

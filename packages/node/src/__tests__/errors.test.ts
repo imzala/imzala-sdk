@@ -104,3 +104,12 @@ describe('mapAxiosError', () => {
     }
   });
 });
+
+ it.each([[503, 'DOCUMENT_VERIFICATION_DISABLED', 'DOCUMENT_VERIFICATION_DISABLED'], [400, 'VERIFICATION_CONTEXT_REQUIRED', 'VERIFICATION_POLICY_CONFLICT'], [400, 'FUTURE_COLLECTION_ERROR', 'future reason']])('preserves collection envelope %s %s', (status, code, reason) => {
+   const body = { success: false, error: reason, code };
+   const err = mapAxiosError(fakeAxiosError(status as number, body));
+   expect(err.constructor).toBe(ImzalaError);
+   expect(err.statusCode).toBe(status);
+   expect(err.code).toBe(code);
+   expect(err.message).toBe(reason);
+ });

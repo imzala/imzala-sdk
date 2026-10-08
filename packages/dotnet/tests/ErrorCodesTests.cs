@@ -50,6 +50,11 @@ public class ErrorCodesTests
         ["ON_FIRST_SIGNATURE"] = "term_start_mode value",
         ["ON_COMPLETION"] = "term_start_mode value",
         ["AUTO_RENEW"] = "renewal_type value",
+        ["SOURCE_AND_FIELDS"] = "document verification policy value, not an error",
+        ["TR_RESIDENCE"] = "document type value, not an error",
+        ["BEFORE_SIGNING"] = "document collection timing value, not an error",
+        ["AFTER_SIGNING"] = "document collection timing value, not an error",
+        ["REAPPROVAL_REQUIRED"] = "timeline event_type value",
         ["FIXED_TERM"] = "renewal_type value",
     };
 
@@ -153,7 +158,7 @@ public class ErrorCodesTests
     public void Same_code_set_as_the_node_catalogue()
     {
         Assert.Equal(NodeCatalogue().Keys.OrderBy(k => k, StringComparer.Ordinal), ErrorCodes.Codes.Keys.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(98, ErrorCodes.Codes.Count);
+        Assert.Equal(109, ErrorCodes.Codes.Count);
     }
 
     [Fact]

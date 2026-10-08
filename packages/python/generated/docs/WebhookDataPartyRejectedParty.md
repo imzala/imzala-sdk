@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | 
-**first_name** | **str** |  | 
-**last_name** | **str** |  | 
-**email** | **str** |  | [optional] 
-**rejection_reason** | **str** | Tarafın belirttiği sebep (opsiyonel, modal textarea) | [optional] 
+**id** | **UUID** |  |
+**first_name** | **str** |  |
+**last_name** | **str** |  |
+**email** | **str** |  | [optional]
+**rejection_reason** | **str** | Tarafın belirttiği sebep (opsiyonel, modal textarea) | [optional]
 
 ## Example
 

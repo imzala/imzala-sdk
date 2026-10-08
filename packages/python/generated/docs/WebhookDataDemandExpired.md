@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**demand_id** | **UUID** |  | 
-**title** | **str** |  | 
-**expiry_date** | **datetime** |  | 
-**parties** | [**List[WebhookDataDemandExpiredPartiesInner]**](WebhookDataDemandExpiredPartiesInner.md) |  | 
+**demand_id** | **UUID** |  |
+**title** | **str** |  |
+**expiry_date** | **datetime** |  |
+**parties** | [**List[WebhookDataDemandExpiredPartiesInner]**](WebhookDataDemandExpiredPartiesInner.md) |  |
 
 ## Example
 

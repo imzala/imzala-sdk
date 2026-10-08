@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**page** | **int** | 1 tabanlı | [optional] 
-**count** | **int** |  | [optional] 
+**page** | **int** | 1 tabanlı | [optional]
+**count** | **int** |  | [optional]
 
 ## Example
 

@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
-**description** | **str** |  | [optional] 
-**category** | **str** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
+**description** | **str** |  | [optional]
+**category** | **str** |  | [optional]
 
 ## Example
 

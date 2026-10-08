@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**stamp_data** | [**StampData**](StampData.md) |  | 
-**document_id** | **str** | Verilirse kaşe bu belgede olmalıdır (çok belgeli zarf). | [optional] 
+**stamp_data** | [**StampData**](StampData.md) |  |
+**document_id** | **str** | Verilirse kaşe bu belgede olmalıdır (çok belgeli zarf). | [optional]
 
 ## Example
 

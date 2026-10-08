@@ -1,6 +1,6 @@
 # KycWebhookEnvelope
 
-KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type` enum\'u yalnız KYC olaylarını içerir. 
+KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type` enum\'u yalnız KYC olaylarını içerir.
 
 ## Properties
 

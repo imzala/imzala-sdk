@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.10.1
+- API version: 1.10.3
 
-- Build date: 2026-10-05T01:06:12.119322+03:00[Europe/Istanbul]
+- Build date: 2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.10.1 · **Son güncelleme:** 2026-10-01
+**Sürüm:** 1.10.3 · **Son güncelleme:** 2026-10-08
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -45,6 +45,23 @@ endpoint'i aynı bilgiyi JSON olarak döner.
 `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz
 ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası
 yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
+
+## Onaylayan (onay adımı)
+Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan
+oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan
+içeren sözleşmelerde davetler iki aşamada gönderilir:
+- Sözleşme oluşturulurken (`POST /api/v1/demands`,
+  `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`
+  çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.
+  Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla
+  davet edilir.
+- İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet
+  edilir.
+- Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;
+  `dispatch` çağrısı da kimseye davet göndermez.
+- Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
+
+Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
 
 ## Rate Limit
 - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -118,6 +135,10 @@ geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.
   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya
   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder.
 - `force: true` bu kişi-başı sınırları override etmez.
+- Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan
+  onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş
+  taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde
+  `skipped` olarak `reason: \"party_not_eligible\"` ile döner.
 
 ```bash
 # Default — SMS + e-posta birlikte (parti eligibility'sine göre)
@@ -323,7 +344,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.10.1</version>
+  <version>1.10.3</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -333,7 +354,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.10.1"
+compile "org.imzala:imzala-client-generated:1.10.3"
 ```
 
 ### Others
@@ -346,7 +367,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.10.1.jar`
+- `target/imzala-client-generated-1.10.3.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -485,6 +506,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsBulkPost200ResponseDataResultsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md)
+ - [ApiV1DemandsBulkPost400Response](docs/ApiV1DemandsBulkPost400Response.md)
  - [ApiV1DemandsBulkPostRequest](docs/ApiV1DemandsBulkPostRequest.md)
  - [ApiV1DemandsBulkPostRequestOptions](docs/ApiV1DemandsBulkPostRequestOptions.md)
  - [ApiV1DemandsBulkPostRequestRowsInner](docs/ApiV1DemandsBulkPostRequestRowsInner.md)
@@ -536,6 +558,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
  - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
  - [ApiV1DemandsPost402ResponseData](docs/ApiV1DemandsPost402ResponseData.md)
+ - [ApiV1DemandsPost404Response](docs/ApiV1DemandsPost404Response.md)
  - [ApiV1DemandsPost500Response](docs/ApiV1DemandsPost500Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
  - [ApiV1DemandsUploadPost402Response](docs/ApiV1DemandsUploadPost402Response.md)
@@ -585,6 +608,7 @@ Class | Method | HTTP request | Description
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
  - [DemandStatusStampItemsInner](docs/DemandStatusStampItemsInner.md)
+ - [DocumentCollectionPolicyError](docs/DocumentCollectionPolicyError.md)
  - [DocumentPartyDecision](docs/DocumentPartyDecision.md)
  - [DocumentProgress](docs/DocumentProgress.md)
  - [DocumentScopedSlugs](docs/DocumentScopedSlugs.md)
@@ -592,6 +616,7 @@ Class | Method | HTTP request | Description
  - [DocumentSelectionError](docs/DocumentSelectionError.md)
  - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
  - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
+ - [DocumentVerificationDisabledError](docs/DocumentVerificationDisabledError.md)
  - [EnvelopeDocument](docs/EnvelopeDocument.md)
  - [FieldLayoutDiagnostic](docs/FieldLayoutDiagnostic.md)
  - [FieldLayoutPreview](docs/FieldLayoutPreview.md)

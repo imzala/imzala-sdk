@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**FieldTemplateDetail**](FieldTemplateDetail.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**FieldTemplateDetail**](FieldTemplateDetail.md) |  | [optional]
 
 ## Example
 

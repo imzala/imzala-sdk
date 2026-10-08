@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**common** | **List[str]** |  | [optional] 
-**by_party** | **Dict[str, List[str]]** |  | [optional] 
+**common** | **List[str]** |  | [optional]
+**by_party** | **Dict[str, List[str]]** |  | [optional]
 
 ## Example
 

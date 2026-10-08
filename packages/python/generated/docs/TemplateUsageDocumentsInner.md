@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template_document_id** | **str** |  | [optional] 
-**title** | **str** |  | [optional] 
-**order** | **int** |  | [optional] 
-**default_included** | **bool** | &#x60;documents&#x60; seçimi gönderilmezse bu belge sözleşmeye girer mi. | [optional] 
+**template_document_id** | **str** |  | [optional]
+**title** | **str** |  | [optional]
+**order** | **int** |  | [optional]
+**default_included** | **bool** | &#x60;documents&#x60; seçimi gönderilmezse bu belge sözleşmeye girer mi. | [optional]
 
 ## Example
 

@@ -13,7 +13,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Kişi listesi
 
-API key sahibinin workspace'indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org'un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz. 
+API key sahibinin workspace'indeki kişileri (Contact / adres defteri) listeler. Kişisel workspace yalnızca sahibinin kişilerini, org workspace org'un kişilerini döner (IDOR-safe). İç eşleşme ve şifreleme alanları yanıta HİÇ konmaz.
 
 ### Example
 ```csharp
@@ -43,9 +43,9 @@ namespace Example
             var apiInstance = new ContactsApi(httpClient, config, httpClientHandler);
             var page = 1;  // int? |  (optional)  (default to 1)
             var limit = 25;  // int? |  (optional)  (default to 25)
-            var q = "q_example";  // string? | Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter) (optional) 
+            var q = "q_example";  // string? | Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter) (optional)
             var sort = "\"-createdAt\"";  // string? | Sıralama: createdAt | updatedAt | first_name | last_name | email ('-' öneki azalan) (optional)  (default to "-createdAt")
-            var companyId = "companyId_example";  // Guid? |  (optional) 
+            var companyId = "companyId_example";  // Guid? |  (optional)
             var archived = false;  // bool? | true → yalnızca arşivlenmiş kişiler; varsayılan false (aktif) (optional)  (default to false)
 
             try
@@ -125,7 +125,7 @@ catch (ApiException e)
 
 Kişi oluştur
 
-Workspace'e yeni bir kişi ekler. Aynı workspace'te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir. 
+Workspace'e yeni bir kişi ekler. Aynı workspace'te aynı e-posta veya telefona sahip aktif bir kişi varsa 409 (CONTACT_DUPLICATE) döner.  🔴 KVKK: 3. kişilere ait kişisel veriyi (ad/e-posta/telefon/TC) buraya yazan API key sahibi, o veri için veri sorumlusudur; aydınlatma ve hukuki dayanak yükümlülüğü kendisine aittir.
 
 ### Example
 ```csharp
@@ -153,7 +153,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new ContactsApi(httpClient, config, httpClientHandler);
-            var apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest | 
+            var apiV1ContactsPostRequest = new ApiV1ContactsPostRequest(); // ApiV1ContactsPostRequest |
 
             try
             {

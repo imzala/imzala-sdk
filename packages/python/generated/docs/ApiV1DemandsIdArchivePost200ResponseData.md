@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**archived_at** | **datetime** |  | [optional] 
+**archived_at** | **datetime** |  | [optional]
 
 ## Example
 

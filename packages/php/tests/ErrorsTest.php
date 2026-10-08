@@ -171,4 +171,16 @@ final class ErrorsTest extends TestCase
         $this->assertInstanceOf(ImzalaRateLimitException::class, $e);
         $this->assertSame(12.0, $e->getRetryAfter());
     }
+    public function testCollectionEnvelopesPreserveWrapperAndOrigin(): void
+    {
+        foreach ([[503, 'DOCUMENT_VERIFICATION_DISABLED', 'DOCUMENT_VERIFICATION_DISABLED'], [400, 'VERIFICATION_CONTEXT_REQUIRED', 'VERIFICATION_POLICY_CONFLICT'], [400, 'FUTURE_COLLECTION_ERROR', 'future reason']] as [$status, $code, $reason]) {
+            $body = (object) ['success' => false, 'error' => $reason, 'code' => $code];
+            foreach ([ErrorMapper::fromResponse($body, $status, []), ErrorMapper::fromException(new ApiException('error', $status, [], json_encode($body)))] as $err) {
+                $this->assertSame(ImzalaException::class, get_class($err));
+                $this->assertSame($status, $err->getStatusCode());
+                $this->assertSame($code, $err->getErrorCode());
+                $this->assertSame($reason, $err->getMessage());
+            }
+        }
+    }
 }

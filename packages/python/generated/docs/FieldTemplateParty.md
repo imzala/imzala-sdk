@@ -1,15 +1,15 @@
 # FieldTemplateParty
 
-Alan Şablonundaki tek rol. `order`, `POST /api/v1/demands/upload` gövdesindeki `parties` dizisinin sırasıdır. 
+Alan Şablonundaki tek rol. `order`, `POST /api/v1/demands/upload` gövdesindeki `parties` dizisinin sırasıdır.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**order** | **int** |  | [optional] 
-**label** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**order** | **int** |  | [optional]
+**label** | **str** |  | [optional]
+**is_required** | **bool** |  | [optional]
 
 ## Example
 

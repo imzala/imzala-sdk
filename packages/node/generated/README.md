@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.10.1
+## @imzala/server-sdk-node@1.10.3
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.10.1 --save
+npm install @imzala/server-sdk-node@1.10.3 --save
 ```
 
 _unPublished (not recommended):_
@@ -107,6 +107,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsBulkPost200ResponseDataResultsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md)
  - [ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner](docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md)
+ - [ApiV1DemandsBulkPost400Response](docs/ApiV1DemandsBulkPost400Response.md)
  - [ApiV1DemandsBulkPostRequest](docs/ApiV1DemandsBulkPostRequest.md)
  - [ApiV1DemandsBulkPostRequestOptions](docs/ApiV1DemandsBulkPostRequestOptions.md)
  - [ApiV1DemandsBulkPostRequestRowsInner](docs/ApiV1DemandsBulkPostRequestRowsInner.md)
@@ -158,6 +159,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsPost400Response](docs/ApiV1DemandsPost400Response.md)
  - [ApiV1DemandsPost402Response](docs/ApiV1DemandsPost402Response.md)
  - [ApiV1DemandsPost402ResponseData](docs/ApiV1DemandsPost402ResponseData.md)
+ - [ApiV1DemandsPost404Response](docs/ApiV1DemandsPost404Response.md)
  - [ApiV1DemandsPost500Response](docs/ApiV1DemandsPost500Response.md)
  - [ApiV1DemandsUploadPost201Response](docs/ApiV1DemandsUploadPost201Response.md)
  - [ApiV1DemandsUploadPost402Response](docs/ApiV1DemandsUploadPost402Response.md)
@@ -207,6 +209,7 @@ Class | Method | HTTP request | Description
  - [DemandStatus](docs/DemandStatus.md)
  - [DemandStatusPartiesInner](docs/DemandStatusPartiesInner.md)
  - [DemandStatusStampItemsInner](docs/DemandStatusStampItemsInner.md)
+ - [DocumentCollectionPolicyError](docs/DocumentCollectionPolicyError.md)
  - [DocumentPartyDecision](docs/DocumentPartyDecision.md)
  - [DocumentProgress](docs/DocumentProgress.md)
  - [DocumentScopedSlugs](docs/DocumentScopedSlugs.md)
@@ -214,6 +217,7 @@ Class | Method | HTTP request | Description
  - [DocumentSelectionError](docs/DocumentSelectionError.md)
  - [DocumentSelectionErrorDetails](docs/DocumentSelectionErrorDetails.md)
  - [DocumentSelectionInput](docs/DocumentSelectionInput.md)
+ - [DocumentVerificationDisabledError](docs/DocumentVerificationDisabledError.md)
  - [EnvelopeDocument](docs/EnvelopeDocument.md)
  - [FieldLayoutDiagnostic](docs/FieldLayoutDiagnostic.md)
  - [FieldLayoutPreview](docs/FieldLayoutPreview.md)

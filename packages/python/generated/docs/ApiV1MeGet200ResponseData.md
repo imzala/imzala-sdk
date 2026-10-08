@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**email** | **str** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**workspace** | [**ApiV1MeGet200ResponseDataWorkspace**](ApiV1MeGet200ResponseDataWorkspace.md) |  | [optional] 
-**credits** | [**ApiV1MeGet200ResponseDataCredits**](ApiV1MeGet200ResponseDataCredits.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**email** | **str** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
+**workspace** | [**ApiV1MeGet200ResponseDataWorkspace**](ApiV1MeGet200ResponseDataWorkspace.md) |  | [optional]
+**credits** | [**ApiV1MeGet200ResponseDataCredits**](ApiV1MeGet200ResponseDataCredits.md) |  | [optional]
 
 ## Example
 

@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**TemplateDetail**](TemplateDetail.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**TemplateDetail**](TemplateDetail.md) |  | [optional]
 
 ## Example
 

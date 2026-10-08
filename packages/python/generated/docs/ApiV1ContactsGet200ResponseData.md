@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**contacts** | [**List[ContactSummary]**](ContactSummary.md) |  | [optional] 
-**total** | **int** |  | [optional] 
-**page** | **int** |  | [optional] 
-**limit** | **int** |  | [optional] 
+**contacts** | [**List[ContactSummary]**](ContactSummary.md) |  | [optional]
+**total** | **int** |  | [optional]
+**page** | **int** |  | [optional]
+**limit** | **int** |  | [optional]
 
 ## Example
 

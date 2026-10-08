@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **str** |  | 
-**message** | **str** |  | 
-**retry_after_seconds** | **int** | Sadece RATE_LIMITED&#39;de doludur | [optional] 
+**code** | **str** |  |
+**message** | **str** |  |
+**retry_after_seconds** | **int** | Sadece RATE_LIMITED&#39;de doludur | [optional]
 
 ## Example
 

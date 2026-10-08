@@ -164,4 +164,17 @@ class ErrorsTest {
     assertEquals(500, err.getStatusCode());
     assertTrue(err.getMessage().contains("apiV1SomeMethod call failed with"));
   }
+  @Test
+  void collection_envelopes_preserve_wrapper_and_origin() {
+    String[][] cases = {{"503", "DOCUMENT_VERIFICATION_DISABLED", "DOCUMENT_VERIFICATION_DISABLED"}, {"400", "VERIFICATION_CONTEXT_REQUIRED", "VERIFICATION_POLICY_CONFLICT"}, {"400", "FUTURE_COLLECTION_ERROR", "future reason"}};
+    for (String[] c : cases) {
+      int status = Integer.parseInt(c[0]);
+      String body = "{\"success\":false,\"error\":\"" + c[2] + "\",\"code\":\"" + c[1] + "\"}";
+      ImzalaException err = ErrorMapper.map(fakeApiException(status, body));
+      assertEquals(ImzalaException.class, err.getClass());
+      assertEquals(status, err.getStatusCode());
+      assertEquals(c[1], err.getCode());
+      assertEquals(c[2], err.getMessage());
+    }
+  }
 }

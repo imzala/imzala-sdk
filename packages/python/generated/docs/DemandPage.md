@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **int** |  | 
-**order** | **int** | 1-based sayfa sırası | 
+**id** | **int** |  |
+**order** | **int** | 1-based sayfa sırası |
 
 ## Example
 

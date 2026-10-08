@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**demands** | [**List[ApiV1DemandsGet200ResponseDataDemandsInner]**](ApiV1DemandsGet200ResponseDataDemandsInner.md) |  | [optional] 
-**total** | **int** |  | [optional] 
-**page** | **int** |  | [optional] 
-**limit** | **int** |  | [optional] 
+**demands** | [**List[ApiV1DemandsGet200ResponseDataDemandsInner]**](ApiV1DemandsGet200ResponseDataDemandsInner.md) |  | [optional]
+**total** | **int** |  | [optional]
+**page** | **int** |  | [optional]
+**limit** | **int** |  | [optional]
 
 ## Example
 

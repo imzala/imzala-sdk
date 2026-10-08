@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**item_id** | **int** |  | [optional] 
-**page_id** | **int** |  | [optional] 
-**document_id** | **str** |  | [optional] 
-**party_id** | **UUID** |  | [optional] 
-**source** | **str** | Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur) | [optional] 
-**is_required** | **bool** |  | [optional] 
-**stamp_data** | **Dict[str, object]** | Güncelleme sonrası kaşe verisinin tamamı. | [optional] 
+**item_id** | **int** |  | [optional]
+**page_id** | **int** |  | [optional]
+**document_id** | **str** |  | [optional]
+**party_id** | **UUID** |  | [optional]
+**source** | **str** | Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur) | [optional]
+**is_required** | **bool** |  | [optional]
+**stamp_data** | **Dict[str, object]** | Güncelleme sonrası kaşe verisinin tamamı. | [optional]
 
 ## Example
 

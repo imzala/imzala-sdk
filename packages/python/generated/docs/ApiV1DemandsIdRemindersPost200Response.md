@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**ApiV1DemandsIdRemindersPost200ResponseData**](ApiV1DemandsIdRemindersPost200ResponseData.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**ApiV1DemandsIdRemindersPost200ResponseData**](ApiV1DemandsIdRemindersPost200ResponseData.md) |  | [optional]
 
 ## Example
 

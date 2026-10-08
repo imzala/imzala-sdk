@@ -5,16 +5,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**title** | **str** |  | [optional] 
-**status** | **str** |  | [optional] 
-**created_at** | **datetime** |  | [optional] 
-**completed_at** | **datetime** |  | [optional] 
-**term_end_date** | **date** | Takip edilen bitiş tarihi; takip yoksa &#x60;null&#x60; (bkz. &#x60;GET /demands/{id}&#x60; → &#x60;term&#x60;). | [optional] 
-**archived_at** | **datetime** |  | [optional] 
-**parties_total** | **int** |  | [optional] 
-**parties_signed** | **int** |  | [optional] 
-**pdf_url** | **str** | COMPLETED ise imzalı PDF public URL&#39;i | [optional] 
+**id** | **UUID** |  | [optional]
+**title** | **str** |  | [optional]
+**status** | **str** |  | [optional]
+**created_at** | **datetime** |  | [optional]
+**completed_at** | **datetime** |  | [optional]
+**term_end_date** | **date** | Takip edilen bitiş tarihi; takip yoksa &#x60;null&#x60; (bkz. &#x60;GET /demands/{id}&#x60; → &#x60;term&#x60;). | [optional]
+**archived_at** | **datetime** |  | [optional]
+**parties_total** | **int** |  | [optional]
+**parties_signed** | **int** |  | [optional]
+**pdf_url** | **str** | COMPLETED ise imzalı PDF public URL&#39;i | [optional]
 
 ## Example
 

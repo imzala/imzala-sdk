@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**timestamps** | [**List[TimestampListItem]**](TimestampListItem.md) |  | [optional] 
-**total** | **int** |  | [optional] 
-**page** | **int** |  | [optional] 
-**limit** | **int** |  | [optional] 
+**timestamps** | [**List[TimestampListItem]**](TimestampListItem.md) |  | [optional]
+**total** | **int** |  | [optional]
+**page** | **int** |  | [optional]
+**limit** | **int** |  | [optional]
 
 ## Example
 

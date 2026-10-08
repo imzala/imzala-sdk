@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | **str** |  | [optional] 
-**code** | **str** |  | [optional] 
-**demand_id** | **UUID** |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**code** | **str** |  | [optional]
+**demand_id** | **UUID** |  | [optional]
 
 ## Example
 

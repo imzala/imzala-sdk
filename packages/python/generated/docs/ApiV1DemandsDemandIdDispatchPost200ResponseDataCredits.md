@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**charged** | **int** | Bu istekte düşülen kredi. | [optional] 
-**refunded** | **int** | Bu istekte iade edilen kredi. | [optional] 
-**expected** | **int** | Sözleşmenin toplam beklenen maliyeti. | [optional] 
+**charged** | **int** | Bu istekte düşülen kredi. | [optional]
+**refunded** | **int** | Bu istekte iade edilen kredi. | [optional]
+**expected** | **int** | Sözleşmenin toplam beklenen maliyeti. | [optional]
 
 ## Example
 

@@ -4,16 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**PartyId** | **Guid** |  | [optional] 
-**Name** | **string** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme | [optional] 
-**EmailMasked** | **string** | Maskeli e-posta (ay***@example.com) | [optional] 
-**Signed** | **bool** |  | [optional] 
-**SignedAt** | **DateTime?** |  | [optional] 
-**Rejected** | **bool** |  | [optional] 
-**RejectedAt** | **DateTime?** |  | [optional] 
-**SigningUrl** | **string** |  | [optional] 
-**Locale** | **SignerLocale** |  | [optional] 
-**SignedLocale** | **SignerLocale** |  | [optional] 
+**PartyId** | **Guid** |  | [optional]
+**Name** | **string** | Kısaltılmış görünen ad (Ahmet Y.) — KVKK maskeleme | [optional]
+**EmailMasked** | **string** | Maskeli e-posta (ay***@example.com) | [optional]
+**Signed** | **bool** |  | [optional]
+**SignedAt** | **DateTime?** |  | [optional]
+**Rejected** | **bool** |  | [optional]
+**RejectedAt** | **DateTime?** |  | [optional]
+**SigningUrl** | **string** |  | [optional]
+**Locale** | **SignerLocale** |  | [optional]
+**SignedLocale** | **SignerLocale** |  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

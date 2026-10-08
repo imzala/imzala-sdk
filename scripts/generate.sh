@@ -139,6 +139,8 @@ for entry in "${LANG_TABLE[@]}"; do
     echo "[generate] java: $n multipart text fields set to UTF-8"
   fi
 
+  node scripts/normalize-generated-whitespace.mjs "$outdir"
+
   echo "[generate] === $key done ==="
 done
 

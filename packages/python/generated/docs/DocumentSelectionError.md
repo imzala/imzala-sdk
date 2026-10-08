@@ -1,15 +1,15 @@
 # DocumentSelectionError
 
-`400 INVALID_DOCUMENT_SELECTION` gövdesi. `details.reason` hatanın sınıfını, `details.document_ids` (varsa) yalnız isteğinizde gönderdiğiniz ve soruna yol açan kimlikleri taşır. 
+`400 INVALID_DOCUMENT_SELECTION` gövdesi. `details.reason` hatanın sınıfını, `details.document_ids` (varsa) yalnız isteğinizde gönderdiğiniz ve soruna yol açan kimlikleri taşır.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | **str** |  | [optional] 
-**code** | **str** |  | [optional] 
-**details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**code** | **str** |  | [optional]
+**details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional]
 
 ## Example
 

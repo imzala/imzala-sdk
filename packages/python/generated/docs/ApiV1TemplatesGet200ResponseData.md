@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**templates** | [**List[TemplateSummary]**](TemplateSummary.md) |  | [optional] 
-**total** | **int** |  | [optional] 
-**page** | **int** |  | [optional] 
-**limit** | **int** |  | [optional] 
+**templates** | [**List[TemplateSummary]**](TemplateSummary.md) |  | [optional]
+**total** | **int** |  | [optional]
+**page** | **int** |  | [optional]
+**limit** | **int** |  | [optional]
 
 ## Example
 

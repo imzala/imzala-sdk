@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_id** | **UUID** |  | [optional] 
-**sms** | **bool** |  | [optional] 
-**email** | **bool** |  | [optional] 
-**whatsapp** | **bool** |  | [optional] 
-**error** | **str** | Yalnız o taraf için gönderim patladığında döner. | [optional] 
+**party_id** | **UUID** |  | [optional]
+**sms** | **bool** |  | [optional]
+**email** | **bool** |  | [optional]
+**whatsapp** | **bool** |  | [optional]
+**error** | **str** | Yalnız o taraf için gönderim patladığında döner. | [optional]
 
 ## Example
 

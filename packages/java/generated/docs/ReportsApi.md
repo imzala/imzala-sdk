@@ -15,7 +15,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Rapor / özet (agrege sözleşme durum sayıları)
 
-API key sahibinin workspace&#39;indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org&#39;un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT). 
+API key sahibinin workspace&#39;indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org&#39;un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT).
 
 ### Example
 
@@ -32,7 +32,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -84,7 +84,7 @@ This endpoint does not need any parameter.
 
 Rapor / özet (agrege sözleşme durum sayıları)
 
-API key sahibinin workspace&#39;indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org&#39;un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT). 
+API key sahibinin workspace&#39;indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org&#39;un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT).
 
 ### Example
 
@@ -102,7 +102,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");

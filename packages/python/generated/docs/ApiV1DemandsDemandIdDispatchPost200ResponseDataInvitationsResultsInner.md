@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_id** | **UUID** |  | [optional] 
-**sms** | **bool** |  | [optional] 
-**email** | **bool** |  | [optional] 
-**whatsapp** | **bool** |  | [optional] 
-**error** | **str** | Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  | [optional] 
+**party_id** | **UUID** |  | [optional]
+**sms** | **bool** |  | [optional]
+**email** | **bool** |  | [optional]
+**whatsapp** | **bool** |  | [optional]
+**error** | **str** | Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  | [optional]
 
 ## Example
 

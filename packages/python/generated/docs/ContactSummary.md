@@ -1,29 +1,29 @@
 # ContactSummary
 
-Kişi (Contact) public görünümü. İç eşleşme alanları (matched_user_id / match_via / matched_at) ve şifreleme sütunları (*_enc / *_hash) DÂHİL DEĞİLDİR. 
+Kişi (Contact) public görünümü. İç eşleşme alanları (matched_user_id / match_via / matched_at) ve şifreleme sütunları (*_enc / *_hash) DÂHİL DEĞİLDİR.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
-**government_id** | **str** |  | [optional] 
-**government_id_serial** | **str** |  | [optional] 
-**job_title** | **str** |  | [optional] 
-**company_id** | **UUID** |  | [optional] 
-**company** | [**ContactSummaryCompany**](ContactSummaryCompany.md) |  | [optional] 
-**notes** | **str** |  | [optional] 
-**address_country** | **str** |  | [optional] 
-**address_city** | **str** |  | [optional] 
-**address_district** | **str** |  | [optional] 
-**address_line** | **str** |  | [optional] 
-**archived_at** | **datetime** |  | [optional] 
-**created_at** | **datetime** |  | [optional] 
-**updated_at** | **datetime** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
+**government_id** | **str** |  | [optional]
+**government_id_serial** | **str** |  | [optional]
+**job_title** | **str** |  | [optional]
+**company_id** | **UUID** |  | [optional]
+**company** | [**ContactSummaryCompany**](ContactSummaryCompany.md) |  | [optional]
+**notes** | **str** |  | [optional]
+**address_country** | **str** |  | [optional]
+**address_city** | **str** |  | [optional]
+**address_district** | **str** |  | [optional]
+**address_line** | **str** |  | [optional]
+**archived_at** | **datetime** |  | [optional]
+**created_at** | **datetime** |  | [optional]
+**updated_at** | **datetime** |  | [optional]
 
 ## Example
 

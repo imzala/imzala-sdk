@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**ApiV1TemplatesGet200ResponseData**](ApiV1TemplatesGet200ResponseData.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**ApiV1TemplatesGet200ResponseData**](ApiV1TemplatesGet200ResponseData.md) |  | [optional]
 
 ## Example
 

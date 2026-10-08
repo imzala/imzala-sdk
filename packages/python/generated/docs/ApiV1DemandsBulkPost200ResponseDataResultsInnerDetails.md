@@ -6,9 +6,9 @@ Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document |
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**reason** | **str** |  | [optional] 
-**document_ids** | **List[str]** |  | [optional] 
-**path** | **str** |  | [optional] 
+**reason** | **str** |  | [optional]
+**document_ids** | **List[str]** |  | [optional]
+**path** | **str** |  | [optional]
 
 ## Example
 

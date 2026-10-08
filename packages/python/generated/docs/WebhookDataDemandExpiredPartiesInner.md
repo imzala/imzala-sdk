@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
-**signed** | **bool** | Süre dolduğunda imzalamış mıydı? | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
+**email** | **str** |  | [optional]
+**signed** | **bool** | Süre dolduğunda imzalamış mıydı? | [optional]
 
 ## Example
 

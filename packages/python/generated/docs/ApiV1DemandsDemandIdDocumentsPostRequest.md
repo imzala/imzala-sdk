@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**title** | **str** | Belge başlığı. Boş olamaz. | 
+**title** | **str** | Belge başlığı. Boş olamaz. |
 **doc_kind** | **str** | &#x60;KVKK_CONSENT&#x60; ile &#x60;is_required: true&#x60; **birlikte gönderilemez** (400 &#x60;CONSENT_CANNOT_BE_REQUIRED&#x60; — açık rıza reddedilebilir olmak zorundadır). &#x60;PREINFO&#x60; ile &#x60;is_required: false&#x60; **birlikte gönderilemez** (400 &#x60;PREINFO_MUST_BE_REQUIRED&#x60;).  | [optional] [default to 'OTHER']
 **is_required** | **bool** |  | [optional] [default to True]
 **signature_required** | **bool** |  | [optional] [default to True]

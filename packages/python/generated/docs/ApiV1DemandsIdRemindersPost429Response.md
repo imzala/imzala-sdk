@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | [**ApiV1DemandsIdRemindersPost429ResponseError**](ApiV1DemandsIdRemindersPost429ResponseError.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | [**ApiV1DemandsIdRemindersPost429ResponseError**](ApiV1DemandsIdRemindersPost429ResponseError.md) |  | [optional]
 
 ## Example
 

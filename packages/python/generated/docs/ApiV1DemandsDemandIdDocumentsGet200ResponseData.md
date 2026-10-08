@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**documents** | [**List[EnvelopeDocument]**](EnvelopeDocument.md) |  | [optional] 
+**documents** | [**List[EnvelopeDocument]**](EnvelopeDocument.md) |  | [optional]
 
 ## Example
 

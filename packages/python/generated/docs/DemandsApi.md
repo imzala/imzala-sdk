@@ -42,6 +42,11 @@ Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve
 her birine imza daveti gönderir (DocuSign "bulk send" modeli). Her
 satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
 
+**Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa her
+satırda önce yalnızca onay bekleyen onaylayanlar davet edilir;
+imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+onaylayan reddederse imzacılar davet edilmez.
+
 **Davranış:**
 - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler
   istemci tarafında 10'arlı parçalara bölünür.
@@ -92,8 +97,18 @@ satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
   başka workspace'in şablonu 404).
 - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı
   satırlar `failed` olsa bile). Yalnızca ön-kontrol redleri
-  (cap/kredi/sahiplik) 400/402/404 döner.
+  (cap/kredi/sahiplik/Belge Toplama politikası) 400/402/404/503 döner.
+  Belge Toplama reddi HTTP 200 results[].failed sonucu değildir.
 - `X-Workspace-Id` header'ı ile organizasyon workspace'i seçilebilir.
+
+Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler
+oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama
+şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner.
+Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir;
+`NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama
+politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED`
+döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı
+veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.
 
 Rate limit: 5 istek/dakika (API key başına).
 
@@ -130,7 +145,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    api_v1_demands_bulk_post_request = imzala_client.ApiV1DemandsBulkPostRequest() # ApiV1DemandsBulkPostRequest | 
+    api_v1_demands_bulk_post_request = imzala_client.ApiV1DemandsBulkPostRequest() # ApiV1DemandsBulkPostRequest |
     x_workspace_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   `WORKSPACE_MISMATCH` döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (`Not a member of this organization`).  (optional)
 
     try:
@@ -149,8 +164,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **api_v1_demands_bulk_post_request** | [**ApiV1DemandsBulkPostRequest**](ApiV1DemandsBulkPostRequest.md)|  | 
- **x_workspace_id** | **UUID**| Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  | [optional] 
+ **api_v1_demands_bulk_post_request** | [**ApiV1DemandsBulkPostRequest**](ApiV1DemandsBulkPostRequest.md)|  |
+ **x_workspace_id** | **UUID**| Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   &#x60;WORKSPACE_MISMATCH&#x60; döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (&#x60;Not a member of this organization&#x60;).  | [optional]
 
 ### Return type
 
@@ -170,13 +185,14 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Batch tamamlandı (kısmi başarı dahil). &#x60;results&#x60; giriş sırasında, her satır &#x60;row_index&#x60; ile eşlenir.  |  -  |
-**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.  |  -  |
+**400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **402** | INSUFFICIENT_CREDITS: N satırın toplam tahmini maliyeti için yeterli kredi yok (ön kontrol; hiçbir sözleşme yaratılmadı). Satır bazlı yetersiz kredi durumları burada DEĞİL, 200 yanıtı içindeki &#x60;results[].status: \&quot;failed\&quot;&#x60; altında döner.  |  -  |
 **403** | INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED |  -  |
-**404** | Kayıt bulunamadı |  -  |
+**404** | Şablon bulunamadı veya bu çalışma alanına ait değil. DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND: Belge Toplama seçimi bulunamadı, arşivli, kapsam dışı veya kimlik metin değil. Bu durumlar aynı kodu kullanır; hiçbir sözleşme oluşturulmaz.  |  -  |
 **409** | &#x60;QES_NOT_SUPPORTED_MULTI_DOCUMENT&#x60;: güvenli elektronik imza birden çok belge içeren zarflarda henüz desteklenmiyor.  |  -  |
 **429** | İstek limiti aşıldı (API anahtarı başına 5 toplu istek/dakika) |  -  |
+**503** | DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi işlemleri ve davetlerden önce reddedilir; otomatik tekrar yerine şablon seçimi/politikası veya hizmet kullanılabilirliği düzeltilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -188,6 +204,11 @@ Zarfı imzaya gönder (yayınla + davet)
 Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise
 sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/
 WhatsApp) ile bilgilendirir.
+
+**Onaylayan:** Sözleşmede Onaylayan varsa bu uç önce yalnızca onay
+bekleyen onaylayanları davet eder; imzacılar tüm onaylayanlar
+onayladıktan sonra davet edilir. Bir onaylayan reddettiyse bu uç
+kimseye davet göndermez; onay vermiş onaylayan yeniden davet edilmez.
 
 🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı
 (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim
@@ -245,7 +266,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     api_v1_demands_demand_id_dispatch_post_request = imzala_client.ApiV1DemandsDemandIdDispatchPostRequest() # ApiV1DemandsDemandIdDispatchPostRequest |  (optional)
 
     try:
@@ -264,8 +285,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **api_v1_demands_demand_id_dispatch_post_request** | [**ApiV1DemandsDemandIdDispatchPostRequest**](ApiV1DemandsDemandIdDispatchPostRequest.md)|  | [optional] 
+ **demand_id** | **UUID**|  |
+ **api_v1_demands_demand_id_dispatch_post_request** | [**ApiV1DemandsDemandIdDispatchPostRequest**](ApiV1DemandsDemandIdDispatchPostRequest.md)|  | [optional]
 
 ### Return type
 
@@ -340,9 +361,9 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    api_v1_demands_demand_id_documents_doc_id_assignments_put_request = imzala_client.ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest() # ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    api_v1_demands_demand_id_documents_doc_id_assignments_put_request = imzala_client.ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest() # ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest |
 
     try:
         # Belgeye imzacı ata (tam-küme replace)
@@ -360,9 +381,9 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **doc_id** | **UUID**|  | 
- **api_v1_demands_demand_id_documents_doc_id_assignments_put_request** | [**ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest**](ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest.md)|  | 
+ **demand_id** | **UUID**|  |
+ **doc_id** | **UUID**|  |
+ **api_v1_demands_demand_id_documents_doc_id_assignments_put_request** | [**ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest**](ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest.md)|  |
 
 ### Return type
 
@@ -429,8 +450,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Belgeyi zarftan sil
@@ -448,8 +469,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **doc_id** | **UUID**|  | 
+ **demand_id** | **UUID**|  |
+ **doc_id** | **UUID**|  |
 
 ### Return type
 
@@ -518,9 +539,9 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    api_v1_demands_demand_id_documents_doc_id_patch_request = imzala_client.ApiV1DemandsDemandIdDocumentsDocIdPatchRequest() # ApiV1DemandsDemandIdDocumentsDocIdPatchRequest | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    doc_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    api_v1_demands_demand_id_documents_doc_id_patch_request = imzala_client.ApiV1DemandsDemandIdDocumentsDocIdPatchRequest() # ApiV1DemandsDemandIdDocumentsDocIdPatchRequest |
 
     try:
         # Belge metadata güncelle
@@ -538,9 +559,9 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **doc_id** | **UUID**|  | 
- **api_v1_demands_demand_id_documents_doc_id_patch_request** | [**ApiV1DemandsDemandIdDocumentsDocIdPatchRequest**](ApiV1DemandsDemandIdDocumentsDocIdPatchRequest.md)|  | 
+ **demand_id** | **UUID**|  |
+ **doc_id** | **UUID**|  |
+ **api_v1_demands_demand_id_documents_doc_id_patch_request** | [**ApiV1DemandsDemandIdDocumentsDocIdPatchRequest**](ApiV1DemandsDemandIdDocumentsDocIdPatchRequest.md)|  |
 
 ### Return type
 
@@ -619,7 +640,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     view = 'view_example' # str | `wizard` → tam DTO (`assigned_party_ids` + `decision_count` dahil). (optional)
 
     try:
@@ -638,8 +659,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **view** | **str**| &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). | [optional] 
+ **demand_id** | **UUID**|  |
+ **view** | **str**| &#x60;wizard&#x60; → tam DTO (&#x60;assigned_party_ids&#x60; + &#x60;decision_count&#x60; dahil). | [optional]
 
 ### Return type
 
@@ -707,8 +728,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    api_v1_demands_demand_id_documents_order_put_request = imzala_client.ApiV1DemandsDemandIdDocumentsOrderPutRequest() # ApiV1DemandsDemandIdDocumentsOrderPutRequest | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    api_v1_demands_demand_id_documents_order_put_request = imzala_client.ApiV1DemandsDemandIdDocumentsOrderPutRequest() # ApiV1DemandsDemandIdDocumentsOrderPutRequest |
 
     try:
         # Zarftaki belgelerin sırasını değiştir
@@ -726,8 +747,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **api_v1_demands_demand_id_documents_order_put_request** | [**ApiV1DemandsDemandIdDocumentsOrderPutRequest**](ApiV1DemandsDemandIdDocumentsOrderPutRequest.md)|  | 
+ **demand_id** | **UUID**|  |
+ **api_v1_demands_demand_id_documents_order_put_request** | [**ApiV1DemandsDemandIdDocumentsOrderPutRequest**](ApiV1DemandsDemandIdDocumentsOrderPutRequest.md)|  |
 
 ### Return type
 
@@ -797,8 +818,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    api_v1_demands_demand_id_documents_post_request = imzala_client.ApiV1DemandsDemandIdDocumentsPostRequest() # ApiV1DemandsDemandIdDocumentsPostRequest | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    api_v1_demands_demand_id_documents_post_request = imzala_client.ApiV1DemandsDemandIdDocumentsPostRequest() # ApiV1DemandsDemandIdDocumentsPostRequest |
 
     try:
         # Zarfa metadata-only belge ekle
@@ -816,8 +837,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **api_v1_demands_demand_id_documents_post_request** | [**ApiV1DemandsDemandIdDocumentsPostRequest**](ApiV1DemandsDemandIdDocumentsPostRequest.md)|  | 
+ **demand_id** | **UUID**|  |
+ **api_v1_demands_demand_id_documents_post_request** | [**ApiV1DemandsDemandIdDocumentsPostRequest**](ApiV1DemandsDemandIdDocumentsPostRequest.md)|  |
 
 ### Return type
 
@@ -892,10 +913,10 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    demand_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     file = None # bytes | PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya.
     idempotency_key = 'idempotency_key_example' # str | Zorunlu tekrar-koruma anahtarı.
-    title = 'title_example' # str | 
+    title = 'title_example' # str |
     doc_kind = OTHER # str |  (optional) (default to OTHER)
     is_required = true # str | Multipart alanı — string olarak gönderilir. (optional) (default to true)
 
@@ -915,10 +936,10 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **demand_id** | **UUID**|  | 
- **file** | **bytes**| PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. | 
- **idempotency_key** | **str**| Zorunlu tekrar-koruma anahtarı. | 
- **title** | **str**|  | 
+ **demand_id** | **UUID**|  |
+ **file** | **bytes**| PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya. |
+ **idempotency_key** | **str**| Zorunlu tekrar-koruma anahtarı. |
+ **title** | **str**|  |
  **doc_kind** | **str**|  | [optional] [default to OTHER]
  **is_required** | **str**| Multipart alanı — string olarak gönderilir. | [optional] [default to true]
 
@@ -1017,15 +1038,15 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **q** | **str**| Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] 
- **var_from** | **date**|  | [optional] 
- **to** | **date**|  | [optional] 
- **template_id** | **UUID**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **q** | **str**| Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional]
+ **var_from** | **date**|  | [optional]
+ **to** | **date**|  | [optional]
+ **template_id** | **UUID**|  | [optional]
  **page** | **int**|  | [optional] [default to 1]
  **limit** | **int**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20]
- **sort** | **str**| alan:yön (ör. createdAt:desc) | [optional] 
- **archived** | **str**| Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  | [optional] 
+ **sort** | **str**| alan:yön (ör. createdAt:desc) | [optional]
+ **archived** | **str**| Arşiv durumu filtresi. &#x60;exclude&#x60;: yalnız arşivsiz sözleşmeler. &#x60;only&#x60;: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan &#x60;include&#x60;: tüm sözleşmeler (arşivli ve arşivsiz).  | [optional]
 
 ### Return type
 
@@ -1093,7 +1114,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Sözleşmeyi arşivle
@@ -1111,7 +1132,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -1177,7 +1198,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     document_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | Zarftaki belgenin kimliği.
 
     try:
@@ -1196,8 +1217,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **document_id** | **UUID**| Zarftaki belgenin kimliği. | 
+ **id** | **UUID**|  |
+ **document_id** | **UUID**| Zarftaki belgenin kimliği. |
 
 ### Return type
 
@@ -1263,7 +1284,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     api_v1_demands_id_cancel_post_request = imzala_client.ApiV1DemandsIdCancelPostRequest() # ApiV1DemandsIdCancelPostRequest |  (optional)
 
     try:
@@ -1282,8 +1303,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **api_v1_demands_id_cancel_post_request** | [**ApiV1DemandsIdCancelPostRequest**](ApiV1DemandsIdCancelPostRequest.md)|  | [optional] 
+ **id** | **UUID**|  |
+ **api_v1_demands_id_cancel_post_request** | [**ApiV1DemandsIdCancelPostRequest**](ApiV1DemandsIdCancelPostRequest.md)|  | [optional]
 
 ### Return type
 
@@ -1348,7 +1369,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     lang = 'lang_example' # str | tr | en (optional)
 
     try:
@@ -1367,8 +1388,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **lang** | **str**| tr | en | [optional] 
+ **id** | **UUID**|  |
+ **lang** | **str**| tr | en | [optional]
 
 ### Return type
 
@@ -1436,7 +1457,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Sözleşme sil (yalnızca tamamlanmamış)
@@ -1454,7 +1475,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -1549,7 +1570,7 @@ with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
     id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | Sözleşme (demand) ID
-    api_v1_demands_id_embed_session_post_request = {"party_id":"f47ac10b-58cc-4372-a567-0e02b2c3d479"} # ApiV1DemandsIdEmbedSessionPostRequest | 
+    api_v1_demands_id_embed_session_post_request = {"party_id":"f47ac10b-58cc-4372-a567-0e02b2c3d479"} # ApiV1DemandsIdEmbedSessionPostRequest |
 
     try:
         # Gömülü imza oturumu başlat (embed token mint)
@@ -1567,8 +1588,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**| Sözleşme (demand) ID | 
- **api_v1_demands_id_embed_session_post_request** | [**ApiV1DemandsIdEmbedSessionPostRequest**](ApiV1DemandsIdEmbedSessionPostRequest.md)|  | 
+ **id** | **UUID**| Sözleşme (demand) ID |
+ **api_v1_demands_id_embed_session_post_request** | [**ApiV1DemandsIdEmbedSessionPostRequest**](ApiV1DemandsIdEmbedSessionPostRequest.md)|  |
 
 ### Return type
 
@@ -1638,7 +1659,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Sözleşme durumu + imza ilerlemesi
@@ -1656,7 +1677,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -1771,9 +1792,9 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
     item_id = 56 # int | Kaşe alanının kimliği (`stamp_items[].item_id`)
-    patch_stamp_item_request = imzala_client.PatchStampItemRequest() # PatchStampItemRequest | 
+    patch_stamp_item_request = imzala_client.PatchStampItemRequest() # PatchStampItemRequest |
 
     try:
         # Kaşe alanını doldur (kısmi güncelleme)
@@ -1791,9 +1812,9 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **item_id** | **int**| Kaşe alanının kimliği (&#x60;stamp_items[].item_id&#x60;) | 
- **patch_stamp_item_request** | [**PatchStampItemRequest**](PatchStampItemRequest.md)|  | 
+ **id** | **UUID**|  |
+ **item_id** | **int**| Kaşe alanının kimliği (&#x60;stamp_items[].item_id&#x60;) |
+ **patch_stamp_item_request** | [**PatchStampItemRequest**](PatchStampItemRequest.md)|  |
 
 ### Return type
 
@@ -1956,8 +1977,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    upsert_items_request = imzala_client.UpsertItemsRequest() # UpsertItemsRequest | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    upsert_items_request = imzala_client.UpsertItemsRequest() # UpsertItemsRequest |
 
     try:
         # Sözleşmeye alan yerleştir (replace)
@@ -1975,8 +1996,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **upsert_items_request** | [**UpsertItemsRequest**](UpsertItemsRequest.md)|  | 
+ **id** | **UUID**|  |
+ **upsert_items_request** | [**UpsertItemsRequest**](UpsertItemsRequest.md)|  |
 
 ### Return type
 
@@ -2047,8 +2068,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    party_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    party_id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Tekil tarafa imza davetini tekrar gönder
@@ -2066,8 +2087,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **party_id** | **UUID**|  | 
+ **id** | **UUID**|  |
+ **party_id** | **UUID**|  |
 
 ### Return type
 
@@ -2088,7 +2109,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | Gönderildi |  -  |
 **404** | Kayıt bulunamadı |  -  |
-**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş, onayını vermiş veya sıralı imzada sırası   gelmemiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
+**409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış veya reddetmiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;PARTY_NOT_ELIGIBLE&#x60;: tarafa şu an davet gönderilemez. Şu   durumlarda döner: taraf zaten onay vermiş bir onaylayan   olduğunda, sözleşme bir onaylayanın reddiyle durdurulduğunda,   onaylayan katmanının onayı tamamlanmadan imzacıya gönderim   denendiğinde veya sıralı imzada henüz bu tarafın sırası   gelmediğinde. - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
 **429** | İki ayrı sınır vardır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek (dispatch ucuyla ortak sınır). Gövdede &#x60;retry_after_seconds&#x60; döner.  &#x60;RECIPIENT_RESEND_LIMIT&#x60;: aynı alıcıya saatte en fazla 3, günde en fazla 10 davet tekrarı gönderilebilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -2132,7 +2153,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # İmzalı sözleşme PDF'i (auth'lu indirme)
@@ -2150,7 +2171,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -2223,8 +2244,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    contract_term_input = {"term_start_mode":"ON_COMPLETION","term_duration_months":12,"renewal_type":"AUTO_RENEW","notice_days":30} # ContractTermInput | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    contract_term_input = {"term_start_mode":"ON_COMPLETION","term_duration_months":12,"renewal_type":"AUTO_RENEW","notice_days":30} # ContractTermInput |
 
     try:
         # Sözleşme süre/yenileme takibini güncelle
@@ -2242,8 +2263,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **contract_term_input** | [**ContractTermInput**](ContractTermInput.md)|  | 
+ **id** | **UUID**|  |
+ **contract_term_input** | [**ContractTermInput**](ContractTermInput.md)|  |
 
 ### Return type
 
@@ -2283,7 +2304,10 @@ IP/cihaz asla döndürülmez.
 `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
 (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
 `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
-olayın `ip_masked` ve `device_label` alanları telefona aittir).
+olayın `ip_masked` ve `device_label` alanları telefona aittir),
+`REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında
+sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve
+onaylayanların yeniden onay vermesi gerekiyor).
 Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
 
 
@@ -2318,7 +2342,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # İmza denetim izi (maskeli)
@@ -2336,7 +2360,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -2400,7 +2424,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Sözleşmeyi arşivden çıkar
@@ -2418,7 +2442,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -2451,6 +2475,12 @@ Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini
 kaydeder, dynamic field'ları `variables` payload'undan doldurur ve
 imzalama URL'lerini döner.
 
+**Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa
+oluşturma anında yalnızca onay bekleyen onaylayanlar davet edilir;
+imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
+onaylayan reddederse imzacılar davet edilmez. Ayrıntı: açıklamadaki
+"Onaylayan (onay adımı)" bölümü.
+
 **Variable resolution:**
 - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta
   o slug var ise oradan uygulanır
@@ -2480,6 +2510,14 @@ atlamak için `dispatch_notifications: false` gönderip belge
 atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten
 sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden
 uygular).
+Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler
+oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama
+şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner.
+Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir;
+`NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama
+politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED`
+döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı
+veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.
 
 
 ### Example
@@ -2514,7 +2552,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
-    create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]} # CreateDemandRequest | 
+    create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]} # CreateDemandRequest |
     idempotency_key = 'idempotency_key_example' # str | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
 
     try:
@@ -2533,8 +2571,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **create_demand_request** | [**CreateDemandRequest**](CreateDemandRequest.md)|  | 
- **idempotency_key** | **str**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  | [optional] 
+ **create_demand_request** | [**CreateDemandRequest**](CreateDemandRequest.md)|  |
+ **idempotency_key** | **str**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  | [optional]
 
 ### Return type
 
@@ -2554,12 +2592,14 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **201** | Sözleşme oluşturuldu |  -  |
-**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir.  |  -  |
+**400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 **401** | API key geçersiz veya eksik |  -  |
 **402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 **403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |
+**404** | Şablon bulunamadı veya bu çalışma alanına ait değil. DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND: Belge Toplama seçimi bulunamadı, arşivli, kapsam dışı veya kimlik metin değil. Bu durumlar aynı kodu kullanır; hiçbir sözleşme oluşturulmaz.  |  -  |
 **409** | Altı ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: eşlediğiniz bir tarafa imzalayacak belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede &#x60;template_party_ids&#x60; (şablon rol kimlikleri) döner; (b) &#x60;documents&#x60; seçiminiz (ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesi) bir role seçili belge bırakmıyorsa &#x60;dispatch_notifications&#x60; değerinden bağımsız yine yaratmadan reddedilir, gövdede &#x60;template_party_ids&#x60; döner (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA düşürülür ve gövdede &#x60;party_ids&#x60; (imzacı kimlikleri) + &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Hiçbir biçimde kredi düşülmez, davet gönderilmez.  &#x60;TEMPLATE_DOCUMENTS_NOT_READY&#x60;: şablonun belge yapısı henüz hazır değil; &#x60;documents&#x60; ve &#x60;document_variables&#x60; göndermeden deneyin ya da destekle iletişime geçin.  &#x60;DOCUMENT_SOURCE_UNAVAILABLE&#x60;: şablonun ilk belgesini çıkardınız ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.  |  -  |
 **500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve TASLAĞA düşürülür; gövdede &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Davet gönderilmez. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
+**503** | DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi işlemleri ve davetlerden önce reddedilir; otomatik tekrar yerine şablon seçimi/politikası veya hizmet kullanılabilirliği düzeltilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2606,7 +2646,7 @@ with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.DemandsApi(api_client)
     files = None # List[bytes] | 1 belge VEYA 1-20 görsel
-    parties = 'parties_example' # str | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. `PartyMappingInput.locale`). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz. 
+    parties = 'parties_example' # str | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. `PartyMappingInput.locale`). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz.
     idempotency_key = 'idempotency_key_example' # str | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
     order = 'order_example' # str | Çoklu görsel sırası (JSON array of indices, örnek \\\"[0,2,1]\\\") (optional)
     title = 'title_example' # str | Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS'lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  (optional)
@@ -2632,16 +2672,16 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **files** | **List[bytes]**| 1 belge VEYA 1-20 görsel | 
- **parties** | **str**| JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel &#x60;locale&#x60; (&#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60;): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. &#x60;PartyMappingInput.locale&#x60;). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer &#x60;400 INVALID_LOCALE&#x60; döner, sözleşme oluşturulmaz.  | 
- **idempotency_key** | **str**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  | [optional] 
- **order** | **str**| Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) | [optional] 
- **title** | **str**| Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  | [optional] 
- **description** | **str**|  | [optional] 
- **field_template_id** | **UUID**| Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  | [optional] 
- **force** | **str**| Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  | [optional] 
- **send_invitations** | **str**| &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  | [optional] 
- **on_anchor_miss** | **str**| Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  | [optional] 
+ **files** | **List[bytes]**| 1 belge VEYA 1-20 görsel |
+ **parties** | **str**| JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  &#x60;field_template_id&#x60; gönderildiğinde her party AYRICA &#x60;template_party_id&#x60; (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel &#x60;locale&#x60; (&#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60;): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. &#x60;PartyMappingInput.locale&#x60;). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer &#x60;400 INVALID_LOCALE&#x60; döner, sözleşme oluşturulmaz.  |
+ **idempotency_key** | **str**| Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme &#x60;reused: true&#x60; + &#x60;created_at&#x60; ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse &#x60;409 IDEMPOTENCY_KEY_REUSED&#x60; döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; &#x60;dispatch&#x60;, &#x60;variables_applied&#x60;, &#x60;field_layout&#x60; gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki &#x60;idempotency_key&#x60; alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE &#x60;400 INVALID_IDEMPOTENCY_KEY&#x60;.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  | [optional]
+ **order** | **str**| Çoklu görsel sırası (JSON array of indices, örnek \\\&quot;[0,2,1]\\\&quot;) | [optional]
+ **title** | **str**| Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  | [optional]
+ **description** | **str**|  | [optional]
+ **field_template_id** | **UUID**| Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  | [optional]
+ **force** | **str**| Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  | [optional]
+ **send_invitations** | **str**| &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  | [optional]
+ **on_anchor_miss** | **str**| Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  | [optional]
 
 ### Return type
 
@@ -2762,9 +2802,9 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**| Alan Şablonu (FIELD_LAYOUT) kimliği | 
- **files** | **List[bytes]**| Tek PDF belge | 
- **on_anchor_miss** | **str**| &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  | [optional] 
+ **id** | **UUID**| Alan Şablonu (FIELD_LAYOUT) kimliği |
+ **files** | **List[bytes]**| Tek PDF belge |
+ **on_anchor_miss** | **str**| &#x60;POST /api/v1/demands/upload&#x60; ile aynı semantik (yalnız sıkılaştırır, gönderilmezse &#x60;block&#x60;).  | [optional]
 
 ### Return type
 

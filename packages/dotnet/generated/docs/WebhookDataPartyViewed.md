@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**DemandId** | **Guid** |  | 
-**PartyId** | **Guid** |  | 
+**DemandId** | **Guid** |  |
+**PartyId** | **Guid** |  |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

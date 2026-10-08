@@ -2,7 +2,7 @@
 
 # TemplateDocumentSummary
 
-Şablonun zarf belgesi. `id` alanı `POST /api/v1/demands` ve `POST /api/v1/demands/bulk` isteklerindeki `documents.include` / `documents.exclude` listelerinde kullanılır. Şablon kopyalandığında (panelden \"Kopyala\" ya da sözleşmeden şablon oluşturma) kopyanın belge kimlikleri YENİDİR; entegrasyonunuz kopyanın kimliklerini bu uçtan yeniden okumalıdır. Başlık, tür ve ayar değişiklikleri ile yeniden sıralama kimliği değiştirmez. 
+Şablonun zarf belgesi. `id` alanı `POST /api/v1/demands` ve `POST /api/v1/demands/bulk` isteklerindeki `documents.include` / `documents.exclude` listelerinde kullanılır. Şablon kopyalandığında (panelden \"Kopyala\" ya da sözleşmeden şablon oluşturma) kopyanın belge kimlikleri YENİDİR; entegrasyonunuz kopyanın kimliklerini bu uçtan yeniden okumalıdır. Başlık, tür ve ayar değişiklikleri ile yeniden sıralama kimliği değiştirmez.
 
 ## Properties
 

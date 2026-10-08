@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**field_templates** | [**List[FieldTemplateListItem]**](FieldTemplateListItem.md) |  | [optional] 
-**total** | **int** |  | [optional] 
-**page** | **int** |  | [optional] 
-**limit** | **int** |  | [optional] 
+**field_templates** | [**List[FieldTemplateListItem]**](FieldTemplateListItem.md) |  | [optional]
+**total** | **int** |  | [optional]
+**page** | **int** |  | [optional]
+**limit** | **int** |  | [optional]
 
 ## Example
 

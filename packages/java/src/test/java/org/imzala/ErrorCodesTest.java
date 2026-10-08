@@ -78,6 +78,11 @@ class ErrorCodesTest {
     NOT_ERROR_CODES.put("ON_FIRST_SIGNATURE", "term_start_mode value");
     NOT_ERROR_CODES.put("ON_COMPLETION", "term_start_mode value");
     NOT_ERROR_CODES.put("AUTO_RENEW", "renewal_type value");
+    NOT_ERROR_CODES.put("SOURCE_AND_FIELDS", "document verification policy value, not an error");
+    NOT_ERROR_CODES.put("TR_RESIDENCE", "document type value, not an error");
+    NOT_ERROR_CODES.put("BEFORE_SIGNING", "document collection timing value, not an error");
+    NOT_ERROR_CODES.put("AFTER_SIGNING", "document collection timing value, not an error");
+    NOT_ERROR_CODES.put("REAPPROVAL_REQUIRED", "timeline event_type value");
     NOT_ERROR_CODES.put("FIXED_TERM", "renewal_type value");
   }
 
@@ -186,7 +191,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(98, ErrorCodes.CODES.size());
+    assertEquals(109, ErrorCodes.CODES.size());
   }
 
   @Test

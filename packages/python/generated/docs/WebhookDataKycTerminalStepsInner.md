@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**method** | **str** |  | [optional] 
-**verified** | **bool** | Adım sonucu; adım hiç tamamlanmadıysa &#x60;null&#x60;. | [optional] 
+**method** | **str** |  | [optional]
+**verified** | **bool** | Adım sonucu; adım hiç tamamlanmadıysa &#x60;null&#x60;. | [optional]
 
 ## Example
 

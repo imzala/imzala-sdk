@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
-**description** | **str** |  | [optional] 
-**category** | **str** |  | [optional] 
-**usage_count** | **int** |  | [optional] 
-**parties** | [**List[FieldTemplateParty]**](FieldTemplateParty.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
+**description** | **str** |  | [optional]
+**category** | **str** |  | [optional]
+**usage_count** | **int** |  | [optional]
+**parties** | [**List[FieldTemplateParty]**](FieldTemplateParty.md) |  | [optional]
 
 ## Example
 

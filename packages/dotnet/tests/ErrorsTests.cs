@@ -147,4 +147,49 @@ public class ErrorsTests
         Assert.Equal(500, err.StatusCode);
         Assert.Contains("Error calling SomeMethod", err.Message);
     }
+    [Theory]
+    [InlineData(503, "DOCUMENT_VERIFICATION_DISABLED", "DOCUMENT_VERIFICATION_DISABLED")]
+    [InlineData(400, "VERIFICATION_CONTEXT_REQUIRED", "VERIFICATION_POLICY_CONFLICT")]
+    [InlineData(400, "FUTURE_COLLECTION_ERROR", "future reason")]
+    public void Collection_envelopes_preserve_wrapper_and_origin(int status, string code, string reason)
+    {
+        var body = System.Text.Json.JsonSerializer.Serialize(new { success = false, error = reason, code });
+        var err = ErrorMapper.Map(FakeApiException(status, body));
+        Assert.IsType<ImzalaError>(err);
+        Assert.Equal(status, err.StatusCode);
+        Assert.Equal(code, err.Code);
+        Assert.Equal(reason, err.Message);
+    }
+    [Fact]
+    public void Collection_properties_preserve_nullable_wire_values_and_constructor_ABI()
+    {
+        var id = Guid.Parse("11111111-1111-4111-8111-111111111111");
+        var single = new ImzalaApiClient.Model.CreateDemandRequest(templateId: id, partyMapping: new());
+        single.DocumentCollectionEnabled = true;
+        single.DocumentCollectionTemplateId = id;
+        single.DocumentCollectionTiming = ImzalaApiClient.Model.CreateDemandRequest.DocumentCollectionTimingEnum.AFTERSIGNING;
+        single.DocumentCollectionBlockSigning = false;
+        var bulk = new ImzalaApiClient.Model.ApiV1DemandsBulkPostRequestOptions();
+        bulk.DocumentCollectionEnabled = true;
+        bulk.DocumentCollectionTemplateId = id;
+        bulk.DocumentCollectionTiming = ImzalaApiClient.Model.ApiV1DemandsBulkPostRequestOptions.DocumentCollectionTimingEnum.AFTERSIGNING;
+        bulk.DocumentCollectionBlockSigning = false;
+        foreach (var json in new[] { single.ToJson(), bulk.ToJson() })
+        {
+            var body = Newtonsoft.Json.Linq.JObject.Parse(json);
+            Assert.True(body["document_collection_enabled"]!.ToObject<bool>());
+            Assert.Equal(id.ToString(), body["document_collection_template_id"]!.ToObject<string>());
+            Assert.Equal("AFTER_SIGNING", body["document_collection_timing"]!.ToObject<string>());
+            Assert.False(body["document_collection_block_signing"]!.ToObject<bool>());
+        }
+        single.DocumentCollectionEnabled = null;
+        single.DocumentCollectionTemplateId = null;
+        single.DocumentCollectionTiming = null;
+        single.DocumentCollectionBlockSigning = null;
+        var nullBody = Newtonsoft.Json.Linq.JObject.Parse(single.ToJson());
+        foreach (var field in new[] { "document_collection_enabled", "document_collection_template_id", "document_collection_timing", "document_collection_block_signing" })
+            Assert.Equal(Newtonsoft.Json.Linq.JTokenType.Null, nullBody[field]!.Type);
+        Assert.Equal(19, typeof(ImzalaApiClient.Model.CreateDemandRequest).GetConstructors().Single(c => c.GetParameters().Length > 0).GetParameters().Length);
+        Assert.Equal(9, typeof(ImzalaApiClient.Model.ApiV1DemandsBulkPostRequestOptions).GetConstructors().Single(c => c.GetParameters().Length > 0).GetParameters().Length);
+    }
 }

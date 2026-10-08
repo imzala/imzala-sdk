@@ -135,6 +135,18 @@ final class ErrorCodes
         'STAMP_INVALID' => 'Zaman damgası sunucusu geçersiz bir yanıt döndürdü.',
         'TSA_UNAVAILABLE' => 'Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar deneyin.',
 
+        'INVALID_DOCUMENT_COLLECTION_TIMING' => 'Belge Toplama zamanı BEFORE_SIGNING, AFTER_SIGNING veya null olmalı.',
+        'INVALID_DOCUMENT_COLLECTION_FLAG' => 'Belge Toplama boolean alanları boolean veya null olmalı.',
+        'DOCUMENT_COLLECTION_TEMPLATE_REQUIRED' => 'Etkin Belge Toplama için bir Belge Toplama şablonu seçilmelidir.',
+        'DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND' => 'Belge Toplama şablonu bulunamadı, arşivli veya çalışma alanına ait değil.',
+        'DOCUMENT_VERIFICATION_DISABLED' => 'Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor; seçim, politika veya hizmet kullanılabilirliğini düzeltin.',
+        'VERIFICATION_CONTEXT_REQUIRED' => 'Seçili Belge Toplama şablonunun doğrulama bağlamı geçersiz; error alanı kaynak makine kodunu taşır.',
+        'DOCUMENT_TYPE_INVALID' => 'Seçili Belge Toplama kaleminin belge türü geçersiz.',
+        'VERIFICATION_POLICY_INVALID' => 'Seçili Belge Toplama kaleminin doğrulama politikası geçersiz.',
+        'VERIFICATION_INSTRUCTION_INVALID' => 'Seçili Belge Toplama kaleminin alıcı veya amaç metni geçersiz.',
+        'VERIFICATION_POLICY_CONFLICT' => 'Doğrulama istemeyen kalemde alıcı veya amaç metni bulunamaz.',
+        'PARTY_NOT_ELIGIBLE' => 'Tarafa şu anda davet gönderilemez; sözleşme ve taraf durumunu kontrol edin.',
+
         // Genel
         'VALIDATION_ERROR' => 'İstek doğrulamadan geçmedi (ör. konum sınırları, slug biçimi, eksik taraf).',
         'VALIDATION_FAIL' => 'Zorunlu bir alan eksik veya geçersiz (ör. boş başlık).',

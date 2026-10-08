@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**term** | [**ContractTerm**](ContractTerm.md) |  | [optional] 
+**term** | [**ContractTerm**](ContractTerm.md) |  | [optional]
 
 ## Example
 

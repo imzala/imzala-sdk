@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_ids** | **List[UUID]** |  | 
+**party_ids** | **List[UUID]** |  |
 
 ## Example
 

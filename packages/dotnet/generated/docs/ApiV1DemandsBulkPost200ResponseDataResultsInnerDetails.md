@@ -5,9 +5,9 @@ Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document |
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Reason** | **string** |  | [optional] 
-**DocumentIds** | **List&lt;string&gt;** |  | [optional] 
-**Path** | **string** |  | [optional] 
+**Reason** | **string** |  | [optional]
+**DocumentIds** | **List&lt;string&gt;** |  | [optional]
+**Path** | **string** |  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

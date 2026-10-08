@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**demand_id** | **UUID** |  | 
-**party_id** | **UUID** |  | 
-**backfill** | **bool** | Replay bayrağı | [optional] 
+**demand_id** | **UUID** |  |
+**party_id** | **UUID** |  |
+**backfill** | **bool** | Replay bayrağı | [optional]
 
 ## Example
 

@@ -15,7 +15,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir. 
+Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir.
 
 ### Example
 
@@ -32,7 +32,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -84,7 +84,7 @@ This endpoint does not need any parameter.
 
 API key sahibi bilgisi
 
-Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir. 
+Çağrıyı yapan API key&#39;in sahibi hakkında temel bilgileri döner: kullanıcı kimliği, e-posta, isim, aktif workspace ve kalan kredi. Scope gerektirmez — geçerli herhangi bir API key (hangi scope&#39;a sahip olursa olsun, ör. sadece &#x60;demands:read&#x60;) bu endpoint&#39;i çağırabilir.
 
 ### Example
 
@@ -102,7 +102,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");

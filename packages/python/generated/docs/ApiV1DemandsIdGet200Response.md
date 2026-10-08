@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**DemandStatus**](DemandStatus.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**DemandStatus**](DemandStatus.md) |  | [optional]
 
 ## Example
 

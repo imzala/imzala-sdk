@@ -14,7 +14,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Zaman damgası listesi
 
-Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key'in kendi workspace'indeki kayıtlar döner (IDOR-safe).  `timestamp_file_url` doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir). 
+Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key'in kendi workspace'indeki kayıtlar döner (IDOR-safe).  `timestamp_file_url` doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir).
 
 ### Example
 ```csharp
@@ -44,10 +44,10 @@ namespace Example
             var apiInstance = new TimestampsApi(httpClient, config, httpClientHandler);
             var page = 1;  // int? |  (optional)  (default to 1)
             var limit = 25;  // int? |  (optional)  (default to 25)
-            var q = "q_example";  // string? | Dosya adı / açıklamada arama (max 100 karakter) (optional) 
-            var status = "status_example";  // string? | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID (optional) 
-            var from = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü alt sınırı (YYYY-MM-DD) (optional) 
-            var to = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü üst sınırı (YYYY-MM-DD) (optional) 
+            var q = "q_example";  // string? | Dosya adı / açıklamada arama (max 100 karakter) (optional)
+            var status = "status_example";  // string? | Virgülle ayrılmış durum filtresi: ACTIVE,VERIFIED,EXPIRED,INVALID (optional)
+            var from = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü alt sınırı (YYYY-MM-DD) (optional)
+            var to = DateOnly.Parse("2013-10-20");  // DateOnly? | Damga günü üst sınırı (YYYY-MM-DD) (optional)
             var sort = "\"-createdAt\"";  // string? | Sıralama: createdAt | timestamp_date | original_file_name | original_file_size | status ('-' öneki azalan) (optional)  (default to "-createdAt")
 
             try
@@ -128,7 +128,7 @@ catch (ApiException e)
 
 Zaman damgası detayı
 
-Tek bir zaman damgası kaydının detayını döner. Yalnızca API key'in kendi workspace'indeki kayıt getirilebilir (IDOR-safe); başka bir workspace'in kaydı 404 döner. 
+Tek bir zaman damgası kaydının detayını döner. Yalnızca API key'in kendi workspace'indeki kayıt getirilebilir (IDOR-safe); başka bir workspace'in kaydı 404 döner.
 
 ### Example
 ```csharp
@@ -156,7 +156,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new TimestampsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -230,7 +230,7 @@ catch (ApiException e)
 
 Zaman damgası oluştur (eser tescil)
 
-Dosyanın SHA-256 hash'ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** `Idempotency-Key` header'ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı `id` döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - `multipart/form-data`: `file` alanıyla ikili dosya yükleme - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez) 
+Dosyanın SHA-256 hash'ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** `Idempotency-Key` header'ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı `id` döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - `multipart/form-data`: `file` alanıyla ikili dosya yükleme - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez)
 
 ### Example
 ```csharp
@@ -259,10 +259,10 @@ namespace Example
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new TimestampsApi(httpClient, config, httpClientHandler);
             var file = new System.IO.MemoryStream(System.IO.File.ReadAllBytes("/path/to/file.txt"));  // FileParameter | Damgalanacak dosya (maks. 50 MB)
-            var idempotencyKey = "idempotencyKey_example";  // string? | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.  (optional) 
-            var description = "description_example";  // string? | Kayıt açıklaması (opsiyonel, max 500 karakter) (optional) 
-            var ownerFirstName = "ownerFirstName_example";  // string? | Dosya sahibinin adı (opsiyonel, kullanıcı beyanı) (optional) 
-            var ownerLastName = "ownerLastName_example";  // string? | Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı) (optional) 
+            var idempotencyKey = "idempotencyKey_example";  // string? | Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.  (optional)
+            var description = "description_example";  // string? | Kayıt açıklaması (opsiyonel, max 500 karakter) (optional)
+            var ownerFirstName = "ownerFirstName_example";  // string? | Dosya sahibinin adı (opsiyonel, kullanıcı beyanı) (optional)
+            var ownerLastName = "ownerLastName_example";  // string? | Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı) (optional)
 
             try
             {

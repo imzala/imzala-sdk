@@ -2,7 +2,7 @@
 
 # FieldTemplateDetail
 
-Alan Şablonu ayrıntısı. Alan koordinatları TAŞIMAZ; yerleşimin bir belgeye nasıl uygulanacağı için kuru koşum ucunu kullanın. 
+Alan Şablonu ayrıntısı. Alan koordinatları TAŞIMAZ; yerleşimin bir belgeye nasıl uygulanacağı için kuru koşum ucunu kullanın.
 
 ## Properties
 

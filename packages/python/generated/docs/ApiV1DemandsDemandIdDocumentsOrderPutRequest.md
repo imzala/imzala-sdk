@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**document_ids** | **List[UUID]** | Zarftaki tüm belge id&#39;leri, istenen yeni sırada. | 
+**document_ids** | **List[UUID]** | Zarftaki tüm belge id&#39;leri, istenen yeni sırada. |
 
 ## Example
 

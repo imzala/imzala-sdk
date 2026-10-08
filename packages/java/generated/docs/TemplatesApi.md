@@ -27,7 +27,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Alan Şablonlarını listeler
 
-Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun. 
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun.
 
 ### Example
 
@@ -44,7 +44,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -52,8 +52,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 20; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 20; // Integer |
         try {
             ApiV1FieldTemplatesGet200Response result = apiInstance.apiV1FieldTemplatesGet(page, limit);
             System.out.println(result);
@@ -103,7 +103,7 @@ public class Example {
 
 Alan Şablonlarını listeler
 
-Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun. 
+Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını** (&#x60;kind: FIELD_LAYOUT&#x60;) döner.  ### Neden ayrı bir uç  &#x60;GET /api/v1/templates&#x60; Alan Şablonlarını bilerek listelemez ve &#x60;GET /api/v1/templates/{id}&#x60; onlara &#x60;404&#x60; döner. Alan Şablonunun referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu. Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını görmek açık bir talep gerektirir.  Döndürülen &#x60;id&#x60;, &#x60;POST /api/v1/demands/upload&#x60; çağrısındaki &#x60;field_template_id&#x60; ve &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60; için kullanılır.  &#x60;parties&#x60; dizisi taraf sırasına göre döner; upload gövdesindeki &#x60;parties&#x60; dizisini bu sırayla kurun.
 
 ### Example
 
@@ -121,7 +121,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -129,8 +129,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 20; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 20; // Integer |
         try {
             ApiResponse<ApiV1FieldTemplatesGet200Response> response = apiInstance.apiV1FieldTemplatesGetWithHttpInfo(page, limit);
             System.out.println("Status code: " + response.getStatusCode());
@@ -183,7 +183,7 @@ ApiResponse<[**ApiV1FieldTemplatesGet200Response**](ApiV1FieldTemplatesGet200Res
 
 Alan Şablonu ayrıntısı (roller + alan sayıları)
 
-Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır.
 
 ### Example
 
@@ -200,7 +200,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -257,7 +257,7 @@ public class Example {
 
 Alan Şablonu ayrıntısı (roller + alan sayıları)
 
-Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır. 
+Tek bir Alan Şablonunun rollerini ve rol başına alan sayısını döner.  🔴 **Alanların koordinatları dönmez.** Yerleşimin belgeye nasıl uygulanacağını görmek için kuru koşum ucunu kullanın: &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  Belgeli bir şablonun kimliği verilirse &#x60;404&#x60; döner; şablonun türü ifşa edilmez. Var olmayan ve size ait olmayan kimlik de aynı yanıtı alır.
 
 ### Example
 
@@ -275,7 +275,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -352,7 +352,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -360,8 +360,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 20; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 20; // Integer |
         try {
             ApiV1TemplatesGet200Response result = apiInstance.apiV1TemplatesGet(page, limit);
             System.out.println(result);
@@ -429,7 +429,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -437,8 +437,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        Integer page = 1; // Integer | 
-        Integer limit = 20; // Integer | 
+        Integer page = 1; // Integer |
+        Integer limit = 20; // Integer |
         try {
             ApiResponse<ApiV1TemplatesGet200Response> response = apiInstance.apiV1TemplatesGetWithHttpInfo(page, limit);
             System.out.println("Status code: " + response.getStatusCode());
@@ -491,7 +491,7 @@ ApiResponse<[**ApiV1TemplatesGet200Response**](ApiV1TemplatesGet200Response.md)>
 
 Şablon sil
 
-Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner. 
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner.
 
 ### Example
 
@@ -508,7 +508,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -516,7 +516,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiV1TemplatesIdDelete200Response result = apiInstance.apiV1TemplatesIdDelete(id);
             System.out.println(result);
@@ -565,7 +565,7 @@ public class Example {
 
 Şablon sil
 
-Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner. 
+Şablonu siler. Silinen şablon 30 gün saklanır, sürenin sonunda kalıcı olarak silinir. Mevcut sözleşmeler etkilenmez.  Şablonun aktif (DRAFT veya PENDING) sözleşmesi varsa silinemez; 409 &#x60;TEMPLATE_IN_USE&#x60; döner.
 
 ### Example
 
@@ -583,7 +583,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -591,7 +591,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiResponse<ApiV1TemplatesIdDelete200Response> response = apiInstance.apiV1TemplatesIdDeleteWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
@@ -643,7 +643,7 @@ ApiResponse<[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Res
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır. 
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
 
 ### Example
 
@@ -660,7 +660,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -668,7 +668,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiV1TemplatesIdGet200Response result = apiInstance.apiV1TemplatesIdGet(id);
             System.out.println(result);
@@ -716,7 +716,7 @@ public class Example {
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır. 
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
 
 ### Example
 
@@ -734,7 +734,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -742,7 +742,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiResponse<ApiV1TemplatesIdGet200Response> response = apiInstance.apiV1TemplatesIdGetWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
@@ -793,7 +793,7 @@ ApiResponse<[**ApiV1TemplatesIdGet200Response**](ApiV1TemplatesIdGet200Response.
 
 Şablon metadata güncelle
 
-Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint&#39;ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint&#39;ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir).
 
 ### Example
 
@@ -810,7 +810,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -818,8 +818,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
-        ApiV1TemplatesIdPatchRequest apiV1TemplatesIdPatchRequest = new ApiV1TemplatesIdPatchRequest(); // ApiV1TemplatesIdPatchRequest | 
+        UUID id = UUID.randomUUID(); // UUID |
+        ApiV1TemplatesIdPatchRequest apiV1TemplatesIdPatchRequest = new ApiV1TemplatesIdPatchRequest(); // ApiV1TemplatesIdPatchRequest |
         try {
             ApiV1TemplatesIdPatch200Response result = apiInstance.apiV1TemplatesIdPatch(id, apiV1TemplatesIdPatchRequest);
             System.out.println(result);
@@ -869,7 +869,7 @@ public class Example {
 
 Şablon metadata güncelle
 
-Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint&#39;ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir). 
+Şablonun yalnızca metadata alanlarını (name / description / category) günceller. Sayfa/alan/taraf yapısı bu endpoint&#39;ten DEĞİŞTİRİLEMEZ (şablon içeriği panelden düzenlenir).
 
 ### Example
 
@@ -887,7 +887,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -895,8 +895,8 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
-        ApiV1TemplatesIdPatchRequest apiV1TemplatesIdPatchRequest = new ApiV1TemplatesIdPatchRequest(); // ApiV1TemplatesIdPatchRequest | 
+        UUID id = UUID.randomUUID(); // UUID |
+        ApiV1TemplatesIdPatchRequest apiV1TemplatesIdPatchRequest = new ApiV1TemplatesIdPatchRequest(); // ApiV1TemplatesIdPatchRequest |
         try {
             ApiResponse<ApiV1TemplatesIdPatch200Response> response = apiInstance.apiV1TemplatesIdPatchWithHttpInfo(id, apiV1TemplatesIdPatchRequest);
             System.out.println("Status code: " + response.getStatusCode());
@@ -949,7 +949,7 @@ ApiResponse<[**ApiV1TemplatesIdPatch200Response**](ApiV1TemplatesIdPatch200Respo
 
 Şablon kullanım kılavuzu (curl + JSON örnek)
 
-Bu şablonu API üzerinden çağırmak için tam rehber döner: - &#x60;endpoint&#x60; (POST URL&#39;i) - &#x60;required_headers&#x60; (X-API-Key, X-Workspace-Id, Content-Type) - &#x60;parties&#x60; (her partinin desteklediği field listesi) - &#x60;variables&#x60; (her field için slug, label, item_type, is_required,   default_source, auto_filled, template_party_id) - &#x60;example_request&#x60; (tam curl + JSON örneği, gerçek slug&#39;larla)  Multi-party şablonlarda example.party_mapping[i].variables uygun slug&#39;larla doludur, root &#x60;variables&#x60; partisiz field&#39;lar için. 
+Bu şablonu API üzerinden çağırmak için tam rehber döner: - &#x60;endpoint&#x60; (POST URL&#39;i) - &#x60;required_headers&#x60; (X-API-Key, X-Workspace-Id, Content-Type) - &#x60;parties&#x60; (her partinin desteklediği field listesi) - &#x60;variables&#x60; (her field için slug, label, item_type, is_required,   default_source, auto_filled, template_party_id) - &#x60;example_request&#x60; (tam curl + JSON örneği, gerçek slug&#39;larla)  Multi-party şablonlarda example.party_mapping[i].variables uygun slug&#39;larla doludur, root &#x60;variables&#x60; partisiz field&#39;lar için.
 
 ### Example
 
@@ -966,7 +966,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -974,7 +974,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiV1TemplatesIdUsageGet200Response result = apiInstance.apiV1TemplatesIdUsageGet(id);
             System.out.println(result);
@@ -1022,7 +1022,7 @@ public class Example {
 
 Şablon kullanım kılavuzu (curl + JSON örnek)
 
-Bu şablonu API üzerinden çağırmak için tam rehber döner: - &#x60;endpoint&#x60; (POST URL&#39;i) - &#x60;required_headers&#x60; (X-API-Key, X-Workspace-Id, Content-Type) - &#x60;parties&#x60; (her partinin desteklediği field listesi) - &#x60;variables&#x60; (her field için slug, label, item_type, is_required,   default_source, auto_filled, template_party_id) - &#x60;example_request&#x60; (tam curl + JSON örneği, gerçek slug&#39;larla)  Multi-party şablonlarda example.party_mapping[i].variables uygun slug&#39;larla doludur, root &#x60;variables&#x60; partisiz field&#39;lar için. 
+Bu şablonu API üzerinden çağırmak için tam rehber döner: - &#x60;endpoint&#x60; (POST URL&#39;i) - &#x60;required_headers&#x60; (X-API-Key, X-Workspace-Id, Content-Type) - &#x60;parties&#x60; (her partinin desteklediği field listesi) - &#x60;variables&#x60; (her field için slug, label, item_type, is_required,   default_source, auto_filled, template_party_id) - &#x60;example_request&#x60; (tam curl + JSON örneği, gerçek slug&#39;larla)  Multi-party şablonlarda example.party_mapping[i].variables uygun slug&#39;larla doludur, root &#x60;variables&#x60; partisiz field&#39;lar için.
 
 ### Example
 
@@ -1040,7 +1040,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://api-prd.imzala.org");
-        
+
         // Configure API key authorization: ApiKeyAuth
         ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
         ApiKeyAuth.setApiKey("YOUR API KEY");
@@ -1048,7 +1048,7 @@ public class Example {
         //ApiKeyAuth.setApiKeyPrefix("Token");
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
-        UUID id = UUID.randomUUID(); // UUID | 
+        UUID id = UUID.randomUUID(); // UUID |
         try {
             ApiResponse<ApiV1TemplatesIdUsageGet200Response> response = apiInstance.apiV1TemplatesIdUsageGetWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());

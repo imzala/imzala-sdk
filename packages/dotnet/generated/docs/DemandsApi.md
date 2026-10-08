@@ -38,7 +38,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Toplu sözleşme oluştur (tek şablondan N alıcı)
 
-Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \"bulk send\" modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Davranış:** - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler   istemci tarafında 10'arlı parçalara bölünür. - Kredi: sabit \"1 satır = 1 kredi\" değildir, her satırın maliyeti   `POST /demands` ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; `eidas_timestamp` seçilirse   satır başına +1 kredi eklenir). Şablon çok-belgeli bir zarf   tanımlıyorsa imzacı başına maliyet o imzacıya ATANMIŞ belge   sayısına göre hesaplanır ve belge sayısına göre azalan birim   fiyatlı bir indirim uygulanır (1 belge %0, 2 belge %30, 3 ve üzeri   %50, imzacı başına ayrı yukarı yuvarlanır; bkz. `POST /demands`   \"Kredi (çok belgeli zarf)\" bölümü). PAdES seviye eki yalnız QES'te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır `failed` (`error: \"INSUFFICIENT_CREDITS\"`)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine `failed` döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (`demand_id` response'ta bulunur, davet   gönderilmemiştir); mutabakat kredi-dışı bir hatayla düşerse satır   `failed` (`error: \"RECONCILE_FAILED\"`) döner, sözleşme yine taslağa   düşer. - Atamasız imzacı: çok belgeli şablonda eşlenen bir taraf hiçbir   belgeye atanmamışsa (ve `options.dispatch_notifications` `false`   DEĞİLSE) o satır `failed` (`error: \"PARTY_WITHOUT_DOCUMENTS\"`)   döner; kontrol satır oluşturulmadan ÖNCE (`demand_id` YOK) veya   oluşturulduktan hemen SONRA (sözleşme taslağa düşer, `demand_id` +   `party_ids` döner) çalışabilir. Diğer satırlar etkilenmez. - Belge seçimi satır başınadır: `rows[i].documents` (`POST /demands`   ile aynı şema). `options.documents` gönderilirse 400   `INVALID_DOCUMENT_SELECTION`. Satırın seçim hatası o satırı `failed`   yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da   `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar   etkilenmez. - Belge başına değişkenler (`document_variables`) bu uçta   desteklenmez; yalnız `POST /demands` ile gönderilir. Satırda (kökte   ya da `party_mapping[i]` içinde) gönderilirse o satır `failed`   (`error: \"INVALID_DOCUMENT_VARIABLES\"`, `details.reason:   \"unsupported_endpoint\"`, `details.path`) döner ve oluşturulmaz;   `options.document_variables` gönderilirse 400   `INVALID_DOCUMENT_VARIABLES` döner, hiçbir satır oluşturulmaz. - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace'in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar `failed` olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik) 400/402/404 döner. - `X-Workspace-Id` header'ı ile organizasyon workspace'i seçilebilir.  Rate limit: 5 istek/dakika (API key başına). 
+Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve her birine imza daveti gönderir (DocuSign \"bulk send\" modeli). Her satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.  **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa her satırda önce yalnızca onay bekleyen onaylayanlar davet edilir; imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir onaylayan reddederse imzacılar davet edilmez.  **Davranış:** - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler   istemci tarafında 10'arlı parçalara bölünür. - Kredi: sabit \"1 satır = 1 kredi\" değildir, her satırın maliyeti   `POST /demands` ile AYNI formülle hesaplanır (imza sınıfı taban   ücreti + doğrulama yöntemi ek maliyetleri + PAdES seviye ek   maliyeti, imzacı sayısıyla çarpılır; `eidas_timestamp` seçilirse   satır başına +1 kredi eklenir). Şablon çok-belgeli bir zarf   tanımlıyorsa imzacı başına maliyet o imzacıya ATANMIŞ belge   sayısına göre hesaplanır ve belge sayısına göre azalan birim   fiyatlı bir indirim uygulanır (1 belge %0, 2 belge %30, 3 ve üzeri   %50, imzacı başına ayrı yukarı yuvarlanır; bkz. `POST /demands`   \"Kredi (çok belgeli zarf)\" bölümü). PAdES seviye eki yalnız QES'te   uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden   `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,   hiçbir sözleşme yaratılmaz); ayrıca her satır kendi maliyeti için   tekrar kontrol edilir; kredi satır oluşturma sırasında   tükenirse o satır `failed` (`error: \"INSUFFICIENT_CREDITS\"`)   olarak işaretlenir, batch devam eder. Nadir bir yarışta (satır   oluşturulduktan hemen sonra kredi mutabakatı reddederse) o satır   yine `failed` döner ama sözleşme zaten oluşturulmuş taslak   olarak kalır (`demand_id` response'ta bulunur, davet   gönderilmemiştir); mutabakat kredi-dışı bir hatayla düşerse satır   `failed` (`error: \"RECONCILE_FAILED\"`) döner, sözleşme yine taslağa   düşer. - Atamasız imzacı: çok belgeli şablonda eşlenen bir taraf hiçbir   belgeye atanmamışsa (ve `options.dispatch_notifications` `false`   DEĞİLSE) o satır `failed` (`error: \"PARTY_WITHOUT_DOCUMENTS\"`)   döner; kontrol satır oluşturulmadan ÖNCE (`demand_id` YOK) veya   oluşturulduktan hemen SONRA (sözleşme taslağa düşer, `demand_id` +   `party_ids` döner) çalışabilir. Diğer satırlar etkilenmez. - Belge seçimi satır başınadır: `rows[i].documents` (`POST /demands`   ile aynı şema). `options.documents` gönderilirse 400   `INVALID_DOCUMENT_SELECTION`. Satırın seçim hatası o satırı `failed`   yapar (`error`: `INVALID_DOCUMENT_SELECTION` + `details`, ya da   `PARTY_WITHOUT_DOCUMENTS` + `template_party_ids`); diğer satırlar   etkilenmez. - Belge başına değişkenler (`document_variables`) bu uçta   desteklenmez; yalnız `POST /demands` ile gönderilir. Satırda (kökte   ya da `party_mapping[i]` içinde) gönderilirse o satır `failed`   (`error: \"INVALID_DOCUMENT_VARIABLES\"`, `details.reason:   \"unsupported_endpoint\"`, `details.path`) döner ve oluşturulmaz;   `options.document_variables` gönderilirse 400   `INVALID_DOCUMENT_VARIABLES` döner, hiçbir satır oluşturulmaz. - Şablon sahipliği istek başında bir kez doğrulanır (workspace-scoped;   başka workspace'in şablonu 404). - Kısmi başarı normaldir: batch tamamlanınca HTTP 200 döner (bazı   satırlar `failed` olsa bile). Yalnızca ön-kontrol redleri   (cap/kredi/sahiplik/Belge Toplama politikası) 400/402/404/503 döner.   Belge Toplama reddi HTTP 200 results[].failed sonucu değildir. - `X-Workspace-Id` header'ı ile organizasyon workspace'i seçilebilir.  Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner. Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir; `NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED` döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.  Rate limit: 5 istek/dakika (API key başına).
 
 ### Example
 ```csharp
@@ -66,8 +66,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var apiV1DemandsBulkPostRequest = new ApiV1DemandsBulkPostRequest(); // ApiV1DemandsBulkPostRequest | 
-            var xWorkspaceId = "xWorkspaceId_example";  // Guid? | Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   `WORKSPACE_MISMATCH` döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (`Not a member of this organization`).  (optional) 
+            var apiV1DemandsBulkPostRequest = new ApiV1DemandsBulkPostRequest(); // ApiV1DemandsBulkPostRequest |
+            var xWorkspaceId = "xWorkspaceId_example";  // Guid? | Organizasyon (workspace) kimliği.  - **Organizasyon anahtarı:** zorunlu değildir; gönderilmezse anahtarın   bağlı olduğu organizasyon otomatik uygulanır. Anahtarın   organizasyonundan farklı bir kimlik gönderilirse 403   `WORKSPACE_MISMATCH` döner. - **Kişisel anahtar:** gerekmez. Üyesi olmadığınız bir organizasyon   kimliği gönderilirse 403 döner   (`Not a member of this organization`).  (optional)
 
             try
             {
@@ -131,13 +131,14 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Batch tamamlandı (kısmi başarı dahil). &#x60;results&#x60; giriş sırasında, her satır &#x60;row_index&#x60; ile eşlenir.  |  -  |
-| **400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz.  |  -  |
+| **400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 | **402** | INSUFFICIENT_CREDITS: N satırın toplam tahmini maliyeti için yeterli kredi yok (ön kontrol; hiçbir sözleşme yaratılmadı). Satır bazlı yetersiz kredi durumları burada DEĞİL, 200 yanıtı içindeki &#x60;results[].status: \&quot;failed\&quot;&#x60; altında döner.  |  -  |
 | **403** | INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED |  -  |
-| **404** | Kayıt bulunamadı |  -  |
+| **404** | Şablon bulunamadı veya bu çalışma alanına ait değil. DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND: Belge Toplama seçimi bulunamadı, arşivli, kapsam dışı veya kimlik metin değil. Bu durumlar aynı kodu kullanır; hiçbir sözleşme oluşturulmaz.  |  -  |
 | **409** | &#x60;QES_NOT_SUPPORTED_MULTI_DOCUMENT&#x60;: güvenli elektronik imza birden çok belge içeren zarflarda henüz desteklenmiyor.  |  -  |
 | **429** | İstek limiti aşıldı (API anahtarı başına 5 toplu istek/dakika) |  -  |
+| **503** | DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi işlemleri ve davetlerden önce reddedilir; otomatik tekrar yerine şablon seçimi/politikası veya hizmet kullanılabilirliği düzeltilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -147,7 +148,7 @@ catch (ApiException e)
 
 Zarfı imzaya gönder (yayınla + davet)
 
-Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — `dispatch_notifications: false` ile oluşturulur, ardından `POST .../documents` / `POST .../documents/upload` ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations` gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir. **Bu uç çağrılana kadar** birden çok belgeli bir zarfın oluşturma yanıtındaki `signing_url`'leri ÇALIŞMAZ (imzacı için 410; `POST .../parties/{partyId}/resend` ve `POST .../reminders` için 409 `ENVELOPE_NOT_DISPATCHED` döner); belge uçları (`/documents*`) ise gönderim beklemeden kullanılabilir.  **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (`dispatched: false` döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. `v1ResendRateLimiter`, `/parties/{partyId}/resend` ile AYNI dakika-bazlı freni paylaşır). 
+Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/ WhatsApp) ile bilgilendirir.  **Onaylayan:** Sözleşmede Onaylayan varsa bu uç önce yalnızca onay bekleyen onaylayanları davet eder; imzacılar tüm onaylayanlar onayladıktan sonra davet edilir. Bir onaylayan reddettiyse bu uç kimseye davet göndermez; onay vermiş onaylayan yeniden davet edilmez.  🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf YARATIMINI kapatan bir anahtardır.  **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir — `dispatch_notifications: false` ile oluşturulur, ardından `POST .../documents` / `POST .../documents/upload` ile belgeler eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations` gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu uçla yayına alıp davetleri gönderir. **Bu uç çağrılana kadar** birden çok belgeli bir zarfın oluşturma yanıtındaki `signing_url`'leri ÇALIŞMAZ (imzacı için 410; `POST .../parties/{partyId}/resend` ve `POST .../reminders` için 409 `ENVELOPE_NOT_DISPATCHED` döner); belge uçları (`/documents*`) ise gönderim beklemeden kullanılabilir.  **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`). Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir: sözleşme zaten yayınlanmışsa (`dispatched: false` döner) fark 0 olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır (bkz. `v1ResendRateLimiter`, `/parties/{partyId}/resend` ile AYNI dakika-bazlı freni paylaşır).
 
 ### Example
 ```csharp
@@ -175,8 +176,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var apiV1DemandsDemandIdDispatchPostRequest = new ApiV1DemandsDemandIdDispatchPostRequest?(); // ApiV1DemandsDemandIdDispatchPostRequest? |  (optional) 
+            var demandId = "demandId_example";  // Guid |
+            var apiV1DemandsDemandIdDispatchPostRequest = new ApiV1DemandsDemandIdDispatchPostRequest?(); // ApiV1DemandsDemandIdDispatchPostRequest? |  (optional)
 
             try
             {
@@ -255,7 +256,7 @@ catch (ApiException e)
 
 Belgeye imzacı ata (tam-küme replace)
 
-Belgeye atanmış imzacı kümesini **tam olarak** `party_ids` ile değiştirir (eski atamalar silinir, yenileri yazılır). `party_ids` boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 `INVALID_PARTY_ID` — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 `ASSIGNMENT_HAS_DECISION`). 
+Belgeye atanmış imzacı kümesini **tam olarak** `party_ids` ile değiştirir (eski atamalar silinir, yenileri yazılır). `party_ids` boş olamaz ve sözleşmenin kendi taraflarına ait olmak zorundadır (400 `INVALID_PARTY_ID` — çapraz-sözleşme id kabul edilmez).  Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması kaldırılamaz (400 `ASSIGNMENT_HAS_DECISION`).
 
 ### Example
 ```csharp
@@ -283,9 +284,9 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var docId = "docId_example";  // Guid | 
-            var apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest = new ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest(); // ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest | 
+            var demandId = "demandId_example";  // Guid |
+            var docId = "docId_example";  // Guid |
+            var apiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest = new ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest(); // ApiV1DemandsDemandIdDocumentsDocIdAssignmentsPutRequest |
 
             try
             {
@@ -362,7 +363,7 @@ catch (ApiException e)
 
 Belgeyi zarftan sil
 
-Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N'e yeniden sıralanır. **Zarftaki son belge silinemez** (400 `CANNOT_DELETE_LAST_DOCUMENT`) — zarf hiç boş kalamaz. 
+Belgeyi (sayfaları + içerikleriyle birlikte) siler; kalan belgeler 1..N'e yeniden sıralanır. **Zarftaki son belge silinemez** (400 `CANNOT_DELETE_LAST_DOCUMENT`) — zarf hiç boş kalamaz.
 
 ### Example
 ```csharp
@@ -390,8 +391,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var docId = "docId_example";  // Guid | 
+            var demandId = "demandId_example";  // Guid |
+            var docId = "docId_example";  // Guid |
 
             try
             {
@@ -467,7 +468,7 @@ catch (ApiException e)
 
 Belge metadata güncelle
 
-Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (`PUT .../assignments`). 
+Belgenin yalnız metadata alanlarını (title/doc_kind/is_required/ signature_required) günceller — **kısmi güncelleme**: gövdede gönderilmeyen alanlar değişmez. İmzacı ataması AYRI bir uçtur (`PUT .../assignments`).
 
 ### Example
 ```csharp
@@ -495,9 +496,9 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var docId = "docId_example";  // Guid | 
-            var apiV1DemandsDemandIdDocumentsDocIdPatchRequest = new ApiV1DemandsDemandIdDocumentsDocIdPatchRequest(); // ApiV1DemandsDemandIdDocumentsDocIdPatchRequest | 
+            var demandId = "demandId_example";  // Guid |
+            var docId = "docId_example";  // Guid |
+            var apiV1DemandsDemandIdDocumentsDocIdPatchRequest = new ApiV1DemandsDemandIdDocumentsDocIdPatchRequest(); // ApiV1DemandsDemandIdDocumentsDocIdPatchRequest |
 
             try
             {
@@ -574,7 +575,7 @@ catch (ApiException e)
 
 Zarf belge listesi
 
-Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm `/documents*` + `/documents/{docId}*` + `/documents/{docId}/assignments` uçları `ENVELOPE_DECISION_ENFORCE` bayrağı **arkasındadır**; bayrak kapalıyken **409 `ENVELOPE_MULTI_DOC_DISABLED`** döner. Bu, dashboard'un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca `POST /demands/{demandId}/dispatch` çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. `?view=wizard` verilirse tam şekil döner (`EnvelopeDocument` şemasındaki alan notlarına bakın). 
+Çok-belgeli imza zarfının belge listesini döner.  🔴 Bu uç ve aşağıdaki tüm `/documents*` + `/documents/{docId}*` + `/documents/{docId}/assignments` uçları `ENVELOPE_DECISION_ENFORCE` bayrağı **arkasındadır**; bayrak kapalıyken **409 `ENVELOPE_MULTI_DOC_DISABLED`** döner. Bu, dashboard'un davranışından BİLEREK daha katıdır: dashboard yalnız yazma uçlarını kapatır, burada okuma da kapalıdır — kademeli açılış tamamlanmadan dış API çağıranına kararsız/tek-belgeye-indirgenmiş bir zarf durumu hiç gösterilmez.  Belge uçları **kredi düşmez**; tahsilat yalnızca `POST /demands/{demandId}/dispatch` çağrıldığında yapılır.  Varsayılan yanıt daraltılmış özet şeklidir. `?view=wizard` verilirse tam şekil döner (`EnvelopeDocument` şemasındaki alan notlarına bakın).
 
 ### Example
 ```csharp
@@ -602,8 +603,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var view = "wizard";  // string? | `wizard` → tam DTO (`assigned_party_ids` + `decision_count` dahil). (optional) 
+            var demandId = "demandId_example";  // Guid |
+            var view = "wizard";  // string? | `wizard` → tam DTO (`assigned_party_ids` + `decision_count` dahil). (optional)
 
             try
             {
@@ -678,7 +679,7 @@ catch (ApiException e)
 
 Zarftaki belgelerin sırasını değiştir
 
-Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. `document_ids` zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 `ORDER_SET_MISMATCH`** döner. 
+Zarftaki TÜM belgelerin sırasını tek istekte yeniden atar. `document_ids` zarftaki **mevcut belge kümesiyle birebir aynı** (aynı eleman sayısı, farklı sıra) olmak zorundadır — eksik/fazla/yabancı id **400 `ORDER_SET_MISMATCH`** döner.
 
 ### Example
 ```csharp
@@ -706,8 +707,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var apiV1DemandsDemandIdDocumentsOrderPutRequest = new ApiV1DemandsDemandIdDocumentsOrderPutRequest(); // ApiV1DemandsDemandIdDocumentsOrderPutRequest | 
+            var demandId = "demandId_example";  // Guid |
+            var apiV1DemandsDemandIdDocumentsOrderPutRequest = new ApiV1DemandsDemandIdDocumentsOrderPutRequest(); // ApiV1DemandsDemandIdDocumentsOrderPutRequest |
 
             try
             {
@@ -783,7 +784,7 @@ catch (ApiException e)
 
 Zarfa metadata-only belge ekle
 
-Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: `POST /demands/{demandId}/documents/upload`.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır. 
+Zarfa dosyasız (yalnız metadata) yeni bir belge satırı ekler; sıra numarası otomatik atanır (mevcut belge sayısı + 1). Dosyalı yükleme AYRI bir uçtur: `POST /demands/{demandId}/documents/upload`.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır.
 
 ### Example
 ```csharp
@@ -811,8 +812,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
-            var apiV1DemandsDemandIdDocumentsPostRequest = new ApiV1DemandsDemandIdDocumentsPostRequest(); // ApiV1DemandsDemandIdDocumentsPostRequest | 
+            var demandId = "demandId_example";  // Guid |
+            var apiV1DemandsDemandIdDocumentsPostRequest = new ApiV1DemandsDemandIdDocumentsPostRequest(); // ApiV1DemandsDemandIdDocumentsPostRequest |
 
             try
             {
@@ -888,7 +889,7 @@ catch (ApiException e)
 
 Zarfa dosya yükle (belge başına tek dosya)
 
-Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  `idempotency_key` **zorunludur** (gövde alanı; `Idempotency-Key` HEADER'ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı `(demandId, idempotency_key)` çifti ile tekrar çağrı **409 `IDEMPOTENT_REPLAY`** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO'su döner.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır. 
+Zarfa **belge başına tek dosya** yükler. Aynı sözleşmeye birden çok belge eklemek için bu uç birden çok kez çağrılır — tek istekte N belge YASAKTIR.  `idempotency_key` **zorunludur** (gövde alanı; `Idempotency-Key` HEADER'ı ile KARIŞTIRILMAZ, ayrı bir mekanizmadır). Aynı `(demandId, idempotency_key)` çifti ile tekrar çağrı **409 `IDEMPOTENT_REPLAY`** döner ve **yeni belge YARATILMAZ**; yanıt gövdesinde daha önce yüklenen belgenin DTO'su döner.  Belge uçları kredi düşmez; tahsilat `POST /dispatch`'te yapılır.
 
 ### Example
 ```csharp
@@ -916,10 +917,10 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var demandId = "demandId_example";  // Guid | 
+            var demandId = "demandId_example";  // Guid |
             var file = new System.IO.MemoryStream(System.IO.File.ReadAllBytes("/path/to/file.txt"));  // FileParameter | PDF/DOC/DOCX/ODT/RTF/TXT veya görsel. Tek dosya.
             var idempotencyKey = "idempotencyKey_example";  // string | Zorunlu tekrar-koruma anahtarı.
-            var title = "title_example";  // string | 
+            var title = "title_example";  // string |
             var docKind = "CONTRACT";  // string? |  (optional)  (default to OTHER)
             var isRequired = "true";  // string? | Multipart alanı — string olarak gönderilir. (optional)  (default to true)
 
@@ -1004,7 +1005,7 @@ catch (ApiException e)
 
 Sözleşme listesi (counts-only, PII'siz)
 
-Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`. 
+Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`.
 
 ### Example
 ```csharp
@@ -1032,15 +1033,15 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var status = "DRAFT";  // string? |  (optional) 
-            var q = "q_example";  // string? | Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. (optional) 
-            var from = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional) 
-            var to = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional) 
-            var templateId = "templateId_example";  // Guid? |  (optional) 
+            var status = "DRAFT";  // string? |  (optional)
+            var q = "q_example";  // string? | Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. (optional)
+            var from = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional)
+            var to = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional)
+            var templateId = "templateId_example";  // Guid? |  (optional)
             var page = 1;  // int? |  (optional)  (default to 1)
             var limit = 20;  // int? | Sayfa boyutu (page_size ile aynı) (optional)  (default to 20)
-            var sort = "sort_example";  // string? | alan:yön (ör. createdAt:desc) (optional) 
-            var archived = "exclude";  // string? | Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler. `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).  (optional) 
+            var sort = "sort_example";  // string? | alan:yön (ör. createdAt:desc) (optional)
+            var archived = "exclude";  // string? | Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler. `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).  (optional)
 
             try
             {
@@ -1121,7 +1122,7 @@ catch (ApiException e)
 
 Sözleşmeyi arşivle
 
-Arşiv sözleşmenin `status`'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile). 
+Arşiv sözleşmenin `status`'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile).
 
 ### Example
 ```csharp
@@ -1149,7 +1150,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -1223,7 +1224,7 @@ catch (ApiException e)
 
 Belge-özgü imzalı PDF (çok-belgeli zarf)
 
-Çok-belgeli zarfta TEK bir belgenin imzalı PDF'ini indirir. Zarf-geneli `/demands/{id}/pdf` ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND'lenir (başka zarfın belgesi istenirse 404). 
+Çok-belgeli zarfta TEK bir belgenin imzalı PDF'ini indirir. Zarf-geneli `/demands/{id}/pdf` ucunun belge-kırılımlı ikizidir; scope ve ownership kapıları birebir aynıdır, belge aidiyeti ayrıca sözleşmeye AND'lenir (başka zarfın belgesi istenirse 404).
 
 ### Example
 ```csharp
@@ -1251,7 +1252,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
             var documentId = "documentId_example";  // Guid | Zarftaki belgenin kimliği.
 
             try
@@ -1326,7 +1327,7 @@ catch (ApiException e)
 
 Sözleşme iptal (void)
 
-Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. 
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir.
 
 ### Example
 ```csharp
@@ -1354,8 +1355,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
-            var apiV1DemandsIdCancelPostRequest = new ApiV1DemandsIdCancelPostRequest?(); // ApiV1DemandsIdCancelPostRequest? |  (optional) 
+            var id = "id_example";  // Guid |
+            var apiV1DemandsIdCancelPostRequest = new ApiV1DemandsIdCancelPostRequest?(); // ApiV1DemandsIdCancelPostRequest? |  (optional)
 
             try
             {
@@ -1430,7 +1431,7 @@ catch (ApiException e)
 
 Tamamlanma sertifikası (PAdES B-T)
 
-Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409). 
+Sözleşmenin tamamlanma/denetim sertifikasını (imza denetim izi + zaman damgası özeti, PAdES B-T mühürlü) PDF olarak döner. Yalnızca COMPLETED sözleşmeler için üretilir (aksi 409).
 
 ### Example
 ```csharp
@@ -1458,8 +1459,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
-            var lang = "lang_example";  // string? | tr | en (optional) 
+            var id = "id_example";  // Guid |
+            var lang = "lang_example";  // string? | tr | en (optional)
 
             try
             {
@@ -1534,7 +1535,7 @@ catch (ApiException e)
 
 Sözleşme sil (yalnızca tamamlanmamış)
 
-Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. 
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın.
 
 ### Example
 ```csharp
@@ -1562,7 +1563,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -1636,7 +1637,7 @@ catch (ApiException e)
 
 Gömülü imza oturumu başlat (embed token mint)
 
-Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner. 
+Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.  **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine nitelikli elektronik sertifika ile imzalama akışını kullanın.  **Token özellikleri:** - Tek kullanımlık: imza sayfası açıldığında token tüketilir. - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur. - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış   izin verilen origin'ler dışından `<iframe>` açılamaz (409 döner).  **Güvenlik katmanları:** - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması) - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması) - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)  **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için oturum alır. Erişim yoksa 404 döner.
 
 ### Example
 ```csharp
@@ -1665,7 +1666,7 @@ namespace Example
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
             var id = "id_example";  // Guid | Sözleşme (demand) ID
-            var apiV1DemandsIdEmbedSessionPostRequest = new ApiV1DemandsIdEmbedSessionPostRequest(); // ApiV1DemandsIdEmbedSessionPostRequest | 
+            var apiV1DemandsIdEmbedSessionPostRequest = new ApiV1DemandsIdEmbedSessionPostRequest(); // ApiV1DemandsIdEmbedSessionPostRequest |
 
             try
             {
@@ -1744,7 +1745,7 @@ catch (ApiException e)
 
 Sözleşme durumu + imza ilerlemesi
 
-Kurum çalışma alanında erişim, sözleşme listesi ile aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri görür. Erişim yoksa 404 döner. 
+Kurum çalışma alanında erişim, sözleşme listesi ile aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri görür. Erişim yoksa 404 döner.
 
 ### Example
 ```csharp
@@ -1772,7 +1773,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -1845,7 +1846,7 @@ catch (ApiException e)
 
 Kaşe alanını doldur (kısmi güncelleme)
 
-Sözleşmedeki var olan TEK bir kaşe alanını yapılandırılmış veriyle doldurur. `POST /api/v1/demands/{id}/items` tüm alanları yeniden yazar; bu uç ise yalnız belirtilen kaşeye dokunur, diğer alanlar değişmez.  Kaşe alanının kimliği (`itemId`) `GET /api/v1/demands/{id}` yanıtındaki `stamp_items[].item_id` alanından alınır.  ### Kısmi güncelleme kuralları  - `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk kırpılır). - `null` veya boş string gönderilen alan kaldırılır. - Gönderilmeyen alan olduğu gibi korunur. - Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA` döner.  ### Kaşe kaynağına göre davranış  - `FILLER_PROVIDES`: veri imzalayanın kaşesine önceden doldurulur;   zorunlu kaşe bu veriyle karşılanmış sayılır. İmzalayan imza   sayfasında bu değeri görür ve imzalamadan önce düzenleyebilir;   düzenlerse onun verisi kaydedilir. Kayıtta verinin gönderen   tarafından mı imzalayan tarafından mı girildiği ayrıca tutulur. - `INLINE`: kaşe verisi güncellenir. - `FROM_SAVED`: veri artık kayıtlı kaşeyle aynı olmadığı için kaşe   `INLINE` olur. Görsel kaşe (logo) varsa korunur ve belgede logo gösterilir.  ### Durum kontrolü  Yalnız `DRAFT` ve `PENDING` sözleşmeler güncellenebilir. Taraflardan biri imzaladıysa veya bir belge için karar verdiyse kaşe değiştirilemez.  ### Erişim  Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerinde, MEMBER yalnız kendi oluşturduğu sözleşmelerde kaşe doldurabilir. Erişim yoksa `404 DEMAND_NOT_FOUND` döner.  ### Örnek  ```bash curl -X PATCH https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"stamp_data\": {       \"companyName\": \"Örnek Ltd.\",       \"taxNumber\": \"1234567890\",       \"taxOffice\": \"Kadıköy\",       \"companyPhone\": \"+905551112233\"     }   }' ``` 
+Sözleşmedeki var olan TEK bir kaşe alanını yapılandırılmış veriyle doldurur. `POST /api/v1/demands/{id}/items` tüm alanları yeniden yazar; bu uç ise yalnız belirtilen kaşeye dokunur, diğer alanlar değişmez.  Kaşe alanının kimliği (`itemId`) `GET /api/v1/demands/{id}` yanıtındaki `stamp_items[].item_id` alanından alınır.  ### Kısmi güncelleme kuralları  - `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk kırpılır). - `null` veya boş string gönderilen alan kaldırılır. - Gönderilmeyen alan olduğu gibi korunur. - Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA` döner.  ### Kaşe kaynağına göre davranış  - `FILLER_PROVIDES`: veri imzalayanın kaşesine önceden doldurulur;   zorunlu kaşe bu veriyle karşılanmış sayılır. İmzalayan imza   sayfasında bu değeri görür ve imzalamadan önce düzenleyebilir;   düzenlerse onun verisi kaydedilir. Kayıtta verinin gönderen   tarafından mı imzalayan tarafından mı girildiği ayrıca tutulur. - `INLINE`: kaşe verisi güncellenir. - `FROM_SAVED`: veri artık kayıtlı kaşeyle aynı olmadığı için kaşe   `INLINE` olur. Görsel kaşe (logo) varsa korunur ve belgede logo gösterilir.  ### Durum kontrolü  Yalnız `DRAFT` ve `PENDING` sözleşmeler güncellenebilir. Taraflardan biri imzaladıysa veya bir belge için karar verdiyse kaşe değiştirilemez.  ### Erişim  Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerinde, MEMBER yalnız kendi oluşturduğu sözleşmelerde kaşe doldurabilir. Erişim yoksa `404 DEMAND_NOT_FOUND` döner.  ### Örnek  ```bash curl -X PATCH https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"stamp_data\": {       \"companyName\": \"Örnek Ltd.\",       \"taxNumber\": \"1234567890\",       \"taxOffice\": \"Kadıköy\",       \"companyPhone\": \"+905551112233\"     }   }' ```
 
 ### Example
 ```csharp
@@ -1873,9 +1874,9 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
             var itemId = 56;  // int | Kaşe alanının kimliği (`stamp_items[].item_id`)
-            var patchStampItemRequest = new PatchStampItemRequest(); // PatchStampItemRequest | 
+            var patchStampItemRequest = new PatchStampItemRequest(); // PatchStampItemRequest |
 
             try
             {
@@ -1954,7 +1955,7 @@ catch (ApiException e)
 
 Sözleşmeye alan yerleştir (replace)
 
-Sözleşmenin sayfalarına imza ve form alanlarını koordinatlarıyla yerleştirir. Tipik kullanım: `POST /api/v1/demands/upload` ile demand yarat (`dispatch_notifications=false` ile auto-dispatch'i ertele) → bu endpoint ile alanları yerleştir → dashboard üzerinden ya da `POST /api/v1/demands/{id}/reminders` ile gönderim başlat.  ### Replace mode  Endpoint **replace** semantiği taşır: - `page_ids` **omitted** → demand'in TÜM mevcut item'ları silinir,   body'dekiler yaratılır (full replace). - `page_ids: [N, M, ...]` → sadece bu sayfaların item'ları silinir,   diğer sayfalardaki item'lar korunur. Body'deki `items[].page_id`   değerleri `page_ids` listesinde olmalıdır.  ### Item type'ları  | `item_type` | `party_id` zorunlu? | `config` örneği | |- -- -- -- -- -- --|- -- -- -- -- -- -- -- -- -- --|- -- -- -- -- -- -- -- --| | `signature` | ✅ | (yok) veya `{ requireFirstSignatureOtp: true }` | | `text` | ❌ | `{ default_content }` | | `dynamic_text` | ✅ | `{ defaultSource: \"{{signer.full_name}}\" }` | | `cells` | ✅ | `{ cellCount: 11, defaultSource: \"{{signer.government_id}}\" }` | | `date` | ✅ | `{ defaultSource, defaultValue }` | | `dropdown` | ✅ | `{ options: [{label,value}], defaultValue }` | | `checkbox` | ✅ | `{ checkedByDefault: false }` | | `radio` | ✅ | `{ options: [{label,value}], defaultValue }` | | `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) | `{ source: \"INLINE\", stampData: { companyName: \"Örnek Ltd.\", taxNumber: \"1234567890\" } }` |  ### Kaşe (`stamp`) alanı  - `config.source`: `INLINE` (varsayılan, kaşe verisi gönderenden gelir),   `FROM_SAVED` (kayıtlı kaşeden kopya) veya `FILLER_PROVIDES` (kaşeyi   `party_id` ile belirtilen imzalayan doldurur). - `config.stampData`: yapılandırılmış kaşe verisi. İzinli alanlar:   `companyName`, `personalName`, `address`, `companyAddress`,   `personalAddress`, `taxNumber`, `taxOffice`, `idNumber`, `phone`,   `companyPhone`, `personalPhone`, `email` (hepsi string). Bilinmeyen alan   veya string olmayan değer `400 INVALID_STAMP_DATA` döner. Eski   dokümandaki data URL string biçimi geriye dönük uyum için hâlâ kabul   edilir, ancak belgede kaşe olarak çizilmez; yapılandırılmış nesneyi kullanın. - `config.isRequired: true` yalnız `FILLER_PROVIDES` kaşede anlamlıdır:   imzalayan kaşeyi doldurmadan imzalayamaz. Zorunlu kaşenin `party_id`'si   olmak zorundadır; çok belgeli zarfta taraf, kaşenin bulunduğu belgeye   atanmış olmalıdır. - Var olan tek bir kaşeyi diğer alanlara dokunmadan doldurmak için bu   uç yerine `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` kullanın.  ### Sistem değişkenleri (dynamic_text/cells/date `config.defaultSource`)  `{{signer.first_name}}`, `{{signer.last_name}}`, `{{signer.full_name}}`, `{{signer.email}}`, `{{signer.phone}}`, `{{signer.government_id}}`, `{{signer.birth_date}}`, `{{signer.sign_date}}`, `{{contract.title}}`, `{{sender.full_name}}`, `{{current.date}}`, `{{current.datetime}}`.  ### Workspace izolasyonu  X-API-Key middleware demand'i workspace'e göre filtreler; başka workspace'in demand'ine item ekleyemezsiniz (404 döner). Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerine, MEMBER yalnız kendi oluşturduğu sözleşmelere alan yerleştirebilir. Erişim yoksa 404 döner.  ### Status kontrolü  Sadece `PENDING` demand edit edilebilir. `COMPLETED`, `EXPIRED`, `REJECTED` için 403.  ### Örnek  ```bash curl -X POST https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"items\": [       {         \"page_id\": 12345,         \"party_id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",         \"item_type\": \"signature\",         \"position_x\": 0.5, \"position_y\": 0.85,         \"width\": 0.2, \"height\": 0.05,         \"is_required\": true       },       {         \"page_id\": 12345,         \"party_id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",         \"item_type\": \"cells\",         \"position_x\": 0.1, \"position_y\": 0.5,         \"width\": 0.4, \"height\": 0.04,         \"slug\": \"tc\",         \"config\": { \"cellCount\": 11, \"defaultSource\": \"{{signer.government_id}}\" }       }     ]   }' ``` 
+Sözleşmenin sayfalarına imza ve form alanlarını koordinatlarıyla yerleştirir. Tipik kullanım: `POST /api/v1/demands/upload` ile demand yarat (`dispatch_notifications=false` ile auto-dispatch'i ertele) → bu endpoint ile alanları yerleştir → dashboard üzerinden ya da `POST /api/v1/demands/{id}/reminders` ile gönderim başlat.  ### Replace mode  Endpoint **replace** semantiği taşır: - `page_ids` **omitted** → demand'in TÜM mevcut item'ları silinir,   body'dekiler yaratılır (full replace). - `page_ids: [N, M, ...]` → sadece bu sayfaların item'ları silinir,   diğer sayfalardaki item'lar korunur. Body'deki `items[].page_id`   değerleri `page_ids` listesinde olmalıdır.  ### Item type'ları  | `item_type` | `party_id` zorunlu? | `config` örneği | |- -- -- -- -- -- --|- -- -- -- -- -- -- -- -- -- --|- -- -- -- -- -- -- -- --| | `signature` | ✅ | (yok) veya `{ requireFirstSignatureOtp: true }` | | `text` | ❌ | `{ default_content }` | | `dynamic_text` | ✅ | `{ defaultSource: \"{{signer.full_name}}\" }` | | `cells` | ✅ | `{ cellCount: 11, defaultSource: \"{{signer.government_id}}\" }` | | `date` | ✅ | `{ defaultSource, defaultValue }` | | `dropdown` | ✅ | `{ options: [{label,value}], defaultValue }` | | `checkbox` | ✅ | `{ checkedByDefault: false }` | | `radio` | ✅ | `{ options: [{label,value}], defaultValue }` | | `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) | `{ source: \"INLINE\", stampData: { companyName: \"Örnek Ltd.\", taxNumber: \"1234567890\" } }` |  ### Kaşe (`stamp`) alanı  - `config.source`: `INLINE` (varsayılan, kaşe verisi gönderenden gelir),   `FROM_SAVED` (kayıtlı kaşeden kopya) veya `FILLER_PROVIDES` (kaşeyi   `party_id` ile belirtilen imzalayan doldurur). - `config.stampData`: yapılandırılmış kaşe verisi. İzinli alanlar:   `companyName`, `personalName`, `address`, `companyAddress`,   `personalAddress`, `taxNumber`, `taxOffice`, `idNumber`, `phone`,   `companyPhone`, `personalPhone`, `email` (hepsi string). Bilinmeyen alan   veya string olmayan değer `400 INVALID_STAMP_DATA` döner. Eski   dokümandaki data URL string biçimi geriye dönük uyum için hâlâ kabul   edilir, ancak belgede kaşe olarak çizilmez; yapılandırılmış nesneyi kullanın. - `config.isRequired: true` yalnız `FILLER_PROVIDES` kaşede anlamlıdır:   imzalayan kaşeyi doldurmadan imzalayamaz. Zorunlu kaşenin `party_id`'si   olmak zorundadır; çok belgeli zarfta taraf, kaşenin bulunduğu belgeye   atanmış olmalıdır. - Var olan tek bir kaşeyi diğer alanlara dokunmadan doldurmak için bu   uç yerine `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` kullanın.  ### Sistem değişkenleri (dynamic_text/cells/date `config.defaultSource`)  `{{signer.first_name}}`, `{{signer.last_name}}`, `{{signer.full_name}}`, `{{signer.email}}`, `{{signer.phone}}`, `{{signer.government_id}}`, `{{signer.birth_date}}`, `{{signer.sign_date}}`, `{{contract.title}}`, `{{sender.full_name}}`, `{{current.date}}`, `{{current.datetime}}`.  ### Workspace izolasyonu  X-API-Key middleware demand'i workspace'e göre filtreler; başka workspace'in demand'ine item ekleyemezsiniz (404 döner). Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerine, MEMBER yalnız kendi oluşturduğu sözleşmelere alan yerleştirebilir. Erişim yoksa 404 döner.  ### Status kontrolü  Sadece `PENDING` demand edit edilebilir. `COMPLETED`, `EXPIRED`, `REJECTED` için 403.  ### Örnek  ```bash curl -X POST https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"items\": [       {         \"page_id\": 12345,         \"party_id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",         \"item_type\": \"signature\",         \"position_x\": 0.5, \"position_y\": 0.85,         \"width\": 0.2, \"height\": 0.05,         \"is_required\": true       },       {         \"page_id\": 12345,         \"party_id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",         \"item_type\": \"cells\",         \"position_x\": 0.1, \"position_y\": 0.5,         \"width\": 0.4, \"height\": 0.04,         \"slug\": \"tc\",         \"config\": { \"cellCount\": 11, \"defaultSource\": \"{{signer.government_id}}\" }       }     ]   }' ```
 
 ### Example
 ```csharp
@@ -1982,8 +1983,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
-            var upsertItemsRequest = new UpsertItemsRequest(); // UpsertItemsRequest | 
+            var id = "id_example";  // Guid |
+            var upsertItemsRequest = new UpsertItemsRequest(); // UpsertItemsRequest |
 
             try
             {
@@ -2061,7 +2062,7 @@ catch (ApiException e)
 
 Tekil tarafa imza davetini tekrar gönder
 
-Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa, onayını vermiş onaylayana, açık düzeltme talebi olan tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). Sıralı imzada onaylayanın onayı o adımı tamamlar; sıra bir sonraki tarafa geçer. 
+Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa, onayını vermiş onaylayana, açık düzeltme talebi olan tarafa veya sıralı imzada sırası gelmemiş tarafa gönderilemez (409). Sıralı imzada onaylayanın onayı o adımı tamamlar; sıra bir sonraki tarafa geçer.
 
 ### Example
 ```csharp
@@ -2089,8 +2090,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
-            var partyId = "partyId_example";  // Guid | 
+            var id = "id_example";  // Guid |
+            var partyId = "partyId_example";  // Guid |
 
             try
             {
@@ -2155,7 +2156,7 @@ catch (ApiException e)
 |-------------|-------------|------------------|
 | **200** | Gönderildi |  -  |
 | **404** | Kayıt bulunamadı |  -  |
-| **409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış, reddetmiş, onayını vermiş veya sıralı imzada sırası   gelmemiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
+| **409** | Tekrar gönderim yapılamaz. &#x60;error&#x60; insan-okur mesajı taşır. - İmzalamış veya reddetmiş taraf (&#x60;code&#x60; alanı yok) - &#x60;CHANGE_REQUEST_PENDING&#x60;: tarafın açık bir düzeltme talebi var;   talep çözüldükten sonra tekrar gönderilebilir - &#x60;PARTY_NOT_ELIGIBLE&#x60;: tarafa şu an davet gönderilemez. Şu   durumlarda döner: taraf zaten onay vermiş bir onaylayan   olduğunda, sözleşme bir onaylayanın reddiyle durdurulduğunda,   onaylayan katmanının onayı tamamlanmadan imzacıya gönderim   denendiğinde veya sıralı imzada henüz bu tarafın sırası   gelmediğinde. - &#x60;DEMAND_NOT_DISPATCHED&#x60;: sözleşme henüz imzaya gönderilmedi (taslak) - &#x60;DEMAND_NOT_DISPATCHABLE&#x60;: sözleşme tamamlanmış veya iptal edilmiş - &#x60;DEMAND_EXPIRED&#x60;: sözleşmenin imza süresi geçmiş - &#x60;ENVELOPE_NOT_DISPATCHED&#x60;: çok belgeli zarf henüz gönderilmedi.   Önce &#x60;POST /demands/{id}/dispatch&#x60; çağırın; tek belgeli ve   gönderilmiş sözleşmelerde bu kod hiç dönmez.  |  -  |
 | **429** | İki ayrı sınır vardır.  &#x60;TOO_MANY_REQUESTS&#x60;: API anahtarı başına saatte 300 istek (dispatch ucuyla ortak sınır). Gövdede &#x60;retry_after_seconds&#x60; döner.  &#x60;RECIPIENT_RESEND_LIMIT&#x60;: aynı alıcıya saatte en fazla 3, günde en fazla 10 davet tekrarı gönderilebilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -2166,7 +2167,7 @@ catch (ApiException e)
 
 İmzalı sözleşme PDF'i (auth'lu indirme)
 
-Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public `/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur. 
+Tamamlanmış sözleşmenin imzalı PDF'ini indirir. Public `/sonuc/{id}/pdf`'in aksine API key ownership'i zorunludur.
 
 ### Example
 ```csharp
@@ -2194,7 +2195,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -2267,7 +2268,7 @@ catch (ApiException e)
 
 Sözleşme süre/yenileme takibini güncelle
 
-Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op'tur (otomatik olarak ileri alınmış bitiş korunur). 
+Kısmi güncelleme: yalnız gövdede gönderilen `ContractTermInput` anahtarları değiştirilir; bir anahtarı `null` göndermek o alanı temizler. Dashboard'daki sözleşme detay sayfasıyla AYNI çekirdek kuralı uygular.  Bitişi etkileyen bir alan (`term_start_mode`, `term_start_date`, `term_duration_months`, `term_fixed_end_date`) kayıttakinden farklı bir DEĞERLE gönderilirse `term_end_date` bilinen başlangıçtan yeniden hesaplanır; aynı değerle gelen alan no-op'tur (otomatik olarak ileri alınmış bitiş korunur).
 
 ### Example
 ```csharp
@@ -2295,8 +2296,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
-            var contractTermInput = new ContractTermInput(); // ContractTermInput | 
+            var id = "id_example";  // Guid |
+            var contractTermInput = new ContractTermInput(); // ContractTermInput |
 
             try
             {
@@ -2372,7 +2373,7 @@ catch (ApiException e)
 
 İmza denetim izi (maskeli)
 
-Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir. 
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir), `REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve onaylayanların yeniden onay vermesi gerekiyor). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
 
 ### Example
 ```csharp
@@ -2400,7 +2401,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -2473,7 +2474,7 @@ catch (ApiException e)
 
 Sözleşmeyi arşivden çıkar
 
-`archived_at`'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`). 
+`archived_at`'i temizler; sözleşme yeniden mutasyona açılır. Zaten arşivsizse idempotent (200, `archived_at: null`).
 
 ### Example
 ```csharp
@@ -2501,7 +2502,7 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var id = "id_example";  // Guid | 
+            var id = "id_example";  // Guid |
 
             try
             {
@@ -2574,7 +2575,7 @@ catch (ApiException e)
 
 Sözleşme oluştur (şablondan)
 
-Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field'ları `variables` payload'undan doldurur ve imzalama URL'lerini döner.  **Variable resolution:** - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta   o slug var ise oradan uygulanır - Yoksa root `variables`'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı  **Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa (her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30, 3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.  **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü atlamak için `dispatch_notifications: false` gönderip belge atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden uygular). 
+Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini kaydeder, dynamic field'ları `variables` payload'undan doldurur ve imzalama URL'lerini döner.  **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa oluşturma anında yalnızca onay bekleyen onaylayanlar davet edilir; imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir onaylayan reddederse imzacılar davet edilmez. Ayrıntı: açıklamadaki \"Onaylayan (onay adımı)\" bölümü.  **Variable resolution:** - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta   o slug var ise oradan uygulanır - Yoksa root `variables`'tan fallback - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,   `editable: true` ise)  **Validation:** - `party_mapping[i].variables` ve root `variables` object olmalı - Variable value'ları `string | number | boolean | null` olmalı   (object/array reject) - `template_party_id` party_mapping içinde unique olmalı  **Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa (her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30, 3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.  **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü atlamak için `dispatch_notifications: false` gönderip belge atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden uygular). Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner. Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir; `NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED` döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.
 
 ### Example
 ```csharp
@@ -2602,8 +2603,8 @@ namespace Example
             HttpClient httpClient = new HttpClient();
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
-            var createDemandRequest = new CreateDemandRequest(); // CreateDemandRequest | 
-            var idempotencyKey = "idempotencyKey_example";  // string? | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional) 
+            var createDemandRequest = new CreateDemandRequest(); // CreateDemandRequest |
+            var idempotencyKey = "idempotencyKey_example";  // string? | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
 
             try
             {
@@ -2667,12 +2668,14 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** | Sözleşme oluşturuldu |  -  |
-| **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir.  |  -  |
+| **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 | **402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 | **403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |
+| **404** | Şablon bulunamadı veya bu çalışma alanına ait değil. DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND: Belge Toplama seçimi bulunamadı, arşivli, kapsam dışı veya kimlik metin değil. Bu durumlar aynı kodu kullanır; hiçbir sözleşme oluşturulmaz.  |  -  |
 | **409** | Altı ayrı kod döner.  &#x60;IDEMPOTENCY_KEY_REUSED&#x60; — aynı &#x60;Idempotency-Key&#x60; daha önce FARKLI bir içerikle kullanıldı. Sessizce eski sözleşmeyi döndürmek \&quot;gönderdim sandım\&quot; kazası üretirdi; yeni sözleşme için yeni anahtar gönderin. Gövdede eski sözleşmenin &#x60;demand_id&#x60; alanı döner.  &#x60;IDEMPOTENCY_UNVERIFIABLE&#x60;: bu &#x60;Idempotency-Key&#x60; daha önce bir sözleşme üretti, ancak bu isteğin aynı içerikte olduğu doğrulanamadı. Eski sözleşme sessizce döndürülmez. Gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın; yeni bir anahtarla körlemesine tekrar denemek ikinci bir sözleşme oluşturur.  &#x60;DUPLICATE_SUSPECTED&#x60; — idempotency anahtarı GÖNDERİLMEDİ ve aynı API anahtarı son 10 dakika içinde aynı içeriği (aynı belge/şablon + aynı taraf kümesi) zaten gönderdi. Gövdede mevcut sözleşmenin &#x60;demand_id&#x60; alanı döner. Kasten tekrarlamak için &#x60;force&#x60; gönderin.  Bu kapı yalnız anahtarsız çağrılarda çalışır: &#x60;Idempotency-Key&#x60; gönderen istemci zaten tekrar-korumalıdır.  &#x60;PARTY_WITHOUT_DOCUMENTS&#x60;: eşlediğiniz bir tarafa imzalayacak belge düşmüyor. Üç biçimde görünebilir: (a) şablon düzeyinde ön-kontrol (rol hiçbir şablon belgesine atanmamış ve davet gönderilecek) sözleşmeyi HİÇ yaratmadan reddeder, gövdede &#x60;template_party_ids&#x60; (şablon rol kimlikleri) döner; (b) &#x60;documents&#x60; seçiminiz (ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesi) bir role seçili belge bırakmıyorsa &#x60;dispatch_notifications&#x60; değerinden bağımsız yine yaratmadan reddedilir, gövdede &#x60;template_party_ids&#x60; döner (seçimi değiştirin ya da o rolü eşlemeden çıkarın); (c) oluşturma sonrası aynı kontrol atamasız tarafı bulursa sözleşme TASLAĞA düşürülür ve gövdede &#x60;party_ids&#x60; (imzacı kimlikleri) + &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Hiçbir biçimde kredi düşülmez, davet gönderilmez.  &#x60;TEMPLATE_DOCUMENTS_NOT_READY&#x60;: şablonun belge yapısı henüz hazır değil; &#x60;documents&#x60; ve &#x60;document_variables&#x60; göndermeden deneyin ya da destekle iletişime geçin.  &#x60;DOCUMENT_SOURCE_UNAVAILABLE&#x60;: şablonun ilk belgesini çıkardınız ve kalan ilk belgenin kaynak dosyası yok; ilk belgeyi de gönderin ya da o belgeye dosya yükleyin.  |  -  |
 | **500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve TASLAĞA düşürülür; gövdede &#x60;data.id&#x60; / &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Davet gönderilmez. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  |  -  |
+| **503** | DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi işlemleri ve davetlerden önce reddedilir; otomatik tekrar yerine şablon seçimi/politikası veya hizmet kullanılabilirliği düzeltilir.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2682,7 +2685,7 @@ catch (ApiException e)
 
 Dosya upload ile sözleşme oluştur (şablonsuz)
 
-Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF'e birleştirilir, office formatları LibreOffice ile PDF'e çevrilir. 
+Multipart/form-data ile doğrudan dosya yükleyerek sözleşme oluşturur (şablon kullanmadan). Tek PDF/DOC/DOCX/ODT/RTF/TXT veya 1-20 görsel (JPG/PNG/HEIC/TIFF/WEBP) kabul eder; görseller sırayla tek PDF'e birleştirilir, office formatları LibreOffice ile PDF'e çevrilir.
 
 ### Example
 ```csharp
@@ -2711,15 +2714,15 @@ namespace Example
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
             var files = new List<FileParameter>(); // List<FileParameter> | 1 belge VEYA 1-20 görsel
-            var parties = "parties_example";  // string | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. `PartyMappingInput.locale`). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz. 
-            var idempotencyKey = "idempotencyKey_example";  // string? | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional) 
-            var order = "order_example";  // string? | Çoklu görsel sırası (JSON array of indices, örnek \\\"[0,2,1]\\\") (optional) 
-            var title = "title_example";  // string? | Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS'lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  (optional) 
-            var description = "description_example";  // string? |  (optional) 
-            var fieldTemplateId = "fieldTemplateId_example";  // Guid? | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.  (optional) 
-            var force = "true";  // string? | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional) 
-            var sendInvitations = "true";  // string? | `\\\"true\\\"` (veya `\\\"1\\\"`) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca `POST /api/v1/demands/{id}/parties/{partyId}/resend` çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`   döner (fail-closed). - **Açık değerler:** `\\\"true\\\"`, `\\\"1\\\"`, `\\\"all\\\"`, `\\\"email\\\"`, `\\\"sms\\\"`. - **Kapalı değerler:** `\\\"false\\\"`, `\\\"0\\\"`, `\\\"off\\\"`, `\\\"no\\\"`,   `\\\"hayir\\\"`, `\\\"hayır\\\"`. - Ad bilerek `dispatch_notifications` **değildir**: o   parametre `POST /api/v1/demands` ve `/demands/bulk`   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: `\\\"true\\\"`, `\\\"1\\\"` ve `\\\"all\\\"` tüm kanalları kullanır;   `\\\"email\\\"` yalnız e-posta, `\\\"sms\\\"` telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   `send_sms`/`send_email` bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (`dispatch.error = DISPATCH_TOO_MANY`), tarafları   `resend` ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği `Idempotency-Key`   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı `DUPLICATE_SUSPECTED` yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte `Idempotency-Key` gönderin;   anahtar yoksa yeniden göndermek yerine   `GET /api/v1/demands?...` ile sonucu doğrulayın.  (optional) 
-            var onAnchorMiss = "block";  // string? | Çapa bulunamadığında ne yapılacağı. Yalnız `field_template_id` ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır. - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`   ise uygulanır; aksi halde yok sayılır, `block` uygulanır   ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner. - İmza alanlarında `drop` hiçbir koşulda uygulanmaz. - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).  Yanıttaki `data.field_layout.on_anchor_miss` istenen değil, **uygulanan** değeri taşır.  (optional) 
+            var parties = "parties_example";  // string | JSON array of party objects. Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).  `field_template_id` gönderildiğinde her party AYRICA `template_party_id` (Alan Şablonu rolü) taşımak zorundadır ve şablondaki her rol tam olarak bir kez eşlenmelidir.  Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının dijital imza sayfasını ve bildirimlerini göreceği dil (bkz. `PartyMappingInput.locale`). Alan Şablonu kullanılırken gönderilmezse rolün varsayılan dili uygulanır. Geçersiz değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz.
+            var idempotencyKey = "idempotencyKey_example";  // string? | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.  (optional)
+            var order = "order_example";  // string? | Çoklu görsel sırası (JSON array of indices, örnek \\\"[0,2,1]\\\") (optional)
+            var title = "title_example";  // string? | Sözleşme başlığı (boşsa varsayılan bir başlık kullanılır). Başlık, imza davet ve hatırlatma SMS'lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  (optional)
+            var description = "description_example";  // string? |  (optional)
+            var fieldTemplateId = "fieldTemplateId_example";  // Guid? | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.  (optional)
+            var force = "true";  // string? | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+            var sendInvitations = "true";  // string? | `\\\"true\\\"` (veya `\\\"1\\\"`) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca `POST /api/v1/demands/{id}/parties/{partyId}/resend` çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`   döner (fail-closed). - **Açık değerler:** `\\\"true\\\"`, `\\\"1\\\"`, `\\\"all\\\"`, `\\\"email\\\"`, `\\\"sms\\\"`. - **Kapalı değerler:** `\\\"false\\\"`, `\\\"0\\\"`, `\\\"off\\\"`, `\\\"no\\\"`,   `\\\"hayir\\\"`, `\\\"hayır\\\"`. - Ad bilerek `dispatch_notifications` **değildir**: o   parametre `POST /api/v1/demands` ve `/demands/bulk`   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: `\\\"true\\\"`, `\\\"1\\\"` ve `\\\"all\\\"` tüm kanalları kullanır;   `\\\"email\\\"` yalnız e-posta, `\\\"sms\\\"` telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   `send_sms`/`send_email` bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (`dispatch.error = DISPATCH_TOO_MANY`), tarafları   `resend` ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği `Idempotency-Key`   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı `DUPLICATE_SUSPECTED` yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte `Idempotency-Key` gönderin;   anahtar yoksa yeniden göndermek yerine   `GET /api/v1/demands?...` ile sonucu doğrulayın.  (optional)
+            var onAnchorMiss = "block";  // string? | Çapa bulunamadığında ne yapılacağı. Yalnız `field_template_id` ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır. - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`   ise uygulanır; aksi halde yok sayılır, `block` uygulanır   ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner. - İmza alanlarında `drop` hiçbir koşulda uygulanmaz. - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).  Yanıttaki `data.field_layout.on_anchor_miss` istenen değil, **uygulanan** değeri taşır.  (optional)
 
             try
             {
@@ -2811,7 +2814,7 @@ catch (ApiException e)
 
 Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
 
-Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`). 
+Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`).
 
 ### Example
 ```csharp
@@ -2841,7 +2844,7 @@ namespace Example
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
             var id = "id_example";  // Guid | Alan Şablonu (FIELD_LAYOUT) kimliği
             var files = new List<FileParameter>(); // List<FileParameter> | Tek PDF belge
-            var onAnchorMiss = "block";  // string? | `POST /api/v1/demands/upload` ile aynı semantik (yalnız sıkılaştırır, gönderilmezse `block`).  (optional) 
+            var onAnchorMiss = "block";  // string? | `POST /api/v1/demands/upload` ile aynı semantik (yalnız sıkılaştırır, gönderilmezse `block`).  (optional)
 
             try
             {

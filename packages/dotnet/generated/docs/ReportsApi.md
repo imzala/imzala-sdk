@@ -12,7 +12,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 
 Rapor / özet (agrege sözleşme durum sayıları)
 
-API key sahibinin workspace'indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org'un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT). 
+API key sahibinin workspace'indeki sözleşmelerin agrege durum sayılarını döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan). Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org workspace org'un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT).
 
 ### Example
 ```csharp

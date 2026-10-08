@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template_id** | **UUID** | Sözleşmelerin oluşturulacağı şablon | 
-**options** | [**ApiV1DemandsBulkPostRequestOptions**](ApiV1DemandsBulkPostRequestOptions.md) |  | [optional] 
-**rows** | [**List[ApiV1DemandsBulkPostRequestRowsInner]**](ApiV1DemandsBulkPostRequestRowsInner.md) | Her biri ayrı bir sözleşme olacak satırlar (en fazla 10) | 
+**template_id** | **UUID** | Sözleşmelerin oluşturulacağı şablon |
+**options** | [**ApiV1DemandsBulkPostRequestOptions**](ApiV1DemandsBulkPostRequestOptions.md) |  | [optional]
+**rows** | [**List[ApiV1DemandsBulkPostRequestRowsInner]**](ApiV1DemandsBulkPostRequestRowsInner.md) | Her biri ayrı bir sözleşme olacak satırlar (en fazla 10) |
 
 ## Example
 

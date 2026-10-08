@@ -1,17 +1,17 @@
 # FieldTemplateDetail
 
-Alan Şablonu ayrıntısı. Alan koordinatları TAŞIMAZ; yerleşimin bir belgeye nasıl uygulanacağı için kuru koşum ucunu kullanın. 
+Alan Şablonu ayrıntısı. Alan koordinatları TAŞIMAZ; yerleşimin bir belgeye nasıl uygulanacağı için kuru koşum ucunu kullanın.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
-**description** | **str** |  | [optional] 
-**category** | **str** |  | [optional] 
-**total_field_count** | **int** | Şablondaki toplam alan sayısı. | [optional] 
-**parties** | [**List[FieldTemplateDetailPartiesInner]**](FieldTemplateDetailPartiesInner.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
+**description** | **str** |  | [optional]
+**category** | **str** |  | [optional]
+**total_field_count** | **int** | Şablondaki toplam alan sayısı. | [optional]
+**parties** | [**List[FieldTemplateDetailPartiesInner]**](FieldTemplateDetailPartiesInner.md) |  | [optional]
 
 ## Example
 

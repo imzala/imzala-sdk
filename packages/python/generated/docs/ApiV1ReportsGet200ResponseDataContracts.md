@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**total** | **int** |  | [optional] 
-**pending** | **int** |  | [optional] 
-**completed** | **int** |  | [optional] 
-**cancelled** | **int** |  | [optional] 
-**expired** | **int** |  | [optional] 
-**this_month** | **int** |  | [optional] 
+**total** | **int** |  | [optional]
+**pending** | **int** |  | [optional]
+**completed** | **int** |  | [optional]
+**cancelled** | **int** |  | [optional]
+**expired** | **int** |  | [optional]
+**this_month** | **int** |  | [optional]
 
 ## Example
 

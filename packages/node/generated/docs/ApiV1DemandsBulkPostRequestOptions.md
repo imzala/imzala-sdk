@@ -6,6 +6,10 @@ Tüm satırlara uygulanan batch-seviye seçenekler (opsiyonel)
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**document_collection_enabled** | **boolean** | Belge Toplama açılsın mı? Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin değer true ise bir Belge Toplama şablonu gerekir. false devralınan toplamayı kapatır; açıkça verilen document_collection_template_id yine doğrulanır.  | [optional] [default to undefined]
+**document_collection_template_id** | **string** | Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya boş dize ise etkin toplama açıkken sözleşme şablonundaki seçim devralınır. Açıkça verilen dolu kimlik, toplama false olsa da doğrulanır. Seçim aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa, arşivliyse, kapsam dışıysa veya kimlik metin değilse 404 DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND döner.  | [optional] [default to undefined]
+**document_collection_timing** | **string** | Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.  | [optional] [default to undefined]
+**document_collection_block_signing** | **boolean** | Zorunlu belgeler tamamlanana kadar imzalamayı engelleme ayarı. Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin AFTER_SIGNING zamanında true false olarak normalleştirilir. Boolean alanlara boolean veya null dışında değer verilirse 400 INVALID_DOCUMENT_COLLECTION_FLAG döner.  | [optional] [default to undefined]
 **dispatch_notifications** | **boolean** | false ise davet gönderilmez (yalnızca oluşturulur) | [optional] [default to true]
 **ordered** | **boolean** | true ise taraflar sırayla imzalar | [optional] [default to undefined]
 **sms_content** | **string** | SMS davet metni özelleştirmesi (yalnızca kendi SMS sağlayıcısı olan org\&#39;lar) | [optional] [default to undefined]
@@ -23,6 +27,10 @@ Name | Type | Description | Notes
 import { ApiV1DemandsBulkPostRequestOptions } from '@imzala/server-sdk-node';
 
 const instance: ApiV1DemandsBulkPostRequestOptions = {
+    document_collection_enabled,
+    document_collection_template_id,
+    document_collection_timing,
+    document_collection_block_signing,
     dispatch_notifications,
     ordered,
     sms_content,

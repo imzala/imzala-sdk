@@ -1,16 +1,16 @@
 # ApiError
 
-Standart hata zarfı. `success: false`, `error` makinece okunabilir hata kodu, `message` kullanıcıya dönük açıklama. 
+Standart hata zarfı. `success: false`, `error` makinece okunabilir hata kodu, `message` kullanıcıya dönük açıklama.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | **str** |  | [optional] 
-**message** | **str** |  | [optional] 
-**code** | **str** | İstek limiti yanıtlarında &#x60;error&#x60; ile aynı kodu taşır; diğer yanıtlarda bulunmayabilir. | [optional] 
-**retry_after_seconds** | **int** | Yalnız 429 yanıtlarında; &#x60;Retry-After&#x60; başlığıyla aynı değer. | [optional] 
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**message** | **str** |  | [optional]
+**code** | **str** | İstek limiti yanıtlarında &#x60;error&#x60; ile aynı kodu taşır; diğer yanıtlarda bulunmayabilir. | [optional]
+**retry_after_seconds** | **int** | Yalnız 429 yanıtlarında; &#x60;Retry-After&#x60; başlığıyla aynı değer. | [optional]
 
 ## Example
 

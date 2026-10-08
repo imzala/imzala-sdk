@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_id** | **UUID** |  | [optional] 
-**reason** | **str** |  | [optional] 
+**party_id** | **UUID** |  | [optional]
+**reason** | **str** |  | [optional]
 
 ## Example
 

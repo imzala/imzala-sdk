@@ -111,3 +111,12 @@ def test_every_subclass_is_instance_of_imzala_error_and_exception():
     for err in (ImzalaAuthError("a"), ImzalaRateLimitError("b"), ImzalaValidationError("c")):
         assert isinstance(err, ImzalaError)
         assert isinstance(err, Exception)
+
+@pytest.mark.parametrize("status,code,reason", [(503, "DOCUMENT_VERIFICATION_DISABLED", "DOCUMENT_VERIFICATION_DISABLED"), (400, "VERIFICATION_CONTEXT_REQUIRED", "VERIFICATION_POLICY_CONFLICT"), (400, "FUTURE_COLLECTION_ERROR", "future reason")])
+def test_collection_envelopes_preserve_wrapper_and_origin(status, code, reason):
+    body = {"success": False, "error": reason, "code": code}
+    err = map_api_exception(fake_api_exception(status, body))
+    assert type(err) is ImzalaError
+    assert err.status_code == status
+    assert err.code == code
+    assert str(err) == reason

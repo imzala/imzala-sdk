@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**ContactSummary**](ContactSummary.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**ContactSummary**](ContactSummary.md) |  | [optional]
 
 ## Example
 

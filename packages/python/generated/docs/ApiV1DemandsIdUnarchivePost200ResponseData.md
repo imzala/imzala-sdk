@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**archived_at** | **object** |  | [optional] 
+**archived_at** | **object** |  | [optional]
 
 ## Example
 

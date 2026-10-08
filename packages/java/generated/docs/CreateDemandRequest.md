@@ -7,6 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
+|**documentCollectionEnabled** | **Boolean** | Belge Toplama açılsın mı? Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin değer true ise bir Belge Toplama şablonu gerekir. false devralınan toplamayı kapatır; açıkça verilen document_collection_template_id yine doğrulanır.  |  [optional] |
+|**documentCollectionTemplateId** | **UUID** | Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya boş dize ise etkin toplama açıkken sözleşme şablonundaki seçim devralınır. Açıkça verilen dolu kimlik, toplama false olsa da doğrulanır. Seçim aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa, arşivliyse, kapsam dışıysa veya kimlik metin değilse 404 DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND döner.  |  [optional] |
+|**documentCollectionTiming** | [**DocumentCollectionTimingEnum**](#DocumentCollectionTimingEnum) | Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.  |  [optional] |
+|**documentCollectionBlockSigning** | **Boolean** | Zorunlu belgeler tamamlanana kadar imzalamayı engelleme ayarı. Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır. Etkin AFTER_SIGNING zamanında true false olarak normalleştirilir. Boolean alanlara boolean veya null dışında değer verilirse 400 INVALID_DOCUMENT_COLLECTION_FLAG döner.  |  [optional] |
 |**templateId** | **UUID** | GET /api/v1/templates listesinden veya dashboard&#39;dan kopyalayın |  |
 |**title** | **String** | Sözleşme başlığı (yoksa template adı kullanılır). Başlık, imza davet ve hatırlatma SMS&#39;lerinde imzacının telefon ekranında görünebilir; kişisel veya gizli bilgi yazmayın.  |  [optional] |
 |**description** | **String** |  |  [optional] |
@@ -37,6 +41,15 @@
 |**noticeDays** | **Integer** |  |  [optional] |
 |**reminderOffsets** | **List&lt;Integer&gt;** |  |  [optional] |
 |**notifyCounterparty** | **Boolean** |  |  [optional] |
+
+
+
+## Enum: DocumentCollectionTimingEnum
+
+| Name | Value |
+|---- | -----|
+| BEFORE_SIGNING | &quot;BEFORE_SIGNING&quot; |
+| AFTER_SIGNING | &quot;AFTER_SIGNING&quot; |
 
 
 

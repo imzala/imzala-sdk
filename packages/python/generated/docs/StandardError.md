@@ -1,13 +1,13 @@
 # StandardError
 
-`code`/`message` formatında standart hata gövdesi. Reminder trigger (`POST /api/v1/demands/{id}/reminders`) bu formatı kullanır. 
+`code`/`message` formatında standart hata gövdesi. Reminder trigger (`POST /api/v1/demands/{id}/reminders`) bu formatı kullanır.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | [**StandardErrorError**](StandardErrorError.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | [**StandardErrorError**](StandardErrorError.md) |  | [optional]
 
 ## Example
 

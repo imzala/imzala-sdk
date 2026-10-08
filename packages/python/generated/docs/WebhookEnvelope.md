@@ -1,15 +1,15 @@
 # WebhookEnvelope
 
-Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante. 
+Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** | Olay benzersiz id&#39;si. Receiver tarafında idempotency için kullanın (DB&#39;de unique key).  | 
-**type** | **str** |  | 
-**created_at** | **datetime** | Olay zamanı (ISO 8601 UTC). | 
-**data** | **object** | Olay tipine özel veri (aşağıdaki şemalar) | 
+**id** | **str** | Olay benzersiz id&#39;si. Receiver tarafında idempotency için kullanın (DB&#39;de unique key).  |
+**type** | **str** |  |
+**created_at** | **datetime** | Olay zamanı (ISO 8601 UTC). |
+**data** | **object** | Olay tipine özel veri (aşağıdaki şemalar) |
 
 ## Example
 

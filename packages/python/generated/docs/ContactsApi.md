@@ -75,9 +75,9 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **page** | **int**|  | [optional] [default to 1]
  **limit** | **int**|  | [optional] [default to 25]
- **q** | **str**| Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter) | [optional] 
+ **q** | **str**| Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter) | [optional]
  **sort** | **str**| Sıralama: createdAt | updatedAt | first_name | last_name | email (&#39;-&#39; öneki azalan) | [optional] [default to &#39;-createdAt&#39;]
- **company_id** | **UUID**|  | [optional] 
+ **company_id** | **UUID**|  | [optional]
  **archived** | **bool**| true → yalnızca arşivlenmiş kişiler; varsayılan false (aktif) | [optional] [default to False]
 
 ### Return type
@@ -148,7 +148,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.ContactsApi(api_client)
-    api_v1_contacts_post_request = imzala_client.ApiV1ContactsPostRequest() # ApiV1ContactsPostRequest | 
+    api_v1_contacts_post_request = imzala_client.ApiV1ContactsPostRequest() # ApiV1ContactsPostRequest |
 
     try:
         # Kişi oluştur
@@ -166,7 +166,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **api_v1_contacts_post_request** | [**ApiV1ContactsPostRequest**](ApiV1ContactsPostRequest.md)|  | 
+ **api_v1_contacts_post_request** | [**ApiV1ContactsPostRequest**](ApiV1ContactsPostRequest.md)|  |
 
 ### Return type
 

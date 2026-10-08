@@ -5,18 +5,18 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**template_party_id** | **UUID** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
-**phone** | **str** | E.164 biçiminde telefon (ör. &#x60;+905551112233&#x60;). Ülke kodu ile birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, &#x60;+90 0542…&#x60;) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanır. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir. | [optional] 
-**government_id** | **str** | T.C. kimlik numarası (11 hane) | [optional] 
-**birth_date** | **date** | ISO 8601 (ör. 1990-05-15) | [optional] 
+**template_party_id** | **UUID** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
+**email** | **str** |  | [optional]
+**phone** | **str** | E.164 biçiminde telefon (ör. &#x60;+905551112233&#x60;). Ülke kodu ile birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, &#x60;+90 0542…&#x60;) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanır. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir. | [optional]
+**government_id** | **str** | T.C. kimlik numarası (11 hane) | [optional]
+**birth_date** | **date** | ISO 8601 (ör. 1990-05-15) | [optional]
 **send_sms** | **bool** |  | [optional] [default to True]
 **send_email** | **bool** |  | [optional] [default to True]
-**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
-**custom_message** | **str** | Bu tarafa özel davet mesajı | [optional] 
-**variables** | **object** | Bu tarafa özel değişkenler | [optional] 
+**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional]
+**custom_message** | **str** | Bu tarafa özel davet mesajı | [optional]
+**variables** | **object** | Bu tarafa özel değişkenler | [optional]
 
 ## Example
 

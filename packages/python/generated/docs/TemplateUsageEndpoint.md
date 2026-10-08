@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**method** | **str** |  | [optional] 
-**url** | **str** |  | [optional] 
+**method** | **str** |  | [optional]
+**url** | **str** |  | [optional]
 
 ## Example
 

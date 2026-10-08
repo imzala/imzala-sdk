@@ -15,6 +15,7 @@ docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
+docs/ApiV1DemandsBulkPost400Response.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
 docs/ApiV1DemandsBulkPostRequestRowsInner.md
@@ -66,6 +67,7 @@ docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
 docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost404Response.md
 docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
 docs/ApiV1DemandsUploadPost402Response.md
@@ -117,6 +119,7 @@ docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandStatusStampItemsInner.md
 docs/DemandsApi.md
+docs/DocumentCollectionPolicyError.md
 docs/DocumentPartyDecision.md
 docs/DocumentProgress.md
 docs/DocumentScopedSlugs.md
@@ -124,6 +127,7 @@ docs/DocumentSealing.md
 docs/DocumentSelectionError.md
 docs/DocumentSelectionErrorDetails.md
 docs/DocumentSelectionInput.md
+docs/DocumentVerificationDisabledError.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -210,6 +214,7 @@ imzala_client/models/api_v1_demands_bulk_post200_response_data.py
 imzala_client/models/api_v1_demands_bulk_post200_response_data_results_inner.py
 imzala_client/models/api_v1_demands_bulk_post200_response_data_results_inner_details.py
 imzala_client/models/api_v1_demands_bulk_post200_response_data_results_inner_signing_urls_inner.py
+imzala_client/models/api_v1_demands_bulk_post400_response.py
 imzala_client/models/api_v1_demands_bulk_post_request.py
 imzala_client/models/api_v1_demands_bulk_post_request_options.py
 imzala_client/models/api_v1_demands_bulk_post_request_rows_inner.py
@@ -261,6 +266,7 @@ imzala_client/models/api_v1_demands_post201_response.py
 imzala_client/models/api_v1_demands_post400_response.py
 imzala_client/models/api_v1_demands_post402_response.py
 imzala_client/models/api_v1_demands_post402_response_data.py
+imzala_client/models/api_v1_demands_post404_response.py
 imzala_client/models/api_v1_demands_post500_response.py
 imzala_client/models/api_v1_demands_upload_post201_response.py
 imzala_client/models/api_v1_demands_upload_post402_response.py
@@ -310,6 +316,7 @@ imzala_client/models/demand_page.py
 imzala_client/models/demand_status.py
 imzala_client/models/demand_status_parties_inner.py
 imzala_client/models/demand_status_stamp_items_inner.py
+imzala_client/models/document_collection_policy_error.py
 imzala_client/models/document_party_decision.py
 imzala_client/models/document_progress.py
 imzala_client/models/document_scoped_slugs.py
@@ -317,6 +324,7 @@ imzala_client/models/document_sealing.py
 imzala_client/models/document_selection_error.py
 imzala_client/models/document_selection_error_details.py
 imzala_client/models/document_selection_input.py
+imzala_client/models/document_verification_disabled_error.py
 imzala_client/models/envelope_document.py
 imzala_client/models/field_layout_diagnostic.py
 imzala_client/models/field_layout_preview.py
@@ -393,6 +401,7 @@ test/test_api_v1_demands_bulk_post200_response_data.py
 test/test_api_v1_demands_bulk_post200_response_data_results_inner.py
 test/test_api_v1_demands_bulk_post200_response_data_results_inner_details.py
 test/test_api_v1_demands_bulk_post200_response_data_results_inner_signing_urls_inner.py
+test/test_api_v1_demands_bulk_post400_response.py
 test/test_api_v1_demands_bulk_post_request.py
 test/test_api_v1_demands_bulk_post_request_options.py
 test/test_api_v1_demands_bulk_post_request_rows_inner.py
@@ -444,6 +453,7 @@ test/test_api_v1_demands_post201_response.py
 test/test_api_v1_demands_post400_response.py
 test/test_api_v1_demands_post402_response.py
 test/test_api_v1_demands_post402_response_data.py
+test/test_api_v1_demands_post404_response.py
 test/test_api_v1_demands_post500_response.py
 test/test_api_v1_demands_upload_post201_response.py
 test/test_api_v1_demands_upload_post402_response.py
@@ -495,6 +505,7 @@ test/test_demand_status.py
 test/test_demand_status_parties_inner.py
 test/test_demand_status_stamp_items_inner.py
 test/test_demands_api.py
+test/test_document_collection_policy_error.py
 test/test_document_party_decision.py
 test/test_document_progress.py
 test/test_document_scoped_slugs.py
@@ -502,6 +513,7 @@ test/test_document_sealing.py
 test/test_document_selection_error.py
 test/test_document_selection_error_details.py
 test/test_document_selection_input.py
+test/test_document_verification_disabled_error.py
 test/test_envelope_document.py
 test/test_field_layout_diagnostic.py
 test/test_field_layout_preview.py

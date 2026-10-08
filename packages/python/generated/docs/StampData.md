@@ -1,23 +1,23 @@
 # StampData
 
-Yapılandırılmış kaşe verisi. Tüm alanlar isteğe bağlıdır. PATCH isteğinde `null` veya boş string alanı kaldırır.  Belgeye yalnız gerekli kişisel veriyi yazın; bu verilerin hukuka uygunluğu ve aydınlatması sizin sorumluluğunuzdadır. 
+Yapılandırılmış kaşe verisi. Tüm alanlar isteğe bağlıdır. PATCH isteğinde `null` veya boş string alanı kaldırır.  Belgeye yalnız gerekli kişisel veriyi yazın; bu verilerin hukuka uygunluğu ve aydınlatması sizin sorumluluğunuzdadır.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**company_name** | **str** |  | [optional] 
-**personal_name** | **str** |  | [optional] 
-**address** | **str** |  | [optional] 
-**company_address** | **str** |  | [optional] 
-**personal_address** | **str** |  | [optional] 
-**tax_number** | **str** |  | [optional] 
-**tax_office** | **str** |  | [optional] 
-**id_number** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
-**company_phone** | **str** |  | [optional] 
-**personal_phone** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
+**company_name** | **str** |  | [optional]
+**personal_name** | **str** |  | [optional]
+**address** | **str** |  | [optional]
+**company_address** | **str** |  | [optional]
+**personal_address** | **str** |  | [optional]
+**tax_number** | **str** |  | [optional]
+**tax_office** | **str** |  | [optional]
+**id_number** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
+**company_phone** | **str** |  | [optional]
+**personal_phone** | **str** |  | [optional]
+**email** | **str** |  | [optional]
 
 ## Example
 

@@ -213,6 +213,18 @@ public final class ErrorCodes {
         "Zaman damgası sunucusu geçersiz bir yanıt döndürdü.");
     m.put("TSA_UNAVAILABLE",
         "Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar deneyin.");
+    m.put("INVALID_DOCUMENT_COLLECTION_TIMING", "Belge Toplama zamanı BEFORE_SIGNING, AFTER_SIGNING veya null olmalı.");
+    m.put("INVALID_DOCUMENT_COLLECTION_FLAG", "Belge Toplama boolean alanları boolean veya null olmalı.");
+    m.put("DOCUMENT_COLLECTION_TEMPLATE_REQUIRED", "Etkin Belge Toplama için bir Belge Toplama şablonu seçilmelidir.");
+    m.put("DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND", "Belge Toplama şablonu bulunamadı, arşivli veya çalışma alanına ait değil.");
+    m.put("DOCUMENT_VERIFICATION_DISABLED", "Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor; seçim, politika veya hizmet kullanılabilirliğini düzeltin.");
+    m.put("VERIFICATION_CONTEXT_REQUIRED", "Seçili Belge Toplama şablonunun doğrulama bağlamı geçersiz; error alanı kaynak makine kodunu taşır.");
+    m.put("DOCUMENT_TYPE_INVALID", "Seçili Belge Toplama kaleminin belge türü geçersiz.");
+    m.put("VERIFICATION_POLICY_INVALID", "Seçili Belge Toplama kaleminin doğrulama politikası geçersiz.");
+    m.put("VERIFICATION_INSTRUCTION_INVALID", "Seçili Belge Toplama kaleminin alıcı veya amaç metni geçersiz.");
+    m.put("VERIFICATION_POLICY_CONFLICT", "Doğrulama istemeyen kalemde alıcı veya amaç metni bulunamaz.");
+    m.put("PARTY_NOT_ELIGIBLE", "Tarafa şu anda davet gönderilemez; sözleşme ve taraf durumunu kontrol edin.");
+
     // Genel
     m.put("VALIDATION_ERROR",
         "İstek doğrulamadan geçmedi (ör. konum sınırları, slug biçimi, eksik taraf).");

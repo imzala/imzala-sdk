@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_id** | **UUID** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
-**signing_url** | **str** |  | [optional] 
+**party_id** | **UUID** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
+**signing_url** | **str** |  | [optional]
 
 ## Example
 

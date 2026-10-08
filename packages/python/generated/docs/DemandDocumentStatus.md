@@ -6,16 +6,16 @@ Zarftaki tek bir belgenin durumu.
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**order** | **int** | 1&#39;den başlar. | [optional] 
-**title** | **str** |  | [optional] 
-**doc_kind** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**signature_required** | **bool** |  | [optional] 
-**assigned_party_ids** | **List[UUID]** |  | [optional] 
-**progress** | [**DocumentProgress**](DocumentProgress.md) |  | [optional] 
-**sealing** | [**DocumentSealing**](DocumentSealing.md) |  | [optional] 
-**decisions** | [**List[DocumentPartyDecision]**](DocumentPartyDecision.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**order** | **int** | 1&#39;den başlar. | [optional]
+**title** | **str** |  | [optional]
+**doc_kind** | **str** |  | [optional]
+**is_required** | **bool** |  | [optional]
+**signature_required** | **bool** |  | [optional]
+**assigned_party_ids** | **List[UUID]** |  | [optional]
+**progress** | [**DocumentProgress**](DocumentProgress.md) |  | [optional]
+**sealing** | [**DocumentSealing**](DocumentSealing.md) |  | [optional]
+**decisions** | [**List[DocumentPartyDecision]**](DocumentPartyDecision.md) |  | [optional]
 
 ## Example
 

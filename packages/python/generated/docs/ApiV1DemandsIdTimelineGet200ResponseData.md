@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**events** | [**List[ApiV1DemandsIdTimelineGet200ResponseDataEventsInner]**](ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md) |  | [optional] 
+**events** | [**List[ApiV1DemandsIdTimelineGet200ResponseDataEventsInner]**](ApiV1DemandsIdTimelineGet200ResponseDataEventsInner.md) |  | [optional]
 
 ## Example
 

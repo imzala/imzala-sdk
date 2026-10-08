@@ -2,7 +2,7 @@
 
 # CreatedDemandUploadDispatch
 
-YALNIZ istekte `send_invitations` gönderildiğinde döner. Davet gönderimi 201'i düşürmez (sözleşme yaratılmış ve kredi düşülmüştür), bu yüzden hatalar burada taraf bazında raporlanır. 
+YALNIZ istekte `send_invitations` gönderildiğinde döner. Davet gönderimi 201'i düşürmez (sözleşme yaratılmış ve kredi düşülmüştür), bu yüzden hatalar burada taraf bazında raporlanır.
 
 ## Properties
 

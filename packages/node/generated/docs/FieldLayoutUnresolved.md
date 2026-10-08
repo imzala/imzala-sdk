@@ -1,6 +1,6 @@
 # FieldLayoutUnresolved
 
-`field_template_id` ile gönderilen bir istekte alan yerleşimi çözülemediğinde dönen gövde. **Sözleşme oluşturulmaz, kredi düşülmez.** 
+`field_template_id` ile gönderilen bir istekte alan yerleşimi çözülemediğinde dönen gövde. **Sözleşme oluşturulmaz, kredi düşülmez.**
 
 ## Properties
 

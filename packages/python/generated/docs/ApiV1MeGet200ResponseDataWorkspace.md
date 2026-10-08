@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [optional] 
-**organization_id** | **UUID** |  | [optional] 
+**type** | **str** |  | [optional]
+**organization_id** | **UUID** |  | [optional]
 
 ## Example
 

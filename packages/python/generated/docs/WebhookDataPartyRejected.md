@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**demand_id** | **UUID** |  | 
-**party** | [**WebhookDataPartyRejectedParty**](WebhookDataPartyRejectedParty.md) |  | 
-**rejected_at** | **datetime** |  | 
+**demand_id** | **UUID** |  |
+**party** | [**WebhookDataPartyRejectedParty**](WebhookDataPartyRejectedParty.md) |  |
+**rejected_at** | **datetime** |  |
 
 ## Example
 

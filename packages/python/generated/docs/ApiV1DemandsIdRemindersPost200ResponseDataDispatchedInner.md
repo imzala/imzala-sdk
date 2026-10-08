@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_id** | **UUID** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
-**channels** | **List[str]** |  | [optional] 
+**party_id** | **UUID** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
+**channels** | **List[str]** |  | [optional]
 
 ## Example
 

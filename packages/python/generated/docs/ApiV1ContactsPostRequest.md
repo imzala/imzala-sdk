@@ -5,17 +5,17 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**first_name** | **str** |  | 
-**last_name** | **str** |  | 
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
-**job_title** | **str** |  | [optional] 
-**company_id** | **UUID** |  | [optional] 
-**notes** | **str** |  | [optional] 
-**address_country** | **str** |  | [optional] 
-**address_city** | **str** |  | [optional] 
-**address_district** | **str** |  | [optional] 
-**address_line** | **str** |  | [optional] 
+**first_name** | **str** |  |
+**last_name** | **str** |  |
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
+**job_title** | **str** |  | [optional]
+**company_id** | **UUID** |  | [optional]
+**notes** | **str** |  | [optional]
+**address_country** | **str** |  | [optional]
+**address_city** | **str** |  | [optional]
+**address_district** | **str** |  | [optional]
+**address_line** | **str** |  | [optional]
 
 ## Example
 

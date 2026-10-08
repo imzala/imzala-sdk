@@ -5,14 +5,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**item_id** | **int** |  | [optional] 
-**page_id** | **int** |  | [optional] 
-**document_id** | **str** |  | [optional] 
-**slug** | **str** |  | [optional] 
-**label** | **str** |  | [optional] 
-**source** | **str** |  | [optional] 
-**party_id** | **UUID** | Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf | [optional] 
-**is_required** | **bool** |  | [optional] 
+**item_id** | **int** |  | [optional]
+**page_id** | **int** |  | [optional]
+**document_id** | **str** |  | [optional]
+**slug** | **str** |  | [optional]
+**label** | **str** |  | [optional]
+**source** | **str** |  | [optional]
+**party_id** | **UUID** | Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf | [optional]
+**is_required** | **bool** |  | [optional]
 
 ## Example
 

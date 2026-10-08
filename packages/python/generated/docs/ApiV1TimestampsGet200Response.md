@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**ApiV1TimestampsGet200ResponseData**](ApiV1TimestampsGet200ResponseData.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**ApiV1TimestampsGet200ResponseData**](ApiV1TimestampsGet200ResponseData.md) |  | [optional]
 
 ## Example
 

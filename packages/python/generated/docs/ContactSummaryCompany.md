@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
 
 ## Example
 

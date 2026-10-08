@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | [optional] 
-**event_type** | **str** |  | [optional] 
-**actor_label** | **str** |  | [optional] 
-**ip_masked** | **str** |  | [optional] 
-**device_label** | **str** |  | [optional] 
-**comment_text** | **str** |  | [optional] 
-**created_at** | **datetime** |  | [optional] 
+**id** | **str** |  | [optional]
+**event_type** | **str** |  | [optional]
+**actor_label** | **str** |  | [optional]
+**ip_masked** | **str** |  | [optional]
+**device_label** | **str** |  | [optional]
+**comment_text** | **str** |  | [optional]
+**created_at** | **datetime** |  | [optional]
 
 ## Example
 

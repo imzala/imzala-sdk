@@ -6,6 +6,10 @@ import path from 'node:path';
 const directory = process.argv[2];
 if (!directory) throw new Error('Usage: patch-csharp-constructors.mjs <generated directory>');
 const STRIP = {
+  documentCollectionEnabled: { decl: 'bool? documentCollectionEnabled = default, ', prop: 'DocumentCollectionEnabled' },
+  documentCollectionTemplateId: { decl: 'Guid? documentCollectionTemplateId = default, ', prop: 'DocumentCollectionTemplateId' },
+  documentCollectionTiming: { decl: 'DocumentCollectionTimingEnum? documentCollectionTiming = default, ', prop: 'DocumentCollectionTiming' },
+  documentCollectionBlockSigning: { decl: 'bool? documentCollectionBlockSigning = default, ', prop: 'DocumentCollectionBlockSigning' },
   allowedSignatureVariants: { decl: 'List<AllowedSignatureVariantsEnum> allowedSignatureVariants = default, ', prop: 'AllowedSignatureVariants' },
   documentVariables: {
     decl: 'Dictionary<string, Dictionary<string, PartyMappingInputVariablesValue>> documentVariables = default, ',
@@ -23,6 +27,9 @@ const STRIP = {
   reminderOffsets: { decl: ', List<int> reminderOffsets = default', prop: 'ReminderOffsets' },
   notifyCounterparty: { decl: ', bool notifyCounterparty = default', prop: 'NotifyCounterparty' },
 };
+const COLLECTION = [
+  'documentCollectionEnabled', 'documentCollectionTemplateId', 'documentCollectionTiming', 'documentCollectionBlockSigning',
+];
 const TERM = [
   'termStartMode', 'termStartDate', 'termDurationMonths', 'termFixedEndDate', 'renewalType',
   'renewalPeriodMonths', 'noticeDays', 'reminderOffsets', 'notifyCounterparty',
@@ -43,7 +50,12 @@ for (const [model, expectedCount, strip] of [
   let source = fs.readFileSync(file, 'utf8');
   const signature = new RegExp('public ' + model + '\\(([^\\n]*)\\)');
   if (!source.match(signature)) throw new Error('Constructor not found: ' + model);
-  for (const name of strip) {
+  // Accept the old generated shape or all four new nullable properties.
+  // A partial shape is not a supported contract and must fail closed.
+  const collectionCount = COLLECTION.filter((name) => source.includes(' ' + STRIP[name].prop + ' { get; set; }')).length;
+  if (collectionCount !== 0 && collectionCount !== COLLECTION.length) throw new Error('Incomplete collection shape: ' + model);
+  const effectiveStrip = [...strip, ...(collectionCount ? COLLECTION : [])];
+  for (const name of effectiveStrip) {
     const { decl, prop } = STRIP[name];
     const match = source.match(signature);
     if (match[1].includes(decl)) {
@@ -57,7 +69,7 @@ for (const [model, expectedCount, strip] of [
   }
   // Count defaults instead of commas: generic Dictionary parameters contain commas.
   const actual = source.match(signature)[1];
-  if (strip.some((n) => actual.includes(n)) || (actual.match(/ = /g) ?? []).length !== expectedCount) {
+  if (effectiveStrip.some((n) => actual.includes(n)) || (actual.match(/ = /g) ?? []).length !== expectedCount) {
     throw new Error('Unexpected constructor shape: ' + model);
   }
   if (model === 'CreateDemandRequest') {

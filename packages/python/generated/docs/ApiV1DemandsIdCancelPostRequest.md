@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**reason** | **str** | İptal nedeni (opsiyonel) | [optional] 
+**reason** | **str** | İptal nedeni (opsiyonel) | [optional]
 
 ## Example
 

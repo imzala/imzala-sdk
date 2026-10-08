@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**order** | **int** |  | [optional] 
-**label** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**field_count** | **int** | Bu rolün dolduracağı alan sayısı. | [optional] 
+**id** | **UUID** |  | [optional]
+**order** | **int** |  | [optional]
+**label** | **str** |  | [optional]
+**is_required** | **bool** |  | [optional]
+**field_count** | **int** | Bu rolün dolduracağı alan sayısı. | [optional]
 
 ## Example
 

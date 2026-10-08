@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**contracts** | [**ApiV1ReportsGet200ResponseDataContracts**](ApiV1ReportsGet200ResponseDataContracts.md) |  | [optional] 
+**contracts** | [**ApiV1ReportsGet200ResponseDataContracts**](ApiV1ReportsGet200ResponseDataContracts.md) |  | [optional]
 
 ## Example
 

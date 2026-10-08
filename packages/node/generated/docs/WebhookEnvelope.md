@@ -1,6 +1,6 @@
 # WebhookEnvelope
 
-Tüm webhook payload\'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante. 
+Tüm webhook payload\'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante.
 
 ## Properties
 

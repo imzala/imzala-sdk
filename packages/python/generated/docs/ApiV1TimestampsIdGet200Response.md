@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**TimestampListItem**](TimestampListItem.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**TimestampListItem**](TimestampListItem.md) |  | [optional]
 
 ## Example
 

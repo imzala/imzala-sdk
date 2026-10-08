@@ -6,8 +6,8 @@ Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**status** | **str** |  | [optional] 
-**has_timestamp** | **bool** | Yalnız &#x60;status&#x60; &#x60;SEALED&#x60; iken &#x60;true&#x60; olabilir. | [optional] 
+**status** | **str** |  | [optional]
+**has_timestamp** | **bool** | Yalnız &#x60;status&#x60; &#x60;SEALED&#x60; iken &#x60;true&#x60; olabilir. | [optional]
 
 ## Example
 

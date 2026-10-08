@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**demand_id** | **UUID** |  | 
-**title** | **str** |  | 
-**status** | **str** |  | 
-**completed_at** | **datetime** |  | 
-**parties** | [**List[WebhookDataDemandCompletedPartiesInner]**](WebhookDataDemandCompletedPartiesInner.md) |  | 
-**backfill** | **bool** | Replay bayrağı (yan etkileri atla) | [optional] 
+**demand_id** | **UUID** |  |
+**title** | **str** |  |
+**status** | **str** |  |
+**completed_at** | **datetime** |  |
+**parties** | [**List[WebhookDataDemandCompletedPartiesInner]**](WebhookDataDemandCompletedPartiesInner.md) |  |
+**backfill** | **bool** | Replay bayrağı (yan etkileri atla) | [optional]
 
 ## Example
 

@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** | first_name + last_name | [optional] 
-**email** | **str** |  | [optional] 
-**signed_at** | **datetime** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** | first_name + last_name | [optional]
+**email** | **str** |  | [optional]
+**signed_at** | **datetime** |  | [optional]
 
 ## Example
 

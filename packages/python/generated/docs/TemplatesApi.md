@@ -179,7 +179,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**| Alan Şablonu kimliği | 
+ **id** | **UUID**| Alan Şablonu kimliği |
 
 ### Return type
 
@@ -330,7 +330,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TemplatesApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Şablon sil
@@ -348,7 +348,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -419,7 +419,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TemplatesApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Şablon detay
@@ -437,7 +437,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 
@@ -503,8 +503,8 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TemplatesApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
-    api_v1_templates_id_patch_request = imzala_client.ApiV1TemplatesIdPatchRequest() # ApiV1TemplatesIdPatchRequest | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    api_v1_templates_id_patch_request = imzala_client.ApiV1TemplatesIdPatchRequest() # ApiV1TemplatesIdPatchRequest |
 
     try:
         # Şablon metadata güncelle
@@ -522,8 +522,8 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
- **api_v1_templates_id_patch_request** | [**ApiV1TemplatesIdPatchRequest**](ApiV1TemplatesIdPatchRequest.md)|  | 
+ **id** | **UUID**|  |
+ **api_v1_templates_id_patch_request** | [**ApiV1TemplatesIdPatchRequest**](ApiV1TemplatesIdPatchRequest.md)|  |
 
 ### Return type
 
@@ -596,7 +596,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TemplatesApi(api_client)
-    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID | 
+    id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
 
     try:
         # Şablon kullanım kılavuzu (curl + JSON örnek)
@@ -614,7 +614,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **UUID**|  | 
+ **id** | **UUID**|  |
 
 ### Return type
 

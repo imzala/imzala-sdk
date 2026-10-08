@@ -15,6 +15,7 @@ docs/ApiV1DemandsBulkPost200ResponseData.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInner.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md
 docs/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md
+docs/ApiV1DemandsBulkPost400Response.md
 docs/ApiV1DemandsBulkPostRequest.md
 docs/ApiV1DemandsBulkPostRequestOptions.md
 docs/ApiV1DemandsBulkPostRequestRowsInner.md
@@ -66,6 +67,7 @@ docs/ApiV1DemandsPost201Response.md
 docs/ApiV1DemandsPost400Response.md
 docs/ApiV1DemandsPost402Response.md
 docs/ApiV1DemandsPost402ResponseData.md
+docs/ApiV1DemandsPost404Response.md
 docs/ApiV1DemandsPost500Response.md
 docs/ApiV1DemandsUploadPost201Response.md
 docs/ApiV1DemandsUploadPost402Response.md
@@ -117,6 +119,7 @@ docs/DemandStatus.md
 docs/DemandStatusPartiesInner.md
 docs/DemandStatusStampItemsInner.md
 docs/DemandsApi.md
+docs/DocumentCollectionPolicyError.md
 docs/DocumentPartyDecision.md
 docs/DocumentProgress.md
 docs/DocumentScopedSlugs.md
@@ -124,6 +127,7 @@ docs/DocumentSealing.md
 docs/DocumentSelectionError.md
 docs/DocumentSelectionErrorDetails.md
 docs/DocumentSelectionInput.md
+docs/DocumentVerificationDisabledError.md
 docs/EnvelopeDocument.md
 docs/FieldLayoutDiagnostic.md
 docs/FieldLayoutPreview.md
@@ -204,6 +208,7 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSi
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost200ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPost400ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPostRequestOptionsTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsBulkPostRequestRowsInnerTests.cs
@@ -255,6 +260,7 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsPost201ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost400ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost402ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost402ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsPost404ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsPost500ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsUploadPost201ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsUploadPost402ResponseTests.cs
@@ -304,6 +310,7 @@ src/ImzalaApiClient.Test/Model/DemandPageTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusStampItemsInnerTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusTests.cs
+src/ImzalaApiClient.Test/Model/DocumentCollectionPolicyErrorTests.cs
 src/ImzalaApiClient.Test/Model/DocumentPartyDecisionTests.cs
 src/ImzalaApiClient.Test/Model/DocumentProgressTests.cs
 src/ImzalaApiClient.Test/Model/DocumentScopedSlugsTests.cs
@@ -311,6 +318,7 @@ src/ImzalaApiClient.Test/Model/DocumentSealingTests.cs
 src/ImzalaApiClient.Test/Model/DocumentSelectionErrorDetailsTests.cs
 src/ImzalaApiClient.Test/Model/DocumentSelectionErrorTests.cs
 src/ImzalaApiClient.Test/Model/DocumentSelectionInputTests.cs
+src/ImzalaApiClient.Test/Model/DocumentVerificationDisabledErrorTests.cs
 src/ImzalaApiClient.Test/Model/EnvelopeDocumentTests.cs
 src/ImzalaApiClient.Test/Model/FieldLayoutDiagnosticTests.cs
 src/ImzalaApiClient.Test/Model/FieldLayoutPreviewPlacementsSummaryByPageInnerTests.cs
@@ -404,6 +412,7 @@ src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInner.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.cs
+src/ImzalaApiClient/Model/ApiV1DemandsBulkPost400Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPostRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPostRequestOptions.cs
 src/ImzalaApiClient/Model/ApiV1DemandsBulkPostRequestRowsInner.cs
@@ -455,6 +464,7 @@ src/ImzalaApiClient/Model/ApiV1DemandsPost201Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost400Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost402Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost402ResponseData.cs
+src/ImzalaApiClient/Model/ApiV1DemandsPost404Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsPost500Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsUploadPost201Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsUploadPost402Response.cs
@@ -504,6 +514,7 @@ src/ImzalaApiClient/Model/DemandPage.cs
 src/ImzalaApiClient/Model/DemandStatus.cs
 src/ImzalaApiClient/Model/DemandStatusPartiesInner.cs
 src/ImzalaApiClient/Model/DemandStatusStampItemsInner.cs
+src/ImzalaApiClient/Model/DocumentCollectionPolicyError.cs
 src/ImzalaApiClient/Model/DocumentPartyDecision.cs
 src/ImzalaApiClient/Model/DocumentProgress.cs
 src/ImzalaApiClient/Model/DocumentScopedSlugs.cs
@@ -511,6 +522,7 @@ src/ImzalaApiClient/Model/DocumentSealing.cs
 src/ImzalaApiClient/Model/DocumentSelectionError.cs
 src/ImzalaApiClient/Model/DocumentSelectionErrorDetails.cs
 src/ImzalaApiClient/Model/DocumentSelectionInput.cs
+src/ImzalaApiClient/Model/DocumentVerificationDisabledError.cs
 src/ImzalaApiClient/Model/EnvelopeDocument.cs
 src/ImzalaApiClient/Model/FieldLayoutDiagnostic.cs
 src/ImzalaApiClient/Model/FieldLayoutPreview.cs

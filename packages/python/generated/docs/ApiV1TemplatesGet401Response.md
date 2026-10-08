@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**error** | **str** |  | [optional] 
-**message** | **str** |  | [optional] 
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**message** | **str** |  | [optional]
 
 ## Example
 

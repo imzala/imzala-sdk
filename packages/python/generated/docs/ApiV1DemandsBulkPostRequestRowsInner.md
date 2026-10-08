@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**party_mapping** | [**List[ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner]**](ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner.md) | Bu satırın taraf eşlemesi (POST /demands ile aynı şekil) | 
-**variables** | **object** | Satır-kök değişkenler | [optional] 
-**documents** | [**DocumentSelectionInput**](DocumentSelectionInput.md) |  | [optional] 
+**party_mapping** | [**List[ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner]**](ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner.md) | Bu satırın taraf eşlemesi (POST /demands ile aynı şekil) |
+**variables** | **object** | Satır-kök değişkenler | [optional]
+**documents** | [**DocumentSelectionInput**](DocumentSelectionInput.md) |  | [optional]
 
 ## Example
 

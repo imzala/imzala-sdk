@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**sent** | **List[str]** | Gönderilen kanallar (sms/email/whatsapp) | [optional] 
+**sent** | **List[str]** | Gönderilen kanallar (sms/email/whatsapp) | [optional]
 
 ## Example
 

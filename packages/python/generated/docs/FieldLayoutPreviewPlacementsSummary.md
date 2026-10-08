@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**total** | **int** |  | [optional] 
-**by_item_type** | **Dict[str, int]** |  | [optional] 
-**by_page** | [**List[FieldLayoutPreviewPlacementsSummaryByPageInner]**](FieldLayoutPreviewPlacementsSummaryByPageInner.md) |  | [optional] 
+**total** | **int** |  | [optional]
+**by_item_type** | **Dict[str, int]** |  | [optional]
+**by_page** | [**List[FieldLayoutPreviewPlacementsSummaryByPageInner]**](FieldLayoutPreviewPlacementsSummaryByPageInner.md) |  | [optional]
 
 ## Example
 

@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**name** | **str** |  | [optional] 
-**description** | **str** |  | [optional] 
-**category** | **str** |  | [optional] 
-**usage_count** | **int** |  | [optional] 
-**parties** | [**List[TemplateSummaryPartiesInner]**](TemplateSummaryPartiesInner.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**name** | **str** |  | [optional]
+**description** | **str** |  | [optional]
+**category** | **str** |  | [optional]
+**usage_count** | **int** |  | [optional]
+**parties** | [**List[TemplateSummaryPartiesInner]**](TemplateSummaryPartiesInner.md) |  | [optional]
 
 ## Example
 

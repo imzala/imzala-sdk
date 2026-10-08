@@ -11,7 +11,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 # **apiV1TimestampsGet**
 > ApiV1TimestampsGet200Response apiV1TimestampsGet()
 
-Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key\'in kendi workspace\'indeki kayıtlar döner (IDOR-safe).  `timestamp_file_url` doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir). 
+Hesabın (workspace) manuel oluşturduğu zaman damgalarını listeler. Sözleşme tamamlanınca otomatik üretilen damgalar bu listede GÖSTERİLMEZ (onlar ilgili sözleşme sayfasından indirilir). Yalnızca API key\'in kendi workspace\'indeki kayıtlar döner (IDOR-safe).  `timestamp_file_url` doğrudan tarayıcıdan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı / şifreli olabilir).
 
 ### Example
 
@@ -82,7 +82,7 @@ const { status, data } = await apiInstance.apiV1TimestampsGet(
 # **apiV1TimestampsIdGet**
 > ApiV1TimestampsIdGet200Response apiV1TimestampsIdGet()
 
-Tek bir zaman damgası kaydının detayını döner. Yalnızca API key\'in kendi workspace\'indeki kayıt getirilebilir (IDOR-safe); başka bir workspace\'in kaydı 404 döner. 
+Tek bir zaman damgası kaydının detayını döner. Yalnızca API key\'in kendi workspace\'indeki kayıt getirilebilir (IDOR-safe); başka bir workspace\'in kaydı 404 döner.
 
 ### Example
 
@@ -135,7 +135,7 @@ const { status, data } = await apiInstance.apiV1TimestampsIdGet(
 # **apiV1TimestampsPost**
 > ApiV1TimestampsPost201Response apiV1TimestampsPost()
 
-Dosyanın SHA-256 hash\'ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** `Idempotency-Key` header\'ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı `id` döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - `multipart/form-data`: `file` alanıyla ikili dosya yükleme - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez) 
+Dosyanın SHA-256 hash\'ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile imzalar ve bir zaman damgası kaydı oluşturur.  **Damga neyi kanıtlar:** - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı) - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)  **Damga neyi kanıtlamaz:** - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL) - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;   sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.  Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için ayrı imzalama akışını kullanın.  **İdempotency:** `Idempotency-Key` header\'ı (UUID önerilir) ile aynı istek tekrar gönderilirse 5 dakika içinde aynı `id` döner, yeni damga alınmaz ve kredi kesilmez.  **İki içerik formatı desteklenir:** - `multipart/form-data`: `file` alanıyla ikili dosya yükleme - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648 §4,   canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez)
 
 ### Example
 

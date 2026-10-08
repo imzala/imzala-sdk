@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**order** | **int** |  | [optional] 
-**label** | **str** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**default_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] 
+**id** | **UUID** |  | [optional]
+**order** | **int** |  | [optional]
+**label** | **str** |  | [optional]
+**is_required** | **bool** |  | [optional]
+**default_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional]
 
 ## Example
 

@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**key** | **str** |  | [optional] 
-**type** | **str** |  | [optional] 
-**required** | **bool** |  | [optional] 
-**required_if** | **str** |  | [optional] 
-**default** | **object** |  | [optional] 
+**key** | **str** |  | [optional]
+**type** | **str** |  | [optional]
+**required** | **bool** |  | [optional]
+**required_if** | **str** |  | [optional]
+**default** | **object** |  | [optional]
 
 ## Example
 

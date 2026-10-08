@@ -2,7 +2,7 @@
 
 # CreatedDemandUploadFieldLayout
 
-YALNIZ `field_template_id` gönderildiğinde döner. Alan yerleşiminin uygulanma özeti. 
+YALNIZ `field_template_id` gönderildiğinde döner. Alan yerleşiminin uygulanma özeti.
 
 ## Properties
 

@@ -1,19 +1,19 @@
 # TimestampListItem
 
-Zaman damgası liste/detay öğesi. `timestamp_file_url` doğrudan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı olabilir). 
+Zaman damgası liste/detay öğesi. `timestamp_file_url` doğrudan indirilebilir bir bağlantı DEĞİLDİR (dahili depolama anahtarı olabilir).
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**original_file_name** | **str** |  | [optional] 
-**original_file_size** | **int** |  | [optional] 
-**timestamp_date** | **datetime** |  | [optional] 
-**status** | **str** |  | [optional] 
-**description** | **str** |  | [optional] 
-**created_at** | **datetime** |  | [optional] 
-**timestamp_file_url** | **str** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**original_file_name** | **str** |  | [optional]
+**original_file_size** | **int** |  | [optional]
+**timestamp_date** | **datetime** |  | [optional]
+**status** | **str** |  | [optional]
+**description** | **str** |  | [optional]
+**created_at** | **datetime** |  | [optional]
+**timestamp_file_url** | **str** |  | [optional]
 
 ## Example
 

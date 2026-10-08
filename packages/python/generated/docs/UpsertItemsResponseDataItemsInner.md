@@ -6,18 +6,18 @@ Yaratılan AgreementPageItem snapshot'ı
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] 
-**page_id** | **int** |  | [optional] 
-**party_id** | **UUID** |  | [optional] 
-**item_type** | **str** |  | [optional] 
-**position_x** | **float** |  | [optional] 
-**position_y** | **float** |  | [optional] 
-**width** | **float** |  | [optional] 
-**height** | **float** |  | [optional] 
-**is_required** | **bool** |  | [optional] 
-**slug** | **str** |  | [optional] 
-**label** | **str** |  | [optional] 
-**config** | **object** |  | [optional] 
+**id** | **UUID** |  | [optional]
+**page_id** | **int** |  | [optional]
+**party_id** | **UUID** |  | [optional]
+**item_type** | **str** |  | [optional]
+**position_x** | **float** |  | [optional]
+**position_y** | **float** |  | [optional]
+**width** | **float** |  | [optional]
+**height** | **float** |  | [optional]
+**is_required** | **bool** |  | [optional]
+**slug** | **str** |  | [optional]
+**label** | **str** |  | [optional]
+**config** | **object** |  | [optional]
 
 ## Example
 

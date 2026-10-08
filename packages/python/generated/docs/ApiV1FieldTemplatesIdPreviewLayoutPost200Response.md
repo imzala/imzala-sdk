@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  | [optional] 
-**data** | [**FieldLayoutPreview**](FieldLayoutPreview.md) |  | [optional] 
+**success** | **bool** |  | [optional]
+**data** | [**FieldLayoutPreview**](FieldLayoutPreview.md) |  | [optional]
 
 ## Example
 
