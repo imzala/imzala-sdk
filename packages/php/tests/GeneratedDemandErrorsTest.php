@@ -48,7 +48,7 @@ final class GeneratedDemandErrorsTest extends TestCase
         $stack->push(Middleware::history($history));
         $transport = new Client(['handler' => $stack]);
         $resource = new DemandsResource(new DemandsApi($transport), new RemindersApi($transport), new RetryConfig(0, 0));
-        $party = [['template_party_id' => 'synthetic-party', 'first_name' => 'Synthetic', 'last_name' => 'Person', 'email' => 'synthetic@example.invalid']];
+        $party = [['template_party_id' => 'synthetic-party', 'first_name' => 'Synthetic', 'last_name' => 'Person', 'email' => 'synthetic@example.com']];
         try {
             if ($surface === 'single') {
                 $resource->create(['template_id' => 'synthetic-template', 'party_mapping' => $party]);
