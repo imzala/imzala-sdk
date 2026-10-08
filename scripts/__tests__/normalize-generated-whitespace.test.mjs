@@ -32,3 +32,13 @@ test('text normalization preserves a UTF-8 BOM', () => {
     expect(readFileSync(file, 'utf8')).toBe('\uFEFFheader\r\n');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('Markdown removes surplus terminal empty lines, preserving interior blanks and CRLF', () => {
+  expect(normalizeText('first\n\nlast  \n\n', true)).toBe('first\n\nlast  \n');
+  expect(normalizeText('last\r\n\r\n', true)).toBe('last\r\n');
+  expect(normalizeText('code\n\n')).toBe('code\n\n');
+  expect(normalizeText('', true)).toBe('');
+  expect(normalizeText('\uFEFFlast\r\n\r\n', true)).toBe('\uFEFFlast\r\n');
+  const once = normalizeText('last  \n\n', true);
+  expect(normalizeText(once, true)).toBe(once);
+});

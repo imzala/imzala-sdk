@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**CreatedDemand**](CreatedDemand.md) |  |  [optional] |
-
-
-

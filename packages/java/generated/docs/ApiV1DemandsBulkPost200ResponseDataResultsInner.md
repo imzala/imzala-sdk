@@ -27,6 +27,3 @@
 |---- | -----|
 | CREATED | &quot;created&quot; |
 | FAILED | &quot;failed&quot; |
-
-
-

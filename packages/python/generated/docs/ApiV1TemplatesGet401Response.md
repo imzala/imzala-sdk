@@ -27,5 +27,3 @@ api_v1_templates_get401_response_dict = api_v1_templates_get401_response_instanc
 api_v1_templates_get401_response_from_dict = ApiV1TemplatesGet401Response.from_dict(api_v1_templates_get401_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

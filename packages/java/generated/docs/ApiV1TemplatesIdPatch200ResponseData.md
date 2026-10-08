@@ -11,6 +11,3 @@
 |**name** | **String** |  |  [optional] |
 |**description** | **String** |  |  [optional] |
 |**category** | **String** |  |  [optional] |
-
-
-

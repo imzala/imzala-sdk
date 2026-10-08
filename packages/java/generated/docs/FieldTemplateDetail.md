@@ -14,6 +14,3 @@ Alan Şablonu ayrıntısı. Alan koordinatları TAŞIMAZ; yerleşimin bir belgey
 |**category** | **String** |  |  [optional] |
 |**totalFieldCount** | **Integer** | Şablondaki toplam alan sayısı. |  [optional] |
 |**parties** | [**List&lt;FieldTemplateDetailPartiesInner&gt;**](FieldTemplateDetailPartiesInner.md) |  |  [optional] |
-
-
-

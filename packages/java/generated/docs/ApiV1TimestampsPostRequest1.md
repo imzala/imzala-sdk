@@ -12,6 +12,3 @@
 |**description** | **String** | Kayıt açıklaması (opsiyonel, max 500 karakter) |  [optional] |
 |**ownerFirstName** | **String** | Dosya sahibinin adı (opsiyonel, kullanıcı beyanı) |  [optional] |
 |**ownerLastName** | **String** | Dosya sahibinin soyadı (opsiyonel, kullanıcı beyanı) |  [optional] |
-
-
-

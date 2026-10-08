@@ -2,9 +2,10 @@
 
 # ApiV1DemandsPost400Response
 
+Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError'dur.
+
 ## anyOf schemas
 * [CodedError](CodedError.md)
-* [DocumentCollectionPolicyError](DocumentCollectionPolicyError.md)
 * [DocumentSelectionError](DocumentSelectionError.md)
 
 ## Example
@@ -12,7 +13,6 @@
 // Import classes:
 import org.imzala.client.generated.model.ApiV1DemandsPost400Response;
 import org.imzala.client.generated.model.CodedError;
-import org.imzala.client.generated.model.DocumentCollectionPolicyError;
 import org.imzala.client.generated.model.DocumentSelectionError;
 
 public class Example {
@@ -26,13 +26,6 @@ public class Example {
         // to get back the CodedError set earlier
         CodedError testCodedError = (CodedError) exampleApiV1DemandsPost400Response.getActualInstance();
 
-        // create a new DocumentCollectionPolicyError
-        DocumentCollectionPolicyError exampleDocumentCollectionPolicyError = new DocumentCollectionPolicyError();
-        // set ApiV1DemandsPost400Response to DocumentCollectionPolicyError
-        exampleApiV1DemandsPost400Response.setActualInstance(exampleDocumentCollectionPolicyError);
-        // to get back the DocumentCollectionPolicyError set earlier
-        DocumentCollectionPolicyError testDocumentCollectionPolicyError = (DocumentCollectionPolicyError) exampleApiV1DemandsPost400Response.getActualInstance();
-
         // create a new DocumentSelectionError
         DocumentSelectionError exampleDocumentSelectionError = new DocumentSelectionError();
         // set ApiV1DemandsPost400Response to DocumentSelectionError
@@ -42,5 +35,3 @@ public class Example {
     }
 }
 ```
-
-

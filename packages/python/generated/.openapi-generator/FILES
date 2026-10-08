@@ -113,6 +113,7 @@ docs/CreatedDemandUpload.md
 docs/CreatedDemandUploadDispatch.md
 docs/CreatedDemandUploadDispatchResultsInner.md
 docs/CreatedDemandUploadFieldLayout.md
+docs/DemandCreationError.md
 docs/DemandDocumentStatus.md
 docs/DemandPage.md
 docs/DemandStatus.md
@@ -311,6 +312,7 @@ imzala_client/models/created_demand_upload.py
 imzala_client/models/created_demand_upload_dispatch.py
 imzala_client/models/created_demand_upload_dispatch_results_inner.py
 imzala_client/models/created_demand_upload_field_layout.py
+imzala_client/models/demand_creation_error.py
 imzala_client/models/demand_document_status.py
 imzala_client/models/demand_page.py
 imzala_client/models/demand_status.py
@@ -499,6 +501,7 @@ test/test_created_demand_upload.py
 test/test_created_demand_upload_dispatch.py
 test/test_created_demand_upload_dispatch_results_inner.py
 test/test_created_demand_upload_field_layout.py
+test/test_demand_creation_error.py
 test/test_demand_document_status.py
 test/test_demand_page.py
 test/test_demand_status.py

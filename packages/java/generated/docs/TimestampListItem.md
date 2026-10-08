@@ -27,6 +27,3 @@ Zaman damgası liste/detay öğesi. `timestamp_file_url` doğrudan indirilebilir
 | VERIFIED | &quot;VERIFIED&quot; |
 | EXPIRED | &quot;EXPIRED&quot; |
 | INVALID | &quot;INVALID&quot; |
-
-
-

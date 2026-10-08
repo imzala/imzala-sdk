@@ -1,13 +1,14 @@
 # ApiV1DemandsPost400Response
 
+Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError'dur.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  |
-**error** | **str** |  |
-**code** | **str** |  |
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**code** | **str** |  | [optional]
 **var_field** | **str** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  | [optional]
 **details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional]
 
@@ -29,5 +30,3 @@ api_v1_demands_post400_response_dict = api_v1_demands_post400_response_instance.
 api_v1_demands_post400_response_from_dict = ApiV1DemandsPost400Response.from_dict(api_v1_demands_post400_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

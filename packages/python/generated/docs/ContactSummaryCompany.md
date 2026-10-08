@@ -26,5 +26,3 @@ contact_summary_company_dict = contact_summary_company_instance.to_dict()
 contact_summary_company_from_dict = ContactSummaryCompany.from_dict(contact_summary_company_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

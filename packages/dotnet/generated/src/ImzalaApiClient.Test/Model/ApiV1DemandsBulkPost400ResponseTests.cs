@@ -74,15 +74,6 @@ namespace ImzalaApiClient.Test.Model
         }
 
         /// <summary>
-        /// Test the property 'Message'
-        /// </summary>
-        [Fact]
-        public void MessageTest()
-        {
-            // TODO unit test for the property 'Message'
-        }
-
-        /// <summary>
         /// Test the property 'Code'
         /// </summary>
         [Fact]
@@ -92,12 +83,12 @@ namespace ImzalaApiClient.Test.Model
         }
 
         /// <summary>
-        /// Test the property 'RetryAfterSeconds'
+        /// Test the property 'Message'
         /// </summary>
         [Fact]
-        public void RetryAfterSecondsTest()
+        public void MessageTest()
         {
-            // TODO unit test for the property 'RetryAfterSeconds'
+            // TODO unit test for the property 'Message'
         }
 
         /// <summary>
@@ -107,6 +98,15 @@ namespace ImzalaApiClient.Test.Model
         public void FieldTest()
         {
             // TODO unit test for the property 'Field'
+        }
+
+        /// <summary>
+        /// Test the property 'Details'
+        /// </summary>
+        [Fact]
+        public void DetailsTest()
+        {
+            // TODO unit test for the property 'Details'
         }
     }
 }

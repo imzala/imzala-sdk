@@ -13,6 +13,3 @@
 |**message** | **String** |  |  [optional] |
 |**diagnostics** | [**List&lt;FieldLayoutDiagnostic&gt;**](FieldLayoutDiagnostic.md) |  |  [optional] |
 |**warnings** | [**List&lt;FieldLayoutWarning&gt;**](FieldLayoutWarning.md) |  |  [optional] |
-
-
-

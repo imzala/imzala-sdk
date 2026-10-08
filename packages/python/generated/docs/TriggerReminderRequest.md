@@ -27,5 +27,3 @@ trigger_reminder_request_dict = trigger_reminder_request_instance.to_dict()
 trigger_reminder_request_from_dict = TriggerReminderRequest.from_dict(trigger_reminder_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**items** | [**List&lt;UpsertItemsResponseDataItemsInner&gt;**](UpsertItemsResponseDataItemsInner.md) |  |  [optional] |
 |**itemsCount** | **Integer** |  |  [optional] |
-
-
-

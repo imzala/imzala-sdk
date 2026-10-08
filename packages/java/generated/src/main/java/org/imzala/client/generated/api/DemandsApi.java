@@ -43,7 +43,6 @@ import org.imzala.client.generated.model.ApiV1DemandsIdTermPatch200Response;
 import org.imzala.client.generated.model.ApiV1DemandsIdTimelineGet200Response;
 import org.imzala.client.generated.model.ApiV1DemandsIdUnarchivePost200Response;
 import org.imzala.client.generated.model.ApiV1DemandsPost201Response;
-import org.imzala.client.generated.model.ApiV1DemandsPost400Response;
 import org.imzala.client.generated.model.ApiV1DemandsPost402Response;
 import org.imzala.client.generated.model.ApiV1DemandsPost404Response;
 import org.imzala.client.generated.model.ApiV1DemandsPost500Response;
@@ -57,7 +56,7 @@ import org.imzala.client.generated.model.ApiV1TemplatesIdGet404Response;
 import org.imzala.client.generated.model.CodedError;
 import org.imzala.client.generated.model.ContractTermInput;
 import org.imzala.client.generated.model.CreateDemandRequest;
-import org.imzala.client.generated.model.DocumentVerificationDisabledError;
+import org.imzala.client.generated.model.DemandCreationError;
 import org.imzala.client.generated.model.FieldLayoutUnresolved;
 import java.io.File;
 import java.time.LocalDate;
@@ -98,7 +97,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DemandsApi {
   /**
    * Utility class for extending HttpRequest.Builder functionality.

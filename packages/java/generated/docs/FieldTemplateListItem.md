@@ -13,6 +13,3 @@
 |**category** | **String** |  |  [optional] |
 |**usageCount** | **Integer** |  |  [optional] |
 |**parties** | [**List&lt;FieldTemplateParty&gt;**](FieldTemplateParty.md) |  |  [optional] |
-
-
-

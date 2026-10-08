@@ -112,4 +112,3 @@ catch (ApiException e)
 | **429** | **RATE_LIMITED** — Son hatırlatmadan 5 dk geçmedi. &#x60;Retry-After&#x60; header&#39;ı + &#x60;retry_after_seconds&#x60; alanı bekleme süresini gösterir. Override için &#x60;force: true&#x60; ile tekrar deneyin.  Not: Kişi-başı cap&#39;ler 429 dönmez — o kişiyi &#x60;details[]&#x60; içinde &#x60;skipped&#x60; olarak işaretler ve diğer kişilere gönderime devam eder (200 success). MAX_SMS_REMINDERS_REACHED 429 yalnızca pratikte ulaşılmayan global demand cap (999) güvenlik ağı için tanımlı.  |  * Retry-After - Saniye cinsinden bekleme süresi (sadece RATE_LIMITED) <br>  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

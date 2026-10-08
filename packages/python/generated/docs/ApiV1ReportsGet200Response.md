@@ -26,5 +26,3 @@ api_v1_reports_get200_response_dict = api_v1_reports_get200_response_instance.to
 api_v1_reports_get200_response_from_dict = ApiV1ReportsGet200Response.from_dict(api_v1_reports_get200_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -29,5 +29,3 @@ api_v1_timestamps_post_request1_dict = api_v1_timestamps_post_request1_instance.
 api_v1_timestamps_post_request1_from_dict = ApiV1TimestampsPostRequest1.from_dict(api_v1_timestamps_post_request1_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

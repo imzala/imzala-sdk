@@ -25,6 +25,3 @@
 |---- | -----|
 | DOCUMENT | &quot;DOCUMENT&quot; |
 | FIELD_LAYOUT | &quot;FIELD_LAYOUT&quot; |
-
-
-

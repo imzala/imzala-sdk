@@ -26,5 +26,3 @@ demand_page_dict = demand_page_instance.to_dict()
 demand_page_from_dict = DemandPage.from_dict(demand_page_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

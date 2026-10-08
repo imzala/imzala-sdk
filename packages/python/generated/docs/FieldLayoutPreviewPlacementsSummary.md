@@ -27,5 +27,3 @@ field_layout_preview_placements_summary_dict = field_layout_preview_placements_s
 field_layout_preview_placements_summary_from_dict = FieldLayoutPreviewPlacementsSummary.from_dict(field_layout_preview_placements_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

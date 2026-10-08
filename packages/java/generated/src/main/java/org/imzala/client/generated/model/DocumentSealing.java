@@ -36,7 +36,7 @@ import org.imzala.client.generated.ApiClient;
   DocumentSealing.JSON_PROPERTY_STATUS,
   DocumentSealing.JSON_PROPERTY_HAS_TIMESTAMP
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentSealing {
   /**
    * Gets or Sets status

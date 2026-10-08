@@ -28,5 +28,3 @@ template_summary_parties_inner_dict = template_summary_parties_inner_instance.to
 template_summary_parties_inner_from_dict = TemplateSummaryPartiesInner.from_dict(template_summary_parties_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -12,4 +12,3 @@ Name | Type | Description | Notes
 **TemplatePartyId** | **string** | Bu field&#39;in sahibi olan template parti id&#39;si. NULL ise root scope (party_mapping dışında) — kök variables&#39;a göndermeniz gerekir. Doluysa party_mapping[i].variables&#39;ta i bu id ile eşleşen partinin altına göndermeniz gerekir.  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

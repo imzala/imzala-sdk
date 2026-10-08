@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1DemandsIdRemindersPost200ResponseData**](ApiV1DemandsIdRemindersPost200ResponseData.md) |  |  [optional] |
-
-
-

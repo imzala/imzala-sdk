@@ -36,18 +36,15 @@ class TestApiV1DemandsBulkPost400Response(unittest.TestCase):
         model = ApiV1DemandsBulkPost400Response()
         if include_optional:
             return ApiV1DemandsBulkPost400Response(
-                success = True,
-                error = 'DOCUMENT_TYPE_INVALID',
-                message = 'Yeterli krediniz yok',
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
-                retry_after_seconds = 60,
-                var_field = ''
+                success = False,
+                error = '',
+                code = '',
+                message = '',
+                var_field = '',
+                details = { }
             )
         else:
             return ApiV1DemandsBulkPost400Response(
-                success = True,
-                error = 'DOCUMENT_TYPE_INVALID',
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
         )
         """
 

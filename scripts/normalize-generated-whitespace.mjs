@@ -7,11 +7,14 @@ import { fileURLToPath } from 'node:url';
 const TEXT_EXTENSIONS = new Set(['.md', '.ts', '.cs', '.java', '.py', '.php', '.json', '.yaml', '.yml', '.xml', '.sln', '.csproj', '.props', '.config', '.txt', '.rst', '.properties', '.sh', '.bat', '.ps1', '.toml', '.ini', '.cfg', '.gradle', '.sbt', '.dist', '.typed', '.gitignore']);
 const TEXT_NAMES = new Set(['LICENSE', 'NOTICE', 'README', 'VERSION', 'FILES', 'Dockerfile', '.openapi-generator-ignore', '.gitignore', 'git_push.sh', 'gradlew', 'gradlew.bat']);
 export function normalizeText(text, markdown = false) {
-  return text.replace(/[ \t]+(?=\r?$)/gm, (tail, offset) => {
+  const normalized = text.replace(/[ \t]+(?=\r?$)/gm, (tail, offset) => {
     const start = text.lastIndexOf('\n', offset - 1) + 1;
     const nonblank = text.slice(start, offset).trim().length > 0;
     return markdown && nonblank && tail.replace(/\t/g, ' ').length >= 2 ? '  ' : '';
   });
+  // Generated Markdown tables can add surplus empty lines at EOF. Keep the
+  // original terminal EOL style and hard-break spaces; never add an EOL.
+  return markdown ? normalized.replace(/(\r?\n)(?:\r?\n)+$/, '$1') : normalized;
 }
 export function normalizeDirectory(directory) {
   let changed = 0;

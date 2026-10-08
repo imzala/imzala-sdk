@@ -30,5 +30,3 @@ webhook_data_demand_completed_dict = webhook_data_demand_completed_instance.to_d
 webhook_data_demand_completed_from_dict = WebhookDataDemandCompleted.from_dict(webhook_data_demand_completed_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -43,5 +43,3 @@ contact_summary_dict = contact_summary_instance.to_dict()
 contact_summary_from_dict = ContactSummary.from_dict(contact_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

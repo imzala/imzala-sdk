@@ -27,5 +27,3 @@ api_v1_demands_demand_id_dispatch_post200_response_data_credits_dict = api_v1_de
 api_v1_demands_demand_id_dispatch_post200_response_data_credits_from_dict = ApiV1DemandsDemandIdDispatchPost200ResponseDataCredits.from_dict(api_v1_demands_demand_id_dispatch_post200_response_data_credits_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

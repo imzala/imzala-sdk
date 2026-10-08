@@ -20,6 +20,3 @@
 | Name | Value |
 |---- | -----|
 | INVALID_DOCUMENT_SELECTION | &quot;INVALID_DOCUMENT_SELECTION&quot; |
-
-
-

@@ -17,4 +17,3 @@ Name | Type | Description | Notes
 **Decisions** | [**List&lt;DocumentPartyDecision&gt;**](DocumentPartyDecision.md) |  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

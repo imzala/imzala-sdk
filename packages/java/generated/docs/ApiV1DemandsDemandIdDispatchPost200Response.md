@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1DemandsDemandIdDispatchPost200ResponseData**](ApiV1DemandsDemandIdDispatchPost200ResponseData.md) |  |  [optional] |
-
-
-

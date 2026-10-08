@@ -34,6 +34,3 @@
 | ACTIVE | &quot;ACTIVE&quot; |
 | ENDED | &quot;ENDED&quot; |
 | STOPPED | &quot;STOPPED&quot; |
-
-
-

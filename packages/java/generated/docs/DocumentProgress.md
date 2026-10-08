@@ -22,6 +22,3 @@ Belgeye atanmış tarafların karar ilerlemesi. Mühürden ve rızadan bağıms�
 | PENDING | &quot;PENDING&quot; |
 | PARTIAL | &quot;PARTIAL&quot; |
 | COMPLETED | &quot;COMPLETED&quot; |
-
-
-

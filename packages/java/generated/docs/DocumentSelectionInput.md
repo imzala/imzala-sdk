@@ -10,6 +10,3 @@ Bu istekte gönderilecek belgeleri şablon varsayılanına göre değiştirir. A
 |------------ | ------------- | ------------- | -------------|
 |**include** | **List&lt;UUID&gt;** | Şablon belge kimlikleri (&#x60;GET /api/v1/templates/{id}&#x60; → &#x60;documents[].id&#x60;). |  [optional] |
 |**exclude** | **List&lt;UUID&gt;** |  |  [optional] |
-
-
-

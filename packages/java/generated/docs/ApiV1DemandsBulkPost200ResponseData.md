@@ -12,6 +12,3 @@
 |**created** | **Integer** |  |  [optional] |
 |**failed** | **Integer** |  |  [optional] |
 |**results** | [**List&lt;ApiV1DemandsBulkPost200ResponseDataResultsInner&gt;**](ApiV1DemandsBulkPost200ResponseDataResultsInner.md) |  |  [optional] |
-
-
-

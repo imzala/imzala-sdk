@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1ContactsGet200ResponseData**](ApiV1ContactsGet200ResponseData.md) |  |  [optional] |
-
-
-

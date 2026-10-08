@@ -26,5 +26,3 @@ api_v1_demands_id_parties_party_id_resend_post200_response_dict = api_v1_demands
 api_v1_demands_id_parties_party_id_resend_post200_response_from_dict = ApiV1DemandsIdPartiesPartyIdResendPost200Response.from_dict(api_v1_demands_id_parties_party_id_resend_post200_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

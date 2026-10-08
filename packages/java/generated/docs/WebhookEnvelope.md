@@ -28,6 +28,3 @@ Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre de�
 | CONTRACT_EXPIRING | &quot;contract.expiring&quot; |
 | CONTRACT_ENDED | &quot;contract.ended&quot; |
 | CONTRACT_ADVANCED | &quot;contract.advanced&quot; |
-
-
-

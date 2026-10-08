@@ -20,6 +20,3 @@
 | Name | Value |
 |---- | -----|
 | DISPATCH_FAILED | &quot;DISPATCH_FAILED&quot; |
-
-
-

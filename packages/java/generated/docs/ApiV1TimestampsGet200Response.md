@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1TimestampsGet200ResponseData**](ApiV1TimestampsGet200ResponseData.md) |  |  [optional] |
-
-
-

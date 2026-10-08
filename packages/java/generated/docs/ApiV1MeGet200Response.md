@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1MeGet200ResponseData**](ApiV1MeGet200ResponseData.md) |  |  [optional] |
-
-
-

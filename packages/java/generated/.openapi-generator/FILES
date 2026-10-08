@@ -115,6 +115,7 @@ docs/CreatedDemandUpload.md
 docs/CreatedDemandUploadDispatch.md
 docs/CreatedDemandUploadDispatchResultsInner.md
 docs/CreatedDemandUploadFieldLayout.md
+docs/DemandCreationError.md
 docs/DemandDocumentStatus.md
 docs/DemandPage.md
 docs/DemandStatus.md
@@ -326,6 +327,7 @@ src/main/java/org/imzala/client/generated/model/CreatedDemandUpload.java
 src/main/java/org/imzala/client/generated/model/CreatedDemandUploadDispatch.java
 src/main/java/org/imzala/client/generated/model/CreatedDemandUploadDispatchResultsInner.java
 src/main/java/org/imzala/client/generated/model/CreatedDemandUploadFieldLayout.java
+src/main/java/org/imzala/client/generated/model/DemandCreationError.java
 src/main/java/org/imzala/client/generated/model/DemandDocumentStatus.java
 src/main/java/org/imzala/client/generated/model/DemandPage.java
 src/main/java/org/imzala/client/generated/model/DemandStatus.java
@@ -511,6 +513,7 @@ src/test/java/org/imzala/client/generated/model/CreatedDemandUploadDispatchResul
 src/test/java/org/imzala/client/generated/model/CreatedDemandUploadDispatchTest.java
 src/test/java/org/imzala/client/generated/model/CreatedDemandUploadFieldLayoutTest.java
 src/test/java/org/imzala/client/generated/model/CreatedDemandUploadTest.java
+src/test/java/org/imzala/client/generated/model/DemandCreationErrorTest.java
 src/test/java/org/imzala/client/generated/model/DemandDocumentStatusTest.java
 src/test/java/org/imzala/client/generated/model/DemandPageTest.java
 src/test/java/org/imzala/client/generated/model/DemandStatusPartiesInnerTest.java

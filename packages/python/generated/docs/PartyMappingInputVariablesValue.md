@@ -36,5 +36,3 @@ party_mapping_input_variables_value_dict = party_mapping_input_variables_value_i
 party_mapping_input_variables_value_from_dict = PartyMappingInputVariablesValue.from_dict(party_mapping_input_variables_value_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

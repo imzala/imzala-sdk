@@ -12,6 +12,3 @@
 |**label** | **String** |  |  [optional] |
 |**isRequired** | **Boolean** |  |  [optional] |
 |**fieldCount** | **Integer** | Bu rolün dolduracağı alan sayısı. |  [optional] |
-
-
-

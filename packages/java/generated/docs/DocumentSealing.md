@@ -21,6 +21,3 @@ Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
 | PENDING | &quot;PENDING&quot; |
 | SEALED | &quot;SEALED&quot; |
 | FAILED | &quot;FAILED&quot; |
-
-
-

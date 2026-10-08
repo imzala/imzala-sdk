@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.imzala.client.generated.model.CodedError;
-import org.imzala.client.generated.model.DocumentCollectionPolicyError;
 import org.imzala.client.generated.model.DocumentSelectionError;
 import org.imzala.client.generated.model.DocumentSelectionErrorDetails;
 import org.openapitools.jackson.nullable.JsonNullable;

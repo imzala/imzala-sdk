@@ -13,6 +13,3 @@
 |**cancelled** | **Integer** |  |  [optional] |
 |**expired** | **Integer** |  |  [optional] |
 |**thisMonth** | **Integer** |  |  [optional] |
-
-
-

@@ -27,5 +27,3 @@ webhook_data_party_rejected_dict = webhook_data_party_rejected_instance.to_dict(
 webhook_data_party_rejected_from_dict = WebhookDataPartyRejected.from_dict(webhook_data_party_rejected_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

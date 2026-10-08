@@ -53,6 +53,3 @@ Sözleşme süre/yenileme takibi. Sözleşmede takip hiç tanımlanmadıysa (`st
 | ACTIVE | &quot;ACTIVE&quot; |
 | ENDED | &quot;ENDED&quot; |
 | STOPPED | &quot;STOPPED&quot; |
-
-
-

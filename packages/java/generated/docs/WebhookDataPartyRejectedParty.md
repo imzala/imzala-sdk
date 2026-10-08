@@ -12,6 +12,3 @@
 |**lastName** | **String** |  |  |
 |**email** | **String** |  |  [optional] |
 |**rejectionReason** | **String** | Tarafın belirttiği sebep (opsiyonel, modal textarea) |  [optional] |
-
-
-

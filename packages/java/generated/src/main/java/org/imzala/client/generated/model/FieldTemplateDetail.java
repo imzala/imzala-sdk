@@ -48,7 +48,7 @@ import org.imzala.client.generated.ApiClient;
   FieldTemplateDetail.JSON_PROPERTY_TOTAL_FIELD_COUNT,
   FieldTemplateDetail.JSON_PROPERTY_PARTIES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class FieldTemplateDetail {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable

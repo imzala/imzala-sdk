@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**TimestampRecord**](TimestampRecord.md) |  |  [optional] |
-
-
-

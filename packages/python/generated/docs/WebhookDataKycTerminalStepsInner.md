@@ -26,5 +26,3 @@ webhook_data_kyc_terminal_steps_inner_dict = webhook_data_kyc_terminal_steps_inn
 webhook_data_kyc_terminal_steps_inner_from_dict = WebhookDataKycTerminalStepsInner.from_dict(webhook_data_kyc_terminal_steps_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

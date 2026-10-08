@@ -20,6 +20,3 @@
 |---- | -----|
 | EMAIL | &quot;email&quot; |
 | SMS | &quot;sms&quot; |
-
-
-

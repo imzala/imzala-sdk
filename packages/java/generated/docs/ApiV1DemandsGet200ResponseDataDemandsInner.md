@@ -17,6 +17,3 @@
 |**partiesTotal** | **Integer** |  |  [optional] |
 |**partiesSigned** | **Integer** |  |  [optional] |
 |**pdfUrl** | **URI** | COMPLETED ise imzalı PDF public URL&#39;i |  [optional] |
-
-
-

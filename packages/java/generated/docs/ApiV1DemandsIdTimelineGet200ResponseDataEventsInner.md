@@ -14,6 +14,3 @@
 |**deviceLabel** | **String** |  |  [optional] |
 |**commentText** | **String** |  |  [optional] |
 |**createdAt** | **OffsetDateTime** |  |  [optional] |
-
-
-

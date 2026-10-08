@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**TemplateDetail**](TemplateDetail.md) |  |  [optional] |
-
-
-

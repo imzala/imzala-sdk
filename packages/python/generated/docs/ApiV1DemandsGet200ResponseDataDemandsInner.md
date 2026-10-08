@@ -34,5 +34,3 @@ api_v1_demands_get200_response_data_demands_inner_dict = api_v1_demands_get200_r
 api_v1_demands_get200_response_data_demands_inner_from_dict = ApiV1DemandsGet200ResponseDataDemandsInner.from_dict(api_v1_demands_get200_response_data_demands_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

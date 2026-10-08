@@ -12,6 +12,3 @@
 |**required** | **Boolean** |  |  [optional] |
 |**requiredIf** | **String** |  |  [optional] |
 |**_default** | **Object** |  |  [optional] |
-
-
-

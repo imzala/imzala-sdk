@@ -1,13 +1,14 @@
 # ApiV1DemandsPost400Response
 
+Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError\'dur.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **boolean** |  | [default to undefined]
-**error** | **string** |  | [default to undefined]
-**code** | **string** |  | [default to undefined]
+**success** | **boolean** |  | [optional] [default to undefined]
+**error** | **string** |  | [optional] [default to undefined]
+**code** | **string** |  | [optional] [default to undefined]
 **field** | **string** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  | [optional] [default to undefined]
 **details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional] [default to undefined]
 

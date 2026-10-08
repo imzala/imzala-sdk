@@ -29,5 +29,3 @@ webhook_envelope_dict = webhook_envelope_instance.to_dict()
 webhook_envelope_from_dict = WebhookEnvelope.from_dict(webhook_envelope_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

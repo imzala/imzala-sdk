@@ -26,6 +26,3 @@ Bir tarafın bu belge için kararı. Kişisel veri (ad, e-posta, telefon) içerm
 | ACCEPTED | &quot;ACCEPTED&quot; |
 | DECLINED | &quot;DECLINED&quot; |
 | WITHDRAWN | &quot;WITHDRAWN&quot; |
-
-
-

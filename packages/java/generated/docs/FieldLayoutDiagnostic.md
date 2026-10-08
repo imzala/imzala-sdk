@@ -26,6 +26,3 @@ Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidi
 |---- | -----|
 | ERROR | &quot;ERROR&quot; |
 | WARNING | &quot;WARNING&quot; |
-
-
-

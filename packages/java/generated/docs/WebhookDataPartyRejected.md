@@ -10,6 +10,3 @@
 |**demandId** | **UUID** |  |  |
 |**party** | [**WebhookDataPartyRejectedParty**](WebhookDataPartyRejectedParty.md) |  |  |
 |**rejectedAt** | **OffsetDateTime** |  |  |
-
-
-

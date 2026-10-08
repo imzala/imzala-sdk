@@ -37,5 +37,3 @@ stamp_data_dict = stamp_data_instance.to_dict()
 stamp_data_from_dict = StampData.from_dict(stamp_data_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

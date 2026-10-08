@@ -8,6 +8,3 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**term** | [**ContractTerm**](ContractTerm.md) |  |  [optional] |
-
-
-

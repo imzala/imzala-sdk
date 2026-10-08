@@ -31,5 +31,3 @@ webhook_data_contract_term_dict = webhook_data_contract_term_instance.to_dict()
 webhook_data_contract_term_from_dict = WebhookDataContractTerm.from_dict(webhook_data_contract_term_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

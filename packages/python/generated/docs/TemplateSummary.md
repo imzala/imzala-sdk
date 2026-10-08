@@ -30,5 +30,3 @@ template_summary_dict = template_summary_instance.to_dict()
 template_summary_from_dict = TemplateSummary.from_dict(template_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

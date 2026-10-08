@@ -118,6 +118,7 @@ docs/Model/CreatedDemandUpload.md
 docs/Model/CreatedDemandUploadDispatch.md
 docs/Model/CreatedDemandUploadDispatchResultsInner.md
 docs/Model/CreatedDemandUploadFieldLayout.md
+docs/Model/DemandCreationError.md
 docs/Model/DemandDocumentStatus.md
 docs/Model/DemandPage.md
 docs/Model/DemandStatus.md
@@ -308,6 +309,7 @@ lib/Model/CreatedDemandUpload.php
 lib/Model/CreatedDemandUploadDispatch.php
 lib/Model/CreatedDemandUploadDispatchResultsInner.php
 lib/Model/CreatedDemandUploadFieldLayout.php
+lib/Model/DemandCreationError.php
 lib/Model/DemandDocumentStatus.php
 lib/Model/DemandPage.php
 lib/Model/DemandStatus.php
@@ -496,6 +498,7 @@ test/Model/CreatedDemandUploadDispatchResultsInnerTest.php
 test/Model/CreatedDemandUploadDispatchTest.php
 test/Model/CreatedDemandUploadFieldLayoutTest.php
 test/Model/CreatedDemandUploadTest.php
+test/Model/DemandCreationErrorTest.php
 test/Model/DemandDocumentStatusTest.php
 test/Model/DemandPageTest.php
 test/Model/DemandStatusPartiesInnerTest.php

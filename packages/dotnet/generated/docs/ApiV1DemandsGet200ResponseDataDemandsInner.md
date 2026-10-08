@@ -16,4 +16,3 @@ Name | Type | Description | Notes
 **PdfUrl** | **string** | COMPLETED ise imzalı PDF public URL&#39;i | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

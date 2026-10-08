@@ -24,6 +24,3 @@
 | PREINFO | &quot;PREINFO&quot; |
 | PRICE_LIST | &quot;PRICE_LIST&quot; |
 | OTHER | &quot;OTHER&quot; |
-
-
-

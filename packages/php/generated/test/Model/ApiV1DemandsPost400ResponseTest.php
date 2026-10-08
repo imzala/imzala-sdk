@@ -35,7 +35,7 @@ use PHPUnit\Framework\TestCase;
  * ApiV1DemandsPost400ResponseTest Class Doc Comment
  *
  * @category    Class
- * @description ApiV1DemandsPost400Response
+ * @description Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError&#39;dur.
  * @package     Imzala\Client
  * @author      OpenAPI Generator team
  * @link        https://openapi-generator.tech

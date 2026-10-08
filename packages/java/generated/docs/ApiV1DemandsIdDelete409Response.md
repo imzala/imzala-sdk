@@ -19,6 +19,3 @@
 |---- | -----|
 | DEMAND_COMPLETED | &quot;DEMAND_COMPLETED&quot; |
 | DEMAND_ARCHIVED | &quot;DEMAND_ARCHIVED&quot; |
-
-
-

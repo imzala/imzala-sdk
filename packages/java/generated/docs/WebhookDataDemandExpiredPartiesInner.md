@@ -11,6 +11,3 @@
 |**name** | **String** |  |  [optional] |
 |**email** | **String** |  |  [optional] |
 |**signed** | **Boolean** | Süre dolduğunda imzalamış mıydı? |  [optional] |
-
-
-

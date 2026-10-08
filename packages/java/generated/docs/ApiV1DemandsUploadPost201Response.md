@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**CreatedDemandUpload**](CreatedDemandUpload.md) |  |  [optional] |
-
-
-

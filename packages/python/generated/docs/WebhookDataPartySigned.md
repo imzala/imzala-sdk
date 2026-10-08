@@ -27,5 +27,3 @@ webhook_data_party_signed_dict = webhook_data_party_signed_instance.to_dict()
 webhook_data_party_signed_from_dict = WebhookDataPartySigned.from_dict(webhook_data_party_signed_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

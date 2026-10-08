@@ -11,6 +11,3 @@
 |**total** | **Integer** |  |  [optional] |
 |**page** | **Integer** |  |  [optional] |
 |**limit** | **Integer** |  |  [optional] |
-
-
-

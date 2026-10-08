@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**TimestampListItem**](TimestampListItem.md) |  |  [optional] |
-
-
-

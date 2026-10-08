@@ -26,5 +26,3 @@ api_v1_demands_id_embed_session_post_request_dict = api_v1_demands_id_embed_sess
 api_v1_demands_id_embed_session_post_request_from_dict = ApiV1DemandsIdEmbedSessionPostRequest.from_dict(api_v1_demands_id_embed_session_post_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

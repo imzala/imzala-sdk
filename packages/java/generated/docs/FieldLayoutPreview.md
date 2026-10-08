@@ -24,6 +24,3 @@ Kuru koşum sonucu — hiçbir yan etki üretilmemiştir.
 |---- | -----|
 | BLOCK | &quot;block&quot; |
 | DROP | &quot;drop&quot; |
-
-
-

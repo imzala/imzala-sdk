@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1DemandsIdArchivePost200ResponseData**](ApiV1DemandsIdArchivePost200ResponseData.md) |  |  [optional] |
-
-
-

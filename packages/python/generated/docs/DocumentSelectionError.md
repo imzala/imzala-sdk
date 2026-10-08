@@ -29,5 +29,3 @@ document_selection_error_dict = document_selection_error_instance.to_dict()
 document_selection_error_from_dict = DocumentSelectionError.from_dict(document_selection_error_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -36,6 +36,7 @@ use \Imzala\Client\ObjectSerializer;
  * ApiV1DemandsBulkPost400Response Class Doc Comment
  *
  * @category Class
+ * @description Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
  * @package  Imzala\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -50,7 +51,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
      *
      * @var string
      */
-    protected static $openAPIModelName = '_api_v1_demands_bulk_post_400_response';
+    protected static $openAPIModelName = 'ApiV1DemandsBulkPost400Response';
 
     /**
      * Array of property to type mappings. Used for (de)serialization
@@ -60,10 +61,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static $openAPITypes = [
         'success' => 'bool',
         'error' => 'string',
-        'message' => 'string',
         'code' => 'string',
-        'retry_after_seconds' => 'int',
-        'field' => 'string'
+        'message' => 'string',
+        'field' => 'string',
+        'details' => 'array<string,mixed>'
     ];
 
     /**
@@ -76,10 +77,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static $openAPIFormats = [
         'success' => null,
         'error' => null,
-        'message' => null,
         'code' => null,
-        'retry_after_seconds' => null,
-        'field' => null
+        'message' => null,
+        'field' => null,
+        'details' => null
     ];
 
     /**
@@ -90,10 +91,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static array $openAPINullables = [
         'success' => false,
         'error' => false,
-        'message' => false,
         'code' => false,
-        'retry_after_seconds' => false,
-        'field' => true
+        'message' => false,
+        'field' => true,
+        'details' => false
     ];
 
     /**
@@ -184,10 +185,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static $attributeMap = [
         'success' => 'success',
         'error' => 'error',
-        'message' => 'message',
         'code' => 'code',
-        'retry_after_seconds' => 'retry_after_seconds',
-        'field' => 'field'
+        'message' => 'message',
+        'field' => 'field',
+        'details' => 'details'
     ];
 
     /**
@@ -198,10 +199,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static $setters = [
         'success' => 'setSuccess',
         'error' => 'setError',
-        'message' => 'setMessage',
         'code' => 'setCode',
-        'retry_after_seconds' => 'setRetryAfterSeconds',
-        'field' => 'setField'
+        'message' => 'setMessage',
+        'field' => 'setField',
+        'details' => 'setDetails'
     ];
 
     /**
@@ -212,10 +213,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     protected static $getters = [
         'success' => 'getSuccess',
         'error' => 'getError',
-        'message' => 'getMessage',
         'code' => 'getCode',
-        'retry_after_seconds' => 'getRetryAfterSeconds',
-        'field' => 'getField'
+        'message' => 'getMessage',
+        'field' => 'getField',
+        'details' => 'getDetails'
     ];
 
     /**
@@ -259,40 +260,6 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DOCUMENT_TYPE_INVALID = 'DOCUMENT_TYPE_INVALID';
-    public const ERROR_VERIFICATION_POLICY_INVALID = 'VERIFICATION_POLICY_INVALID';
-    public const ERROR_VERIFICATION_INSTRUCTION_INVALID = 'VERIFICATION_INSTRUCTION_INVALID';
-    public const ERROR_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-    public const ERROR_VERIFICATION_POLICY_CONFLICT = 'VERIFICATION_POLICY_CONFLICT';
-    public const CODE_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DOCUMENT_TYPE_INVALID,
-            self::ERROR_VERIFICATION_POLICY_INVALID,
-            self::ERROR_VERIFICATION_INSTRUCTION_INVALID,
-            self::ERROR_VERIFICATION_CONTEXT_REQUIRED,
-            self::ERROR_VERIFICATION_POLICY_CONFLICT,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getCodeAllowableValues()
-    {
-        return [
-            self::CODE_VERIFICATION_CONTEXT_REQUIRED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -311,10 +278,10 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     {
         $this->setIfExists('success', $data ?? [], null);
         $this->setIfExists('error', $data ?? [], null);
-        $this->setIfExists('message', $data ?? [], null);
         $this->setIfExists('code', $data ?? [], null);
-        $this->setIfExists('retry_after_seconds', $data ?? [], null);
+        $this->setIfExists('message', $data ?? [], null);
         $this->setIfExists('field', $data ?? [], null);
+        $this->setIfExists('details', $data ?? [], null);
     }
 
     /**
@@ -344,33 +311,6 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     {
         $invalidProperties = [];
 
-        if ($this->container['success'] === null) {
-            $invalidProperties[] = "'success' can't be null";
-        }
-        if ($this->container['error'] === null) {
-            $invalidProperties[] = "'error' can't be null";
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
-
-        if ($this->container['code'] === null) {
-            $invalidProperties[] = "'code' can't be null";
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'code', must be one of '%s'",
-                $this->container['code'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -389,7 +329,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     /**
      * Gets success
      *
-     * @return bool
+     * @return bool|null
      */
     public function getSuccess()
     {
@@ -399,7 +339,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     /**
      * Sets success
      *
-     * @param bool $success success
+     * @param bool|null $success success
      *
      * @return self
      */
@@ -416,7 +356,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     /**
      * Gets error
      *
-     * @return string
+     * @return string|null
      */
     public function getError()
     {
@@ -426,7 +366,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     /**
      * Sets error
      *
-     * @param string $error error
+     * @param string|null $error error
      *
      * @return self
      */
@@ -435,17 +375,34 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
         if (is_null($error)) {
             throw new \InvalidArgumentException('non-nullable error cannot be null');
         }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
-        }
         $this->container['error'] = $error;
+
+        return $this;
+    }
+
+    /**
+     * Gets code
+     *
+     * @return string|null
+     */
+    public function getCode()
+    {
+        return $this->container['code'];
+    }
+
+    /**
+     * Sets code
+     *
+     * @param string|null $code code
+     *
+     * @return self
+     */
+    public function setCode($code)
+    {
+        if (is_null($code)) {
+            throw new \InvalidArgumentException('non-nullable code cannot be null');
+        }
+        $this->container['code'] = $code;
 
         return $this;
     }
@@ -478,70 +435,6 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     }
 
     /**
-     * Gets code
-     *
-     * @return string
-     */
-    public function getCode()
-    {
-        return $this->container['code'];
-    }
-
-    /**
-     * Sets code
-     *
-     * @param string $code code
-     *
-     * @return self
-     */
-    public function setCode($code)
-    {
-        if (is_null($code)) {
-            throw new \InvalidArgumentException('non-nullable code cannot be null');
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!in_array($code, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'code', must be one of '%s'",
-                    $code,
-                    implode("', '", $allowedValues)
-                )
-            );
-        }
-        $this->container['code'] = $code;
-
-        return $this;
-    }
-
-    /**
-     * Gets retry_after_seconds
-     *
-     * @return int|null
-     */
-    public function getRetryAfterSeconds()
-    {
-        return $this->container['retry_after_seconds'];
-    }
-
-    /**
-     * Sets retry_after_seconds
-     *
-     * @param int|null $retry_after_seconds Yalnız 429 yanıtlarında; `Retry-After` başlığıyla aynı değer.
-     *
-     * @return self
-     */
-    public function setRetryAfterSeconds($retry_after_seconds)
-    {
-        if (is_null($retry_after_seconds)) {
-            throw new \InvalidArgumentException('non-nullable retry_after_seconds cannot be null');
-        }
-        $this->container['retry_after_seconds'] = $retry_after_seconds;
-
-        return $this;
-    }
-
-    /**
      * Gets field
      *
      * @return string|null
@@ -554,7 +447,7 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
     /**
      * Sets field
      *
-     * @param string|null $field Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.
+     * @param string|null $field field
      *
      * @return self
      */
@@ -571,6 +464,33 @@ class ApiV1DemandsBulkPost400Response implements ModelInterface, ArrayAccess, \J
             }
         }
         $this->container['field'] = $field;
+
+        return $this;
+    }
+
+    /**
+     * Gets details
+     *
+     * @return array<string,mixed>|null
+     */
+    public function getDetails()
+    {
+        return $this->container['details'];
+    }
+
+    /**
+     * Sets details
+     *
+     * @param array<string,mixed>|null $details details
+     *
+     * @return self
+     */
+    public function setDetails($details)
+    {
+        if (is_null($details)) {
+            throw new \InvalidArgumentException('non-nullable details cannot be null');
+        }
+        $this->container['details'] = $details;
 
         return $this;
     }

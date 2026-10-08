@@ -113,6 +113,7 @@ docs/CreatedDemandUpload.md
 docs/CreatedDemandUploadDispatch.md
 docs/CreatedDemandUploadDispatchResultsInner.md
 docs/CreatedDemandUploadFieldLayout.md
+docs/DemandCreationError.md
 docs/DemandDocumentStatus.md
 docs/DemandPage.md
 docs/DemandStatus.md
@@ -305,6 +306,7 @@ src/ImzalaApiClient.Test/Model/CreatedDemandUploadDispatchResultsInnerTests.cs
 src/ImzalaApiClient.Test/Model/CreatedDemandUploadDispatchTests.cs
 src/ImzalaApiClient.Test/Model/CreatedDemandUploadFieldLayoutTests.cs
 src/ImzalaApiClient.Test/Model/CreatedDemandUploadTests.cs
+src/ImzalaApiClient.Test/Model/DemandCreationErrorTests.cs
 src/ImzalaApiClient.Test/Model/DemandDocumentStatusTests.cs
 src/ImzalaApiClient.Test/Model/DemandPageTests.cs
 src/ImzalaApiClient.Test/Model/DemandStatusPartiesInnerTests.cs
@@ -509,6 +511,7 @@ src/ImzalaApiClient/Model/CreatedDemandUpload.cs
 src/ImzalaApiClient/Model/CreatedDemandUploadDispatch.cs
 src/ImzalaApiClient/Model/CreatedDemandUploadDispatchResultsInner.cs
 src/ImzalaApiClient/Model/CreatedDemandUploadFieldLayout.cs
+src/ImzalaApiClient/Model/DemandCreationError.cs
 src/ImzalaApiClient/Model/DemandDocumentStatus.cs
 src/ImzalaApiClient/Model/DemandPage.cs
 src/ImzalaApiClient/Model/DemandStatus.cs

@@ -27,6 +27,3 @@ Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor.
 | Name | Value |
 |---- | -----|
 | DOCUMENT_VERIFICATION_DISABLED | &quot;DOCUMENT_VERIFICATION_DISABLED&quot; |
-
-
-

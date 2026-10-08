@@ -12,6 +12,3 @@ Alan Şablonundaki tek rol. `order`, `POST /api/v1/demands/upload` gövdesindeki
 |**order** | **Integer** |  |  [optional] |
 |**label** | **String** |  |  [optional] |
 |**isRequired** | **Boolean** |  |  [optional] |
-
-
-

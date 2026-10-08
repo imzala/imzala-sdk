@@ -37,5 +37,3 @@ created_demand_dict = created_demand_instance.to_dict()
 created_demand_from_dict = CreatedDemand.from_dict(created_demand_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

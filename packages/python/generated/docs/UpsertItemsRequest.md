@@ -26,5 +26,3 @@ upsert_items_request_dict = upsert_items_request_instance.to_dict()
 upsert_items_request_from_dict = UpsertItemsRequest.from_dict(upsert_items_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

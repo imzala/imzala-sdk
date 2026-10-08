@@ -142,6 +142,7 @@ __all__ = [
     "CreatedDemandUploadDispatch",
     "CreatedDemandUploadDispatchResultsInner",
     "CreatedDemandUploadFieldLayout",
+    "DemandCreationError",
     "DemandDocumentStatus",
     "DemandPage",
     "DemandStatus",
@@ -343,6 +344,7 @@ from imzala_client.models.created_demand_upload import CreatedDemandUpload as Cr
 from imzala_client.models.created_demand_upload_dispatch import CreatedDemandUploadDispatch as CreatedDemandUploadDispatch
 from imzala_client.models.created_demand_upload_dispatch_results_inner import CreatedDemandUploadDispatchResultsInner as CreatedDemandUploadDispatchResultsInner
 from imzala_client.models.created_demand_upload_field_layout import CreatedDemandUploadFieldLayout as CreatedDemandUploadFieldLayout
+from imzala_client.models.demand_creation_error import DemandCreationError as DemandCreationError
 from imzala_client.models.demand_document_status import DemandDocumentStatus as DemandDocumentStatus
 from imzala_client.models.demand_page import DemandPage as DemandPage
 from imzala_client.models.demand_status import DemandStatus as DemandStatus

@@ -28,5 +28,3 @@ api_v1_demands_bulk_post200_response_data_results_inner_details_dict = api_v1_de
 api_v1_demands_bulk_post200_response_data_results_inner_details_from_dict = ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.from_dict(api_v1_demands_bulk_post200_response_data_results_inner_details_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

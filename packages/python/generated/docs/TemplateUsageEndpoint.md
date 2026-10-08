@@ -26,5 +26,3 @@ template_usage_endpoint_dict = template_usage_endpoint_instance.to_dict()
 template_usage_endpoint_from_dict = TemplateUsageEndpoint.from_dict(template_usage_endpoint_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

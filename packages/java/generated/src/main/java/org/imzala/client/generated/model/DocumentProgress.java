@@ -43,7 +43,7 @@ import org.imzala.client.generated.ApiClient;
   DocumentProgress.JSON_PROPERTY_DECIDED_PARTY_COUNT,
   DocumentProgress.JSON_PROPERTY_COMPLETED_AT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentProgress {
   /**
    * &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.

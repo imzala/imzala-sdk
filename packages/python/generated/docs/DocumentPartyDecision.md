@@ -32,5 +32,3 @@ document_party_decision_dict = document_party_decision_instance.to_dict()
 document_party_decision_from_dict = DocumentPartyDecision.from_dict(document_party_decision_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

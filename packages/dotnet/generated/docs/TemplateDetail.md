@@ -15,4 +15,3 @@ Name | Type | Description | Notes
 **Documents** | [**List&lt;TemplateDocumentSummary&gt;**](TemplateDocumentSummary.md) | Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi. | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

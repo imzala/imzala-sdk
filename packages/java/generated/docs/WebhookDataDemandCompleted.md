@@ -21,6 +21,3 @@
 | Name | Value |
 |---- | -----|
 | COMPLETED | &quot;COMPLETED&quot; |
-
-
-

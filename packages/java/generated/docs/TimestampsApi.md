@@ -519,4 +519,3 @@ ApiResponse<[**ApiV1TimestampsPost201Response**](ApiV1TimestampsPost201Response.
 | **429** | &#x60;RATE_LIMIT_EXCEEDED&#x60;: API anahtarı başına dakikada 10 zaman damgası isteği sınırı aşıldı. Genel dakikada 60 istek sınırı da ayrıca geçerlidir. |  -  |
 | **500** | INDETERMINATE — Damga alındı ancak doğrulama sonucu belirsiz. Destek ekibiyle iletişime geçin.  |  -  |
 | **503** | TSA_UNAVAILABLE — TÜBİTAK KAMU SM zaman damgası servisi geçici olarak erişilemiyor. Kısa süre sonra tekrar deneyin.  |  -  |
-

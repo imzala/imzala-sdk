@@ -35,7 +35,7 @@ use PHPUnit\Framework\TestCase;
  * ApiV1DemandsBulkPost400ResponseTest Class Doc Comment
  *
  * @category    Class
- * @description ApiV1DemandsBulkPost400Response
+ * @description Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
  * @package     Imzala\Client
  * @author      OpenAPI Generator team
  * @link        https://openapi-generator.tech
@@ -99,15 +99,6 @@ class ApiV1DemandsBulkPost400ResponseTest extends TestCase
     }
 
     /**
-     * Test attribute "message"
-     */
-    public function testPropertyMessage()
-    {
-        // TODO: implement
-        self::markTestIncomplete('Not implemented');
-    }
-
-    /**
      * Test attribute "code"
      */
     public function testPropertyCode()
@@ -117,9 +108,9 @@ class ApiV1DemandsBulkPost400ResponseTest extends TestCase
     }
 
     /**
-     * Test attribute "retry_after_seconds"
+     * Test attribute "message"
      */
-    public function testPropertyRetryAfterSeconds()
+    public function testPropertyMessage()
     {
         // TODO: implement
         self::markTestIncomplete('Not implemented');
@@ -129,6 +120,15 @@ class ApiV1DemandsBulkPost400ResponseTest extends TestCase
      * Test attribute "field"
      */
     public function testPropertyField()
+    {
+        // TODO: implement
+        self::markTestIncomplete('Not implemented');
+    }
+
+    /**
+     * Test attribute "details"
+     */
+    public function testPropertyDetails()
     {
         // TODO: implement
         self::markTestIncomplete('Not implemented');

@@ -25,5 +25,3 @@ api_v1_demands_id_cancel_post_request_dict = api_v1_demands_id_cancel_post_reque
 api_v1_demands_id_cancel_post_request_from_dict = ApiV1DemandsIdCancelPostRequest.from_dict(api_v1_demands_id_cancel_post_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

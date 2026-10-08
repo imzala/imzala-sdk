@@ -1091,4 +1091,3 @@ ApiResponse<[**ApiV1TemplatesIdUsageGet200Response**](ApiV1TemplatesIdUsageGet20
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
 | **404** | Kayıt bulunamadı |  -  |
-

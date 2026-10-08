@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | [**ApiV1DemandsIdRemindersPost429ResponseError**](ApiV1DemandsIdRemindersPost429ResponseError.md) |  |  [optional] |
-
-
-

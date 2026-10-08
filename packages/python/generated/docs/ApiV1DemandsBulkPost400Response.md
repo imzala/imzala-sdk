@@ -1,16 +1,17 @@
 # ApiV1DemandsBulkPost400Response
 
+Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**success** | **bool** |  |
-**error** | **str** |  |
+**success** | **bool** |  | [optional]
+**error** | **str** |  | [optional]
+**code** | **str** |  | [optional]
 **message** | **str** |  | [optional]
-**code** | **str** |  |
-**retry_after_seconds** | **int** | Yalnız 429 yanıtlarında; &#x60;Retry-After&#x60; başlığıyla aynı değer. | [optional]
-**var_field** | **str** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  | [optional]
+**var_field** | **str** |  | [optional]
+**details** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -30,5 +31,3 @@ api_v1_demands_bulk_post400_response_dict = api_v1_demands_bulk_post400_response
 api_v1_demands_bulk_post400_response_from_dict = ApiV1DemandsBulkPost400Response.from_dict(api_v1_demands_bulk_post400_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

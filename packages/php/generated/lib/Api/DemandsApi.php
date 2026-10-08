@@ -215,7 +215,7 @@ class DemandsApi
      *
      * @throws \Imzala\Client\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Imzala\Client\Model\ApiV1DemandsBulkPost200Response|\Imzala\Client\Model\ApiV1DemandsBulkPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\DocumentVerificationDisabledError
+     * @return \Imzala\Client\Model\ApiV1DemandsBulkPost200Response|\Imzala\Client\Model\ApiV1DemandsBulkPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\DemandCreationError
      */
     public function apiV1DemandsBulkPost($api_v1_demands_bulk_post_request, $x_workspace_id = null, string $contentType = self::contentTypes['apiV1DemandsBulkPost'][0])
     {
@@ -234,7 +234,7 @@ class DemandsApi
      *
      * @throws \Imzala\Client\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Imzala\Client\Model\ApiV1DemandsBulkPost200Response|\Imzala\Client\Model\ApiV1DemandsBulkPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\DocumentVerificationDisabledError, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Imzala\Client\Model\ApiV1DemandsBulkPost200Response|\Imzala\Client\Model\ApiV1DemandsBulkPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\ApiError|\Imzala\Client\Model\DemandCreationError, HTTP status code, HTTP response headers (array of strings)
      */
     public function apiV1DemandsBulkPostWithHttpInfo($api_v1_demands_bulk_post_request, $x_workspace_id = null, string $contentType = self::contentTypes['apiV1DemandsBulkPost'][0])
     {
@@ -314,7 +314,7 @@ class DemandsApi
                     );
                 case 503:
                     return $this->handleResponseWithDataType(
-                        '\Imzala\Client\Model\DocumentVerificationDisabledError',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $request,
                         $response,
                     );
@@ -409,7 +409,7 @@ class DemandsApi
                 case 503:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Imzala\Client\Model\DocumentVerificationDisabledError',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7858,7 +7858,7 @@ class DemandsApi
      *
      * @throws \Imzala\Client\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Imzala\Client\Model\ApiV1DemandsPost201Response|\Imzala\Client\Model\ApiV1DemandsPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost402Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiV1DemandsPost500Response|\Imzala\Client\Model\DocumentVerificationDisabledError
+     * @return \Imzala\Client\Model\ApiV1DemandsPost201Response|\Imzala\Client\Model\DemandCreationError|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost402Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiV1DemandsPost500Response|\Imzala\Client\Model\DemandCreationError
      */
     public function apiV1DemandsPost($create_demand_request, $idempotency_key = null, string $contentType = self::contentTypes['apiV1DemandsPost'][0])
     {
@@ -7877,7 +7877,7 @@ class DemandsApi
      *
      * @throws \Imzala\Client\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Imzala\Client\Model\ApiV1DemandsPost201Response|\Imzala\Client\Model\ApiV1DemandsPost400Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost402Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiV1DemandsPost500Response|\Imzala\Client\Model\DocumentVerificationDisabledError, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Imzala\Client\Model\ApiV1DemandsPost201Response|\Imzala\Client\Model\DemandCreationError|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost402Response|\Imzala\Client\Model\ApiV1TemplatesGet401Response|\Imzala\Client\Model\ApiV1DemandsPost404Response|\Imzala\Client\Model\ApiV1DemandsPost500Response|\Imzala\Client\Model\DemandCreationError, HTTP status code, HTTP response headers (array of strings)
      */
     public function apiV1DemandsPostWithHttpInfo($create_demand_request, $idempotency_key = null, string $contentType = self::contentTypes['apiV1DemandsPost'][0])
     {
@@ -7915,7 +7915,7 @@ class DemandsApi
                     );
                 case 400:
                     return $this->handleResponseWithDataType(
-                        '\Imzala\Client\Model\ApiV1DemandsPost400Response',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $request,
                         $response,
                     );
@@ -7951,7 +7951,7 @@ class DemandsApi
                     );
                 case 503:
                     return $this->handleResponseWithDataType(
-                        '\Imzala\Client\Model\DocumentVerificationDisabledError',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $request,
                         $response,
                     );
@@ -7990,7 +7990,7 @@ class DemandsApi
                 case 400:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Imzala\Client\Model\ApiV1DemandsPost400Response',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8038,7 +8038,7 @@ class DemandsApi
                 case 503:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Imzala\Client\Model\DocumentVerificationDisabledError',
+                        '\Imzala\Client\Model\DemandCreationError',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);

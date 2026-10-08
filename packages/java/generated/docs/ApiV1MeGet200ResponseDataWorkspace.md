@@ -18,6 +18,3 @@
 |---- | -----|
 | PERSONAL | &quot;personal&quot; |
 | ORGANIZATION | &quot;organization&quot; |
-
-
-

@@ -19,4 +19,3 @@ Name | Type | Description | Notes
 **VariablesIgnoredByDocument** | [**Dictionary&lt;string, DocumentScopedSlugs&gt;**](DocumentScopedSlugs.md) | Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kapsamında gönderilip O BELGEDE hiçbir alana yazılmayan slug&#39;lar (aynı biçim).  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

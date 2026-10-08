@@ -29,5 +29,3 @@ template_party_summary_dict = template_party_summary_instance.to_dict()
 template_party_summary_from_dict = TemplatePartySummary.from_dict(template_party_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**FieldTemplateDetail**](FieldTemplateDetail.md) |  |  [optional] |
-
-
-

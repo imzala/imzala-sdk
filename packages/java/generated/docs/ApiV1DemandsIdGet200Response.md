@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**DemandStatus**](DemandStatus.md) |  |  [optional] |
-
-
-

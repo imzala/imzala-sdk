@@ -33,5 +33,3 @@ timestamp_list_item_dict = timestamp_list_item_instance.to_dict()
 timestamp_list_item_from_dict = TimestampListItem.from_dict(timestamp_list_item_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

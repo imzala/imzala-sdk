@@ -21,6 +21,3 @@
 |---- | -----|
 | DISPATCH_FAILED | &quot;DISPATCH_FAILED&quot; |
 | RECIPIENT_QUOTA_EXCEEDED | &quot;RECIPIENT_QUOTA_EXCEEDED&quot; |
-
-
-

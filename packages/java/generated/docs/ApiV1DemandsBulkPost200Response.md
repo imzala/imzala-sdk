@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1DemandsBulkPost200ResponseData**](ApiV1DemandsBulkPost200ResponseData.md) |  |  [optional] |
-
-
-

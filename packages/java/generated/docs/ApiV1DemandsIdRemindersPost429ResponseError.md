@@ -19,6 +19,3 @@
 |---- | -----|
 | RATE_LIMITED | &quot;RATE_LIMITED&quot; |
 | MAX_SMS_REMINDERS_REACHED | &quot;MAX_SMS_REMINDERS_REACHED&quot; |
-
-
-

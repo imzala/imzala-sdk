@@ -32,5 +32,3 @@ demand_status_stamp_items_inner_dict = demand_status_stamp_items_inner_instance.
 demand_status_stamp_items_inner_from_dict = DemandStatusStampItemsInner.from_dict(demand_status_stamp_items_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

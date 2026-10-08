@@ -28,5 +28,3 @@ document_verification_disabled_error_dict = document_verification_disabled_error
 document_verification_disabled_error_from_dict = DocumentVerificationDisabledError.from_dict(document_verification_disabled_error_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -29,5 +29,3 @@ kyc_webhook_envelope_dict = kyc_webhook_envelope_instance.to_dict()
 kyc_webhook_envelope_from_dict = KycWebhookEnvelope.from_dict(kyc_webhook_envelope_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

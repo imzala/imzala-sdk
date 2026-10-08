@@ -16,4 +16,3 @@ Name | Type | Description | Notes
 **Detail** | **Dictionary&lt;string, Object&gt;** | Koda göre değişen, kapalı bir anahtar kümesi (yalnız sayısal değerler ve alan kimlikleri).  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

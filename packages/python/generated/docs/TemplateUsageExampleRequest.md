@@ -26,5 +26,3 @@ template_usage_example_request_dict = template_usage_example_request_instance.to
 template_usage_example_request_from_dict = TemplateUsageExampleRequest.from_dict(template_usage_example_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

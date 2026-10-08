@@ -13,6 +13,3 @@ KYC terminal olay verisi. Yalnız doğrulamanın sonucunu taşır: kimlik numara
 |**methods** | **List&lt;String&gt;** | Talepte istenen yöntemler (örn. &#x60;id_card&#x60;, &#x60;phone_otp&#x60;). |  |
 |**steps** | [**List&lt;WebhookDataKycTerminalStepsInner&gt;**](WebhookDataKycTerminalStepsInner.md) |  |  |
 |**externalRef** | **String** | Talep oluşturulurken verilen dış referans. |  |
-
-
-

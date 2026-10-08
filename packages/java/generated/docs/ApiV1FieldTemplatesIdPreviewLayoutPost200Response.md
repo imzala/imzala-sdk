@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**FieldLayoutPreview**](FieldLayoutPreview.md) |  |  [optional] |
-
-
-

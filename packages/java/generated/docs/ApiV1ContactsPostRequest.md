@@ -18,6 +18,3 @@
 |**addressCity** | **String** |  |  [optional] |
 |**addressDistrict** | **String** |  |  [optional] |
 |**addressLine** | **String** |  |  [optional] |
-
-
-

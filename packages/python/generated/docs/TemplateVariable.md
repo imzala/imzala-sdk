@@ -30,5 +30,3 @@ template_variable_dict = template_variable_instance.to_dict()
 template_variable_from_dict = TemplateVariable.from_dict(template_variable_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

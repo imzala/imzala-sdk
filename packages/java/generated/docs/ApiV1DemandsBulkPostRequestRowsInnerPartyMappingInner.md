@@ -19,6 +19,3 @@
 |**locale** | **SignerLocale** |  |  [optional] |
 |**customMessage** | **String** | Bu tarafa özel davet mesajı |  [optional] |
 |**variables** | **Object** | Bu tarafa özel değişkenler |  [optional] |
-
-
-

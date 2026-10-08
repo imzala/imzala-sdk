@@ -149,4 +149,3 @@ ApiResponse<[**ApiV1MeGet200Response**](ApiV1MeGet200Response.md)>
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
-

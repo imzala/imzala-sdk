@@ -149,4 +149,3 @@ ApiResponse<[**ApiV1ReportsGet200Response**](ApiV1ReportsGet200Response.md)>
 |-------------|-------------|------------------|
 | **200** | Özet sayılar |  -  |
 | **403** | Yetersiz kapsam (demands:read gerekli) |  -  |
-

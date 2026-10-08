@@ -10,6 +10,3 @@
 |**demandId** | **UUID** |  |  |
 |**partyId** | **UUID** |  |  |
 |**backfill** | **Boolean** | Replay bayrağı |  [optional] |
-
-
-

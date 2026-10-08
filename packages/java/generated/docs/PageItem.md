@@ -35,6 +35,3 @@ Sözleşme sayfasına yerleştirilen alan tanımı. Tüm koordinatlar sayfa boyu
 | CHECKBOX | &quot;checkbox&quot; |
 | RADIO | &quot;radio&quot; |
 | STAMP | &quot;stamp&quot; |
-
-
-

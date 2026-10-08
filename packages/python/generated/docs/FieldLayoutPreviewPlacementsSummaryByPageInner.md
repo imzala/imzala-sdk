@@ -26,5 +26,3 @@ field_layout_preview_placements_summary_by_page_inner_dict = field_layout_previe
 field_layout_preview_placements_summary_by_page_inner_from_dict = FieldLayoutPreviewPlacementsSummaryByPageInner.from_dict(field_layout_preview_placements_summary_by_page_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

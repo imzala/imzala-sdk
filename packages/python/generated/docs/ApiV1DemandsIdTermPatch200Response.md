@@ -26,5 +26,3 @@ api_v1_demands_id_term_patch200_response_dict = api_v1_demands_id_term_patch200_
 api_v1_demands_id_term_patch200_response_from_dict = ApiV1DemandsIdTermPatch200Response.from_dict(api_v1_demands_id_term_patch200_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

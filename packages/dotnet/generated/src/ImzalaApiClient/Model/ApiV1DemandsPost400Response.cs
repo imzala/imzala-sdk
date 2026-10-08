@@ -29,10 +29,10 @@ using System.Reflection;
 namespace ImzalaApiClient.Model
 {
     /// <summary>
-    /// ApiV1DemandsPost400Response
+    /// Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError&#39;dur.
     /// </summary>
     [JsonConverter(typeof(ApiV1DemandsPost400ResponseJsonConverter))]
-    [DataContract(Name = "_api_v1_demands_post_400_response")]
+    [DataContract(Name = "ApiV1DemandsPost400Response")]
     public partial class ApiV1DemandsPost400Response : AbstractOpenAPISchema, IValidatableObject
     {
         /// <summary>
@@ -59,18 +59,6 @@ namespace ImzalaApiClient.Model
             ActualInstance = actualInstance ?? throw new ArgumentException("Invalid instance found. Must not be null.");
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiV1DemandsPost400Response" /> class
-        /// with the <see cref="DocumentCollectionPolicyError" /> class
-        /// </summary>
-        /// <param name="actualInstance">An instance of DocumentCollectionPolicyError.</param>
-        public ApiV1DemandsPost400Response(DocumentCollectionPolicyError actualInstance)
-        {
-            IsNullable = false;
-            SchemaType= "anyOf";
-            ActualInstance = actualInstance ?? throw new ArgumentException("Invalid instance found. Must not be null.");
-        }
-
 
         private Object _actualInstance;
 
@@ -89,17 +77,13 @@ namespace ImzalaApiClient.Model
                 {
                     _actualInstance = value;
                 }
-                else if (value.GetType() == typeof(DocumentCollectionPolicyError))
-                {
-                    _actualInstance = value;
-                }
                 else if (value.GetType() == typeof(DocumentSelectionError))
                 {
                     _actualInstance = value;
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid instance found. Must be the following types: CodedError, DocumentCollectionPolicyError, DocumentSelectionError");
+                    throw new ArgumentException("Invalid instance found. Must be the following types: CodedError, DocumentSelectionError");
                 }
             }
         }
@@ -122,16 +106,6 @@ namespace ImzalaApiClient.Model
         public DocumentSelectionError GetDocumentSelectionError()
         {
             return (DocumentSelectionError)ActualInstance;
-        }
-
-        /// <summary>
-        /// Get the actual instance of `DocumentCollectionPolicyError`. If the actual instance is not `DocumentCollectionPolicyError`,
-        /// the InvalidClassException will be thrown
-        /// </summary>
-        /// <returns>An instance of DocumentCollectionPolicyError</returns>
-        public DocumentCollectionPolicyError GetDocumentCollectionPolicyError()
-        {
-            return (DocumentCollectionPolicyError)ActualInstance;
         }
 
         /// <summary>
@@ -180,18 +154,6 @@ namespace ImzalaApiClient.Model
             {
                 // deserialization failed, try the next one
                 System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into CodedError: {1}", jsonString, exception.ToString()));
-            }
-
-            try
-            {
-                newApiV1DemandsPost400Response = new ApiV1DemandsPost400Response(JsonConvert.DeserializeObject<DocumentCollectionPolicyError>(jsonString, ApiV1DemandsPost400Response.SerializerSettings));
-                // deserialization is considered successful at this point if no exception has been thrown.
-                return newApiV1DemandsPost400Response;
-            }
-            catch (Exception exception)
-            {
-                // deserialization failed, try the next one
-                System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into DocumentCollectionPolicyError: {1}", jsonString, exception.ToString()));
             }
 
             try

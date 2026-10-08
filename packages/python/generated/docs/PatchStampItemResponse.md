@@ -26,5 +26,3 @@ patch_stamp_item_response_dict = patch_stamp_item_response_instance.to_dict()
 patch_stamp_item_response_from_dict = PatchStampItemResponse.from_dict(patch_stamp_item_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

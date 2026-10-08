@@ -33,5 +33,3 @@ template_detail_dict = template_detail_instance.to_dict()
 template_detail_from_dict = TemplateDetail.from_dict(template_detail_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

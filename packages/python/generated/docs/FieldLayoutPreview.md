@@ -32,5 +32,3 @@ field_layout_preview_dict = field_layout_preview_instance.to_dict()
 field_layout_preview_from_dict = FieldLayoutPreview.from_dict(field_layout_preview_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

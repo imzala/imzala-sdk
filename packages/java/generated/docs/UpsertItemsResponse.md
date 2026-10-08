@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**UpsertItemsResponseData**](UpsertItemsResponseData.md) |  |  [optional] |
-
-
-

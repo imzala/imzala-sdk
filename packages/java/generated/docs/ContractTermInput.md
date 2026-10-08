@@ -36,6 +36,3 @@ Sözleşme süre/yenileme takibi girdisi. `POST /demands` üzerinde oluştururke
 |---- | -----|
 | AUTO_RENEW | &quot;AUTO_RENEW&quot; |
 | FIXED_TERM | &quot;FIXED_TERM&quot; |
-
-
-

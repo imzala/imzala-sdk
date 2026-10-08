@@ -11,6 +11,3 @@
 |**title** | **String** |  |  |
 |**expiryDate** | **OffsetDateTime** |  |  |
 |**parties** | [**List&lt;WebhookDataDemandExpiredPartiesInner&gt;**](WebhookDataDemandExpiredPartiesInner.md) |  |  |
-
-
-

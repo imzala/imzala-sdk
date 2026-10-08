@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1DemandsIdEmbedSessionPost200ResponseData**](ApiV1DemandsIdEmbedSessionPost200ResponseData.md) |  |  [optional] |
-
-
-

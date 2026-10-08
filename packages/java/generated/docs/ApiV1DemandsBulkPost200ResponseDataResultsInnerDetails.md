@@ -11,6 +11,3 @@ Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document |
 |**reason** | **String** |  |  [optional] |
 |**documentIds** | **List&lt;String&gt;** |  |  [optional] |
 |**path** | **String** |  |  [optional] |
-
-
-

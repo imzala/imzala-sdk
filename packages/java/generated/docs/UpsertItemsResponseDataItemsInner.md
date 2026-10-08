@@ -20,6 +20,3 @@ Yaratılan AgreementPageItem snapshot'ı
 |**slug** | **String** |  |  [optional] |
 |**label** | **String** |  |  [optional] |
 |**config** | **Object** |  |  [optional] |
-
-
-

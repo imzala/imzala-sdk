@@ -837,8 +837,16 @@ paths:
         "400":
           content:
             application/json:
+              examples:
+                invalidCollectionPolicy:
+                  summary: Seçili Belge Toplama politikası geçersiz; kaynak kod error
+                    alanında
+                  value:
+                    success: false
+                    code: VERIFICATION_CONTEXT_REQUIRED
+                    error: DOCUMENT_TYPE_INVALID
               schema:
-                $ref: "#/components/schemas/_api_v1_demands_post_400_response"
+                $ref: "#/components/schemas/DemandCreationError"
           description: |
             Geçersiz istek. Örnek hatalar:
             - "template_id gerekli"
@@ -1009,7 +1017,7 @@ paths:
                 error: DOCUMENT_VERIFICATION_DISABLED
                 code: DOCUMENT_VERIFICATION_DISABLED
               schema:
-                $ref: "#/components/schemas/DocumentVerificationDisabledError"
+                $ref: "#/components/schemas/DemandCreationError"
           description: |
             DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun
             doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi
@@ -1132,8 +1140,16 @@ paths:
         "400":
           content:
             application/json:
+              examples:
+                invalidCollectionPolicy:
+                  summary: Seçili Belge Toplama politikası geçersiz; kaynak kod error
+                    alanında
+                  value:
+                    success: false
+                    code: VERIFICATION_CONTEXT_REQUIRED
+                    error: DOCUMENT_TYPE_INVALID
               schema:
-                $ref: "#/components/schemas/_api_v1_demands_bulk_post_400_response"
+                $ref: "#/components/schemas/ApiV1DemandsBulkPost400Response"
           description: |
             Geçersiz istek. Olası kodlar: `BULK_MAX_10` (`rows` 10'dan fazla),
             boş `rows`, eksik `template_id`, `INVALID_DOCUMENT_SELECTION`
@@ -1216,7 +1232,7 @@ paths:
                 error: DOCUMENT_VERIFICATION_DISABLED
                 code: DOCUMENT_VERIFICATION_DISABLED
               schema:
-                $ref: "#/components/schemas/DocumentVerificationDisabledError"
+                $ref: "#/components/schemas/DemandCreationError"
           description: |
             DOCUMENT_VERIFICATION_DISABLED: seçili veya devralınan şablonun
             doğrulama politikası şu anda kullanılamıyor. Oluşturma, kredi
@@ -6361,6 +6377,72 @@ components:
       - steps
       - verified
       type: object
+    ApiV1DemandsPost400Response:
+      anyOf:
+      - $ref: "#/components/schemas/CodedError"
+      - $ref: "#/components/schemas/DocumentSelectionError"
+      description: |
+        Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü.
+        Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError'dur.
+    DemandCreationError:
+      description: |
+        Sözleşme oluşturma hatalarının açık taşıma zarfı. Alanlar hata türüne
+        göre bulunur; yeni makine kodları istemci tarafından reddedilmez.
+        Somut Belge Toplama zarfları DocumentCollectionPolicyError ve
+        DocumentVerificationDisabledError şemaları ile yanıt örneklerinde açıklanır.
+      example:
+        success: false
+        error: error
+        code: code
+        message: message
+        field: field
+        details:
+          key: ""
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        field:
+          nullable: true
+          type: string
+        details:
+          additionalProperties: true
+          type: object
+      type: object
+    ApiV1DemandsBulkPost400Response:
+      description: Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne
+        göre bulunur.
+      example:
+        success: false
+        error: error
+        code: code
+        message: message
+        field: field
+        details:
+          key: ""
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        field:
+          nullable: true
+          type: string
+        details:
+          additionalProperties: true
+          type: object
+      type: object
     DocumentCollectionPolicyError:
       description: Seçili Belge Toplama şablonunun politikası geçersiz; error kaynak
         makine kodudur.
@@ -6386,10 +6468,6 @@ components:
       type: object
     DocumentVerificationDisabledError:
       description: Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor.
-      example:
-        success: true
-        code: DOCUMENT_VERIFICATION_DISABLED
-        error: DOCUMENT_VERIFICATION_DISABLED
       properties:
         success:
           type: boolean
@@ -7278,11 +7356,6 @@ components:
         data:
           $ref: "#/components/schemas/CreatedDemand"
       type: object
-    _api_v1_demands_post_400_response:
-      anyOf:
-      - $ref: "#/components/schemas/CodedError"
-      - $ref: "#/components/schemas/DocumentSelectionError"
-      - $ref: "#/components/schemas/DocumentCollectionPolicyError"
     _api_v1_demands_post_402_response_data:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -7820,11 +7893,6 @@ components:
         data:
           $ref: "#/components/schemas/_api_v1_demands_bulk_post_200_response_data"
       type: object
-    _api_v1_demands_bulk_post_400_response:
-      anyOf:
-      - $ref: "#/components/schemas/ApiError"
-      - $ref: "#/components/schemas/CodedError"
-      - $ref: "#/components/schemas/DocumentCollectionPolicyError"
     _api_v1_demands__id__get_200_response:
       example:
         success: true

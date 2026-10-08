@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**PatchStampItemResponseData**](PatchStampItemResponseData.md) |  |  [optional] |
-
-
-

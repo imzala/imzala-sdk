@@ -53,6 +53,3 @@ Tüm satırlara uygulanan batch-seviye seçenekler (opsiyonel)
 | UPLOAD | &quot;upload&quot; |
 | PHONE | &quot;phone&quot; |
 | PHONE_DRAW | &quot;phone_draw&quot; |
-
-
-

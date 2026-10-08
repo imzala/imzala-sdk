@@ -9,12 +9,12 @@
     "Verify with: npm run upstream:check"
   ],
   "version": "1.10.3",
-  "upstream_ssot_sha256": "8953030ce5dd7d20b8d69addd030441846c3f1165906dbe7d58f9d04f4a4f725",
-  "public_sha256": "2dd65bce076b51053b07f097d455cbd33ca260328a56adf23544f457b81dd7c3",
-  "fetched_at": "2026-10-08T14:02:59.698Z",
+  "upstream_ssot_sha256": "11993aada1c86707a9dd3af0baa0f9964c05d3aa51c52752436e61d4695630f7",
+  "public_sha256": "22487f404e86b0030717b5f88c9875cce9f1d2eb2ffa915779cf016a2d82244d",
+  "fetched_at": "2026-10-08T14:45:32.453Z",
   "source": {
     "repo": "imzala/imzala-service",
-    "commit": "b62ce20fcc88e48c504280efebdbf6946a2ceb1c",
+    "commit": "23a74a74a0e324c817c4cf6baf79c9fe1d734703",
     "branch": "feat/residence-verification",
     "lock": "openapi/openapi.v1.lock.json",
     "spec": "openapi/openapi.v1.public.yaml"

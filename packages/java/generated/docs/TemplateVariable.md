@@ -25,6 +25,3 @@
 | DATE | &quot;date&quot; |
 | DROPDOWN | &quot;dropdown&quot; |
 | TEXT | &quot;text&quot; |
-
-
-

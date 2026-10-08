@@ -36,9 +36,9 @@ class TestApiV1DemandsPost400Response(unittest.TestCase):
         model = ApiV1DemandsPost400Response()
         if include_optional:
             return ApiV1DemandsPost400Response(
-                success = True,
-                error = 'DOCUMENT_TYPE_INVALID',
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
+                success = False,
+                error = '',
+                code = 'INVALID_DOCUMENT_SELECTION',
                 var_field = '',
                 details = imzala_client.models.document_selection_error_details.DocumentSelectionError_details(
                     reason = 'shape',
@@ -48,9 +48,6 @@ class TestApiV1DemandsPost400Response(unittest.TestCase):
             )
         else:
             return ApiV1DemandsPost400Response(
-                success = True,
-                error = 'DOCUMENT_TYPE_INVALID',
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
         )
         """
 

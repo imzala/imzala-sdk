@@ -29,6 +29,3 @@
 |---- | -----|
 | DRAFT | &quot;DRAFT&quot; |
 | PENDING | &quot;PENDING&quot; |
-
-
-

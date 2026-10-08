@@ -11,6 +11,3 @@
 |**name** | **String** | first_name + last_name |  [optional] |
 |**email** | **String** |  |  [optional] |
 |**signedAt** | **OffsetDateTime** |  |  [optional] |
-
-
-

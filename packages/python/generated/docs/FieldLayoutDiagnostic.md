@@ -34,5 +34,3 @@ field_layout_diagnostic_dict = field_layout_diagnostic_instance.to_dict()
 field_layout_diagnostic_from_dict = FieldLayoutDiagnostic.from_dict(field_layout_diagnostic_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

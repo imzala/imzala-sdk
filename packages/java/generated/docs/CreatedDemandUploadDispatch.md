@@ -21,6 +21,3 @@ YALNIZ istekte `send_invitations` gönderildiğinde döner. Davet gönderimi 201
 |---- | -----|
 | DISPATCH_SKIPPED | &quot;DISPATCH_SKIPPED&quot; |
 | DISPATCH_TOO_MANY | &quot;DISPATCH_TOO_MANY&quot; |
-
-
-

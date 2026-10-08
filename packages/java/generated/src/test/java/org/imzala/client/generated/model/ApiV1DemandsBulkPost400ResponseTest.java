@@ -19,9 +19,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.imzala.client.generated.model.ApiError;
-import org.imzala.client.generated.model.CodedError;
-import org.imzala.client.generated.model.DocumentCollectionPolicyError;
+import java.util.HashMap;
+import java.util.Map;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -61,14 +60,6 @@ class ApiV1DemandsBulkPost400ResponseTest {
     }
 
     /**
-     * Test the property 'message'
-     */
-    @Test
-    void messageTest() {
-        // TODO: test message
-    }
-
-    /**
      * Test the property 'code'
      */
     @Test
@@ -77,11 +68,11 @@ class ApiV1DemandsBulkPost400ResponseTest {
     }
 
     /**
-     * Test the property 'retryAfterSeconds'
+     * Test the property 'message'
      */
     @Test
-    void retryAfterSecondsTest() {
-        // TODO: test retryAfterSeconds
+    void messageTest() {
+        // TODO: test message
     }
 
     /**
@@ -90,6 +81,14 @@ class ApiV1DemandsBulkPost400ResponseTest {
     @Test
     void fieldTest() {
         // TODO: test field
+    }
+
+    /**
+     * Test the property 'details'
+     */
+    @Test
+    void detailsTest() {
+        // TODO: test details
     }
 
 }

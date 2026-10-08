@@ -9,4 +9,3 @@ Name | Type | Description | Notes
 **EmbedUrl** | **string** | &#x60;&lt;iframe src&#x3D;\&quot;\&quot;&gt;&#x60; alanına yerleştirilecek tam URL. &#x60;https://e.imzala.org/embed/sign?token&#x3D;&lt;embed_token&gt;&#x60; formatında.  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

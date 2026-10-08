@@ -8,6 +8,3 @@
 * `TR` (value: `"tr"`)
 
 * `EN` (value: `"en"`)
-
-
-

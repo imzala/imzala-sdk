@@ -24,115 +24,72 @@ using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using FileParameter = ImzalaApiClient.Client.FileParameter;
 using OpenAPIDateConverter = ImzalaApiClient.Client.OpenAPIDateConverter;
-using System.Reflection;
 
 namespace ImzalaApiClient.Model
 {
     /// <summary>
-    /// ApiV1DemandsBulkPost400Response
+    /// Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
     /// </summary>
-    [JsonConverter(typeof(ApiV1DemandsBulkPost400ResponseJsonConverter))]
-    [DataContract(Name = "_api_v1_demands_bulk_post_400_response")]
-    public partial class ApiV1DemandsBulkPost400Response : AbstractOpenAPISchema, IValidatableObject
+    [DataContract(Name = "ApiV1DemandsBulkPost400Response")]
+    public partial class ApiV1DemandsBulkPost400Response : IValidatableObject
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPost400Response" /> class
-        /// with the <see cref="ApiError" /> class
+        /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPost400Response" /> class.
         /// </summary>
-        /// <param name="actualInstance">An instance of ApiError.</param>
-        public ApiV1DemandsBulkPost400Response(ApiError actualInstance)
+        /// <param name="success">success.</param>
+        /// <param name="error">error.</param>
+        /// <param name="code">code.</param>
+        /// <param name="message">message.</param>
+        /// <param name="field">field.</param>
+        /// <param name="details">details.</param>
+        public ApiV1DemandsBulkPost400Response(bool success = default, string error = default, string code = default, string message = default, string field = default, Dictionary<string, Object> details = default)
         {
-            IsNullable = false;
-            SchemaType= "anyOf";
-            ActualInstance = actualInstance ?? throw new ArgumentException("Invalid instance found. Must not be null.");
+            this.Success = success;
+            this.Error = error;
+            this.Code = code;
+            this.Message = message;
+            this.Field = field;
+            this.Details = details;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPost400Response" /> class
-        /// with the <see cref="CodedError" /> class
+        /// Gets or Sets Success
         /// </summary>
-        /// <param name="actualInstance">An instance of CodedError.</param>
-        public ApiV1DemandsBulkPost400Response(CodedError actualInstance)
-        {
-            IsNullable = false;
-            SchemaType= "anyOf";
-            ActualInstance = actualInstance ?? throw new ArgumentException("Invalid instance found. Must not be null.");
-        }
+        /*
+        <example>false</example>
+        */
+        [DataMember(Name = "success", EmitDefaultValue = true)]
+        public bool Success { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPost400Response" /> class
-        /// with the <see cref="DocumentCollectionPolicyError" /> class
+        /// Gets or Sets Error
         /// </summary>
-        /// <param name="actualInstance">An instance of DocumentCollectionPolicyError.</param>
-        public ApiV1DemandsBulkPost400Response(DocumentCollectionPolicyError actualInstance)
-        {
-            IsNullable = false;
-            SchemaType= "anyOf";
-            ActualInstance = actualInstance ?? throw new ArgumentException("Invalid instance found. Must not be null.");
-        }
-
-
-        private Object _actualInstance;
+        [DataMember(Name = "error", EmitDefaultValue = false)]
+        public string Error { get; set; }
 
         /// <summary>
-        /// Gets or Sets ActualInstance
+        /// Gets or Sets Code
         /// </summary>
-        public override Object ActualInstance
-        {
-            get
-            {
-                return _actualInstance;
-            }
-            set
-            {
-                if (value.GetType() == typeof(ApiError))
-                {
-                    _actualInstance = value;
-                }
-                else if (value.GetType() == typeof(CodedError))
-                {
-                    _actualInstance = value;
-                }
-                else if (value.GetType() == typeof(DocumentCollectionPolicyError))
-                {
-                    _actualInstance = value;
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid instance found. Must be the following types: ApiError, CodedError, DocumentCollectionPolicyError");
-                }
-            }
-        }
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
-        /// Get the actual instance of `ApiError`. If the actual instance is not `ApiError`,
-        /// the InvalidClassException will be thrown
+        /// Gets or Sets Message
         /// </summary>
-        /// <returns>An instance of ApiError</returns>
-        public ApiError GetApiError()
-        {
-            return (ApiError)ActualInstance;
-        }
+        [DataMember(Name = "message", EmitDefaultValue = false)]
+        public string Message { get; set; }
 
         /// <summary>
-        /// Get the actual instance of `CodedError`. If the actual instance is not `CodedError`,
-        /// the InvalidClassException will be thrown
+        /// Gets or Sets Field
         /// </summary>
-        /// <returns>An instance of CodedError</returns>
-        public CodedError GetCodedError()
-        {
-            return (CodedError)ActualInstance;
-        }
+        [DataMember(Name = "field", EmitDefaultValue = true)]
+        public string Field { get; set; }
 
         /// <summary>
-        /// Get the actual instance of `DocumentCollectionPolicyError`. If the actual instance is not `DocumentCollectionPolicyError`,
-        /// the InvalidClassException will be thrown
+        /// Gets or Sets Details
         /// </summary>
-        /// <returns>An instance of DocumentCollectionPolicyError</returns>
-        public DocumentCollectionPolicyError GetDocumentCollectionPolicyError()
-        {
-            return (DocumentCollectionPolicyError)ActualInstance;
-        }
+        [DataMember(Name = "details", EmitDefaultValue = false)]
+        public Dictionary<string, Object> Details { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -140,9 +97,14 @@ namespace ImzalaApiClient.Model
         /// <returns>String presentation of the object</returns>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.Append("class ApiV1DemandsBulkPost400Response {\n");
-            sb.Append("  ActualInstance: ").Append(ActualInstance).Append("\n");
+            sb.Append("  Success: ").Append(Success).Append("\n");
+            sb.Append("  Error: ").Append(Error).Append("\n");
+            sb.Append("  Code: ").Append(Code).Append("\n");
+            sb.Append("  Message: ").Append(Message).Append("\n");
+            sb.Append("  Field: ").Append(Field).Append("\n");
+            sb.Append("  Details: ").Append(Details).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -151,63 +113,9 @@ namespace ImzalaApiClient.Model
         /// Returns the JSON string presentation of the object
         /// </summary>
         /// <returns>JSON string presentation of the object</returns>
-        public override string ToJson()
+        public virtual string ToJson()
         {
-            return JsonConvert.SerializeObject(ActualInstance, ApiV1DemandsBulkPost400Response.SerializerSettings);
-        }
-
-        /// <summary>
-        /// Converts the JSON string into an instance of ApiV1DemandsBulkPost400Response
-        /// </summary>
-        /// <param name="jsonString">JSON string</param>
-        /// <returns>An instance of ApiV1DemandsBulkPost400Response</returns>
-        public static ApiV1DemandsBulkPost400Response FromJson(string jsonString)
-        {
-            ApiV1DemandsBulkPost400Response newApiV1DemandsBulkPost400Response = null;
-
-            if (string.IsNullOrEmpty(jsonString))
-            {
-                return newApiV1DemandsBulkPost400Response;
-            }
-
-            try
-            {
-                newApiV1DemandsBulkPost400Response = new ApiV1DemandsBulkPost400Response(JsonConvert.DeserializeObject<ApiError>(jsonString, ApiV1DemandsBulkPost400Response.SerializerSettings));
-                // deserialization is considered successful at this point if no exception has been thrown.
-                return newApiV1DemandsBulkPost400Response;
-            }
-            catch (Exception exception)
-            {
-                // deserialization failed, try the next one
-                System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into ApiError: {1}", jsonString, exception.ToString()));
-            }
-
-            try
-            {
-                newApiV1DemandsBulkPost400Response = new ApiV1DemandsBulkPost400Response(JsonConvert.DeserializeObject<CodedError>(jsonString, ApiV1DemandsBulkPost400Response.SerializerSettings));
-                // deserialization is considered successful at this point if no exception has been thrown.
-                return newApiV1DemandsBulkPost400Response;
-            }
-            catch (Exception exception)
-            {
-                // deserialization failed, try the next one
-                System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into CodedError: {1}", jsonString, exception.ToString()));
-            }
-
-            try
-            {
-                newApiV1DemandsBulkPost400Response = new ApiV1DemandsBulkPost400Response(JsonConvert.DeserializeObject<DocumentCollectionPolicyError>(jsonString, ApiV1DemandsBulkPost400Response.SerializerSettings));
-                // deserialization is considered successful at this point if no exception has been thrown.
-                return newApiV1DemandsBulkPost400Response;
-            }
-            catch (Exception exception)
-            {
-                // deserialization failed, try the next one
-                System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into DocumentCollectionPolicyError: {1}", jsonString, exception.ToString()));
-            }
-
-            // no match found, throw an exception
-            throw new InvalidDataException("The JSON string `" + jsonString + "` cannot be deserialized into any schema defined.");
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
         }
 
         /// <summary>
@@ -215,57 +123,9 @@ namespace ImzalaApiClient.Model
         /// </summary>
         /// <param name="validationContext">Validation context</param>
         /// <returns>Validation Result</returns>
-        IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+        IEnumerable<ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
         {
             yield break;
-        }
-    }
-
-    /// <summary>
-    /// Custom JSON converter for ApiV1DemandsBulkPost400Response
-    /// </summary>
-    public class ApiV1DemandsBulkPost400ResponseJsonConverter : JsonConverter
-    {
-        /// <summary>
-        /// To write the JSON string
-        /// </summary>
-        /// <param name="writer">JSON writer</param>
-        /// <param name="value">Object to be converted into a JSON string</param>
-        /// <param name="serializer">JSON Serializer</param>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteRawValue((string)(typeof(ApiV1DemandsBulkPost400Response).GetMethod("ToJson").Invoke(value, null)));
-        }
-
-        /// <summary>
-        /// To convert a JSON string into an object
-        /// </summary>
-        /// <param name="reader">JSON reader</param>
-        /// <param name="objectType">Object type</param>
-        /// <param name="existingValue">Existing value</param>
-        /// <param name="serializer">JSON Serializer</param>
-        /// <returns>The object converted from the JSON string</returns>
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            switch(reader.TokenType)
-            {
-                case JsonToken.StartObject:
-                    return ApiV1DemandsBulkPost400Response.FromJson(JObject.Load(reader).ToString(Formatting.None));
-                case JsonToken.StartArray:
-                    return ApiV1DemandsBulkPost400Response.FromJson(JArray.Load(reader).ToString(Formatting.None));
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// Check if the object can be converted
-        /// </summary>
-        /// <param name="objectType">Object type</param>
-        /// <returns>True if the object can be converted</returns>
-        public override bool CanConvert(Type objectType)
-        {
-            return false;
         }
     }
 

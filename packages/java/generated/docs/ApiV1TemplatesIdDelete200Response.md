@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ApiV1TemplatesIdDelete200ResponseData**](ApiV1TemplatesIdDelete200ResponseData.md) |  |  [optional] |
-
-
-

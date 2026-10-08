@@ -29,5 +29,3 @@ webhook_data_party_rejected_party_dict = webhook_data_party_rejected_party_insta
 webhook_data_party_rejected_party_from_dict = WebhookDataPartyRejectedParty.from_dict(webhook_data_party_rejected_party_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

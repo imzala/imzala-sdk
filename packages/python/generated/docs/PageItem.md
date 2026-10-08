@@ -36,5 +36,3 @@ page_item_dict = page_item_instance.to_dict()
 page_item_from_dict = PageItem.from_dict(page_item_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

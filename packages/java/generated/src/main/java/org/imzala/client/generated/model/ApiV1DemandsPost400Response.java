@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.imzala.client.generated.model.CodedError;
-import org.imzala.client.generated.model.DocumentCollectionPolicyError;
 import org.imzala.client.generated.model.DocumentSelectionError;
 import org.imzala.client.generated.model.DocumentSelectionErrorDetails;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -57,7 +56,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.imzala.client.generated.ApiClient;
 import org.imzala.client.generated.JSON;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 @JsonDeserialize(using=ApiV1DemandsPost400Response.ApiV1DemandsPost400ResponseDeserializer.class)
 @JsonSerialize(using = ApiV1DemandsPost400Response.ApiV1DemandsPost400ResponseSerializer.class)
 public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
@@ -103,17 +102,6 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
                 log.log(Level.FINER, "Input data does not match 'ApiV1DemandsPost400Response'", e);
             }
 
-            // deserialize DocumentCollectionPolicyError
-            try {
-                deserialized = tree.traverse(jp.getCodec()).readValueAs(DocumentCollectionPolicyError.class);
-                ApiV1DemandsPost400Response ret = new ApiV1DemandsPost400Response();
-                ret.setActualInstance(deserialized);
-                return ret;
-            } catch (Exception e) {
-                // deserialization failed, continue, log to help debugging
-                log.log(Level.FINER, "Input data does not match 'ApiV1DemandsPost400Response'", e);
-            }
-
             // deserialize DocumentSelectionError
             try {
                 deserialized = tree.traverse(jp.getCodec()).readValueAs(DocumentSelectionError.class);
@@ -149,11 +137,6 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
         setActualInstance(o);
     }
 
-    public ApiV1DemandsPost400Response(DocumentCollectionPolicyError o) {
-        super("anyOf", Boolean.FALSE);
-        setActualInstance(o);
-    }
-
     public ApiV1DemandsPost400Response(DocumentSelectionError o) {
         super("anyOf", Boolean.FALSE);
         setActualInstance(o);
@@ -161,7 +144,6 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
 
     static {
         schemas.put("CodedError", CodedError.class);
-        schemas.put("DocumentCollectionPolicyError", DocumentCollectionPolicyError.class);
         schemas.put("DocumentSelectionError", DocumentSelectionError.class);
         JSON.registerDescendants(ApiV1DemandsPost400Response.class, Collections.unmodifiableMap(schemas));
     }
@@ -174,7 +156,7 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
     /**
      * Set the instance that matches the anyOf child schema, check
      * the instance parameter is valid against the anyOf child schemas:
-     * CodedError, DocumentCollectionPolicyError, DocumentSelectionError
+     * CodedError, DocumentSelectionError
      *
      * It could be an instance of the 'anyOf' schemas.
      * The anyOf child schemas may themselves be a composed schema (allOf, anyOf, anyOf).
@@ -186,24 +168,19 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
             return;
         }
 
-        if (JSON.isInstanceOf(DocumentCollectionPolicyError.class, instance, new HashSet<Class<?>>())) {
-            super.setActualInstance(instance);
-            return;
-        }
-
         if (JSON.isInstanceOf(DocumentSelectionError.class, instance, new HashSet<Class<?>>())) {
             super.setActualInstance(instance);
             return;
         }
 
-        throw new RuntimeException("Invalid instance type. Must be CodedError, DocumentCollectionPolicyError, DocumentSelectionError");
+        throw new RuntimeException("Invalid instance type. Must be CodedError, DocumentSelectionError");
     }
 
     /**
      * Get the actual instance, which can be the following:
-     * CodedError, DocumentCollectionPolicyError, DocumentSelectionError
+     * CodedError, DocumentSelectionError
      *
-     * @return The actual instance (CodedError, DocumentCollectionPolicyError, DocumentSelectionError)
+     * @return The actual instance (CodedError, DocumentSelectionError)
      */
     @Override
     public Object getActualInstance() {
@@ -219,17 +196,6 @@ public class ApiV1DemandsPost400Response extends AbstractOpenApiSchema {
      */
     public CodedError getCodedError() throws ClassCastException {
         return (CodedError)super.getActualInstance();
-    }
-
-    /**
-     * Get the actual instance of `DocumentCollectionPolicyError`. If the actual instance is not `DocumentCollectionPolicyError`,
-     * the ClassCastException will be thrown.
-     *
-     * @return The actual instance of `DocumentCollectionPolicyError`
-     * @throws ClassCastException if the instance is not `DocumentCollectionPolicyError`
-     */
-    public DocumentCollectionPolicyError getDocumentCollectionPolicyError() throws ClassCastException {
-        return (DocumentCollectionPolicyError)super.getActualInstance();
     }
 
     /**

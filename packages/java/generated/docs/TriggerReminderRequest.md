@@ -19,6 +19,3 @@ Anlık hatırlatma tetikleme isteği gövdesi (tüm alanlar opsiyonel).
 |---- | -----|
 | EMAIL | &quot;email&quot; |
 | SMS | &quot;sms&quot; |
-
-
-

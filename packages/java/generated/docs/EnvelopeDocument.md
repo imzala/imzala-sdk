@@ -47,6 +47,3 @@
 | PENDING | &quot;PENDING&quot; |
 | SEALED | &quot;SEALED&quot; |
 | FAILED | &quot;FAILED&quot; |
-
-
-

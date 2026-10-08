@@ -15,6 +15,3 @@
 |**certificateUrl** | **URI** | Damga sertifikası URL&#39;i |  [optional] |
 |**creditsUsed** | **Integer** | Bu damga için harcanan kredi miktarı |  [optional] |
 |**creditsRemaining** | **Integer** | İşlem sonrası kalan kredi bakiyesi |  [optional] |
-
-
-

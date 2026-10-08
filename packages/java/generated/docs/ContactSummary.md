@@ -26,6 +26,3 @@ Kişi (Contact) public görünümü. İç eşleşme alanları (matched_user_id /
 |**archivedAt** | **OffsetDateTime** |  |  [optional] |
 |**createdAt** | **OffsetDateTime** |  |  [optional] |
 |**updatedAt** | **OffsetDateTime** |  |  [optional] |
-
-
-

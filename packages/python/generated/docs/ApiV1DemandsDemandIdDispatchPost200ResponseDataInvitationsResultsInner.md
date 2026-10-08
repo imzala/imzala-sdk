@@ -29,5 +29,3 @@ api_v1_demands_demand_id_dispatch_post200_response_data_invitations_results_inne
 api_v1_demands_demand_id_dispatch_post200_response_data_invitations_results_inner_from_dict = ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner.from_dict(api_v1_demands_demand_id_dispatch_post200_response_data_invitations_results_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

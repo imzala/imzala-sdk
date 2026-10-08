@@ -26,5 +26,3 @@ api_v1_me_get200_response_data_workspace_dict = api_v1_me_get200_response_data_w
 api_v1_me_get200_response_data_workspace_from_dict = ApiV1MeGet200ResponseDataWorkspace.from_dict(api_v1_me_get200_response_data_workspace_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

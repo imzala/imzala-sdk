@@ -28,5 +28,3 @@ api_v1_templates_id_patch200_response_data_dict = api_v1_templates_id_patch200_r
 api_v1_templates_id_patch200_response_data_from_dict = ApiV1TemplatesIdPatch200ResponseData.from_dict(api_v1_templates_id_patch200_response_data_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

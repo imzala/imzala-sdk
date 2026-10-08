@@ -29,5 +29,3 @@ coded_error_dict = coded_error_instance.to_dict()
 coded_error_from_dict = CodedError.from_dict(coded_error_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -37,5 +37,3 @@ upsert_items_response_data_items_inner_dict = upsert_items_response_data_items_i
 upsert_items_response_data_items_inner_from_dict = UpsertItemsResponseDataItemsInner.from_dict(upsert_items_response_data_items_inner_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

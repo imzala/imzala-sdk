@@ -10,6 +10,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | [**StandardErrorError**](StandardErrorError.md) |  |  [optional] |
-
-
-

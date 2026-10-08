@@ -13,6 +13,3 @@
 |**email** | **String** |  |  [optional] |
 |**phone** | **String** |  |  [optional] |
 |**signingUrl** | **URI** |  |  [optional] |
-
-
-

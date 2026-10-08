@@ -9,6 +9,3 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**data** | [**ContactSummary**](ContactSummary.md) |  |  [optional] |
-
-
-

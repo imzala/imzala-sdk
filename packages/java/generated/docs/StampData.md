@@ -20,6 +20,3 @@ Yapılandırılmış kaşe verisi. Tüm alanlar isteğe bağlıdır. PATCH iste�
 |**companyPhone** | **String** |  |  [optional] |
 |**personalPhone** | **String** |  |  [optional] |
 |**email** | **String** |  |  [optional] |
-
-
-

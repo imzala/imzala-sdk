@@ -36,6 +36,7 @@ use \Imzala\Client\ObjectSerializer;
  * ApiV1DemandsPost400Response Class Doc Comment
  *
  * @category Class
+ * @description Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError&#39;dur.
  * @package  Imzala\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -50,7 +51,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
      *
      * @var string
      */
-    protected static $openAPIModelName = '_api_v1_demands_post_400_response';
+    protected static $openAPIModelName = 'ApiV1DemandsPost400Response';
 
     /**
      * Array of property to type mappings. Used for (de)serialization
@@ -253,28 +254,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DOCUMENT_TYPE_INVALID = 'DOCUMENT_TYPE_INVALID';
-    public const ERROR_VERIFICATION_POLICY_INVALID = 'VERIFICATION_POLICY_INVALID';
-    public const ERROR_VERIFICATION_INSTRUCTION_INVALID = 'VERIFICATION_INSTRUCTION_INVALID';
-    public const ERROR_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-    public const ERROR_VERIFICATION_POLICY_CONFLICT = 'VERIFICATION_POLICY_CONFLICT';
-    public const CODE_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DOCUMENT_TYPE_INVALID,
-            self::ERROR_VERIFICATION_POLICY_INVALID,
-            self::ERROR_VERIFICATION_INSTRUCTION_INVALID,
-            self::ERROR_VERIFICATION_CONTEXT_REQUIRED,
-            self::ERROR_VERIFICATION_POLICY_CONFLICT,
-        ];
-    }
+    public const CODE_INVALID_DOCUMENT_SELECTION = 'INVALID_DOCUMENT_SELECTION';
 
     /**
      * Gets allowable values of the enum
@@ -284,7 +264,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     public function getCodeAllowableValues()
     {
         return [
-            self::CODE_VERIFICATION_CONTEXT_REQUIRED,
+            self::CODE_INVALID_DOCUMENT_SELECTION,
         ];
     }
 
@@ -337,24 +317,6 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     {
         $invalidProperties = [];
 
-        if ($this->container['success'] === null) {
-            $invalidProperties[] = "'success' can't be null";
-        }
-        if ($this->container['error'] === null) {
-            $invalidProperties[] = "'error' can't be null";
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
-
-        if ($this->container['code'] === null) {
-            $invalidProperties[] = "'code' can't be null";
-        }
         $allowedValues = $this->getCodeAllowableValues();
         if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
             $invalidProperties[] = sprintf(
@@ -382,7 +344,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Gets success
      *
-     * @return bool
+     * @return bool|null
      */
     public function getSuccess()
     {
@@ -392,7 +354,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets success
      *
-     * @param bool $success success
+     * @param bool|null $success success
      *
      * @return self
      */
@@ -409,7 +371,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Gets error
      *
-     * @return string
+     * @return string|null
      */
     public function getError()
     {
@@ -419,7 +381,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets error
      *
-     * @param string $error error
+     * @param string|null $error error
      *
      * @return self
      */
@@ -427,16 +389,6 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     {
         if (is_null($error)) {
             throw new \InvalidArgumentException('non-nullable error cannot be null');
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 
@@ -446,7 +398,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Gets code
      *
-     * @return string
+     * @return string|null
      */
     public function getCode()
     {
@@ -456,7 +408,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets code
      *
-     * @param string $code code
+     * @param string|null $code code
      *
      * @return self
      */

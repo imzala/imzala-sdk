@@ -30,5 +30,3 @@ webhook_data_kyc_terminal_dict = webhook_data_kyc_terminal_instance.to_dict()
 webhook_data_kyc_terminal_from_dict = WebhookDataKycTerminal.from_dict(webhook_data_kyc_terminal_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -20,6 +20,3 @@
 |---- | -----|
 | INSUFFICIENT_CREDITS | &quot;INSUFFICIENT_CREDITS&quot; |
 | MEMBER_LIMIT_EXCEEDED | &quot;MEMBER_LIMIT_EXCEEDED&quot; |
-
-
-

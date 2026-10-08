@@ -132,36 +132,17 @@ export interface ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner
     'phone'?: string;
     'signing_url'?: string;
 }
+/**
+ * Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
+ */
 export interface ApiV1DemandsBulkPost400Response {
-    'success': boolean;
-    'error': ApiV1DemandsBulkPost400ResponseErrorEnum;
+    'success'?: boolean;
+    'error'?: string;
+    'code'?: string;
     'message'?: string;
-    'code': ApiV1DemandsBulkPost400ResponseCodeEnum;
-    /**
-     * Yalnız 429 yanıtlarında; `Retry-After` başlığıyla aynı değer.
-     */
-    'retry_after_seconds'?: number;
-    /**
-     * Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.
-     */
     'field'?: string | null;
+    'details'?: { [key: string]: any; };
 }
-
-export const ApiV1DemandsBulkPost400ResponseErrorEnum = {
-    DocumentTypeInvalid: 'DOCUMENT_TYPE_INVALID',
-    VerificationPolicyInvalid: 'VERIFICATION_POLICY_INVALID',
-    VerificationInstructionInvalid: 'VERIFICATION_INSTRUCTION_INVALID',
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
-    VerificationPolicyConflict: 'VERIFICATION_POLICY_CONFLICT',
-} as const;
-
-export type ApiV1DemandsBulkPost400ResponseErrorEnum = typeof ApiV1DemandsBulkPost400ResponseErrorEnum[keyof typeof ApiV1DemandsBulkPost400ResponseErrorEnum];
-export const ApiV1DemandsBulkPost400ResponseCodeEnum = {
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
-} as const;
-
-export type ApiV1DemandsBulkPost400ResponseCodeEnum = typeof ApiV1DemandsBulkPost400ResponseCodeEnum[keyof typeof ApiV1DemandsBulkPost400ResponseCodeEnum];
-
 export interface ApiV1DemandsBulkPostRequest {
     /**
      * Sözleşmelerin oluşturulacağı şablon
@@ -639,10 +620,13 @@ export interface ApiV1DemandsPost201Response {
     'success'?: boolean;
     'data'?: CreatedDemand;
 }
+/**
+ * Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü. Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError\'dur.
+ */
 export interface ApiV1DemandsPost400Response {
-    'success': boolean;
-    'error': ApiV1DemandsPost400ResponseErrorEnum;
-    'code': ApiV1DemandsPost400ResponseCodeEnum;
+    'success'?: boolean;
+    'error'?: string;
+    'code'?: ApiV1DemandsPost400ResponseCodeEnum;
     /**
      * Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.
      */
@@ -650,17 +634,8 @@ export interface ApiV1DemandsPost400Response {
     'details'?: DocumentSelectionErrorDetails;
 }
 
-export const ApiV1DemandsPost400ResponseErrorEnum = {
-    DocumentTypeInvalid: 'DOCUMENT_TYPE_INVALID',
-    VerificationPolicyInvalid: 'VERIFICATION_POLICY_INVALID',
-    VerificationInstructionInvalid: 'VERIFICATION_INSTRUCTION_INVALID',
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
-    VerificationPolicyConflict: 'VERIFICATION_POLICY_CONFLICT',
-} as const;
-
-export type ApiV1DemandsPost400ResponseErrorEnum = typeof ApiV1DemandsPost400ResponseErrorEnum[keyof typeof ApiV1DemandsPost400ResponseErrorEnum];
 export const ApiV1DemandsPost400ResponseCodeEnum = {
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
+    InvalidDocumentSelection: 'INVALID_DOCUMENT_SELECTION',
 } as const;
 
 export type ApiV1DemandsPost400ResponseCodeEnum = typeof ApiV1DemandsPost400ResponseCodeEnum[keyof typeof ApiV1DemandsPost400ResponseCodeEnum];
@@ -1287,6 +1262,17 @@ export const CreatedDemandUploadFieldLayoutOnAnchorMissEnum = {
 
 export type CreatedDemandUploadFieldLayoutOnAnchorMissEnum = typeof CreatedDemandUploadFieldLayoutOnAnchorMissEnum[keyof typeof CreatedDemandUploadFieldLayoutOnAnchorMissEnum];
 
+/**
+ * Sözleşme oluşturma hatalarının açık taşıma zarfı. Alanlar hata türüne göre bulunur; yeni makine kodları istemci tarafından reddedilmez. Somut Belge Toplama zarfları DocumentCollectionPolicyError ve DocumentVerificationDisabledError şemaları ile yanıt örneklerinde açıklanır.
+ */
+export interface DemandCreationError {
+    'success'?: boolean;
+    'error'?: string;
+    'code'?: string;
+    'message'?: string;
+    'field'?: string | null;
+    'details'?: { [key: string]: any; };
+}
 /**
  * Zarftaki tek bir belgenin durumu.
  */

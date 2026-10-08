@@ -11,6 +11,3 @@
 |**error** | **String** |  |  [optional] |
 |**code** | **String** |  |  [optional] |
 |**demandId** | **UUID** |  |  [optional] |
-
-
-

@@ -21,6 +21,3 @@ KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type
 |---- | -----|
 | KYC_COMPLETED | &quot;kyc.completed&quot; |
 | KYC_FAILED | &quot;kyc.failed&quot; |
-
-
-

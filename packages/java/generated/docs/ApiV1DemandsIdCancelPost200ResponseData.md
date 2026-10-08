@@ -12,6 +12,3 @@
 |**status** | **String** |  |  [optional] |
 |**cancelledAt** | **OffsetDateTime** |  |  [optional] |
 |**cancellationReason** | **String** |  |  [optional] |
-
-
-

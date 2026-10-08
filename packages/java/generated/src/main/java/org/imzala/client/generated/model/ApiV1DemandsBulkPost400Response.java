@@ -25,9 +25,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.imzala.client.generated.model.ApiError;
-import org.imzala.client.generated.model.CodedError;
-import org.imzala.client.generated.model.DocumentCollectionPolicyError;
+import java.util.HashMap;
+import java.util.Map;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -35,214 +34,263 @@ import java.util.NoSuchElementException;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.imzala.client.generated.ApiClient;
-import org.imzala.client.generated.JSON;
+/**
+ * Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
+ */
+@JsonPropertyOrder({
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_SUCCESS,
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_ERROR,
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_CODE,
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_MESSAGE,
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_FIELD,
+  ApiV1DemandsBulkPost400Response.JSON_PROPERTY_DETAILS
+})
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+public class ApiV1DemandsBulkPost400Response {
+  public static final String JSON_PROPERTY_SUCCESS = "success";
+  @javax.annotation.Nullable
+  private Boolean success;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
-@JsonDeserialize(using=ApiV1DemandsBulkPost400Response.ApiV1DemandsBulkPost400ResponseDeserializer.class)
-@JsonSerialize(using = ApiV1DemandsBulkPost400Response.ApiV1DemandsBulkPost400ResponseSerializer.class)
-public class ApiV1DemandsBulkPost400Response extends AbstractOpenApiSchema {
-    private static final Logger log = Logger.getLogger(ApiV1DemandsBulkPost400Response.class.getName());
+  public static final String JSON_PROPERTY_ERROR = "error";
+  @javax.annotation.Nullable
+  private String error;
 
-    public static class ApiV1DemandsBulkPost400ResponseSerializer extends StdSerializer<ApiV1DemandsBulkPost400Response> {
-        public ApiV1DemandsBulkPost400ResponseSerializer(Class<ApiV1DemandsBulkPost400Response> t) {
-            super(t);
-        }
+  public static final String JSON_PROPERTY_CODE = "code";
+  @javax.annotation.Nullable
+  private String code;
 
-        public ApiV1DemandsBulkPost400ResponseSerializer() {
-            this(null);
-        }
+  public static final String JSON_PROPERTY_MESSAGE = "message";
+  @javax.annotation.Nullable
+  private String message;
 
-        @Override
-        public void serialize(ApiV1DemandsBulkPost400Response value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-            jgen.writeObject(value.getActualInstance());
-        }
+  public static final String JSON_PROPERTY_FIELD = "field";
+  private JsonNullable<String> field = JsonNullable.<String>undefined();
+
+  public static final String JSON_PROPERTY_DETAILS = "details";
+  @javax.annotation.Nullable
+  private Map<String, Object> details = new HashMap<>();
+
+  public ApiV1DemandsBulkPost400Response() {
+  }
+
+  public ApiV1DemandsBulkPost400Response success(@javax.annotation.Nullable Boolean success) {
+    this.success = success;
+    return this;
+  }
+
+  /**
+   * Get success
+   * @return success
+   */
+  @javax.annotation.Nullable
+  @JsonProperty(value = JSON_PROPERTY_SUCCESS, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public Boolean getSuccess() {
+    return success;
+  }
+
+
+  @JsonProperty(value = JSON_PROPERTY_SUCCESS, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setSuccess(@javax.annotation.Nullable Boolean success) {
+    this.success = success;
+  }
+
+
+  public ApiV1DemandsBulkPost400Response error(@javax.annotation.Nullable String error) {
+    this.error = error;
+    return this;
+  }
+
+  /**
+   * Get error
+   * @return error
+   */
+  @javax.annotation.Nullable
+  @JsonProperty(value = JSON_PROPERTY_ERROR, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public String getError() {
+    return error;
+  }
+
+
+  @JsonProperty(value = JSON_PROPERTY_ERROR, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setError(@javax.annotation.Nullable String error) {
+    this.error = error;
+  }
+
+
+  public ApiV1DemandsBulkPost400Response code(@javax.annotation.Nullable String code) {
+    this.code = code;
+    return this;
+  }
+
+  /**
+   * Get code
+   * @return code
+   */
+  @javax.annotation.Nullable
+  @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public String getCode() {
+    return code;
+  }
+
+
+  @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setCode(@javax.annotation.Nullable String code) {
+    this.code = code;
+  }
+
+
+  public ApiV1DemandsBulkPost400Response message(@javax.annotation.Nullable String message) {
+    this.message = message;
+    return this;
+  }
+
+  /**
+   * Get message
+   * @return message
+   */
+  @javax.annotation.Nullable
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public String getMessage() {
+    return message;
+  }
+
+
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMessage(@javax.annotation.Nullable String message) {
+    this.message = message;
+  }
+
+
+  public ApiV1DemandsBulkPost400Response field(@javax.annotation.Nullable String field) {
+    this.field = JsonNullable.<String>of(field);
+    return this;
+  }
+
+  /**
+   * Get field
+   * @return field
+   */
+  @javax.annotation.Nullable
+  @JsonIgnore
+  public String getField() {
+        return field.orElse(null);
+  }
+
+  @JsonProperty(value = JSON_PROPERTY_FIELD, required = false)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<String> getField_JsonNullable() {
+    return field;
+  }
+
+  @JsonProperty(JSON_PROPERTY_FIELD)
+  public void setField_JsonNullable(JsonNullable<String> field) {
+    this.field = field;
+  }
+
+  public void setField(@javax.annotation.Nullable String field) {
+    this.field = JsonNullable.<String>of(field);
+  }
+
+
+  public ApiV1DemandsBulkPost400Response details(@javax.annotation.Nullable Map<String, Object> details) {
+    this.details = details;
+    return this;
+  }
+
+  public ApiV1DemandsBulkPost400Response putDetailsItem(String key, Object detailsItem) {
+    if (this.details == null) {
+      this.details = new HashMap<>();
     }
+    this.details.put(key, detailsItem);
+    return this;
+  }
 
-    public static class ApiV1DemandsBulkPost400ResponseDeserializer extends StdDeserializer<ApiV1DemandsBulkPost400Response> {
-        public ApiV1DemandsBulkPost400ResponseDeserializer() {
-            this(ApiV1DemandsBulkPost400Response.class);
-        }
+  /**
+   * Get details
+   * @return details
+   */
+  @javax.annotation.Nullable
+  @JsonProperty(value = JSON_PROPERTY_DETAILS, required = false)
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.USE_DEFAULTS)
+  public Map<String, Object> getDetails() {
+    return details;
+  }
 
-        public ApiV1DemandsBulkPost400ResponseDeserializer(Class<?> vc) {
-            super(vc);
-        }
 
-        @Override
-        public ApiV1DemandsBulkPost400Response deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-            JsonNode tree = ctxt.readTree(jp);
+  @JsonProperty(value = JSON_PROPERTY_DETAILS, required = false)
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.USE_DEFAULTS)
+  public void setDetails(@javax.annotation.Nullable Map<String, Object> details) {
+    this.details = details;
+  }
 
-            Object deserialized = null;
-            // deserialize ApiError
-            try {
-                deserialized = tree.traverse(jp.getCodec()).readValueAs(ApiError.class);
-                ApiV1DemandsBulkPost400Response ret = new ApiV1DemandsBulkPost400Response();
-                ret.setActualInstance(deserialized);
-                return ret;
-            } catch (Exception e) {
-                // deserialization failed, continue, log to help debugging
-                log.log(Level.FINER, "Input data does not match 'ApiV1DemandsBulkPost400Response'", e);
-            }
 
-            // deserialize CodedError
-            try {
-                deserialized = tree.traverse(jp.getCodec()).readValueAs(CodedError.class);
-                ApiV1DemandsBulkPost400Response ret = new ApiV1DemandsBulkPost400Response();
-                ret.setActualInstance(deserialized);
-                return ret;
-            } catch (Exception e) {
-                // deserialization failed, continue, log to help debugging
-                log.log(Level.FINER, "Input data does not match 'ApiV1DemandsBulkPost400Response'", e);
-            }
-
-            // deserialize DocumentCollectionPolicyError
-            try {
-                deserialized = tree.traverse(jp.getCodec()).readValueAs(DocumentCollectionPolicyError.class);
-                ApiV1DemandsBulkPost400Response ret = new ApiV1DemandsBulkPost400Response();
-                ret.setActualInstance(deserialized);
-                return ret;
-            } catch (Exception e) {
-                // deserialization failed, continue, log to help debugging
-                log.log(Level.FINER, "Input data does not match 'ApiV1DemandsBulkPost400Response'", e);
-            }
-
-            throw new IOException("Failed deserialization for ApiV1DemandsBulkPost400Response: no match found");
-        }
-
-        /**
-         * Handle deserialization of the 'null' value.
-         */
-        @Override
-        public ApiV1DemandsBulkPost400Response getNullValue(DeserializationContext ctxt) throws JsonMappingException {
-            throw new JsonMappingException(ctxt.getParser(), "ApiV1DemandsBulkPost400Response cannot be null");
-        }
+  /**
+   * Return true if this ApiV1DemandsBulkPost400Response object is equal to o.
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    // store a list of schema names defined in anyOf
-    public static final Map<String, Class<?>> schemas = new HashMap<String, Class<?>>();
-
-    public ApiV1DemandsBulkPost400Response() {
-        super("anyOf", Boolean.FALSE);
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    ApiV1DemandsBulkPost400Response apiV1DemandsBulkPost400Response = (ApiV1DemandsBulkPost400Response) o;
+    return Objects.equals(this.success, apiV1DemandsBulkPost400Response.success) &&
+        Objects.equals(this.error, apiV1DemandsBulkPost400Response.error) &&
+        Objects.equals(this.code, apiV1DemandsBulkPost400Response.code) &&
+        Objects.equals(this.message, apiV1DemandsBulkPost400Response.message) &&
+        equalsNullable(this.field, apiV1DemandsBulkPost400Response.field) &&
+        Objects.equals(this.details, apiV1DemandsBulkPost400Response.details);
+  }
 
-    public ApiV1DemandsBulkPost400Response(ApiError o) {
-        super("anyOf", Boolean.FALSE);
-        setActualInstance(o);
+  private static <T> boolean equalsNullable(JsonNullable<T> a, JsonNullable<T> b) {
+    return a == b || (a != null && b != null && a.isPresent() && b.isPresent() && Objects.deepEquals(a.get(), b.get()));
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(success, error, code, message, hashCodeNullable(field), details);
+  }
+
+  private static <T> int hashCodeNullable(JsonNullable<T> a) {
+    if (a == null) {
+      return 1;
     }
+    return a.isPresent() ? Arrays.deepHashCode(new Object[]{a.get()}) : 31;
+  }
 
-    public ApiV1DemandsBulkPost400Response(CodedError o) {
-        super("anyOf", Boolean.FALSE);
-        setActualInstance(o);
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class ApiV1DemandsBulkPost400Response {\n");
+    sb.append("    success: ").append(toIndentedString(success)).append("\n");
+    sb.append("    error: ").append(toIndentedString(error)).append("\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    field: ").append(toIndentedString(field)).append("\n");
+    sb.append("    details: ").append(toIndentedString(details)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
 
-    public ApiV1DemandsBulkPost400Response(DocumentCollectionPolicyError o) {
-        super("anyOf", Boolean.FALSE);
-        setActualInstance(o);
-    }
-
-    static {
-        schemas.put("ApiError", ApiError.class);
-        schemas.put("CodedError", CodedError.class);
-        schemas.put("DocumentCollectionPolicyError", DocumentCollectionPolicyError.class);
-        JSON.registerDescendants(ApiV1DemandsBulkPost400Response.class, Collections.unmodifiableMap(schemas));
-    }
-
-    @Override
-    public Map<String, Class<?>> getSchemas() {
-        return ApiV1DemandsBulkPost400Response.schemas;
-    }
-
-    /**
-     * Set the instance that matches the anyOf child schema, check
-     * the instance parameter is valid against the anyOf child schemas:
-     * ApiError, CodedError, DocumentCollectionPolicyError
-     *
-     * It could be an instance of the 'anyOf' schemas.
-     * The anyOf child schemas may themselves be a composed schema (allOf, anyOf, anyOf).
-     */
-    @Override
-    public void setActualInstance(Object instance) {
-        if (JSON.isInstanceOf(ApiError.class, instance, new HashSet<Class<?>>())) {
-            super.setActualInstance(instance);
-            return;
-        }
-
-        if (JSON.isInstanceOf(CodedError.class, instance, new HashSet<Class<?>>())) {
-            super.setActualInstance(instance);
-            return;
-        }
-
-        if (JSON.isInstanceOf(DocumentCollectionPolicyError.class, instance, new HashSet<Class<?>>())) {
-            super.setActualInstance(instance);
-            return;
-        }
-
-        throw new RuntimeException("Invalid instance type. Must be ApiError, CodedError, DocumentCollectionPolicyError");
-    }
-
-    /**
-     * Get the actual instance, which can be the following:
-     * ApiError, CodedError, DocumentCollectionPolicyError
-     *
-     * @return The actual instance (ApiError, CodedError, DocumentCollectionPolicyError)
-     */
-    @Override
-    public Object getActualInstance() {
-        return super.getActualInstance();
-    }
-
-    /**
-     * Get the actual instance of `ApiError`. If the actual instance is not `ApiError`,
-     * the ClassCastException will be thrown.
-     *
-     * @return The actual instance of `ApiError`
-     * @throws ClassCastException if the instance is not `ApiError`
-     */
-    public ApiError getApiError() throws ClassCastException {
-        return (ApiError)super.getActualInstance();
-    }
-
-    /**
-     * Get the actual instance of `CodedError`. If the actual instance is not `CodedError`,
-     * the ClassCastException will be thrown.
-     *
-     * @return The actual instance of `CodedError`
-     * @throws ClassCastException if the instance is not `CodedError`
-     */
-    public CodedError getCodedError() throws ClassCastException {
-        return (CodedError)super.getActualInstance();
-    }
-
-    /**
-     * Get the actual instance of `DocumentCollectionPolicyError`. If the actual instance is not `DocumentCollectionPolicyError`,
-     * the ClassCastException will be thrown.
-     *
-     * @return The actual instance of `DocumentCollectionPolicyError`
-     * @throws ClassCastException if the instance is not `DocumentCollectionPolicyError`
-     */
-    public DocumentCollectionPolicyError getDocumentCollectionPolicyError() throws ClassCastException {
-        return (DocumentCollectionPolicyError)super.getActualInstance();
-    }
-
-
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    return o == null ? "null" : o.toString().replace("\n", "\n    ");
+  }
 
   /**
    * Convert the instance into URL query string.
@@ -276,8 +324,41 @@ public class ApiV1DemandsBulkPost400Response extends AbstractOpenApiSchema {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    return null;
-  }
+    // add `success` to the URL query string
+    if (getSuccess() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssuccess%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSuccess()))));
+    }
 
+    // add `error` to the URL query string
+    if (getError() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%serror%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getError()))));
+    }
+
+    // add `code` to the URL query string
+    if (getCode() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%scode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCode()))));
+    }
+
+    // add `message` to the URL query string
+    if (getMessage() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
+    }
+
+    // add `field` to the URL query string
+    if (getField() != null) {
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfield%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getField()))));
+    }
+
+    // add `details` to the URL query string
+    if (getDetails() != null) {
+      for (String _key : getDetails().keySet()) {
+        joiner.add(String.format(java.util.Locale.ROOT, "%sdetails%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, _key, containerSuffix),
+            getDetails().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getDetails().get(_key)))));
+      }
+    }
+
+    return joiner.toString();
+  }
 }
 

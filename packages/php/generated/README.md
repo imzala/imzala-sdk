@@ -528,6 +528,7 @@ Class | Method | HTTP request | Description
 - [CreatedDemandUploadDispatch](docs/Model/CreatedDemandUploadDispatch.md)
 - [CreatedDemandUploadDispatchResultsInner](docs/Model/CreatedDemandUploadDispatchResultsInner.md)
 - [CreatedDemandUploadFieldLayout](docs/Model/CreatedDemandUploadFieldLayout.md)
+- [DemandCreationError](docs/Model/DemandCreationError.md)
 - [DemandDocumentStatus](docs/Model/DemandDocumentStatus.md)
 - [DemandPage](docs/Model/DemandPage.md)
 - [DemandStatus](docs/Model/DemandStatus.md)

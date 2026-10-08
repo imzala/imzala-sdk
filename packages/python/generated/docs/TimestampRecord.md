@@ -32,5 +32,3 @@ timestamp_record_dict = timestamp_record_instance.to_dict()
 timestamp_record_from_dict = TimestampRecord.from_dict(timestamp_record_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -21,6 +21,3 @@ Hatırlatma yapılandırması. Şablon (`Template.reminder_*`) ve sözleşme (`R
 |---- | -----|
 | EMAIL | &quot;email&quot; |
 | SMS | &quot;sms&quot; |
-
-
-

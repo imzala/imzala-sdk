@@ -9,4 +9,3 @@ Name | Type | Description | Notes
 **RetryAfterSeconds** | **int** | Sadece RATE_LIMITED&#39;de | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-

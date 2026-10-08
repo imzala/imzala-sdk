@@ -36,5 +36,3 @@ party_mapping_input_dict = party_mapping_input_instance.to_dict()
 party_mapping_input_from_dict = PartyMappingInput.from_dict(party_mapping_input_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

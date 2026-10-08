@@ -29,5 +29,3 @@ document_progress_dict = document_progress_instance.to_dict()
 document_progress_from_dict = DocumentProgress.from_dict(document_progress_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

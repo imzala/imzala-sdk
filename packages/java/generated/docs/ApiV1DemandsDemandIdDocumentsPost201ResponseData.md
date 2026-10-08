@@ -8,6 +8,3 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**document** | [**EnvelopeDocument**](EnvelopeDocument.md) |  |  [optional] |
-
-
-

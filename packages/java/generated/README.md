@@ -4,7 +4,7 @@ imzala External API
 
 - API version: 1.10.3
 
-- Build date: 2026-10-08T17:15:34.947725+03:00[Europe/Istanbul]
+- Build date: 2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
@@ -603,6 +603,7 @@ Class | Method | HTTP request | Description
  - [CreatedDemandUploadDispatch](docs/CreatedDemandUploadDispatch.md)
  - [CreatedDemandUploadDispatchResultsInner](docs/CreatedDemandUploadDispatchResultsInner.md)
  - [CreatedDemandUploadFieldLayout](docs/CreatedDemandUploadFieldLayout.md)
+ - [DemandCreationError](docs/DemandCreationError.md)
  - [DemandDocumentStatus](docs/DemandDocumentStatus.md)
  - [DemandPage](docs/DemandPage.md)
  - [DemandStatus](docs/DemandStatus.md)
@@ -698,4 +699,3 @@ However, the instances of the api clients created from the `ApiClient` are threa
 ## Author
 
 destek@imzala.org
-

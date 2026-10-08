@@ -25,5 +25,3 @@ api_v1_demands_demand_id_dispatch_post_request_send_invitations_dict = api_v1_de
 api_v1_demands_demand_id_dispatch_post_request_send_invitations_from_dict = ApiV1DemandsDemandIdDispatchPostRequestSendInvitations.from_dict(api_v1_demands_demand_id_dispatch_post_request_send_invitations_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

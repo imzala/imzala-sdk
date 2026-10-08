@@ -13,6 +13,3 @@
 |**category** | **String** |  |  [optional] |
 |**usageCount** | **Integer** |  |  [optional] |
 |**parties** | [**List&lt;TemplateSummaryPartiesInner&gt;**](TemplateSummaryPartiesInner.md) |  |  [optional] |
-
-
-

@@ -26,5 +26,3 @@ document_scoped_slugs_dict = document_scoped_slugs_instance.to_dict()
 document_scoped_slugs_from_dict = DocumentScopedSlugs.from_dict(document_scoped_slugs_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

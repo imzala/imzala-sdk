@@ -597,6 +597,7 @@ Class | Method | HTTP request | Description
  - [Model.CreatedDemandUploadDispatch](docs/CreatedDemandUploadDispatch.md)
  - [Model.CreatedDemandUploadDispatchResultsInner](docs/CreatedDemandUploadDispatchResultsInner.md)
  - [Model.CreatedDemandUploadFieldLayout](docs/CreatedDemandUploadFieldLayout.md)
+ - [Model.DemandCreationError](docs/DemandCreationError.md)
  - [Model.DemandDocumentStatus](docs/DemandDocumentStatus.md)
  - [Model.DemandPage](docs/DemandPage.md)
  - [Model.DemandStatus](docs/DemandStatus.md)
@@ -681,4 +682,3 @@ Authentication schemes defined for the API:
 - **Type**: API key
 - **API key parameter name**: X-API-Key
 - **Location**: HTTP header
-

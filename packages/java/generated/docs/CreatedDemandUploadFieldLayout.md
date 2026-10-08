@@ -22,6 +22,3 @@ YALNIZ `field_template_id` gönderildiğinde döner. Alan yerleşiminin uygulanm
 |---- | -----|
 | BLOCK | &quot;block&quot; |
 | DROP | &quot;drop&quot; |
-
-
-

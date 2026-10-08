@@ -27,5 +27,3 @@ api_v1_templates_id_patch_request_dict = api_v1_templates_id_patch_request_insta
 api_v1_templates_id_patch_request_from_dict = ApiV1TemplatesIdPatchRequest.from_dict(api_v1_templates_id_patch_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

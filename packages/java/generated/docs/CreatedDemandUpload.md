@@ -15,6 +15,3 @@
 |**resultUrl** | **URI** |  |  [optional] |
 |**dispatch** | [**CreatedDemandUploadDispatch**](CreatedDemandUploadDispatch.md) |  |  [optional] |
 |**fieldLayout** | [**CreatedDemandUploadFieldLayout**](CreatedDemandUploadFieldLayout.md) |  |  [optional] |
-
-
-

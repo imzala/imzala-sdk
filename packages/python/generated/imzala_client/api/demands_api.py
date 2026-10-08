@@ -137,7 +137,7 @@ class DemandsApi:
             '404': "ApiV1DemandsPost404Response",
             '409': "ApiError",
             '429': "ApiError",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -216,7 +216,7 @@ class DemandsApi:
             '404': "ApiV1DemandsPost404Response",
             '409': "ApiError",
             '429': "ApiError",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -295,7 +295,7 @@ class DemandsApi:
             '404': "ApiV1DemandsPost404Response",
             '409': "ApiError",
             '429': "ApiError",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -7292,14 +7292,14 @@ class DemandsApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "ApiV1DemandsPost201Response",
-            '400': "ApiV1DemandsPost400Response",
+            '400': "DemandCreationError",
             '401': "ApiV1TemplatesGet401Response",
             '402': "ApiV1DemandsPost402Response",
             '403': "ApiV1TemplatesGet401Response",
             '404': "ApiV1DemandsPost404Response",
             '409': None,
             '500': "ApiV1DemandsPost500Response",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -7371,14 +7371,14 @@ class DemandsApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "ApiV1DemandsPost201Response",
-            '400': "ApiV1DemandsPost400Response",
+            '400': "DemandCreationError",
             '401': "ApiV1TemplatesGet401Response",
             '402': "ApiV1DemandsPost402Response",
             '403': "ApiV1TemplatesGet401Response",
             '404': "ApiV1DemandsPost404Response",
             '409': None,
             '500': "ApiV1DemandsPost500Response",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -7450,14 +7450,14 @@ class DemandsApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "ApiV1DemandsPost201Response",
-            '400': "ApiV1DemandsPost400Response",
+            '400': "DemandCreationError",
             '401': "ApiV1TemplatesGet401Response",
             '402': "ApiV1DemandsPost402Response",
             '403': "ApiV1TemplatesGet401Response",
             '404': "ApiV1DemandsPost404Response",
             '409': None,
             '500': "ApiV1DemandsPost500Response",
-            '503': "DocumentVerificationDisabledError",
+            '503': "DemandCreationError",
         }
         response_data = self.api_client.call_api(
             *_param,
