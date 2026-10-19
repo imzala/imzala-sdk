@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **status** | **string** |  | [optional] [default to undefined]
 **template_id** | **string** |  | [optional] [default to undefined]
 **signing_urls** | [**Array&lt;CreatedDemandSigningUrlsInner&gt;**](CreatedDemandSigningUrlsInner.md) |  | [optional] [default to undefined]
-**result_url** | **string** |  | [optional] [default to undefined]
+**result_url** | **string** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional] [default to undefined]
 **variables_applied** | **Array&lt;string&gt;** | Uygulanan TÜM slug\&#39;ların unique union\&#39;ı (sorted). Geriye dönük uyumluluk için korunur — yeni entegrasyonlar variables_applied_root + variables_applied_by_party kullanmalı.  | [optional] [default to undefined]
 **variables_applied_root** | **Array&lt;string&gt;** | Root variables\&#39;tan uygulanan slug listesi (sorted). | [optional] [default to undefined]
 **variables_applied_by_party** | **{ [key: string]: Array&lt;string&gt;; }** | template_party_id → o partiye uygulanan slug listesi (sorted per party).  | [optional] [default to undefined]

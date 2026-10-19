@@ -13,6 +13,6 @@ Name | Type | Description | Notes
 **archived_at** | **\DateTime** |  | [optional]
 **parties_total** | **int** |  | [optional]
 **parties_signed** | **int** |  | [optional]
-**pdf_url** | **string** | COMPLETED ise imzalı PDF public URL&#39;i | [optional]
+**pdf_url** | **string** | COMPLETED ise imzalı PDF public URL&#39;i. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla &#x60;GET /api/v1/demands/{id}/pdf&#x60; kullanın. | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

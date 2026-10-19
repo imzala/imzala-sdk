@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **status** | **str** |  | [optional]
 **template_id** | **UUID** |  | [optional]
 **signing_urls** | [**List[CreatedDemandSigningUrlsInner]**](CreatedDemandSigningUrlsInner.md) |  | [optional]
-**result_url** | **str** |  | [optional]
+**result_url** | **str** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional]
 **variables_applied** | **List[str]** | Uygulanan TÜM slug&#39;ların unique union&#39;ı (sorted). Geriye dönük uyumluluk için korunur — yeni entegrasyonlar variables_applied_root + variables_applied_by_party kullanmalı.  | [optional]
 **variables_applied_root** | **List[str]** | Root variables&#39;tan uygulanan slug listesi (sorted). | [optional]
 **variables_applied_by_party** | **Dict[str, List[str]]** | template_party_id → o partiye uygulanan slug listesi (sorted per party).  | [optional]

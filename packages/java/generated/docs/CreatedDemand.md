@@ -12,7 +12,7 @@
 |**status** | [**StatusEnum**](#StatusEnum) |  |  [optional] |
 |**templateId** | **UUID** |  |  [optional] |
 |**signingUrls** | [**List&lt;CreatedDemandSigningUrlsInner&gt;**](CreatedDemandSigningUrlsInner.md) |  |  [optional] |
-|**resultUrl** | **URI** |  |  [optional] |
+|**resultUrl** | **URI** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. |  [optional] |
 |**variablesApplied** | **List&lt;String&gt;** | Uygulanan TÜM slug&#39;ların unique union&#39;ı (sorted). Geriye dönük uyumluluk için korunur — yeni entegrasyonlar variables_applied_root + variables_applied_by_party kullanmalı.  |  [optional] |
 |**variablesAppliedRoot** | **List&lt;String&gt;** | Root variables&#39;tan uygulanan slug listesi (sorted). |  [optional] |
 |**variablesAppliedByParty** | **Map&lt;String, List&lt;String&gt;&gt;** | template_party_id → o partiye uygulanan slug listesi (sorted per party).  |  [optional] |

@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **TemplatePartyIds** | **List&lt;Guid&gt;** | Yalnız error&#x3D;PARTY_WITHOUT_DOCUMENTS ve satır oluşturulmadan ÖNCE tespit edildiyse: seçim sonucunda hiçbir belgeye atanmamış kalan şablon rol kimlikleri. | [optional]
 **Details** | [**ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails**](ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails.md) |  | [optional]
 **SigningUrls** | [**List&lt;ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner&gt;**](ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner.md) |  | [optional]
-**ResultUrl** | **string** |  | [optional]
+**ResultUrl** | **string** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional]
 **Dispatched** | **int** | Gönderilen davet (SMS+e-posta) sayısı | [optional]
 **Error** | **string** | status&#x3D;failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, CREATE_FAILED vb.) | [optional]
 **Message** | **string** | status&#x3D;failed ise açıklama | [optional]

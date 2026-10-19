@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.10.3 · **Son güncelleme:** 2026-10-08
+    **Sürüm:** 1.11.1 · **Son güncelleme:** 2026-10-18
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -307,7 +307,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.10.3
+  version: 1.11.1
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -726,6 +726,18 @@ paths:
         atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten
         sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden
         uygular).
+
+        **Açık rıza belgesi:** Açık rıza (`KVKK_CONSENT`) belgesi her imzacının
+        kendi kararı için ayrı bir belgedir. Şablonda böyle bir belge birden
+        çok role atanmışsa, sözleşme oluşturulurken eşlediğiniz her rol için
+        ayrı bir kopya açılır ve her kopya yalnız o imzacıya atanır; imzacılar
+        birbirinin rıza kararını görmez. Kopyanın başlığına rol etiketi eklenir
+        (ör. "Açık Rıza Beyanı (Başvuran 2)"), kopyada yalnız o rolün alanları
+        ve role bağlı olmayan alanlar yer alır. Şablon değişmez. Belge bazlı
+        değişkenler (`document_variables`) rıza belgesinin tüm kopyalarına
+        uygulanır. Kredi hesabında kopyalar ayrı belge sayılır; imzacı başına
+        belge sayısı değişmez.
+
         Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler
         oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama
         şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner.
@@ -878,6 +890,11 @@ paths:
             `INVALID_LOCALE`: `party_mapping[i].locale` `tr`, `en` veya `null`
             değil. `error` hatalı alanın yolunu taşır; sözleşme oluşturulmaz,
             kredi düşülmez.
+
+            `CONSENT_SINGLE_PARTY`: açık rıza belgesi her imzacı için ayrı
+            açıldığında zarf 20 belge sınırını aşıyor. Daha az rol eşleyin ya
+            da şablondaki rıza belgelerini tek role atayın. Sözleşme
+            oluşturulmaz, kredi düşülmez.
 
             `INVALID_DOCUMENT_SELECTION`: belge seçimi hatası; `details.reason`
             şu değerlerden biridir: `shape` (biçim: nesne değil, bilinmeyen
@@ -2029,6 +2046,13 @@ paths:
             position_y)` tuple'ında ikinci `signature` alanı yaratıldı.
             DB-level partial unique constraint engelledi. Pozisyonu
             değiştirip tekrar deneyin.
+
+            `APPROVER_CANNOT_HAVE_FIELDS`: bir öğe onaylayan (`APPROVER`)
+            rolündeki tarafa bağlanmak istendi. Onay bir imza değildir;
+            onaylayana imza, doldurulacak alan veya imzalayanın dolduracağı
+            kaşe (`FILLER_PROVIDES`) atanamaz. Hiçbir alan yazılmaz;
+            `details[].index` reddedilen öğeleri gösterir. Bu alanları
+            imzalayan bir tarafa atayın.
       summary: Sözleşmeye alan yerleştir (replace)
       tags:
       - Demands
@@ -3028,6 +3052,8 @@ paths:
             `CONSENT_CANNOT_BE_REQUIRED` / `PREINFO_MUST_BE_REQUIRED` — yamadan
             SONRA etkin `doc_kind`+`is_required` çiftine göre kontrol edilir
             (tek alanı yamalayıp kuralı atlatmak mümkün değildir).
+            `CONSENT_SINGLE_PARTY`: birden çok imzacıya atanmış belge açık
+            rıza belgesine çevrilemez.
         "404":
           content:
             application/json:
@@ -3053,6 +3079,10 @@ paths:
 
         Zaten karar vermiş (onaylamış/reddetmiş) bir imzacının ataması
         kaldırılamaz (400 `ASSIGNMENT_HAS_DECISION`).
+
+        Açık rıza (`KVKK_CONSENT`) belgesi yalnız bir imzacıya atanabilir
+        (400 `CONSENT_SINGLE_PARTY`): her imzacının rızasını ayrı bir belgeyle
+        alın, böylece imzacılar birbirinin kararını görmez.
       parameters:
       - explode: false
         in: path
@@ -3088,6 +3118,8 @@ paths:
             `ASSIGNMENT_EMPTY` — `party_ids` eksik/boş. `INVALID_PARTY_ID` —
             bu sözleşmeye ait olmayan taraf id'si. `ASSIGNMENT_HAS_DECISION`
             — karar vermiş bir imzacının ataması kaldırılamaz.
+            `CONSENT_SINGLE_PARTY`: açık rıza belgesi birden çok imzacıya
+            atanamaz.
         "404":
           content:
             application/json:
@@ -3195,6 +3227,12 @@ paths:
             gövdede atamasız taraf id'leri `party_ids` içinde döner.
             `PUT .../documents/{docId}/assignments` ile atamayı tamamlayıp
             tekrar deneyin.
+            `DOCUMENT_COLLECTION_PARTY_REQUIRED`: imzadan önce zorunlu belge
+            toplama açık, ancak belge istenecek hiçbir SIGNER seçilmemiş.
+            En az bir imzacıda `collect_documents=true` seçip tekrar deneyin.
+            Ön kontrol kredi mutabakatından önce yapılır. Eşzamanlı değişiklik
+            kilitli gönderim aşamasında da kontrol edilir; bu durumda yayın
+            damgası geri alınır ve davet gönderilmez.
             `ENVELOPE_CHANGED_DURING_DISPATCH`: kredi mutabakatı ile
             gönderim iddiası arasında zarf değiştirildi (ör. eşzamanlı bir
             istek belge/atama ekledi). Sunucu bunu kilit altında bir kez
@@ -5064,6 +5102,8 @@ components:
             $ref: "#/components/schemas/CreatedDemand_signing_urls_inner"
           type: array
         result_url:
+          description: "Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme\
+            \ bağlantısını göstermez."
           example: https://e.imzala.org/sonuc/<demand_id>
           format: uri
           type: string
@@ -5249,6 +5289,8 @@ components:
             $ref: "#/components/schemas/CreatedDemand_signing_urls_inner"
           type: array
         result_url:
+          description: "Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme\
+            \ bağlantısını göstermez."
           format: uri
           type: string
         dispatch:
@@ -5916,10 +5958,14 @@ components:
             $ref: "#/components/schemas/DemandStatus_stamp_items_inner"
           type: array
         result_url:
+          description: "Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme\
+            \ bağlantısını göstermez."
           format: uri
           type: string
         pdf_url:
-          description: Sadece status=COMPLETED iken dolu
+          description: "Sadece status=COMPLETED iken dolu. Açık rıza belgesi bu herkese\
+            \ açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404\
+            \ döner); API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanın."
           format: uri
           nullable: true
           type: string
@@ -7321,7 +7367,9 @@ components:
         parties_signed:
           type: integer
         pdf_url:
-          description: COMPLETED ise imzalı PDF public URL'i
+          description: "COMPLETED ise imzalı PDF public URL'i. Açık rıza belgesi bu\
+            \ herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse\
+            \ 404 döner); API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanın."
           format: uri
           nullable: true
           type: string
@@ -7815,6 +7863,8 @@ components:
             $ref: "#/components/schemas/_api_v1_demands_bulk_post_200_response_data_results_inner_signing_urls_inner"
           type: array
         result_url:
+          description: "Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme\
+            \ bağlantısını göstermez."
           format: uri
           type: string
         dispatched:

@@ -4,12 +4,15 @@ Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm u
 
 ## 1.0.0
 
-İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.10.2`.
+İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.11.1`.
 
 **0.x'ten yükseltme, facade (`ImzalaSdk.Imzala` ve kaynak sınıfları) kullananlar için kod değişikliği gerektirmez.** 0.x'in kapsadığı uçların istek ve yanıt gövdeleri aynıdır; 1.0.0 eksik yüzeyi tamamlar ve aşağıdaki hataları düzeltir. Üretilmiş istemciyi doğrudan çağıranlar için aşağıdaki nota bakın.
 
-### API 1.8.18 - 1.10.2 ile gelenler
+### API 1.8.18 - 1.11.1 ile gelenler
 
+- API 1.10.3 - 1.11.1: Belge Toplama. Sözleşme oluşturma gövdesinde ve toplu oluşturmanın `options` alanında isteğe bağlı `document_collection_enabled`, `document_collection_template_id`, `document_collection_timing` ve `document_collection_block_signing`; gönderilmeyen alanlar şablonun ayarını devralır. Ayarlar sözleşme oluşturulmadan, kredi düşülmeden ve davet gönderilmeden önce doğrulanır. Hata gövdeleri için yeni üretilmiş modeller: `DemandCreationError`, `DocumentCollectionPolicyError`, `DocumentVerificationDisabledError`.
+- API 1.11.x: açık rıza belgesi (`KVKK_CONSENT`) her imzacının kendi kararı için ayrı bir belgedir. Şablonda birden çok role atanmışsa eşlenen her rol için ayrı kopya açılır ve kopya yalnız o imzacıya atanır. Açık rıza belgesi birden çok imzacıya atanamaz; herkese açık imzalı PDF bağlantısından ve sonuç sayfasından verilmez, API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanılır. İstek ve yanıt şekli değişmedi.
+- Hata kataloğuna 13 yeni kod eklendi: `CONSENT_SINGLE_PARTY`, `APPROVER_CANNOT_HAVE_FIELDS`, `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`, `DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND`, `DOCUMENT_COLLECTION_PARTY_REQUIRED`, `DOCUMENT_VERIFICATION_DISABLED`, `INVALID_DOCUMENT_COLLECTION_TIMING`, `INVALID_DOCUMENT_COLLECTION_FLAG`, `VERIFICATION_CONTEXT_REQUIRED`, `DOCUMENT_TYPE_INVALID`, `VERIFICATION_POLICY_INVALID`, `VERIFICATION_INSTRUCTION_INVALID`, `VERIFICATION_POLICY_CONFLICT`.
 - API 1.10.2: onaylayan (onay adımı) davet sırası belgelendi. Onaylayan içeren sözleşmede önce onaylayanlar davet edilir, imzacılar tüm onaylar tamamlanınca davet edilir; bir onaylayan reddederse imzacılar davet edilmez. Tekrar gönderim (`resend`) bu durumlarda 409 `PARTY_NOT_ELIGIBLE` döner; hatırlatmada sırası gelmemiş taraflar `skipped` ve `reason: "party_not_eligible"` ile listelenir. Zaman çizelgesinde yeni `REAPPROVAL_REQUIRED` olayı. İstek ve yanıt şekli değişmedi.
 - API 1.10.1: imzacı dili. Tarafa dil atanabilir (`party_mapping[i].locale`, `tr` / `en` / `null`); şablonda `default_locale`; sözleşme detayında tarafın `locale` ve imzaladığı andaki `signed_locale` alanları. Bildirim (e-posta, SMS) tarafa atanan dilde gider, atanmamışsa Türkçe. WhatsApp'ta İngilizce için kurumun onaylı İngilizce şablonu gerekir. Geçersiz değer `INVALID_LOCALE` ile reddedilir; toplu oluşturmada yalnız o satır `failed` olur.
 - API 1.10.x: hatırlatma yanıtında `reminders_ineligible` sayacı (hatırlatma gönderilemeyen taraflar).

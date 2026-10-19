@@ -45,7 +45,6 @@ const NOT_ERROR_CODES: Record<string, string> = {
   TR_RESIDENCE: 'document type value, not an error',
   BEFORE_SIGNING: 'document collection timing value, not an error',
   AFTER_SIGNING: 'document collection timing value, not an error',
-  REAPPROVAL_REQUIRED: 'timeline event_type value',
   FIXED_TERM: 'renewal_type value',
 };
 

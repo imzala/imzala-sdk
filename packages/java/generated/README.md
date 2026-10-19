@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.10.3
+- API version: 1.11.1
 
-- Build date: 2026-10-08T17:45:06.161988+03:00[Europe/Istanbul]
+- Build date: 2026-10-19T11:34:52.464688+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.10.3 · **Son güncelleme:** 2026-10-08
+**Sürüm:** 1.11.1 · **Son güncelleme:** 2026-10-18
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -344,7 +344,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.10.3</version>
+  <version>1.11.1</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -354,7 +354,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.10.3"
+compile "org.imzala:imzala-client-generated:1.11.1"
 ```
 
 ### Others
@@ -367,7 +367,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.10.3.jar`
+- `target/imzala-client-generated-1.11.1.jar`
 - `target/lib/*.jar`
 
 ## Getting Started

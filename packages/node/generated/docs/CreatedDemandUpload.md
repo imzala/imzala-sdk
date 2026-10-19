@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **status** | **string** |  | [optional] [default to undefined]
 **pages** | [**Array&lt;DemandPage&gt;**](DemandPage.md) | Oluşturulan sözleşmedeki her sayfanın &#x60;id&#x60; ve &#x60;order&#x60; bilgisi. &#x60;POST /api/v1/demands/{id}/items&#x60; endpoint\&#39;ine alan yerleştirmek için &#x60;page_id&#x60; parametresi olarak kullanın.  | [optional] [default to undefined]
 **signing_urls** | [**Array&lt;CreatedDemandSigningUrlsInner&gt;**](CreatedDemandSigningUrlsInner.md) |  | [optional] [default to undefined]
-**result_url** | **string** |  | [optional] [default to undefined]
+**result_url** | **string** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional] [default to undefined]
 **dispatch** | [**CreatedDemandUploadDispatch**](CreatedDemandUploadDispatch.md) |  | [optional] [default to undefined]
 **field_layout** | [**CreatedDemandUploadFieldLayout**](CreatedDemandUploadFieldLayout.md) |  | [optional] [default to undefined]
 

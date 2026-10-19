@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **archived_at** | **string** |  | [optional] [default to undefined]
 **parties_total** | **number** |  | [optional] [default to undefined]
 **parties_signed** | **number** |  | [optional] [default to undefined]
-**pdf_url** | **string** | COMPLETED ise imzalı PDF public URL\&#39;i | [optional] [default to undefined]
+**pdf_url** | **string** | COMPLETED ise imzalı PDF public URL\&#39;i. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla &#x60;GET /api/v1/demands/{id}/pdf&#x60; kullanın. | [optional] [default to undefined]
 
 ## Example
 

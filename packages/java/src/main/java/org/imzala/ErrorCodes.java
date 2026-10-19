@@ -178,6 +178,8 @@ public final class ErrorCodes {
         "party_ids eksik veya boş.");
     m.put("ASSIGNMENT_HAS_DECISION",
         "Karar vermiş bir imzacının ataması kaldırılamaz.");
+    m.put("CONSENT_SINGLE_PARTY", "Açık rıza belgesi yalnız bir imzacıya atanabilir; birden çok imzacıya atanmış belge açık rızaya çevrilemez ve imzacı başına açılan rıza kopyaları zarfın 20 belge sınırını aşamaz.");
+    m.put("APPROVER_CANNOT_HAVE_FIELDS", "Onaylayan (APPROVER) rolündeki tarafa imza, doldurulacak alan veya imzalayanın dolduracağı kaşe atanamaz; details[].index reddedilen öğeleri gösterir.");
     // Alan yerleştirme
     m.put("INVALID_ITEMS_BODY",
         "items bir dizi değil.");
@@ -219,13 +221,13 @@ public final class ErrorCodes {
     m.put("INVALID_DOCUMENT_COLLECTION_FLAG", "Belge Toplama boolean alanları boolean veya null olmalı.");
     m.put("DOCUMENT_COLLECTION_TEMPLATE_REQUIRED", "Etkin Belge Toplama için bir Belge Toplama şablonu seçilmelidir.");
     m.put("DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND", "Belge Toplama şablonu bulunamadı, arşivli veya çalışma alanına ait değil.");
+    m.put("DOCUMENT_COLLECTION_PARTY_REQUIRED", "İmzadan önce zorunlu belge toplama açık ama belge istenecek hiçbir imzacı seçilmemiş; en az bir imzacıda collect_documents=true seçin.");
     m.put("DOCUMENT_VERIFICATION_DISABLED", "Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor; seçim, politika veya hizmet kullanılabilirliğini düzeltin.");
     m.put("VERIFICATION_CONTEXT_REQUIRED", "Seçili Belge Toplama şablonunun doğrulama bağlamı geçersiz; error alanı kaynak makine kodunu taşır.");
     m.put("DOCUMENT_TYPE_INVALID", "Seçili Belge Toplama kaleminin belge türü geçersiz.");
     m.put("VERIFICATION_POLICY_INVALID", "Seçili Belge Toplama kaleminin doğrulama politikası geçersiz.");
     m.put("VERIFICATION_INSTRUCTION_INVALID", "Seçili Belge Toplama kaleminin alıcı veya amaç metni geçersiz.");
     m.put("VERIFICATION_POLICY_CONFLICT", "Doğrulama istemeyen kalemde alıcı veya amaç metni bulunamaz.");
-    m.put("PARTY_NOT_ELIGIBLE", "Tarafa şu anda davet gönderilemez; sözleşme ve taraf durumunu kontrol edin.");
 
     // Genel
     m.put("VALIDATION_ERROR",
