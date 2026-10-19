@@ -116,6 +116,8 @@ public final class ErrorCodes {
         "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.");
     m.put("CHANGE_REQUEST_PENDING",
         "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.");
+    m.put("PARTY_NOT_ELIGIBLE",
+        "Tarafa şu an davet gönderilemez (onay vermiş onaylayan, onaylayan reddi, onay adımı tamamlanmadı veya sıralı imzada sırası gelmedi).");
     m.put("DEMAND_EXPIRED",
         "Sözleşmenin imza süresi geçmiş.");
     m.put("ALREADY_COMPLETED",

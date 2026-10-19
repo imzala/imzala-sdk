@@ -49,6 +49,7 @@ NOT_ERROR_CODES = {
     "FIELDS_FILLED": "timeline event_type value",
     "MOBILE_SIGNATURE_CAPTURED": "timeline event_type value",
     "OTP_LOCKED": "timeline event_type value",
+    "REAPPROVAL_REQUIRED": "timeline event_type value",
     "OTP_SENT": "timeline event_type value",
     "OTP_VERIFIED": "timeline event_type value",
     "FROM_SAVED": "stamp source value",

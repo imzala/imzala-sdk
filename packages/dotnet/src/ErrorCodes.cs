@@ -113,6 +113,8 @@ public static class ErrorCodes
                 "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.",
             ["CHANGE_REQUEST_PENDING"] =
                 "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.",
+            ["PARTY_NOT_ELIGIBLE"] =
+                "Tarafa şu an davet gönderilemez (onay vermiş onaylayan, onaylayan reddi, onay adımı tamamlanmadı veya sıralı imzada sırası gelmedi).",
             ["DEMAND_EXPIRED"] =
                 "Sözleşmenin imza süresi geçmiş.",
             ["ALREADY_COMPLETED"] =
