@@ -466,7 +466,7 @@ Bu paket **yalnızca sunucuda** kullanılır. API anahtarınız sızarsa hesabı
 
 ## İmza sınıfı
 
-Bu API ile tarayıcıdan atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza değildir; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Gömülü imza da aynı niteliktedir. Telefon doğrulaması veya T.C. kimlik numarası kontrolü gibi ek adımlar delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. SDK, imza geçerliliği hakkında hukuki bir iddiada bulunmaz.
+Bu API ile tarayıcıdan atılan dijital imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; tamamlanan sözleşmeler otomatik olarak zaman damgasıyla işaretlenir. Güvenli elektronik imza değildir; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. Gömülü imza da aynı niteliktedir. Telefon doğrulaması veya T.C. kimlik numarası kontrolü gibi ek adımlar delil değerini güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya dönüştürmez. SDK, imza geçerliliği hakkında hukuki bir iddiada bulunmaz.
 
 ## Daha fazla
 

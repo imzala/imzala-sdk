@@ -173,7 +173,7 @@ Bu paket tarayıcı için tasarlanmıştır ve API anahtarı **içermez**. Embed
 
 ## İmza sınıfı
 
-Gömülü imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır ve her imza zaman damgalıdır. Güvenli elektronik imza **değildir**; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. İmza sınıfı sözleşme akışında belirlenir; bu bileşen imza geçerliliği hakkında ek hukuki iddiada bulunmaz.
+Gömülü imza, 5070 sayılı Elektronik İmza Kanunu m.3 anlamında elektronik imzadır; tamamlanan sözleşmeler otomatik olarak zaman damgasıyla işaretlenir. Güvenli elektronik imza **değildir**; AB hukuku bakımından gelişmiş veya nitelikli imza olarak sunulmaz. İmza sınıfı sözleşme akışında belirlenir; bu bileşen imza geçerliliği hakkında ek hukuki iddiada bulunmaz.
 
 ## Daha fazla
 

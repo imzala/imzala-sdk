@@ -148,7 +148,7 @@ export const IMZALA_ERROR_CODES = {
   INVALID_DOCUMENT_COLLECTION_FLAG: 'Belge Toplama boolean alanları boolean veya null olmalı.',
   DOCUMENT_COLLECTION_TEMPLATE_REQUIRED: 'Etkin Belge Toplama için bir Belge Toplama şablonu seçilmelidir.',
   DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND: 'Belge Toplama şablonu bulunamadı, arşivli veya çalışma alanına ait değil.',
-  DOCUMENT_COLLECTION_PARTY_REQUIRED: 'İmzadan önce zorunlu belge toplama açık ama belge istenecek hiçbir imzacı seçilmemiş; en az bir imzacıda collect_documents=true seçin.',
+  DOCUMENT_COLLECTION_PARTY_REQUIRED: 'İmzadan önce zorunlu belge toplama açık ama belge istenecek hiçbir imzacı seçilmemiş; panelden en az bir imzacı için belge toplamayı açın.',
   DOCUMENT_VERIFICATION_DISABLED: 'Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor; seçim, politika veya hizmet kullanılabilirliğini düzeltin.',
   VERIFICATION_CONTEXT_REQUIRED: 'Seçili Belge Toplama şablonunun doğrulama bağlamı geçersiz; error alanı kaynak makine kodunu taşır.',
   DOCUMENT_TYPE_INVALID: 'Seçili Belge Toplama kaleminin belge türü geçersiz.',
