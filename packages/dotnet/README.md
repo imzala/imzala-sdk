@@ -436,7 +436,8 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | Imzala (NuGet) | Konuştuğu API | Durum |
 |---|---|---|
-| 1.0.0 | v1 (`1.11.1`) | Güncel: Belge Toplama ayarları, süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
+| 1.1.0 | v1 (`1.12.0`) | Güncel: taraf bazında telefon doğrulaması (`require_phone_verification`) ve 1.0.0'ın tüm yüzeyi |
+| 1.0.0 | v1 (`1.11.1`) | Desteklenir: Belge Toplama ayarları, süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 
 İmzala dış API'si **v1**'dir ve geriye dönük uyumludur: yeni alanlar opsiyonel, yeni davranışlar

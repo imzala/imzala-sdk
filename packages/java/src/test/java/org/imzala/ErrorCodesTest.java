@@ -191,7 +191,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(112, ErrorCodes.CODES.size());
+    assertEquals(114, ErrorCodes.CODES.size());
   }
 
   @Test

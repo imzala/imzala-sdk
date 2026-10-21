@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **send_sms** | **bool** |  | [optional] [default to True]
 **send_email** | **bool** |  | [optional] [default to True]
 **locale** | [**SignerLocale**](SignerLocale.md) |  | [optional]
+**require_phone_verification** | **bool** | Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. &#x60;PartyMappingInput.require_phone_verification&#x60;). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı &#x60;failed&#x60; (&#x60;error: \&quot;INVALID_PHONE_VERIFICATION\&quot;&#x60;), &#x60;true&#x60; iken boş &#x60;phone&#x60; satırı &#x60;failed&#x60; (&#x60;error: \&quot;PHONE_REQUIRED_FOR_VERIFICATION\&quot;&#x60;) yapar. | [optional]
 **custom_message** | **str** | Bu tarafa özel davet mesajı | [optional]
 **variables** | **object** | Bu tarafa özel değişkenler | [optional]
 

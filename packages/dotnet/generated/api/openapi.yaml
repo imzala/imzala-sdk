@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.11.1 · **Son güncelleme:** 2026-10-18
+    **Sürüm:** 1.12.0 · **Son güncelleme:** 2026-10-19
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -307,7 +307,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.11.1
+  version: 1.12.0
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -877,6 +877,16 @@ paths:
             `INVALID_LOCALE`: `party_mapping[i].locale` `tr`, `en` veya `null`
             değil. `error` hatalı alanın yolunu taşır; sözleşme oluşturulmaz,
             kredi düşülmez.
+
+            `INVALID_PHONE_VERIFICATION`: `party_mapping[i].require_phone_verification`
+            `true`, `false` veya `null` değil. Sözleşme oluşturulmaz, kredi
+            düşülmez.
+
+            `PHONE_REQUIRED_FOR_VERIFICATION`: `party_mapping[i].require_phone_verification`
+            `true` ama tarafın `phone` alanı boş. Telefon doğrulaması açık
+            tarafa SMS ile kod gönderilebilmesi için numara gerekir. Sözleşme
+            oluşturulmaz, kredi düşülmez. Alan gönderilmeyen tarafta bu kontrol
+            yapılmaz.
 
             `CONSENT_SINGLE_PARTY`: açık rıza belgesi her imzacı için ayrı
             açıldığında zarf 20 belge sınırını aşıyor. Daha az rol eşleyin ya
@@ -4174,6 +4184,7 @@ components:
         send_sms: true
         send_email: true
         locale: en
+        require_phone_verification: true
         variables:
           key: PartyMappingInput_variables_value
         document_variables: ""
@@ -4208,6 +4219,17 @@ components:
           type: boolean
         locale:
           $ref: "#/components/schemas/SignerLocale"
+        require_phone_verification:
+          description: Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için
+            açar (`true`) ya da kapatır (`false`). Gönderilmezse veya `null` gönderilirse
+            sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan
+            önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar
+            için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez.
+            Geçersiz değer `400 INVALID_PHONE_VERIFICATION` döner; `true` iken `phone`
+            boşsa `400 PHONE_REQUIRED_FOR_VERIFICATION` döner.
+          example: true
+          nullable: true
+          type: boolean
         variables:
           additionalProperties:
             $ref: "#/components/schemas/PartyMappingInput_variables_value"
@@ -4494,6 +4516,7 @@ components:
           send_sms: true
           send_email: true
           locale: en
+          require_phone_verification: true
           variables:
             key: PartyMappingInput_variables_value
           document_variables: ""
@@ -4507,6 +4530,7 @@ components:
           send_sms: true
           send_email: true
           locale: en
+          require_phone_verification: true
           variables:
             key: PartyMappingInput_variables_value
           document_variables: ""
@@ -7602,6 +7626,15 @@ components:
           type: boolean
         locale:
           $ref: "#/components/schemas/SignerLocale"
+        require_phone_verification:
+          description: "Telefon doğrulamasını yalnız bu taraf için açar ya da kapatı\
+            r (bkz. `PartyMappingInput.require_phone_verification`). Sözleşmede telefon\
+            \ doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz\
+            \ değer satırı `failed` (`error: \"INVALID_PHONE_VERIFICATION\"`), `true`\
+            \ iken boş `phone` satırı `failed` (`error: \"PHONE_REQUIRED_FOR_VERIFICATION\"\
+            `) yapar."
+          nullable: true
+          type: boolean
         custom_message:
           description: Bu tarafa özel davet mesajı
           type: string
@@ -7766,9 +7799,10 @@ components:
           type: integer
         error:
           description: "status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE,\
-            \ INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS,\
-            \ INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY,\
-            \ DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, CREATE_FAILED vb.)"
+            \ INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, INSUFFICIENT_CREDITS,\
+            \ MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION,\
+            \ INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,\
+            \ RECONCILE_FAILED, CREATE_FAILED vb.)"
           type: string
         message:
           description: status=failed ise açıklama
@@ -8268,6 +8302,17 @@ components:
             `PartyMappingInput.locale`). Alan Şablonu kullanılırken
             gönderilmezse rolün varsayılan dili uygulanır. Geçersiz
             değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz.
+
+            Opsiyonel `require_phone_verification` (`true`, `false`
+            veya `null`): telefon doğrulamasını yalnız bu taraf için
+            açar ya da kapatır (bkz.
+            `PartyMappingInput.require_phone_verification`).
+            Gönderilmezse sözleşmenin telefon doğrulaması ayarı
+            geçerlidir. Sözleşmede telefon doğrulaması açıksa
+            imzalayan taraflar için false etkisizdir. Geçersiz değer `400 INVALID_PHONE_VERIFICATION`
+            döner; `true` iken `phone` boşsa `400
+            PHONE_REQUIRED_FOR_VERIFICATION` döner. İki durumda da
+            sözleşme oluşturulmaz.
           example: "[{\"first_name\":\"Ayşe\",\"last_name\":\"Yılmaz\",\"email\":\"\
             ayse@example.com\"}]"
           type: string

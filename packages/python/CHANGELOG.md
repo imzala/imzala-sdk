@@ -2,6 +2,13 @@
 
 Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm uyumu için README'deki "Sürüm uyumu" tablosuna bakın.
 
+## 1.1.0
+
+Konuştuğu API: v1 `1.12.0`. 1.0.0'dan yükseltme kod değişikliği gerektirmez; yeni alan opsiyoneldir.
+
+- API 1.12.0: taraf bazında telefon doğrulaması. Sözleşme oluşturma (`party_mapping[i]`), toplu oluşturma (`rows[].party_mapping[i]`) ve dosya yükleyerek oluşturma (`parties`) gövdelerinde isteğe bağlı `require_phone_verification` (`true` / `false` / `null`). Gönderilmezse veya `null` gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için `false` etkisizdir. Sözleşme gönderildikten sonra ayar değiştirilemez. Alan üretilmiş istemci modelleri üzerinden kullanılır.
+- Hata kataloğuna 2 yeni kod eklendi: `INVALID_PHONE_VERIFICATION` (değer `true`, `false` veya `null` değil) ve `PHONE_REQUIRED_FOR_VERIFICATION` (`true` iken tarafın `phone` alanı boş; SMS ile kod gönderilebilmesi için numara gerekir). İki durumda da sözleşme oluşturulmaz; toplu oluşturmada yalnız ilgili satır `failed` olur.
+
 ## 1.0.0
 
 İlk kararlı sürüm; semver sözü bu sürümle başlar. Konuştuğu API: v1 `1.11.1`.

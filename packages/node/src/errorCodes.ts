@@ -78,6 +78,8 @@ export const IMZALA_ERROR_CODES = {
   DEMAND_NOT_DISPATCHABLE: 'Sözleşme tamamlanmış veya iptal edilmiş; tekrar gönderilemez.',
   AI_TOOL_ACCESS_DISABLED: 'Kurum yapay zekâ araçlarının erişimini kapatmış; istek organizasyon çalışma alanına yapılamaz.',
   INVALID_LOCALE: 'İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.',
+  INVALID_PHONE_VERIFICATION: 'Tarafın telefon doğrulaması ayarı (require_phone_verification) true, false veya null olmalı; hatalı alanın yolu error alanındadır.',
+  PHONE_REQUIRED_FOR_VERIFICATION: 'Telefon doğrulaması açık tarafın telefon numarası boş; SMS ile kod gönderilebilmesi için phone gerekir.',
   CHANGE_REQUEST_PENDING: 'Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.',
   PARTY_NOT_ELIGIBLE: 'Tarafa şu an davet gönderilemez (onay vermiş onaylayan, onaylayan reddi, onay adımı tamamlanmadı veya sıralı imzada sırası gelmedi).',
   DEMAND_EXPIRED: 'Sözleşmenin imza süresi geçmiş.',

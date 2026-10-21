@@ -114,6 +114,10 @@ public final class ErrorCodes {
         "Kurum yapay zekâ araçlarının erişimini kapatmış; istek organizasyon çalışma alanına yapılamaz.");
     m.put("INVALID_LOCALE",
         "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.");
+    m.put("INVALID_PHONE_VERIFICATION",
+        "Tarafın telefon doğrulaması ayarı (require_phone_verification) true, false veya null olmalı; hatalı alanın yolu error alanındadır.");
+    m.put("PHONE_REQUIRED_FOR_VERIFICATION",
+        "Telefon doğrulaması açık tarafın telefon numarası boş; SMS ile kod gönderilebilmesi için phone gerekir.");
     m.put("CHANGE_REQUEST_PENDING",
         "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.");
     m.put("PARTY_NOT_ELIGIBLE",
