@@ -181,6 +181,7 @@ docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
+docs/WebhookDataDemandDispatched.md
 docs/WebhookDataDemandExpired.md
 docs/WebhookDataDemandExpiredPartiesInner.md
 docs/WebhookDataKycTerminal.md
@@ -369,6 +370,7 @@ src/ImzalaApiClient.Test/Model/WebhookDataContractTermTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCompletedPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCompletedTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandCreatedTests.cs
+src/ImzalaApiClient.Test/Model/WebhookDataDemandDispatchedTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandExpiredPartiesInnerTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataDemandExpiredTests.cs
 src/ImzalaApiClient.Test/Model/WebhookDataKycTerminalStepsInnerTests.cs
@@ -574,6 +576,7 @@ src/ImzalaApiClient/Model/WebhookDataContractTerm.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCompleted.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCompletedPartiesInner.cs
 src/ImzalaApiClient/Model/WebhookDataDemandCreated.cs
+src/ImzalaApiClient/Model/WebhookDataDemandDispatched.cs
 src/ImzalaApiClient/Model/WebhookDataDemandExpired.cs
 src/ImzalaApiClient/Model/WebhookDataDemandExpiredPartiesInner.cs
 src/ImzalaApiClient/Model/WebhookDataKycTerminal.cs

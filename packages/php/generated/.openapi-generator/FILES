@@ -181,6 +181,7 @@ docs/Model/WebhookDataContractTerm.md
 docs/Model/WebhookDataDemandCompleted.md
 docs/Model/WebhookDataDemandCompletedPartiesInner.md
 docs/Model/WebhookDataDemandCreated.md
+docs/Model/WebhookDataDemandDispatched.md
 docs/Model/WebhookDataDemandExpired.md
 docs/Model/WebhookDataDemandExpiredPartiesInner.md
 docs/Model/WebhookDataKycTerminal.md
@@ -373,6 +374,7 @@ lib/Model/WebhookDataContractTerm.php
 lib/Model/WebhookDataDemandCompleted.php
 lib/Model/WebhookDataDemandCompletedPartiesInner.php
 lib/Model/WebhookDataDemandCreated.php
+lib/Model/WebhookDataDemandDispatched.php
 lib/Model/WebhookDataDemandExpired.php
 lib/Model/WebhookDataDemandExpiredPartiesInner.php
 lib/Model/WebhookDataKycTerminal.php
@@ -561,6 +563,7 @@ test/Model/WebhookDataContractTermTest.php
 test/Model/WebhookDataDemandCompletedPartiesInnerTest.php
 test/Model/WebhookDataDemandCompletedTest.php
 test/Model/WebhookDataDemandCreatedTest.php
+test/Model/WebhookDataDemandDispatchedTest.php
 test/Model/WebhookDataDemandExpiredPartiesInnerTest.php
 test/Model/WebhookDataDemandExpiredTest.php
 test/Model/WebhookDataKycTerminalStepsInnerTest.php

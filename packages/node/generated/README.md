@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.12.0
+## @imzala/server-sdk-node@1.14.0
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.12.0 --save
+npm install @imzala/server-sdk-node@1.14.0 --save
 ```
 
 _unPublished (not recommended):_
@@ -267,6 +267,7 @@ Class | Method | HTTP request | Description
  - [WebhookDataDemandCompleted](docs/WebhookDataDemandCompleted.md)
  - [WebhookDataDemandCompletedPartiesInner](docs/WebhookDataDemandCompletedPartiesInner.md)
  - [WebhookDataDemandCreated](docs/WebhookDataDemandCreated.md)
+ - [WebhookDataDemandDispatched](docs/WebhookDataDemandDispatched.md)
  - [WebhookDataDemandExpired](docs/WebhookDataDemandExpired.md)
  - [WebhookDataDemandExpiredPartiesInner](docs/WebhookDataDemandExpiredPartiesInner.md)
  - [WebhookDataKycTerminal](docs/WebhookDataKycTerminal.md)

@@ -2,6 +2,16 @@
 
 Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm uyumu için README'deki "Sürüm uyumu" tablosuna bakın.
 
+## 1.2.0
+
+Konuştuğu API: v1 `1.14.0`. 1.1.0'dan yükseltme kod değişikliği gerektirmez; istek ve yanıt şekli değişmedi, yalnız eklemeler var.
+
+- API 1.14.0: onaylayan kredisi. Sözleşmede en az bir imzacı varsa taraf listesindeki sıraya göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi kredisi düşülmez). İmzacı yoksa onaylayanlar imzacı gibi ücretlendirilir. Kural, değişikliğin yayına alındığı tarihten sonra gönderilen sözleşmelerde uygulanır; daha önce gönderilmiş sözleşmelerin tutarı değişmez. Yanıtlardaki `credits` alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
+- API 1.14.0: doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik bilgileri ile rolü değiştirilemez, taraf sözleşmeden çıkarılamaz. Yanlış kişiyse sözleşmeyi iptal edip yeniden gönderin; yeniden gönderim kredi kullanır. API v1'de taraf bilgisini değiştiren uç yoktur; kural panelden yapılan düzenlemelerde uygulanır.
+- API 1.13.0: yeni webhook olayı `demand.dispatched` (sözleşme imzaya gönderildi). Veri şeması `WebhookDataDemandDispatched`: `demand_id`, `title`, `dispatched_by`. Oluşturma uçlarının kendi davetinde yayılmaz; bu sözleşmeler için olay `POST /api/v1/demands/{demandId}/dispatch` ile gönderimde yayılır. Davetin yeniden gönderilmesi olayı tekrar tetiklemez.
+- Hata kataloğuna 1 yeni kod eklendi: `DISPATCH_PREPARATION_FAILED`. Gönderim öncesi kontroller beklenmedik bir hatayla düştüğünde sözleşme oluşturma ve dosya yükleyerek oluşturmada 500 yanıtıyla, toplu oluşturmada satır sonucunda döner. Sözleşme taslakta kalır, kredi düşülmez, davet gönderilmez. Aynı oluşturma isteğini tekrarlamayın; taslağı `POST /api/v1/demands/{demandId}/dispatch` ile gönderin.
+- Üretilmiş istemci modelleri aynı sözleşmeyle güncellendi; oluşturma uçlarının 500 yanıt modelindeki `code` alanı `RECONCILE_FAILED` ve `DISPATCH_PREPARATION_FAILED` değerlerini listeler.
+
 ## 1.1.0
 
 Konuştuğu API: v1 `1.12.0`. 1.0.0'dan yükseltme kod değişikliği gerektirmez; yeni alan opsiyoneldir.

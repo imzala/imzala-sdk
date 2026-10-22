@@ -181,6 +181,7 @@ docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
+docs/WebhookDataDemandDispatched.md
 docs/WebhookDataDemandExpired.md
 docs/WebhookDataDemandExpiredPartiesInner.md
 docs/WebhookDataKycTerminal.md
@@ -375,6 +376,7 @@ imzala_client/models/webhook_data_contract_term.py
 imzala_client/models/webhook_data_demand_completed.py
 imzala_client/models/webhook_data_demand_completed_parties_inner.py
 imzala_client/models/webhook_data_demand_created.py
+imzala_client/models/webhook_data_demand_dispatched.py
 imzala_client/models/webhook_data_demand_expired.py
 imzala_client/models/webhook_data_demand_expired_parties_inner.py
 imzala_client/models/webhook_data_kyc_terminal.py
@@ -569,6 +571,7 @@ test/test_webhook_data_contract_term.py
 test/test_webhook_data_demand_completed.py
 test/test_webhook_data_demand_completed_parties_inner.py
 test/test_webhook_data_demand_created.py
+test/test_webhook_data_demand_dispatched.py
 test/test_webhook_data_demand_expired.py
 test/test_webhook_data_demand_expired_parties_inner.py
 test/test_webhook_data_kyc_terminal.py

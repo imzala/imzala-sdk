@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.12.0 · **Son güncelleme:** 2026-10-19
+    **Sürüm:** 1.14.0 · **Son güncelleme:** 2026-10-21
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -59,6 +59,22 @@ info:
     - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
 
     Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
+
+    **Kredi:** Sözleşmede en az bir imzacı varsa, taraf listesindeki sıraya
+    göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için
+    yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi
+    kredisi düşülmez). İmzacı yoksa onaylayanlar imzacı gibi ücretlendirilir.
+    Kural API ve toplu gönderimle oluşturulan sözleşmelerde de geçerlidir.
+    Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik
+    bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz; yanlış
+    kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim kredi
+    kullanır. Kural, bu değişikliğin yayına alındığı tarihten sonra
+    gönderilen sözleşmelerde uygulanır (tarih, değişiklik duyurusunda yer
+    alır). Daha önce gönderilmiş sözleşmelerin tutarı değişmez; bu
+    sözleşmelerde `credits` alanı tahsil edilen tutarı gösterir. Daha önce
+    oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
+    kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
+    alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
 
     ## Rate Limit
     - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -164,10 +180,11 @@ info:
     - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
       event'lerinizde tetiklenir
 
-    ### Olay tipleri (11)
+    ### Olay tipleri (12)
     | Olay | Tetikleyici |
     |------|-------------|
     | `demand.created` | Yeni sözleşme oluşturuldu |
+    | `demand.dispatched` | Sözleşme imzaya gönderildi |
     | `demand.completed` | Tüm taraflar imzaladı |
     | `demand.expired` | Sözleşme süresi doldu |
     | `party.signed` | Bir taraf imzaladı |
@@ -207,7 +224,7 @@ info:
     ```
 
     - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-    - `type`: yukarıdaki 11 olay tipinden biri (lowercase).
+    - `type`: yukarıdaki 12 olay tipinden biri (lowercase).
     - `created_at` — olay zamanı (ISO 8601 UTC).
     - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
@@ -307,7 +324,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.12.0
+  version: 1.14.0
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -705,6 +722,7 @@ paths:
         yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse
         aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden
         uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.
+        Onaylayan rolündeki tarafın kredisi için bkz. "Onaylayan".
 
         **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği
         sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa
@@ -1036,6 +1054,13 @@ paths:
             TASLAĞA düşürülür; gövdede `data.id` / `data.status:
             "DRAFT_UNDISPATCHED"` döner. Davet gönderilmez. İstek güvenle
             tekrarlanabilir (mutabakat idempotenttir).
+
+            `DISPATCH_PREPARATION_FAILED`: sözleşme oluşturuldu ama gönderim
+            öncesi kontrollerde beklenmedik bir hata oluştu. Sözleşme TASLAĞA
+            düşürülür; gövdede `data.id` / `data.status: "DRAFT_UNDISPATCHED"`
+            döner. Kredi düşülmez, davet gönderilmez. Aynı oluşturma isteğini
+            tekrarlamayın; sözleşmeyi `POST /demands/{demandId}/dispatch` ile
+            gönderin.
         "503":
           content:
             application/json:
@@ -1092,7 +1117,9 @@ paths:
           olarak kalır (`demand_id` response'ta bulunur, davet
           gönderilmemiştir); mutabakat kredi-dışı bir hatayla düşerse satır
           `failed` (`error: "RECONCILE_FAILED"`) döner, sözleşme yine taslağa
-          düşer.
+          düşer. Gönderim öncesi kontroller beklenmedik bir hatayla düşerse
+          satır `failed` (`error: "DISPATCH_PREPARATION_FAILED"`, `demand_id`)
+          döner, sözleşme taslağa düşer ve kredi düşülmez.
         - Atamasız imzacı: çok belgeli şablonda eşlenen bir taraf hiçbir
           belgeye atanmamışsa (ve `options.dispatch_notifications` `false`
           DEĞİLSE) o satır `failed` (`error: "PARTY_WITHOUT_DOCUMENTS"`)
@@ -1669,6 +1696,12 @@ paths:
             hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet
             gitmemiştir; gövdedeki `demand_id` ile durumu sorgulayın. İstek
             güvenle tekrarlanabilir (mutabakat idempotenttir).
+
+            `DISPATCH_PREPARATION_FAILED`: sözleşme oluşturuldu ama gönderim
+            öncesi kontrollerde beklenmedik bir hata oluştu. Sözleşme taslağa
+            düşürülür; gövdede `demand_id` döner. Kredi düşülmez, davet
+            gönderilmez. Aynı yükleme isteğini tekrarlamayın; sözleşmeyi
+            `POST /demands/{demandId}/dispatch` ile gönderin.
       summary: Dosya upload ile sözleşme oluştur (şablonsuz)
       tags:
       - Demands
@@ -6246,6 +6279,24 @@ components:
       - demand_id
       - title
       type: object
+    WebhookDataDemandDispatched:
+      properties:
+        demand_id:
+          format: uuid
+          type: string
+        title:
+          nullable: true
+          type: string
+        dispatched_by:
+          description: Gönderimi yapan kullanıcının kimliği; belirlenemiyorsa `null`.
+          format: uuid
+          nullable: true
+          type: string
+      required:
+      - demand_id
+      - dispatched_by
+      - title
+      type: object
     WebhookDataDemandCompleted:
       properties:
         demand_id:
@@ -7483,6 +7534,9 @@ components:
           example: Kredi mutabakatı yapılamadı
           type: string
         code:
+          enum:
+          - RECONCILE_FAILED
+          - DISPATCH_PREPARATION_FAILED
           example: RECONCILE_FAILED
           type: string
         data:
@@ -7802,7 +7856,7 @@ components:
             \ INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, INSUFFICIENT_CREDITS,\
             \ MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION,\
             \ INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,\
-            \ RECONCILE_FAILED, CREATE_FAILED vb.)"
+            \ RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)"
           type: string
         message:
           description: status=failed ise açıklama
@@ -8527,6 +8581,9 @@ components:
           example: Kredi mutabakatı yapılamadı
           type: string
         code:
+          enum:
+          - RECONCILE_FAILED
+          - DISPATCH_PREPARATION_FAILED
           example: RECONCILE_FAILED
           type: string
         demand_id:

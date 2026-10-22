@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.12.0
+- API version: 1.14.0
 
-- Build date: 2026-10-21T08:41:50.414945+03:00[Europe/Istanbul]
+- Build date: 2026-10-22T15:56:29.190035+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.12.0 · **Son güncelleme:** 2026-10-19
+**Sürüm:** 1.14.0 · **Son güncelleme:** 2026-10-21
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -62,6 +62,22 @@ içeren sözleşmelerde davetler iki aşamada gönderilir:
 - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
 
 Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
+
+**Kredi:** Sözleşmede en az bir imzacı varsa, taraf listesindeki sıraya
+göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için
+yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi
+kredisi düşülmez). İmzacı yoksa onaylayanlar imzacı gibi ücretlendirilir.
+Kural API ve toplu gönderimle oluşturulan sözleşmelerde de geçerlidir.
+Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik
+bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz; yanlış
+kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim kredi
+kullanır. Kural, bu değişikliğin yayına alındığı tarihten sonra
+gönderilen sözleşmelerde uygulanır (tarih, değişiklik duyurusunda yer
+alır). Daha önce gönderilmiş sözleşmelerin tutarı değişmez; bu
+sözleşmelerde `credits` alanı tahsil edilen tutarı gösterir. Daha önce
+oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
+kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
+alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
 
 ## Rate Limit
 - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -167,10 +183,11 @@ dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
 - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
   event'lerinizde tetiklenir
 
-### Olay tipleri (11)
+### Olay tipleri (12)
 | Olay | Tetikleyici |
 |------|-------------|
 | `demand.created` | Yeni sözleşme oluşturuldu |
+| `demand.dispatched` | Sözleşme imzaya gönderildi |
 | `demand.completed` | Tüm taraflar imzaladı |
 | `demand.expired` | Sözleşme süresi doldu |
 | `party.signed` | Bir taraf imzaladı |
@@ -210,7 +227,7 @@ Tüm olaylar aynı zarfı kullanır:
 ```
 
 - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-- `type`: yukarıdaki 11 olay tipinden biri (lowercase).
+- `type`: yukarıdaki 12 olay tipinden biri (lowercase).
 - `created_at` — olay zamanı (ISO 8601 UTC).
 - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
@@ -344,7 +361,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.12.0</version>
+  <version>1.14.0</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -354,7 +371,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.12.0"
+compile "org.imzala:imzala-client-generated:1.14.0"
 ```
 
 ### Others
@@ -367,7 +384,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.12.0.jar`
+- `target/imzala-client-generated-1.14.0.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -666,6 +683,7 @@ Class | Method | HTTP request | Description
  - [WebhookDataDemandCompleted](docs/WebhookDataDemandCompleted.md)
  - [WebhookDataDemandCompletedPartiesInner](docs/WebhookDataDemandCompletedPartiesInner.md)
  - [WebhookDataDemandCreated](docs/WebhookDataDemandCreated.md)
+ - [WebhookDataDemandDispatched](docs/WebhookDataDemandDispatched.md)
  - [WebhookDataDemandExpired](docs/WebhookDataDemandExpired.md)
  - [WebhookDataDemandExpiredPartiesInner](docs/WebhookDataDemandExpiredPartiesInner.md)
  - [WebhookDataKycTerminal](docs/WebhookDataKycTerminal.md)

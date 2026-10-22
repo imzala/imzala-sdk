@@ -142,6 +142,8 @@ public static class ErrorCodes
                 "send_invitations değeri tanınmıyor.",
             ["RECONCILE_FAILED"] =
                 "Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.",
+            ["DISPATCH_PREPARATION_FAILED"] =
+                "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi düşülmedi, davet gönderilmedi. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.",
             ["INVALID_CHANNELS"] =
                 "channels boş ya da email/sms dışında bir değer içeriyor.",
             ["MAX_SMS_REMINDERS_REACHED"] =

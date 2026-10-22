@@ -363,7 +363,7 @@ public async Task<IActionResult> HandleWebhook()
     if (!valid) return Unauthorized();
 
     var evt = JsonSerializer.Deserialize<WebhookEvent>(rawBody);
-    // evt.Type: demand.created / demand.completed / demand.expired /
+    // evt.Type: demand.created / demand.dispatched / demand.completed / demand.expired /
     //           party.signed / party.viewed / party.rejected / kyc.completed / kyc.failed /
     //           contract.expiring / contract.ended / contract.advanced
     return Ok();
@@ -436,7 +436,8 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | Imzala (NuGet) | Konuştuğu API | Durum |
 |---|---|---|
-| 1.1.0 | v1 (`1.12.0`) | Güncel: taraf bazında telefon doğrulaması (`require_phone_verification`) ve 1.0.0'ın tüm yüzeyi |
+| 1.2.0 | v1 (`1.14.0`) | Güncel: onaylayan kredisi kuralı, `demand.dispatched` webhook olayı, `DISPATCH_PREPARATION_FAILED` hata kodu ve 1.1.0'ın tüm yüzeyi |
+| 1.1.0 | v1 (`1.12.0`) | Desteklenir: taraf bazında telefon doğrulaması (`require_phone_verification`) ve 1.0.0'ın tüm yüzeyi |
 | 1.0.0 | v1 (`1.11.1`) | Desteklenir: Belge Toplama ayarları, süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |
 

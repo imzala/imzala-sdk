@@ -9,5 +9,14 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | **String** |  |  [optional] |
-|**code** | **String** |  |  [optional] |
+|**code** | [**CodeEnum**](#CodeEnum) |  |  [optional] |
 |**data** | [**ApiV1DemandsPost402ResponseData**](ApiV1DemandsPost402ResponseData.md) |  |  [optional] |
+
+
+
+## Enum: CodeEnum
+
+| Name | Value |
+|---- | -----|
+| RECONCILE_FAILED | &quot;RECONCILE_FAILED&quot; |
+| DISPATCH_PREPARATION_FAILED | &quot;DISPATCH_PREPARATION_FAILED&quot; |

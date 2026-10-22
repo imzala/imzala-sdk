@@ -183,6 +183,7 @@ docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
+docs/WebhookDataDemandDispatched.md
 docs/WebhookDataDemandExpired.md
 docs/WebhookDataDemandExpiredPartiesInner.md
 docs/WebhookDataKycTerminal.md

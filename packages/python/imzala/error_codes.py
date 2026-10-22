@@ -144,6 +144,11 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
         "Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek "
         "güvenle tekrarlanabilir."
     ),
+    "DISPATCH_PREPARATION_FAILED": (
+        "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve "
+        "taslakta kaldı, kredi düşülmedi, davet gönderilmedi. Aynı oluşturma isteğini "
+        "tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin."
+    ),
     "INVALID_CHANNELS": "channels boş ya da email/sms dışında bir değer içeriyor.",
     "MAX_SMS_REMINDERS_REACHED": "Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.",
     "ENVELOPE_NOT_DISPATCHED": "Çok belgeli zarf henüz gönderilmedi; önce POST /demands/{id}/dispatch çağırın.",

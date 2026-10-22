@@ -183,6 +183,7 @@ docs/WebhookDataContractTerm.md
 docs/WebhookDataDemandCompleted.md
 docs/WebhookDataDemandCompletedPartiesInner.md
 docs/WebhookDataDemandCreated.md
+docs/WebhookDataDemandDispatched.md
 docs/WebhookDataDemandExpired.md
 docs/WebhookDataDemandExpiredPartiesInner.md
 docs/WebhookDataKycTerminal.md
@@ -390,6 +391,7 @@ src/main/java/org/imzala/client/generated/model/WebhookDataContractTerm.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCompleted.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCompletedPartiesInner.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandCreated.java
+src/main/java/org/imzala/client/generated/model/WebhookDataDemandDispatched.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandExpired.java
 src/main/java/org/imzala/client/generated/model/WebhookDataDemandExpiredPartiesInner.java
 src/main/java/org/imzala/client/generated/model/WebhookDataKycTerminal.java
@@ -576,6 +578,7 @@ src/test/java/org/imzala/client/generated/model/WebhookDataContractTermTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCompletedPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCompletedTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandCreatedTest.java
+src/test/java/org/imzala/client/generated/model/WebhookDataDemandDispatchedTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandExpiredPartiesInnerTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataDemandExpiredTest.java
 src/test/java/org/imzala/client/generated/model/WebhookDataKycTerminalStepsInnerTest.java
