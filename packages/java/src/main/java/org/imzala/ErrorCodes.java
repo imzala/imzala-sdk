@@ -146,7 +146,7 @@ public final class ErrorCodes {
     m.put("RECONCILE_FAILED",
         "Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.");
     m.put("DISPATCH_PREPARATION_FAILED",
-        "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi düşülmedi, davet gönderilmedi. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.");
+        "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi henüz düşülmedi, davet gönderilmedi. Kredi, taslak gönderildiğinde düşülür. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.");
     m.put("INVALID_CHANNELS",
         "channels boş ya da email/sms dışında bir değer içeriyor.");
     m.put("MAX_SMS_REMINDERS_REACHED",
