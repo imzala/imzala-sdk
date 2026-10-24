@@ -36,7 +36,9 @@ export const IMZALA_ERROR_CODES = {
   WORKSPACE_MISMATCH: 'X-Workspace-Id, API anahtarının bağlı olduğu organizasyonla uyuşmuyor.',
   SMS_CUSTOMIZATION_NOT_ALLOWED:
     'sms_content yalnız uygun planda ve kendi SMS sağlayıcı ayarı tanımlı organizasyonlarda kullanılabilir.',
-  INSUFFICIENT_CREDITS: 'Hesabın veya organizasyonun kredisi bu işlem için yetmiyor.',
+  INSUFFICIENT_CREDITS:
+    'Hesabın veya organizasyonun kredisi bu işlem için yetmiyor. Hatırlatmada, gönderilmiş sözleşmenin imzalama kredisi eksik demektir; hatırlatma gönderilmez, kredi yükleyip daveti tekrar gönderin.',
+  CREDIT_CHECK_FAILED: 'Sözleşmenin kredi durumu şu anda doğrulanamadı; hatırlatma gönderilmedi. Geçici bir durumdur, biraz sonra tekrar deneyin.',
   MEMBER_LIMIT_EXCEEDED: 'Organizasyon üyesinin aylık kredi limiti aşıldı (kredi havuzunda bakiye olsa bile).',
 
   // Şablon ve alan şablonu

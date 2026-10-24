@@ -1905,7 +1905,10 @@ Endpoint **replace** semantiği taşır:
 
 `{{signer.first_name}}`, `{{signer.last_name}}`, `{{signer.full_name}}`,
 `{{signer.email}}`, `{{signer.phone}}`, `{{signer.government_id}}`,
-`{{signer.birth_date}}`, `{{signer.sign_date}}`, `{{contract.title}}`,
+`{{signer.birth_date}}`, `{{signer.sign_date}}`,
+`{{signer.company_name}}`, `{{signer.tax_number}}`, `{{signer.tax_office}}`,
+`{{signer.company_address}}`, `{{signer.company_district}}`,
+`{{signer.company_city}}`, `{{contract.title}}`,
 `{{sender.full_name}}`, `{{current.date}}`, `{{current.datetime}}`.
 
 ### Workspace izolasyonu

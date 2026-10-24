@@ -56,6 +56,7 @@ const REQUIRED_PATHS = [
 // backend changes this set, this test must break loudly rather than pass silently.
 const REQUIRED_WEBHOOKS = [
   'demand.created',
+  'demand.dispatched',
   'demand.completed',
   'demand.expired',
   'party.signed',

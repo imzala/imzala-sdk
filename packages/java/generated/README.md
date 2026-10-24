@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.14.0
+- API version: 1.14.2
 
-- Build date: 2026-10-22T15:56:29.190035+03:00[Europe/Istanbul]
+- Build date: 2026-10-24T15:52:10.723+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.14.0 · **Son güncelleme:** 2026-10-21
+**Sürüm:** 1.14.2 · **Son güncelleme:** 2026-10-23
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -63,18 +63,19 @@ içeren sözleşmelerde davetler iki aşamada gönderilir:
 
 Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
 
-**Kredi:** Sözleşmede en az bir imzacı varsa, taraf listesindeki sıraya
-göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için
-yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi
-kredisi düşülmez). İmzacı yoksa onaylayanlar imzacı gibi ücretlendirilir.
-Kural API ve toplu gönderimle oluşturulan sözleşmelerde de geçerlidir.
-Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik
-bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz; yanlış
-kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim kredi
-kullanır. Kural, bu değişikliğin yayına alındığı tarihten sonra
-gönderilen sözleşmelerde uygulanır (tarih, değişiklik duyurusunda yer
-alır). Daha önce gönderilmiş sözleşmelerin tutarı değişmez; bu
-sözleşmelerde `credits` alanı tahsil edilen tutarı gösterir. Daha önce
+**Kredi:** Sözleşmede bilgileri girilmiş en az bir imzacı varsa, taraf
+listesindeki sıraya göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki
+onaylayanlar için yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve
+koruma seviyesi kredisi düşülmez). Bilgileri girilmiş imzacı yoksa (boş
+bırakılan imzacı satırları sayılmaz) onaylayanlar imzacı gibi
+ücretlendirilir. Kural API ve toplu gönderimle oluşturulan sözleşmelerde de
+geçerlidir. Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve
+kimlik bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz;
+yanlış kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim
+kredi kullanır. Kural, 22 Ekim 2026'daki güncellemeden sonra gönderilen
+sözleşmelerde uygulanır; daha önce gönderilmiş sözleşmeler eski kurala
+tabidir. Bu sözleşmelerin tutarı değişmez ve `credits` alanı tahsil edilen
+tutarı gösterir. Daha önce
 oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
 kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
 alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
@@ -361,7 +362,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.14.0</version>
+  <version>1.14.2</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -371,7 +372,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.14.0"
+compile "org.imzala:imzala-client-generated:1.14.2"
 ```
 
 ### Others
@@ -384,7 +385,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.14.0.jar`
+- `target/imzala-client-generated-1.14.2.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
