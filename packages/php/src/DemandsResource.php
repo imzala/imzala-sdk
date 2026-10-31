@@ -268,7 +268,7 @@ final class DemandsResource
      * {@code ['force' => true]}) and a hard per-person cap of 3 reminders per
      * channel (not overridable). A draft, completed, cancelled or expired
      * demand throws 409 ({@code DEMAND_NOT_DISPATCHED}, {@code
-     * DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}). POST, never
+     * DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}). In an organization workspace the call is scoped by the contract-edit permission (default: OWNER and ADMIN reach all of the organization's contracts, MEMBER only its own); without access it throws 404 ({@code DEMAND_NOT_FOUND}). POST, never
      * auto-retried (a retried call could double-send).
      */
     public function sendReminder(string $id, TriggerReminderRequest|array|null $body = null): ApiV1DemandsIdRemindersPost200ResponseData

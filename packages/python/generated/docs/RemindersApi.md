@@ -58,7 +58,11 @@ tek toplamda sayılır.
 
 **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla erişilen
 organizasyonun sözleşmesi olmalıdır; aksi halde 404 `DEMAND_NOT_FOUND`
-(IDOR shield).
+(IDOR shield). Kurum çalışma alanında hatırlatma, sözleşme düzenleme
+izninin kapsamına bağlıdır: varsayılan rol izinlerinde OWNER ve ADMIN
+kurumun tüm sözleşmelerine, MEMBER yalnız kendi oluşturduğu
+sözleşmelere hatırlatma gönderebilir; kurumun izin ayarları bu kapsamı
+değiştirebilir. Erişim yoksa 404 `DEMAND_NOT_FOUND` döner.
 
 **Kanal eligibility:** Bir parti için
 - `email` kanalı: `party.email` dolu **ve** `party.send_email=true` **ve**

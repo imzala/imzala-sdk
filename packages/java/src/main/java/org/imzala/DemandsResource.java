@@ -293,7 +293,11 @@ public final class DemandsResource {
    * per-person cap of 3 reminders per channel (not overridable). The
    * anti-spam window answers 429 {@code RATE_LIMITED}. A draft, completed,
    * cancelled or expired demand throws 409 ({@code DEMAND_NOT_DISPATCHED},
-   * {@code DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}).
+   * {@code DEMAND_NOT_DISPATCHABLE}, {@code DEMAND_EXPIRED}). In an
+   * organization workspace the call is scoped by the contract-edit
+   * permission (default: OWNER and ADMIN reach all of the organization's
+   * contracts, MEMBER only its own); without access it throws 404 ({@code
+   * DEMAND_NOT_FOUND}).
    *
    * <p>Routes through the vendored generated {@code RemindersApi}, not
    * {@code DemandsApi} — the OpenAPI spec groups {@code POST

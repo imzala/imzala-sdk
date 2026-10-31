@@ -748,8 +748,8 @@ class DemandsResource:
         per-person cap of 3 reminders per channel (not overridable). A draft,
         completed, cancelled or expired demand raises 409
         (`DEMAND_NOT_DISPATCHED`, `DEMAND_NOT_DISPATCHABLE`,
-        `DEMAND_EXPIRED`). POST, never auto-retried (a retried call could
-        double-send)."""
+        `DEMAND_EXPIRED`). In an organization workspace the call is scoped by the contract-edit permission (default: OWNER and ADMIN reach all of the organization's contracts, MEMBER only its own); without access it throws 404 (`DEMAND_NOT_FOUND`). POST, never auto-retried
+        (a retried call could double-send)."""
         return _unwrap(
             lambda: self._reminders_api.api_v1_demands_id_reminders_post(
                 id=demand_id,

@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.14.3
+  version: 1.14.4
   description: >
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
 
-    **Sürüm:** 1.14.3 · **Son güncelleme:** 2026-10-25
+    **Sürüm:** 1.14.4 · **Son güncelleme:** 2026-10-31
 
 
     ## Auth
@@ -2276,7 +2276,15 @@ paths:
 
         organizasyonun sözleşmesi olmalıdır; aksi halde 404 `DEMAND_NOT_FOUND`
 
-        (IDOR shield).
+        (IDOR shield). Kurum çalışma alanında hatırlatma, sözleşme düzenleme
+
+        izninin kapsamına bağlıdır: varsayılan rol izinlerinde OWNER ve ADMIN
+
+        kurumun tüm sözleşmelerine, MEMBER yalnız kendi oluşturduğu
+
+        sözleşmelere hatırlatma gönderebilir; kurumun izin ayarları bu kapsamı
+
+        değiştirebilir. Erişim yoksa 404 `DEMAND_NOT_FOUND` döner.
 
 
         **Kanal eligibility:** Bir parti için
