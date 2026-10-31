@@ -766,7 +766,7 @@ const { status, data } = await apiInstance.apiV1DemandsIdBelgeDocumentIdPdfGet(
 # **apiV1DemandsIdCancelPost**
 > ApiV1DemandsIdCancelPost200Response apiV1DemandsIdCancelPost()
 
-Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir.
+Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen hatırlatmalar iptal edilir. Koşullar sağlanırsa, imza bekleyen ve toplu olmayan sözleşmede gönderimde düşülen kredi iade edilir: hiçbir taraf imzalamamış ya da onaylamamış olmalı ve bekleyen bir mobil imza isteği bulunmamalıdır. Tamamlanmış ücretli doğrulama adımlarının kredisi iadeden düşülür.
 
 ### Example
 
@@ -879,7 +879,7 @@ const { status, data } = await apiInstance.apiV1DemandsIdCertificateGet(
 # **apiV1DemandsIdDelete**
 > ApiV1TemplatesIdDelete200Response apiV1DemandsIdDelete()
 
-Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın.
+Tamamlanmamış sözleşmeyi ve ilişkili tüm verilerini siler. 🔴 Tamamlanmış (COMPLETED) sözleşme API\'den SİLİNEMEZ (imzalı belge + denetim izi kaybı geri alınamaz) → 409 `DEMAND_COMPLETED`. Arşivlenmiş sözleşme de silinemez → 409 `DEMAND_ARCHIVED`; önce `POST /api/v1/demands/{id}/unarchive` ile arşivden çıkarın. Koşullar sağlanırsa, imza bekleyen ve toplu olmayan sözleşme silindiğinde gönderimde düşülen kredi iade edilir: hiçbir taraf imzalamamış ya da onaylamamış olmalı ve bekleyen bir mobil imza isteği bulunmamalıdır. Tamamlanmış ücretli doğrulama adımlarının kredisi iadeden düşülür.
 
 ### Example
 
