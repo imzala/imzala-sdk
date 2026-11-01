@@ -469,7 +469,7 @@ public class ResourcesTests
                     assignedTemplatePartyIds: new List<Guid> { roleId }),
             });
         var templates = new Mock<ITemplatesApi>();
-        templates.Setup(a => a.ApiV1TemplatesIdGetAsync(templateId, It.IsAny<CancellationToken>()))
+        templates.Setup(a => a.ApiV1TemplatesIdGetAsync(templateId, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, detail));
 
         var documents = (await new TemplatesResource(templates.Object, NoWaitRetry).GetAsync(templateId)).Documents;

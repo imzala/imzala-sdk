@@ -312,6 +312,17 @@ class TestDemandsDocumentSelection:
         assert template["documents"][0]["id"] == "doc-1"
         assert template["documents"][0]["default_included"] is True
 
+    @pytest.mark.parametrize(
+        "include, expected",
+        [(None, None), ("", None), ("stamp_variables", "stamp_variables"), (["stamp_variables", "x"], "stamp_variables,x")],
+    )
+    def test_templates_get_forwards_include_only_when_given(self, include, expected):
+        kwargs = {} if include is None else {"include": include}
+        with patch_api(TemplatesApi, "api_v1_templates_id_get", return_value=ok({"id": "t1"})) as mocked:
+            client().templates.get("t1", **kwargs)
+        assert mocked.call_args.kwargs["id"] == "t1"
+        assert mocked.call_args.kwargs["include"] == expected
+
     def test_a_rejected_selection_raises_a_coded_imzala_error(self):
         exc = ApiException(
             status=400,

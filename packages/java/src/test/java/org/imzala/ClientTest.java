@@ -205,7 +205,7 @@ class ClientTest {
 
   @Test
   void throws_ImzalaException_when_server_returns_success_false_on_2xx() throws ApiException {
-    when(templatesApi.apiV1TemplatesIdGet(any(UUID.class))).thenReturn(
+    when(templatesApi.apiV1TemplatesIdGet(any(UUID.class), isNull())).thenReturn(
         new ApiV1TemplatesIdGet200Response().success(false));
 
     TemplatesResource resource = new TemplatesResource(templatesApi, NO_RETRY);

@@ -257,12 +257,12 @@ public class IdempotentWriteTests
     {
         var id = Guid.NewGuid();
         var api = new Mock<ITemplatesApi>();
-        api.SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+        api.SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(TooMany("61"))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, new TemplateDetail(id: id)));
 
         await Assert.ThrowsAsync<ImzalaRateLimitError>(() => new TemplatesResource(api.Object, Retry()).GetAsync(id));
-        api.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        api.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Once);
         Assert.Empty(_waits);
     }
 
@@ -272,7 +272,7 @@ public class IdempotentWriteTests
         using var cts = new CancellationTokenSource();
         var id = Guid.NewGuid();
         var api = new Mock<ITemplatesApi>();
-        api.SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+        api.SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(TooMany("60"))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, new TemplateDetail(id: id)));
 

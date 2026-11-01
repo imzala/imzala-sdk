@@ -304,7 +304,7 @@ class ErrorCodesTest {
 
     TemplatesApi api = mock(TemplatesApi.class);
     UUID id = UUID.randomUUID();
-    when(api.apiV1TemplatesIdGet(id)).thenReturn(model);
+    when(api.apiV1TemplatesIdGet(id, null)).thenReturn(model);
 
     ImzalaException e = assertThrows(ImzalaException.class,
         () -> new TemplatesResource(api, new RetryConfig(0, 0)).get(id));

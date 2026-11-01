@@ -543,12 +543,35 @@ final class ResourcesTest extends TestCase
         $api = $this->createMock(TemplatesApi::class);
         $api->expects($this->once())
             ->method('apiV1TemplatesIdGetWithHttpInfo')
-            ->with('tpl-1')
+            ->with('tpl-1', null)
             ->willReturn([new ApiV1TemplatesIdGet200Response(['success' => true, 'data' => $data]), 200, []]);
 
         $documents = (new TemplatesResource($api, self::noRetry()))->get('tpl-1')->getDocuments();
         $this->assertSame('doc-1', $documents[0]->getId());
         $this->assertTrue($documents[0]->getDefaultIncluded());
+    }
+
+    /** @return array<string, array{0: string|list<string>|null, 1: string|null}> */
+    public static function templateIncludeProvider(): array
+    {
+        return [
+            'omitted sends no include' => [null, null],
+            'blank sends no include' => ['', null],
+            'string is forwarded' => ['stamp_variables', 'stamp_variables'],
+            'array is joined with commas' => [['stamp_variables', 'other'], 'stamp_variables,other'],
+        ];
+    }
+
+    /** @dataProvider templateIncludeProvider */
+    public function testTemplatesGetForwardsIncludeOnlyWhenGiven(string|array|null $include, ?string $expected): void
+    {
+        $api = $this->createMock(TemplatesApi::class);
+        $api->expects($this->once())
+            ->method('apiV1TemplatesIdGetWithHttpInfo')
+            ->with('tpl-1', $expected)
+            ->willReturn([new ApiV1TemplatesIdGet200Response(['success' => true, 'data' => new TemplateDetail()]), 200, []]);
+
+        (new TemplatesResource($api, self::noRetry()))->get('tpl-1', $include);
     }
 
     public function testARejectedDocumentSelectionSurfacesAsACodedImzalaException(): void

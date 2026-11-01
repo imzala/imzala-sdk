@@ -486,7 +486,7 @@ class ResourcesTest {
             .signatureRequired(true)
             .defaultIncluded(true)
             .assignedTemplatePartyIds(List.of(roleId))));
-    when(templatesApi.apiV1TemplatesIdGet(templateId))
+    when(templatesApi.apiV1TemplatesIdGet(templateId, null))
         .thenReturn(new ApiV1TemplatesIdGet200Response().success(true).data(detail));
 
     List<TemplateDocumentSummary> documents =
@@ -495,6 +495,23 @@ class ResourcesTest {
     assertEquals(documentId, documents.get(0).getId());
     assertTrue(documents.get(0).getDefaultIncluded());
     assertEquals(List.of(roleId), documents.get(0).getAssignedTemplatePartyIds());
+  }
+
+  @Test
+  void templates_get_forwards_include_only_when_given() throws ApiException {
+    UUID templateId = UUID.randomUUID();
+    ApiV1TemplatesIdGet200Response ok =
+        new ApiV1TemplatesIdGet200Response().success(true).data(new TemplateDetail().id(templateId));
+    when(templatesApi.apiV1TemplatesIdGet(templateId, "stamp_variables")).thenReturn(ok);
+    when(templatesApi.apiV1TemplatesIdGet(templateId, null)).thenReturn(ok);
+    TemplatesResource resource = new TemplatesResource(templatesApi, NO_RETRY);
+
+    resource.get(templateId, "stamp_variables");
+    verify(templatesApi).apiV1TemplatesIdGet(templateId, "stamp_variables");
+
+    resource.get(templateId);
+    resource.get(templateId, "  ");
+    org.mockito.Mockito.verify(templatesApi, org.mockito.Mockito.times(2)).apiV1TemplatesIdGet(templateId, null);
   }
 
   @Test

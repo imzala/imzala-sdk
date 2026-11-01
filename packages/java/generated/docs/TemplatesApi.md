@@ -639,11 +639,11 @@ ApiResponse<[**ApiV1TemplatesIdDelete200Response**](ApiV1TemplatesIdDelete200Res
 
 ## apiV1TemplatesIdGet
 
-> ApiV1TemplatesIdGet200Response apiV1TemplatesIdGet(id)
+> ApiV1TemplatesIdGet200Response apiV1TemplatesIdGet(id, include)
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  Gönderenin kaşesi (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesinde varsayılan olarak yer almaz; listelenmesi için &#x60;include&#x3D;stamp_variables&#x60; gönderin. Kaşe slug&#39;ına değer göndermek için bu parametre gerekmez.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
 
 ### Example
 
@@ -669,8 +669,9 @@ public class Example {
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
         UUID id = UUID.randomUUID(); // UUID |
+        String include = "stamp_variables"; // String | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.
         try {
-            ApiV1TemplatesIdGet200Response result = apiInstance.apiV1TemplatesIdGet(id);
+            ApiV1TemplatesIdGet200Response result = apiInstance.apiV1TemplatesIdGet(id, include);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling TemplatesApi#apiV1TemplatesIdGet");
@@ -689,6 +690,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **UUID**|  | |
+| **include** | **String**| Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler.  | [optional] |
 
 ### Return type
 
@@ -712,11 +714,11 @@ public class Example {
 
 ## apiV1TemplatesIdGetWithHttpInfo
 
-> ApiResponse<ApiV1TemplatesIdGet200Response> apiV1TemplatesIdGetWithHttpInfo(id)
+> ApiResponse<ApiV1TemplatesIdGet200Response> apiV1TemplatesIdGetWithHttpInfo(id, include)
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
+Şablonun parties + variables bilgisini döner. variables array&#39;ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  Gönderenin kaşesi (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesinde varsayılan olarak yer almaz; listelenmesi için &#x60;include&#x3D;stamp_variables&#x60; gönderin. Kaşe slug&#39;ına değer göndermek için bu parametre gerekmez.  &#x60;documents&#x60; şablonun zarf belgelerini &#x60;order&#x60; sırasıyla döndürür; &#x60;documents[].id&#x60; sözleşme oluştururken &#x60;documents.include&#x60; / &#x60;documents.exclude&#x60; listelerinde kullanılır.
 
 ### Example
 
@@ -743,8 +745,9 @@ public class Example {
 
         TemplatesApi apiInstance = new TemplatesApi(defaultClient);
         UUID id = UUID.randomUUID(); // UUID |
+        String include = "stamp_variables"; // String | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.
         try {
-            ApiResponse<ApiV1TemplatesIdGet200Response> response = apiInstance.apiV1TemplatesIdGetWithHttpInfo(id);
+            ApiResponse<ApiV1TemplatesIdGet200Response> response = apiInstance.apiV1TemplatesIdGetWithHttpInfo(id, include);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -765,6 +768,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **UUID**|  | |
+| **include** | **String**| Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler.  | [optional] |
 
 ### Return type
 

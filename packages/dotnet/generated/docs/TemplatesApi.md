@@ -426,11 +426,11 @@ catch (ApiException e)
 
 <a id="apiv1templatesidget"></a>
 # **ApiV1TemplatesIdGet**
-> ApiV1TemplatesIdGet200Response ApiV1TemplatesIdGet (Guid id)
+> ApiV1TemplatesIdGet200Response ApiV1TemplatesIdGet (Guid id, string? include = null)
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
+Şablonun parties + variables bilgisini döner. variables array'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  Gönderenin kaşesi (`item_type: stamp`) `variables` listesinde varsayılan olarak yer almaz; listelenmesi için `include=stamp_variables` gönderin. Kaşe slug'ına değer göndermek için bu parametre gerekmez.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
 
 ### Example
 ```csharp
@@ -459,11 +459,12 @@ namespace Example
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new TemplatesApi(httpClient, config, httpClientHandler);
             var id = "id_example";  // Guid |
+            var include = stamp_variables;  // string? | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.  (optional)
 
             try
             {
                 // Şablon detay
-                ApiV1TemplatesIdGet200Response result = apiInstance.ApiV1TemplatesIdGet(id);
+                ApiV1TemplatesIdGet200Response result = apiInstance.ApiV1TemplatesIdGet(id, include);
                 Debug.WriteLine(result);
             }
             catch (ApiException  e)
@@ -484,7 +485,7 @@ This returns an ApiResponse object which contains the response data, status code
 try
 {
     // Şablon detay
-    ApiResponse<ApiV1TemplatesIdGet200Response> response = apiInstance.ApiV1TemplatesIdGetWithHttpInfo(id);
+    ApiResponse<ApiV1TemplatesIdGet200Response> response = apiInstance.ApiV1TemplatesIdGetWithHttpInfo(id, include);
     Debug.Write("Status Code: " + response.StatusCode);
     Debug.Write("Response Headers: " + response.Headers);
     Debug.Write("Response Body: " + response.Data);
@@ -502,6 +503,7 @@ catch (ApiException e)
 | Name | Type | Description | Notes |
 |------|------|-------------|-------|
 | **id** | **Guid** |  |  |
+| **include** | **string?** | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler.  | [optional]  |
 
 ### Return type
 

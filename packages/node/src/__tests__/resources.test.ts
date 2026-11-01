@@ -316,6 +316,18 @@ describe('demands: template document selection', () => {
     expect(template.documents?.[0]).toMatchObject({ id: 'doc-1', default_included: true, doc_kind: 'CONTRACT' });
   });
 
+  it('templates.get sends include only when given (string or array)', async () => {
+    const spy = vi.spyOn(TemplatesApi.prototype, 'apiV1TemplatesIdGet').mockResolvedValue(ok({ id: 't1' }));
+    await client().templates.get('t1');
+    expect(spy).toHaveBeenLastCalledWith({ id: 't1' });
+    await client().templates.get('t1', { include: 'stamp_variables' });
+    expect(spy).toHaveBeenLastCalledWith({ id: 't1', include: 'stamp_variables' });
+    await client().templates.get('t1', { include: ['stamp_variables', 'x'] });
+    expect(spy).toHaveBeenLastCalledWith({ id: 't1', include: 'stamp_variables,x' });
+    await client().templates.get('t1', { include: '' });
+    expect(spy).toHaveBeenLastCalledWith({ id: 't1' });
+  });
+
   it('a rejected selection surfaces as a coded ImzalaError with the reason details', async () => {
     vi.spyOn(DemandsApi.prototype, 'apiV1DemandsPost').mockRejectedValue({
       isAxiosError: true,

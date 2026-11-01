@@ -55,8 +55,20 @@ public final class TemplatesResource {
    * read them back from here for the copy. GET — safe to auto-retry.
    */
   public TemplateDetail get(UUID id) {
+    return get(id, null);
+  }
+
+  /**
+   * Same as {@link #get(UUID)} with optional extra content. {@code include}
+   * is a comma-separated string (unknown values are ignored by the server);
+   * {@code "stamp_variables"} adds the sender's stamp ({@code item_type:
+   * stamp}) to the variables. {@code null} or blank sends no {@code include}.
+   * GET, safe to auto-retry.
+   */
+  public TemplateDetail get(UUID id, String include) {
+    String includeValue = include == null || include.isBlank() ? null : include;
     return Http.unwrapRetryableGet(
-        () -> api.apiV1TemplatesIdGet(id),
+        () -> api.apiV1TemplatesIdGet(id, includeValue),
         r -> Boolean.TRUE.equals(r.getSuccess()),
         r -> r.getData(),
         retryConfig);

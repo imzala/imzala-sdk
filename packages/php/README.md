@@ -267,6 +267,12 @@ $imzala->templates()->update($templateId, ['name' => 'Yeni Ad', 'category' => 'H
 $imzala->templates()->delete($templateId);
 ```
 
+Şablon detayında gönderenin kaşesi (`item_type: stamp`) varsayılan olarak `variables` listesinde yer almaz; listelemek için isteğe bağlı `include` değerini verin. Değer verilmezse istek eskisiyle birebir aynıdır. Kaşe slug'ına değer göndermek için `include` gerekmez.
+
+```php
+$template = $imzala->templates()->get($templateId, include: 'stamp_variables');
+```
+
 `templates()->list()` Alan Şablonlarını listelemez ve `templates()->get()` bir Alan Şablonu kimliğine `404` döner; onlar için aşağıdaki `fieldTemplates()` kaynağını kullanın.
 
 ### Alan Şablonları (fieldTemplates)
@@ -480,7 +486,7 @@ Sözleşme, şablon ve Alan Şablonu listelerinde `limit` üst sınırı 100'dü
 
 | imzala/imzala-php | Konuştuğu API | Durum |
 |---|---|---|
-| 1.2.0 | v1 (`1.14.6`) | Güncel: onaylayan kredisi kuralı, `demand.dispatched` webhook olayı, hatırlatmada kredi kontrolü, `DISPATCH_PREPARATION_FAILED` ve `CREDIT_CHECK_FAILED` hata kodları ve 1.1.0'ın tüm yüzeyi |
+| 1.2.0 | v1 (`1.14.7`) | Güncel: onaylayan kredisi kuralı, `demand.dispatched` webhook olayı, hatırlatmada kredi kontrolü, `DISPATCH_PREPARATION_FAILED` ve `CREDIT_CHECK_FAILED` hata kodları ve 1.1.0'ın tüm yüzeyi |
 | 1.1.0 | v1 (`1.12.0`) | Desteklenir: taraf bazında telefon doğrulaması (`require_phone_verification`) ve 1.0.0'ın tüm yüzeyi |
 | 1.0.0 | v1 (`1.11.1`) | Desteklenir: Belge Toplama ayarları, süre ve yenileme takibi, arşivleme, `contract.*` webhook olayları, imza yöntemi listesi ve sırası, kaşe verisi, belge başına değişkenler |
 | 0.x | v1 (`1.7.x`) | Bakım dışı; 1.0.0'a yükseltin |

@@ -29,7 +29,7 @@ public class RetryTests
         var id = Guid.NewGuid();
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+            .SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(429, """{"success":false,"error":"RATE_LIMITED"}"""))
             .ThrowsAsync(FakeApiException(429, """{"success":false,"error":"RATE_LIMITED"}"""))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, new TemplateDetail(id: id)));
@@ -38,7 +38,7 @@ public class RetryTests
         var result = await resource.GetAsync(id);
 
         Assert.Equal(id, result.Id);
-        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Exactly(3));
+        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class RetryTests
         var id = Guid.NewGuid();
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+            .SetupSequence(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(503, """{"success":false,"error":"SERVER_ERROR"}"""))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(true, new TemplateDetail(id: id)));
 
@@ -55,7 +55,7 @@ public class RetryTests
         var result = await resource.GetAsync(id);
 
         Assert.Equal(id, result.Id);
-        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -64,14 +64,14 @@ public class RetryTests
         var id = Guid.NewGuid();
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(404, """{"success":false,"error":"TEMPLATE_NOT_FOUND"}"""));
 
         var resource = new TemplatesResource(mockTemplates.Object, FastRetry);
 
         var err = await Assert.ThrowsAsync<ImzalaError>(() => resource.GetAsync(id));
         Assert.Equal(404, err.StatusCode);
-        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -80,13 +80,13 @@ public class RetryTests
         var id = Guid.NewGuid();
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(429, """{"success":false,"error":"RATE_LIMITED"}"""));
 
         var resource = new TemplatesResource(mockTemplates.Object, NoRetry);
 
         await Assert.ThrowsAsync<ImzalaRateLimitError>(() => resource.GetAsync(id));
-        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class RetryTests
         var id = Guid.NewGuid();
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(FakeApiException(503, """{"success":false,"error":"SERVER_ERROR"}"""));
 
         var resource = new TemplatesResource(mockTemplates.Object, FastRetry);
@@ -103,7 +103,7 @@ public class RetryTests
         var err = await Assert.ThrowsAsync<ImzalaError>(() => resource.GetAsync(id));
         Assert.Equal(503, err.StatusCode);
         // 1 initial attempt + MaxRetries (2) retries = 3 calls total.
-        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>()), Times.Exactly(3));
+        mockTemplates.Verify(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 
     // --- SAFETY: POST/write methods must never be retried, even on a normally-retryable status ---

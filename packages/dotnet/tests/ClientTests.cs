@@ -222,7 +222,7 @@ public class ClientTests
     {
         var mockTemplates = new Mock<ITemplatesApi>();
         mockTemplates
-            .Setup(a => a.ApiV1TemplatesIdGetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.ApiV1TemplatesIdGetAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ApiV1TemplatesIdGet200Response(false, null!));
 
         var resource = new TemplatesResource(mockTemplates.Object, DefaultRetry);

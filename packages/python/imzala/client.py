@@ -340,16 +340,24 @@ class TemplatesResource:
             self._retry,
         )
 
-    def get(self, template_id: str) -> Any:
+    def get(self, template_id: str, *, include: Optional[Union[str, Sequence[str]]] = None) -> Any:
         """Returns a template's parties + fillable variables, plus its
         envelope documents under `documents`: `id`, `order`, `title`,
         `doc_kind`, `is_required`, `signature_required`, `default_included`
         and `assigned_template_party_ids`. Those ids are what
         `demands.create`'s `documents.include` / `documents.exclude` expect.
         A copied template has NEW document ids, so read them back from here
-        for the copy. GET — safe to auto-retry."""
+        for the copy. GET — safe to auto-retry.
+
+        `include` (str, or a list joined with commas) asks for content the
+        default response leaves out; unknown values are ignored by the
+        server. `"stamp_variables"` adds the sender's stamp
+        (`item_type == "stamp"`) to `variables`. Not sent when omitted."""
+        include_value = ",".join(include) if isinstance(include, (list, tuple)) else include
         return _unwrap_retryable_get(
-            lambda: self._api.api_v1_templates_id_get(id=template_id, _request_timeout=self._timeout),
+            lambda: self._api.api_v1_templates_id_get(
+                id=template_id, include=include_value or None, _request_timeout=self._timeout
+            ),
             self._retry,
         )
 

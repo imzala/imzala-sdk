@@ -137,6 +137,15 @@ export interface ImzalaOptions {
   retryBaseDelayMs?: number;
 }
 
+export interface GetTemplateOptions {
+  /**
+   * Optional extra content. `'stamp_variables'` lists the sender's stamp
+   * (`item_type: 'stamp'`) in `variables`. A string, or an array that is
+   * joined with commas. Omitted by default.
+   */
+  include?: string | string[];
+}
+
 export interface ListTemplatesParams {
   page?: number;
   limit?: number;
@@ -283,9 +292,21 @@ class TemplatesResource {
    * what `demands.create`'s `documents.include` / `documents.exclude`
    * expect. A copied template has NEW document ids, so read them back from
    * here for the copy. GET — safe to auto-retry.
+   *
+   * `options.include` asks for content the default response leaves out
+   * (a string, or an array joined with commas; unknown values are ignored
+   * by the server). `'stamp_variables'` adds the sender's stamp
+   * (`item_type: 'stamp'`) to `variables`. Without it no `include` is sent.
+   *
+   * @example
+   * const template = await imzala.templates.get(id, { include: 'stamp_variables' });
    */
-  get(id: string): Promise<TemplateDetail> {
-    return unwrapRetryableGet(() => this.api.apiV1TemplatesIdGet({ id }), this.retryConfig);
+  get(id: string, options: GetTemplateOptions = {}): Promise<TemplateDetail> {
+    const include = Array.isArray(options.include) ? options.include.join(',') : options.include;
+    return unwrapRetryableGet(
+      () => this.api.apiV1TemplatesIdGet(include ? { id, include } : { id }),
+      this.retryConfig,
+    );
   }
 
   /** Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. GET — safe to auto-retry. */

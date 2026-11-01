@@ -270,12 +270,12 @@ try {
 ## `apiV1TemplatesIdGet()`
 
 ```php
-apiV1TemplatesIdGet($id): \Imzala\Client\Model\ApiV1TemplatesIdGet200Response
+apiV1TemplatesIdGet($id, $include): \Imzala\Client\Model\ApiV1TemplatesIdGet200Response
 ```
 
 Şablon detay
 
-Şablonun parties + variables bilgisini döner. variables array'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
+Şablonun parties + variables bilgisini döner. variables array'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  Gönderenin kaşesi (`item_type: stamp`) `variables` listesinde varsayılan olarak yer almaz; listelenmesi için `include=stamp_variables` gönderin. Kaşe slug'ına değer göndermek için bu parametre gerekmez.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
 
 ### Example
 
@@ -297,9 +297,10 @@ $apiInstance = new Imzala\Client\Api\TemplatesApi(
     $config
 );
 $id = 'id_example'; // string
+$include = stamp_variables; // string | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.
 
 try {
-    $result = $apiInstance->apiV1TemplatesIdGet($id);
+    $result = $apiInstance->apiV1TemplatesIdGet($id, $include);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling TemplatesApi->apiV1TemplatesIdGet: ', $e->getMessage(), PHP_EOL;
@@ -311,6 +312,7 @@ try {
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **id** | **string**|  | |
+| **include** | **string**| Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler. | [optional] |
 
 ### Return type
 

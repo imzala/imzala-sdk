@@ -47,10 +47,21 @@ final class TemplatesResource
      * {@code documents.include} / {@code documents.exclude} expect. A copied
      * template has NEW document ids, so read them back from here for the
      * copy. GET — safe to auto-retry.
+     *
+     * {@code $include} (a string, or an array joined with commas) asks for
+     * content the default response leaves out; unknown values are ignored by
+     * the server. {@code 'stamp_variables'} adds the sender's stamp
+     * ({@code item_type: stamp}) to the variables. Not sent when omitted.
+     *
+     * @param string|list<string>|null $include
      */
-    public function get(string $id): TemplateDetail
+    public function get(string $id, string|array|null $include = null): TemplateDetail
     {
-        return Http::unwrapRetryableGet(fn () => $this->api->apiV1TemplatesIdGetWithHttpInfo($id), $this->retryConfig);
+        $includeValue = is_array($include) ? implode(',', $include) : $include;
+        if ($includeValue === '') {
+            $includeValue = null;
+        }
+        return Http::unwrapRetryableGet(fn () => $this->api->apiV1TemplatesIdGetWithHttpInfo($id, $includeValue), $this->retryConfig);
     }
 
     /** Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. GET — safe to auto-retry. */

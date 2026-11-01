@@ -40,7 +40,20 @@ public sealed class TemplatesResource
     /// so read them back from here for the copy. GET — safe to auto-retry.
     /// </summary>
     public Task<TemplateDetail> GetAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdGetAsync(id, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
+        GetAsync(id, null, cancellationToken);
+
+    /// <summary>
+    /// Same as <see cref="GetAsync(Guid, CancellationToken)"/> with optional extra
+    /// content. <paramref name="include"/> is a comma-separated string (unknown values
+    /// are ignored by the server); <c>"stamp_variables"</c> adds the sender's stamp
+    /// (<c>item_type: stamp</c>) to the variables. <c>null</c> or blank sends no
+    /// <c>include</c>. GET, safe to auto-retry.
+    /// </summary>
+    public Task<TemplateDetail> GetAsync(Guid id, string? include, CancellationToken cancellationToken = default)
+    {
+        var includeValue = string.IsNullOrWhiteSpace(include) ? null : include;
+        return Http.UnwrapRetryableGet(() => _api.ApiV1TemplatesIdGetAsync(id, includeValue, cancellationToken), r => r.Success, r => r.Data, _retry, cancellationToken);
+    }
 
     /// <summary>Returns a ready-to-use integration guide (endpoint, required headers, example curl+JSON) for a template. GET — safe to auto-retry.</summary>
     public Task<TemplateUsage> UsageAsync(Guid id, CancellationToken cancellationToken = default) =>

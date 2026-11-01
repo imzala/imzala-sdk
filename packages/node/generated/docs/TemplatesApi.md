@@ -233,7 +233,7 @@ const { status, data } = await apiInstance.apiV1TemplatesIdDelete(
 # **apiV1TemplatesIdGet**
 > ApiV1TemplatesIdGet200Response apiV1TemplatesIdGet()
 
-Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
+Şablonun parties + variables bilgisini döner. variables array\'ı tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date, dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı slug birden fazla partide olabilir, her parti için ayrı satır.  Gönderenin kaşesi (`item_type: stamp`) `variables` listesinde varsayılan olarak yer almaz; listelenmesi için `include=stamp_variables` gönderin. Kaşe slug\'ına değer göndermek için bu parametre gerekmez.  `documents` şablonun zarf belgelerini `order` sırasıyla döndürür; `documents[].id` sözleşme oluştururken `documents.include` / `documents.exclude` listelerinde kullanılır.
 
 ### Example
 
@@ -247,9 +247,11 @@ const configuration = new Configuration();
 const apiInstance = new TemplatesApi(configuration);
 
 let id: string; // (default to undefined)
+let include: string; //Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.  (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1TemplatesIdGet(
-    id
+    id,
+    include
 );
 ```
 
@@ -258,6 +260,7 @@ const { status, data } = await apiInstance.apiV1TemplatesIdGet(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **id** | [**string**] |  | defaults to undefined|
+| **include** | [**string**] | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler.  | (optional) defaults to undefined|
 
 
 ### Return type

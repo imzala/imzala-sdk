@@ -374,7 +374,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **api_v1_templates_id_get**
-> ApiV1TemplatesIdGet200Response api_v1_templates_id_get(id)
+> ApiV1TemplatesIdGet200Response api_v1_templates_id_get(id, include=include)
 
 Şablon detay
 
@@ -382,6 +382,11 @@ Name | Type | Description  | Notes
 tüm FILLABLE_TYPES tiplerini içerir (dynamic_text, cells, date,
 dropdown, text). Slug bazında dedupe; multi-party şablonlarda aynı
 slug birden fazla partide olabilir, her parti için ayrı satır.
+
+Gönderenin kaşesi (`item_type: stamp`) `variables` listesinde
+varsayılan olarak yer almaz; listelenmesi için
+`include=stamp_variables` gönderin. Kaşe slug'ına değer göndermek
+için bu parametre gerekmez.
 
 `documents` şablonun zarf belgelerini `order` sırasıyla döndürür;
 `documents[].id` sözleşme oluştururken `documents.include` /
@@ -420,10 +425,11 @@ with imzala_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = imzala_client.TemplatesApi(api_client)
     id = UUID('38400000-8cf0-11bd-b23e-10b96e4ef00d') # UUID |
+    include = 'stamp_variables' # str | Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. `stamp_variables`: gönderenin kaşesini (`item_type: stamp`) `variables` listesine ekler.  (optional)
 
     try:
         # Şablon detay
-        api_response = api_instance.api_v1_templates_id_get(id)
+        api_response = api_instance.api_v1_templates_id_get(id, include=include)
         print("The response of TemplatesApi->api_v1_templates_id_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -438,6 +444,7 @@ with imzala_client.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **UUID**|  |
+ **include** | **str**| Yanıta varsayılan olarak girmeyen içerik. Virgülle ayrılmış birden fazla değer alabilir; tanınmayan değerler yok sayılır. &#x60;stamp_variables&#x60;: gönderenin kaşesini (&#x60;item_type: stamp&#x60;) &#x60;variables&#x60; listesine ekler.  | [optional]
 
 ### Return type
 

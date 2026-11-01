@@ -274,7 +274,7 @@ public class ErrorCodesTests
 
         var id = Guid.NewGuid();
         var api = new Mock<ITemplatesApi>();
-        api.Setup(a => a.ApiV1TemplatesIdGetAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(model);
+        api.Setup(a => a.ApiV1TemplatesIdGetAsync(id, null, It.IsAny<CancellationToken>())).ReturnsAsync(model);
 
         var e = await Assert.ThrowsAsync<ImzalaError>(() => new TemplatesResource(api.Object, new RetryConfig { MaxRetries = 0 }).GetAsync(id));
         Assert.Null(e.Code);
