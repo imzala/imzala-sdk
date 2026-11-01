@@ -11,11 +11,11 @@
   "version": "1.14.7",
   "upstream_ssot_sha256": "2da264c9f148b24a4207cdfaa928670843db488beaecf10fae7c3c57b9f28dcc",
   "public_sha256": "db836141fe8d22cc9e0613f43470da8f3ff8a5c570f7511d776b41a6b752a0b1",
-  "fetched_at": "2026-11-01T10:09:21.134Z",
+  "fetched_at": "2026-11-01T23:20:38.000Z",
   "source": {
     "repo": "imzala/imzala-service",
-    "commit": "9e828e48e2a8e0ba5fd3fb3e49c86a3c28900710",
-    "branch": "test",
+    "commit": "b868c8594799093bd13fa66af01681676b042c06",
+    "branch": "main",
     "lock": "openapi/openapi.v1.lock.json",
     "spec": "openapi/openapi.v1.public.yaml"
   }
