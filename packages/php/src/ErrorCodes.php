@@ -96,6 +96,7 @@ final class ErrorCodes
         'INVALID_SEND_INVITATIONS' => 'send_invitations değeri tanınmıyor.',
         'RECONCILE_FAILED' => 'Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.',
         'DISPATCH_PREPARATION_FAILED' => 'Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi henüz düşülmedi, davet gönderilmedi. Kredi, taslak gönderildiğinde düşülür. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.',
+        'CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE' => 'Numaratörü seçilmemiş ya da kullanılamayan (silinmiş, arşivlenmiş) bir numaratör alanı içeren sözleşme oluşturulamadı ya da gönderilemedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. Panelden geçerli bir numaratör seçip taslağı gönderin; aynı isteği tekrarlamayın.',
         'INVALID_CHANNELS' => 'channels boş ya da email/sms dışında bir değer içeriyor.',
         'MAX_SMS_REMINDERS_REACHED' => 'Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.',
         'ENVELOPE_NOT_DISPATCHED' => 'Çok belgeli zarf henüz gönderilmedi; önce POST /demands/{id}/dispatch çağırın.',

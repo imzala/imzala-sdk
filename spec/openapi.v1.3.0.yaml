@@ -1,41 +1,26 @@
 openapi: 3.0.3
 info:
   title: imzala External API
-  version: 1.14.4
-  description: >
+  version: 1.14.6
+  description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-
-    **Sürüm:** 1.14.4 · **Son güncelleme:** 2026-10-31
-
+    **Sürüm:** 1.14.6 · **Son güncelleme:** 2026-11-01
 
     ## Auth
-
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
-
-    oluşturulur: **API & Geliştirici** sayfası
-    (https://app.imzala.org/developer)
-
+    oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer)
     veya **Hesap Ayarları -> API Anahtarları**.
 
-
     ## Workspace (organizasyon)
-
     Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna
-
     bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu
-
     otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır
-
     (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık
-
     gerekmez.
 
-
     ## Multi-Party Variables (parti-bazlı ve ortak field'lar)
-
     `POST /api/v1/demands` payload'ında iki tip "variables" alanı vardır:
-
 
     - `party_mapping[i].variables` — **bu partiye ait** field'lar
       (örn. Kira sözleşmesinde Kiraya Veren'in `address`, `iban` field'ları)
@@ -43,38 +28,23 @@ info:
       (örn. `kira_baslangic_tarihi`, `kira_bedeli`)
 
     Resolution sırası:
-
     1. Item'ın template_party_id'si var ve o parti slug'ı göndermişse → uygula
-
     2. Yoksa root `variables`'tan ara → varsa uygula
-
     3. Yoksa atla
 
-
     Dashboard'daki **API Kullanımı** tab'ı (`/sablonlar/<id>`) hangi field'in
-
     hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage`
-
     endpoint'i aynı bilgiyi JSON olarak döner.
 
-
     ## Sessiz Başarısızlık Yok
-
     `POST /api/v1/demands` cevabında `variables_ignored` array'ı, gönderdiğiniz
-
     ama şablonda eşleşmeyen slug'ları listeler. Boş olmadığında yazım hatası
-
     yapmışsınız demektir — log'ta veya dashboard'da kontrol edin.
 
-
     ## Onaylayan (onay adımı)
-
     Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan
-
     oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan
-
     içeren sözleşmelerde davetler iki aşamada gönderilir:
-
     - Sözleşme oluşturulurken (`POST /api/v1/demands`,
       `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`
       çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.
@@ -86,55 +56,34 @@ info:
       `dispatch` çağrısı da kimseye davet göndermez.
     - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.
 
-
     Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.
 
-
     **Kredi:** Sözleşmede bilgileri girilmiş en az bir imzacı varsa, taraf
-
     listesindeki sıraya göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki
-
     onaylayanlar için yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve
-
     koruma seviyesi kredisi düşülmez). Bilgileri girilmiş imzacı yoksa (boş
-
     bırakılan imzacı satırları sayılmaz) onaylayanlar imzacı gibi
-
     ücretlendirilir. Kural API ve toplu gönderimle oluşturulan sözleşmelerde de
-
     geçerlidir. Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve
-
     kimlik bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz;
-
     yanlış kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim
-
     kredi kullanır. Kural, 22 Ekim 2026'daki güncellemeden sonra gönderilen
-
     sözleşmelerde uygulanır; daha önce gönderilmiş sözleşmeler eski kurala
-
     tabidir. Bu sözleşmelerin tutarı değişmez ve `credits` alanı tahsil edilen
-
     tutarı gösterir. Daha önce
-
     oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
-
     kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
-
     alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
 
-
     ## Rate Limit
-
     - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
       gövdede `code: "RATE_LIMIT_EXCEEDED"` bulunur.
-    - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir;
-    gövdedeki
+    - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki
       `retry_after_seconds` alanı aynı değeri taşır.
     - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir
       (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,
       `RateLimit-Reset`, `RateLimit-Policy`.
     - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın.
-
     - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:
 
       | Uç | Limit |
@@ -145,240 +94,149 @@ info:
       | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |
 
     ## Hatalar
-
     Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki),
-
     404 (yok), 429 (rate limit), 500 (sunucu)
 
-
     `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun
-
     yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP
-
     istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler)
-
-    tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde
-    uygulanır.
-
+    tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır.
     Yanıt gövdesi:
 
-
     ```json
-
     {
       "error": "AI_TOOL_ACCESS_DISABLED",
       "code": "AI_TOOL_ACCESS_DISABLED",
       "message": "Kurumunuz yapay zekâ araçlarının erişimini kapattı."
     }
-
     ```
 
-
     ## Loglar
-
     Tüm API istekleriniz dashboard'da `Geliştirici -> Etkinlik Logu` sayfasında
-
     görünür (request body, response body, headers, status code, süre).
-
     30 gün retention.
 
-
     ## Hatırlatma Sistemi
-
     İmzalanmamış taraflara hatırlatma SMS/e-posta'sı **iki yolla** gönderilir:
-
 
     **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**
 
-
     Şablon (Template) seviyesinde `reminder_settings` (interval saatleri,
-
     max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken
-
     bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır
-
     ve BullMQ worker'ı zamanı geldiğinde sessiz şekilde hatırlatır.
-
 
     - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`
       → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı**
     - Veya `POST /api/v1/demands` çağrısında body'de `reminder_settings`
       alanıyla **bu sözleşme için override** edebilirsiniz (şablon default'unu
       ezer, sadece bu demand'a uygulanır)
-    - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1,
-    channels: ["email"]}`
-
+    - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: ["email"]}`
 
     **2. Manuel (anlık) hatırlatma — tetikleme endpoint'i**
 
-
     `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması
-
     gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika
-
     geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.
 
-
     **Kişi başına sert sınırlar (override edilemez):**
-
     - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +
       manuel trigger toplam).
     - Bir kişiye en fazla 3 e-posta reminder gönderilebilir.
-
     - Sınıra ulaşan kişi response'un `details[]` listesinde
       `skipped` olarak görünür (`reason: "party_sms_cap_reached (3)"` veya
       `"party_email_cap_reached (3)"`); diğer kişilere gönderim devam eder.
     - `force: true` bu kişi-başı sınırları override etmez.
-
     - Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan
       onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş
       taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde
       `skipped` olarak `reason: "party_not_eligible"` ile döner.
 
     ```bash
-
     # Default — SMS + e-posta birlikte (parti eligibility'sine göre)
-
-    curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders
-    \
+    curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \
       -H "X-API-Key: imz_..." \
       -H "Content-Type: application/json" -d '{}'
 
     # Sadece SMS, anti-spam override
-
-    curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders
-    \
+    curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \
       -H "X-API-Key: imz_..." \
       -H "Content-Type: application/json" \
       -d '{"channels": ["sms"], "force": true}'
     ```
 
-
     Detay için **Reminders** tag'i altındaki endpoint'e bakın.
 
-
     ## Webhooks
-
     imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin
-
     belirlediğiniz HTTPS URL'ye `POST` ile JSON payload gönderir. Webhook'lar
-
     dashboard'dan yönetilir: **Ayarlar -> Webhook'lar**
-
     (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.
 
-
     ### Workspace kapsamı
-
     - **Organizasyon webhook'u** (org workspace'inde oluşturulduysa) → o
       organizasyon altındaki TÜM üyelerin event'lerinde tetiklenir
     - **Kişisel webhook** (kişisel workspace'te) → sadece sizin kendi
       event'lerinizde tetiklenir
 
     ### Olay tipleri (12)
-
     | Olay | Tetikleyici |
-
     |------|-------------|
-
     | `demand.created` | Yeni sözleşme oluşturuldu |
-
     | `demand.dispatched` | Sözleşme imzaya gönderildi |
-
     | `demand.completed` | Tüm taraflar imzaladı |
-
     | `demand.expired` | Sözleşme süresi doldu |
-
     | `party.signed` | Bir taraf imzaladı |
-
     | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı |
-
     | `party.rejected` | Bir taraf reddetti |
-
     | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı |
-
     | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı |
-
     | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor |
-
-    | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi
-    geçti |
-
-    | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi
-    ileri alındı |
-
+    | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti |
+    | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |
 
     > **Not (contract.\* olayları):** Bunlar platformun **takip amaçlı**
-
     > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini
-
     > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.
 
-
     ### Header'lar
-
     Her istekte aşağıdaki header'lar gönderilir:
 
-
     ```
-
     Content-Type: application/json
-
     User-Agent: Imzala-Webhook/1.0
-
     X-Imzala-Event: <olay tipi, örn. demand.completed>
-
     X-Imzala-Delivery: <delivery UUID — idempotency key>
-
     X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex>
-
     ```
-
 
     ### Payload zarfı
-
     Tüm olaylar aynı zarfı kullanır:
 
-
     ```json
-
     {
       "id": "evt_abc123...",
       "type": "demand.completed",
       "created_at": "2026-05-07T08:30:00.000Z",
       "data": { "...olay-özel alanlar..." }
     }
-
     ```
 
-
     - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB'de unique key).
-
     - `type`: yukarıdaki 12 olay tipinden biri (lowercase).
-
     - `created_at` — olay zamanı (ISO 8601 UTC).
-
     - `data` — her olaya özel (aşağıda her olay için ayrı şema).
 
-
     ### İmza doğrulama (HMAC-SHA256)
-
     Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir
-
     secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.
 
-
     Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve
-
     `X-Imzala-Signature-256: sha256=<hex>` header'ında gönderilir. Doğrulama
-
     Node.js örneği:
 
-
     ```js
-
     const crypto = require('crypto');
-
 
     function verify(rawBody, header, secret) {
       const expected = 'sha256=' + crypto
@@ -391,11 +249,8 @@ info:
       );
     }
 
-
     // Express
-
-    app.post('/webhook', express.raw({ type: 'application/json' }), (req, res)
-    => {
+    app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
       const sig = req.header('X-Imzala-Signature-256');
       if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {
         return res.status(401).send('invalid signature');
@@ -404,105 +259,64 @@ info:
       // ... event'i kuyruğa koy ve hemen 2xx dön
       res.status(200).send('ok');
     });
-
     ```
 
-
     > **Önemli:** Body'yi parse etmeden ham byte üzerinden imzalayın. Çoğu
-
     > framework (Express, FastAPI vs.) "raw body" middleware'i sağlar.
 
-
     ### Yeniden deneme politikası
-
     - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir.
-
     - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir.
-
-    - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env:
-    `WEBHOOK_TIMEOUT_MS`).
-
+    - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`).
     - **Maksimum deneme:** 6 (ilk + 5 retry).
-
     - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa.
-
     - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard'dan manuel
       "Tekrar Gönder" mümkün.
 
     Endpoint'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri
-
     (DB yazma, e-posta vs.) async kuyruğa atın.
 
-
     ### Idempotency
-
     Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver,
-
     backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu
-
     DB'de tek seferlik kayıt için kullanın:
 
-
     ```sql
-
     CREATE TABLE imzala_webhook_seen (
       event_id TEXT PRIMARY KEY,
       received_at TIMESTAMPTZ DEFAULT now()
     );
-
     -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip
-
     ```
 
-
     ### Backfill flag
-
     Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix'inden sonra
-
     kayıp event'leri yakalamak) için bazı payload'larda `data._backfill: true`
-
     bayrağı bulunur. Bu durumda receiver:
 
-
     - Loglama için kayıt edebilir
-
     - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı**
-
     - `id` zaten görülmüşse normal flow'a devam edebilir
 
-
     ```js
-
     if (event.data._backfill === true) {
       await logReplay(event);
       return res.status(200).send('replay accepted');
     }
-
     ```
 
-
     ### Manuel yeniden gönderim
-
     Dashboard'da `Ayarlar -> Webhook'lar -> <webhook> -> Teslim Geçmişi`:
 
-
     - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için)
-
     - Üstte **Son 5'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir)
-
     - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)
 
-
     ### En iyi pratikler
-
     1. Aynı `id`'yi tekrar görürseniz işlemi atla (idempotency).
-
     2. İmzayı **timing-safe compare** ile doğrula (string equality değil).
-
     3. 10sn'den hızlı 2xx dön; ağır işi kuyruğa at.
-
     4. `_backfill: true` payload'larda side-effect'leri atla.
-
     5. `X-Imzala-Delivery` UUID'sini log'la — destek talebinde bizimkiyle
        eşleşmesini kolaylaştırır.
     6. HTTPS endpoint kullan; secret'i env var'da sakla, koda gömme.
@@ -529,34 +343,23 @@ tags:
       oluşturulan sözleşmeye otomatik aktarılır; ayrıca `POST
       /api/v1/demands/{id}/reminders` ile anlık hatırlatma tetiklenebilir.
   - name: Webhooks
-    description: >
+    description: |
       Olay-tabanlı bildirimler. Webhook'lar dashboard'dan oluşturulur
-
       (`Ayarlar -> Webhook'lar`); aşağıdaki olay tipleri tetiklendiğinde
-
-      imzala sizin endpoint'inize POST eder. Tüm payload'lar
-      `X-Imzala-Signature-256`
-
+      imzala sizin endpoint'inize POST eder. Tüm payload'lar `X-Imzala-Signature-256`
       ile HMAC-SHA256 imzalı gelir; doğrulama, retry ve idempotency detayları
-
       için bu sayfanın üst kısmındaki **Webhooks** bölümüne bakın.
   - name: Account
     description: API key sahibinin kullanıcı ve workspace bilgisi, kredi bakiyesi.
   - name: Timestamps
-    description: >
-      RFC 3161 zaman damgası (eser tescil). Dosyanın SHA-256 hash'i TÜBİTAK KAMU
-      SM
-
+    description: |
+      RFC 3161 zaman damgası (eser tescil). Dosyanın SHA-256 hash'i TÜBİTAK KAMU SM
       TSA tarafından imzalanır; bu belgenin belirtilen tarihte var olduğunu ve
-
       içeriğinin değişmediğini kanıtlar. Yazarlık veya sahiplik kanıtı DEĞİLDİR.
   - name: Contacts
-    description: >
-      Kişi (adres defteri) yönetimi. Workspace-scoped: kişisel workspace
-      yalnızca
-
+    description: |
+      Kişi (adres defteri) yönetimi. Workspace-scoped: kişisel workspace yalnızca
       sahibine, org workspace org üyelerine görünür. Yanıtlar iç eşleşme ve
-
       şifreleme alanlarını içermez.
 security:
   - ApiKeyAuth: []
@@ -796,114 +599,67 @@ paths:
         - Demands
       summary: Sözleşme oluştur (şablondan)
       x-required-scope: demands:write
-      description: >
+      description: |
         Belirtilen şablondan yeni bir sözleşme oluşturur, taraf bilgilerini
-
         kaydeder, dynamic field'ları `variables` payload'undan doldurur ve
-
         imzalama URL'lerini döner.
 
-
         **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa
-
         oluşturma anında yalnızca onay bekleyen onaylayanlar davet edilir;
-
         imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
-
         onaylayan reddederse imzacılar davet edilmez. Ayrıntı: açıklamadaki
-
         "Onaylayan (onay adımı)" bölümü.
 
-
         **Variable resolution:**
-
         - Item'ın `template_party_id` non-null → `party_mapping[i].variables`'ta
           o slug var ise oradan uygulanır
         - Yoksa root `variables`'tan fallback
-
         - Hiçbiri yoksa item boş kalır (signer manuel doldurabilir,
           `editable: true` ise)
 
         **Validation:**
-
         - `party_mapping[i].variables` ve root `variables` object olmalı
-
         - Variable value'ları `string | number | boolean | null` olmalı
           (object/array reject)
         - `template_party_id` party_mapping içinde unique olmalı
 
-
         **Kredi (çok belgeli zarf):** Şablon çok-belgeli bir zarf tanımlıyorsa
-
         (her belge farklı imzacı(lar)a atanabilir), imzacı başına kredi o
-
         imzacıya ATANMIŞ belge sayısına göre hesaplanır ve belge sayısına göre
-
         azalan birim fiyatlı bir indirim uygulanır: 1 belge %0, 2 belge %30,
-
         3 ve üzeri %50 (indirim imzacı başına ayrı hesaplanır ve yukarı
-
         yuvarlanır). AB nitelikli zaman damgası (`eidas_timestamp`) seçiliyse
-
         aynı indirim zarftaki farklı belge sayısına göre toplam üzerinden
-
         uygulanır. Tek belgeli şablonlarda tutar eski formülle bayt-aynıdır.
-
         Onaylayan rolündeki tarafın kredisi için bkz. "Onaylayan".
 
-
         **Atamasız imzacı:** `dispatch_notifications` `false` gönderilmediği
-
         sürece, eşlenen bir taraf şablonun hiçbir belgesine atanmamışsa
-
         sözleşme HİÇ oluşturulmaz (409 `PARTY_WITHOUT_DOCUMENTS`). Bu kontrolü
-
         atlamak için `dispatch_notifications: false` gönderip belge
-
         atamalarını `PUT .../documents/{docId}/assignments` ile düzelttikten
-
         sonra `POST .../dispatch` ile gönderin (o uç aynı kapıyı yeniden
-
         uygular).
 
-
         **Açık rıza belgesi:** Açık rıza (`KVKK_CONSENT`) belgesi her imzacının
-
         kendi kararı için ayrı bir belgedir. Şablonda böyle bir belge birden
-
         çok role atanmışsa, sözleşme oluşturulurken eşlediğiniz her rol için
-
         ayrı bir kopya açılır ve her kopya yalnız o imzacıya atanır; imzacılar
-
         birbirinin rıza kararını görmez. Kopyanın başlığına rol etiketi eklenir
-
         (ör. "Açık Rıza Beyanı (Başvuran 2)"), kopyada yalnız o rolün alanları
-
         ve role bağlı olmayan alanlar yer alır. Şablon değişmez. Belge bazlı
-
         değişkenler (`document_variables`) rıza belgesinin tüm kopyalarına
-
         uygulanır. Kredi hesabında kopyalar ayrı belge sayılır; imzacı başına
-
         belge sayısı değişmez.
 
-
         Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler
-
         oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama
-
         şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner.
-
         Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir;
-
         `NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama
-
         politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED`
-
         döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı
-
-        veya hizmet kullanılabilirliğini düzeltin; isteği otomatik
-        tekrarlamayın.
+        veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -995,169 +751,92 @@ paths:
                   data:
                     $ref: '#/components/schemas/CreatedDemand'
         '400':
-          description: >
+          description: |
             Geçersiz istek. Örnek hatalar:
-
             - "template_id gerekli"
-
             - "party_mapping gerekli (en az 1 taraf)"
-
             - "party_mapping[0].first_name ve last_name gerekli"
-
             - "party_mapping[0].email veya phone gerekli"
-
             - "party_mapping[0].variables object olmalı"
-
-            - "party_mapping[0].variables.adres value'su
-            string|number|boolean|null olmali"
-
+            - "party_mapping[0].variables.adres value'su string|number|boolean|null olmali"
             - "variables object olmalı"
-
             - "template_party_id duplicate'i bulundu: <id>"
 
-
             `INVALID_EXPIRY_DATE`: `expiry_date` çözümlenemiyor veya takvimde
-
             olmayan bir gün (ör. `2026-02-30`). Bu hatada `error` insan-okur
-
             mesajı, `code` alanı makinece okunur kodu taşır.
 
-
             `INVALID_LOCALE`: `party_mapping[i].locale` `tr`, `en` veya `null`
-
             değil. `error` hatalı alanın yolunu taşır; sözleşme oluşturulmaz,
-
             kredi düşülmez.
 
-
-            `INVALID_PHONE_VERIFICATION`:
-            `party_mapping[i].require_phone_verification`
-
+            `INVALID_PHONE_VERIFICATION`: `party_mapping[i].require_phone_verification`
             `true`, `false` veya `null` değil. Sözleşme oluşturulmaz, kredi
-
             düşülmez.
 
-
-            `PHONE_REQUIRED_FOR_VERIFICATION`:
-            `party_mapping[i].require_phone_verification`
-
+            `PHONE_REQUIRED_FOR_VERIFICATION`: `party_mapping[i].require_phone_verification`
             `true` ama tarafın `phone` alanı boş. Telefon doğrulaması açık
-
             tarafa SMS ile kod gönderilebilmesi için numara gerekir. Sözleşme
-
             oluşturulmaz, kredi düşülmez. Alan gönderilmeyen tarafta bu kontrol
-
             yapılmaz.
 
-
             `CONSENT_SINGLE_PARTY`: açık rıza belgesi her imzacı için ayrı
-
             açıldığında zarf 20 belge sınırını aşıyor. Daha az rol eşleyin ya
-
             da şablondaki rıza belgelerini tek role atayın. Sözleşme
-
             oluşturulmaz, kredi düşülmez.
 
-
             `INVALID_DOCUMENT_SELECTION`: belge seçimi hatası; `details.reason`
-
             şu değerlerden biridir: `shape` (biçim: nesne değil, bilinmeyen
-
             alan, kimlik metin değil, 20'den fazla kimlik), `unknown_document`
-
             (kimlik bu şablonun belgesi değil), `conflict` (aynı kimlik iki
-
             listede), `empty` (seçim sonucunda belge kalmadı). Biçim hataları
-
             kredi kontrolünden önce, şablona bağlı hatalar şablon erişim
-
             kontrolünden sonra ve kredi kontrolünden önce döner.
 
-
             `INVALID_DOCUMENT_VARIABLES`: `document_variables` hatası;
-
             `details.reason` şu değerlerden biridir: `shape` (biçim: nesne
-
             değil, değer string|number|boolean|null değil, boş ya da ayrılmış
-
             anahtar, 20'den fazla belge), `unknown_document` (kimlik bu
-
             şablonun belgesi değil), `unselected_document` (belge bu istekte
-
             gönderilmiyor; `documents.include` ile ekleyin). `details.path`
-
             hatalı alanı (`document_variables` ya da
-
             `party_mapping[i].document_variables`), `details.document_ids`
-
             yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi
-
             kontrolünden önce, şablona bağlı hatalar şablon erişim
-
             kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.
 
-
             `SIGNATURE_VARIANTS_PHONE_ONLY`: `allowed_signature_variants`
-
             yalnız `phone` içeriyor. Telefonda çizim tek başına seçilemez;
-
             listede en az bir `phone` olmayan yöntem bırakın.
 
-
             `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE`:
-
             `allowed_signature_variants` içinde `phone_draw` başka bir
-
             yöntemle birlikte gönderildi. `phone_draw` yalnız tek başına
-
             kullanılabilir (`["phone_draw"]`).
 
-
             `TERM_INVALID`: sözleşme süre/yenileme (`ContractTermInput`)
-
             alanlarında geçersiz veya çelişkili bir kombinasyon (ör.
-
             `term_fixed_end_date` ile `term_duration_months` birlikte, veya
-
             `renewal_type: AUTO_RENEW` periyotsuz). `field` hangi anahtarın
-
             reddedildiğini gösterir.
-
             Belge Toplama ön kontrolü: `INVALID_DOCUMENT_COLLECTION_TIMING`,
-
-            `INVALID_DOCUMENT_COLLECTION_FLAG`,
-            `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`.
-
+            `INVALID_DOCUMENT_COLLECTION_FLAG`, `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`.
             Seçili şablonun kalem politikası geçersizse `code` daima
-
             `VERIFICATION_CONTEXT_REQUIRED`, `error` ise kaynak makine kodudur:
-
             `DOCUMENT_TYPE_INVALID` (tür null veya `TR_RESIDENCE` değil),
-
-            `VERIFICATION_POLICY_INVALID` (politika `NONE` veya
-            `SOURCE_AND_FIELDS` değil),
-
-            `VERIFICATION_INSTRUCTION_INVALID` (alıcı/amaç metin değil, çok uzun
-            veya
-
-            kontrol/gizli yön karakteri içeriyor),
-            `VERIFICATION_CONTEXT_REQUIRED`
-
+            `VERIFICATION_POLICY_INVALID` (politika `NONE` veya `SOURCE_AND_FIELDS` değil),
+            `VERIFICATION_INSTRUCTION_INVALID` (alıcı/amaç metin değil, çok uzun veya
+            kontrol/gizli yön karakteri içeriyor), `VERIFICATION_CONTEXT_REQUIRED`
             (doğrulama için tür ya da açık alıcı/amaç eksik),
-
             `VERIFICATION_POLICY_CONFLICT` (`NONE` ile dolu alıcı/amaç).
-
-            Bu zarfta `error` insan-okur metin değildir. Hiçbir sözleşme
-            oluşturulmaz.
+            Bu zarfta `error` insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DemandCreationError'
               examples:
                 invalidCollectionPolicy:
-                  summary: >-
-                    Seçili Belge Toplama politikası geçersiz; kaynak kod error
-                    alanında
+                  summary: Seçili Belge Toplama politikası geçersiz; kaynak kod error alanında
                   value:
                     success: false
                     code: VERIFICATION_CONTEXT_REQUIRED
@@ -1201,15 +880,11 @@ paths:
                         type: string
                         example: DRAFT_UNDISPATCHED
         '403':
-          description: >
+          description: |
             **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body'de `sms_content` alanı dolu
-
             gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya
-
             kendi SMS sağlayıcı config'i (sender_name dolu) yok. `sms_content`
-
-            alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı
-            tanımlayın.
+            alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.
           content:
             application/json:
               schema:
@@ -1223,10 +898,7 @@ paths:
                     example: SMS_CUSTOMIZATION_NOT_ALLOWED
                   message:
                     type: string
-                    example: >-
-                      SMS metnini özelleştirebilmek için organizasyonunuzun PRO
-                      veya ENTERPRISE planda olması ve kendi SMS sağlayıcınızı
-                      tanımlamış olmanız gerekir.
+                    example: SMS metnini özelleştirebilmek için organizasyonunuzun PRO veya ENTERPRISE planda olması ve kendi SMS sağlayıcınızı tanımlamış olmanız gerekir.
         '404':
           description: |
             Şablon bulunamadı veya bu çalışma alanına ait değil.
@@ -1344,15 +1016,10 @@ paths:
         - Demands
       summary: Sözleşme listesi (counts-only, PII'siz)
       x-required-scope: demands:read
-      description: >
+      description: |
         Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu:
-
-        yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner
-        (`parties_total`,
-
-        `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum
-        HİÇ
-
+        yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`,
+        `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ
         döndürülmez — taraf detayı için `GET /demands/{id}`.
       parameters:
         - name: status
@@ -1369,9 +1036,7 @@ paths:
           in: query
           schema:
             type: string
-          description: >-
-            Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta
-            ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+          description: Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
         - name: from
           in: query
           schema:
@@ -1452,9 +1117,7 @@ paths:
                               type: string
                               format: date
                               nullable: true
-                              description: >-
-                                Takip edilen bitiş tarihi; takip yoksa `null`
-                                (bkz. `GET /demands/{id}` → `term`).
+                              description: Takip edilen bitiş tarihi; takip yoksa `null` (bkz. `GET /demands/{id}` → `term`).
                             archived_at:
                               type: string
                               format: date-time
@@ -1467,12 +1130,7 @@ paths:
                               type: string
                               format: uri
                               nullable: true
-                              description: >-
-                                COMPLETED ise imzalı PDF public URL'i. Açık rıza
-                                belgesi bu herkese açık bağlantıdan verilmez
-                                (zarfın ilk belgesi açık rıza belgesiyse 404
-                                döner); API anahtarıyla `GET
-                                /api/v1/demands/{id}/pdf` kullanın.
+                              description: COMPLETED ise imzalı PDF public URL'i. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanın.
                       total:
                         type: integer
                       page:
@@ -1489,25 +1147,17 @@ paths:
         - Demands
       summary: Toplu sözleşme oluştur (tek şablondan N alıcı)
       x-required-scope: demands:write
-      description: >
+      description: |
         Tek şablondan en fazla 10 alıcıya AYRI AYRI sözleşme oluşturur ve
-
         her birine imza daveti gönderir (DocuSign "bulk send" modeli). Her
-
         satır bağımsız bir sözleşmedir; satır-başı kısmi başarı raporlanır.
 
-
         **Onaylayan:** Şablonda Onaylayan olarak işaretlenmiş taraf varsa her
-
         satırda önce yalnızca onay bekleyen onaylayanlar davet edilir;
-
         imzacılar tüm onaylayanlar onayladıktan sonra davet edilir, bir
-
         onaylayan reddederse imzacılar davet edilmez.
 
-
         **Davranış:**
-
         - `rows` en fazla 10 (aşarsa 400 `BULK_MAX_10`). Daha büyük listeler
           istemci tarafında 10'arlı parçalara bölünür.
         - Kredi: sabit "1 satır = 1 kredi" değildir, her satırın maliyeti
@@ -1563,24 +1213,14 @@ paths:
           Belge Toplama reddi HTTP 200 results[].failed sonucu değildir.
         - `X-Workspace-Id` header'ı ile organizasyon workspace'i seçilebilir.
 
-
         Belge Toplama ayarları, açıkça verilen ve tamamen devralınan seçimler
-
         oluşturma, kredi işlemleri ve davetlerden önce doğrulanır. Etkin toplama
-
         şablonsuzsa 400 `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED` döner.
-
         Seçili şablonda `SOURCE_AND_FIELDS` politikası doğrulama gerektirir;
-
         `NONE` doğrulama kapalıyken de kullanılabilir. Geçerli doğrulama
-
         politikası hizmette açık değilse 503 `DOCUMENT_VERIFICATION_DISABLED`
-
         döner; politika sessizce değiştirilmez. Bu durumda seçimi/politikayı
-
-        veya hizmet kullanılabilirliğini düzeltin; isteği otomatik
-        tekrarlamayın.
-
+        veya hizmet kullanılabilirliğini düzeltin; isteği otomatik tekrarlamayın.
 
         Rate limit: 5 istek/dakika (API key başına).
       requestBody:
@@ -1604,36 +1244,21 @@ paths:
                     document_collection_enabled:
                       type: boolean
                       nullable: true
-                      description: >
-                        Belge Toplama açılsın mı? Gönderilmezse veya null ise
-                        sözleşme
-
-                        şablonunun ayarı devralınır. Etkin değer true ise bir
-                        Belge Toplama
-
-                        şablonu gerekir. false devralınan toplamayı kapatır;
-                        açıkça verilen
-
+                      description: |
+                        Belge Toplama açılsın mı? Gönderilmezse veya null ise sözleşme
+                        şablonunun ayarı devralınır. Etkin değer true ise bir Belge Toplama
+                        şablonu gerekir. false devralınan toplamayı kapatır; açıkça verilen
                         document_collection_template_id yine doğrulanır.
                     document_collection_template_id:
                       type: string
                       format: uuid
                       nullable: true
-                      description: >
-                        Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse,
-                        null veya boş
-
-                        dize ise etkin toplama açıkken sözleşme şablonundaki
-                        seçim devralınır.
-
-                        Açıkça verilen dolu kimlik, toplama false olsa da
-                        doğrulanır. Seçim
-
-                        aktif ve aynı çalışma alanına ait olmalıdır;
-                        bulunamazsa, arşivliyse,
-
+                      description: |
+                        Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya boş
+                        dize ise etkin toplama açıkken sözleşme şablonundaki seçim devralınır.
+                        Açıkça verilen dolu kimlik, toplama false olsa da doğrulanır. Seçim
+                        aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa, arşivliyse,
                         kapsam dışıysa veya kimlik metin değilse 404
-
                         DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND döner.
                     document_collection_timing:
                       type: string
@@ -1641,28 +1266,17 @@ paths:
                         - BEFORE_SIGNING
                         - AFTER_SIGNING
                       nullable: true
-                      description: >
-                        Toplama zamanı; gönderilmezse veya null ise sözleşme
-                        şablonunun ayarı
-
-                        devralınır. Geçersiz değer 400
-                        INVALID_DOCUMENT_COLLECTION_TIMING döner.
+                      description: |
+                        Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı
+                        devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.
                     document_collection_block_signing:
                       type: boolean
                       nullable: true
-                      description: >
-                        Zorunlu belgeler tamamlanana kadar imzalamayı engelleme
-                        ayarı.
-
-                        Gönderilmezse veya null ise sözleşme şablonunun ayarı
-                        devralınır.
-
-                        Etkin AFTER_SIGNING zamanında true false olarak
-                        normalleştirilir.
-
-                        Boolean alanlara boolean veya null dışında değer
-                        verilirse 400
-
+                      description: |
+                        Zorunlu belgeler tamamlanana kadar imzalamayı engelleme ayarı.
+                        Gönderilmezse veya null ise sözleşme şablonunun ayarı devralınır.
+                        Etkin AFTER_SIGNING zamanında true false olarak normalleştirilir.
+                        Boolean alanlara boolean veya null dışında değer verilirse 400
                         INVALID_DOCUMENT_COLLECTION_FLAG döner.
                     dispatch_notifications:
                       type: boolean
@@ -1673,31 +1287,23 @@ paths:
                       description: true ise taraflar sırayla imzalar
                     sms_content:
                       type: string
-                      description: >-
-                        SMS davet metni özelleştirmesi (yalnızca kendi SMS
-                        sağlayıcısı olan org'lar)
+                      description: SMS davet metni özelleştirmesi (yalnızca kendi SMS sağlayıcısı olan org'lar)
                     language:
                       type: string
                       example: tr
                     enable_qes:
                       type: boolean
-                      description: >-
-                        🔴 Faturayı etkiler. Güvenli elektronik imza sınıfı;
-                        imzacı başına taban ücret 1 yerine 2 kredi.
+                      description: 🔴 Faturayı etkiler. Güvenli elektronik imza sınıfı; imzacı başına taban ücret 1 yerine 2 kredi.
                     qes_pades_level:
                       type: string
                       enum:
                         - PAdES_BASELINE_T
                         - PAdES_BASELINE_LT
                         - PAdES_BASELINE_LTA
-                      description: >-
-                        🔴 Faturayı etkiler. Yalnız enable_qes ile anlamlıdır:
-                        B-T +0, B-LT +0, B-LTA +1 kredi (imzacı başına).
+                      description: '🔴 Faturayı etkiler. Yalnız enable_qes ile anlamlıdır: B-T +0, B-LT +0, B-LTA +1 kredi (imzacı başına).'
                     eidas_timestamp:
                       type: boolean
-                      description: >-
-                        🔴 Faturayı etkiler. AB nitelikli zaman damgası; satır
-                        (sözleşme) başına +1 kredi.
+                      description: 🔴 Faturayı etkiler. AB nitelikli zaman damgası; satır (sözleşme) başına +1 kredi.
                     allowed_signature_variants:
                       type: array
                       nullable: true
@@ -1710,42 +1316,26 @@ paths:
                           - upload
                           - phone
                           - phone_draw
-                      description: >
-                        Batch-seviye: bu listedeki dijital imza yöntemleri ve
-                        sıra
-
+                      description: |
+                        Batch-seviye: bu listedeki dijital imza yöntemleri ve sıra
                         TÜM satırlara uygulanır (satır başına ayarlanamaz).
-
                         Davranışı `POST /api/v1/demands` ile aynıdır: sıra sekme
-
-                        sırasıdır, gönderilmezse şablon, sonra organizasyon
-                        ayarı
-
+                        sırasıdır, gönderilmezse şablon, sonra organizasyon ayarı
                         devralınır, boş dizi veya tanınmayan değer yok sayılır.
-
                         Yalnız `phone` içeren liste tüm batch'i 400
-
-                        `SIGNATURE_VARIANTS_PHONE_ONLY` ile, `phone_draw`'ı
-                        başka
-
+                        `SIGNATURE_VARIANTS_PHONE_ONLY` ile, `phone_draw`'ı başka
                         bir yöntemle birleştiren liste 400
-
                         `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE` ile reddeder
-
                         (hiçbir sözleşme oluşturulmaz).
                       example:
                         - type
                         - draw
                     require_id_photo:
                       type: boolean
-                      description: >-
-                        🔴 Faturayı etkiler. Kimlik fotoğrafı doğrulaması;
-                        imzacı başına +1 kredi.
+                      description: 🔴 Faturayı etkiler. Kimlik fotoğrafı doğrulaması; imzacı başına +1 kredi.
                     require_liveness_check:
                       type: boolean
-                      description: >-
-                        🔴 Faturayı etkiler. Canlılık doğrulaması; imzacı başına
-                        +1 kredi.
+                      description: 🔴 Faturayı etkiler. Canlılık doğrulaması; imzacı başına +1 kredi.
                 rows:
                   type: array
                   minItems: 1
@@ -1758,9 +1348,7 @@ paths:
                     properties:
                       party_mapping:
                         type: array
-                        description: >-
-                          Bu satırın taraf eşlemesi (POST /demands ile aynı
-                          şekil)
+                        description: Bu satırın taraf eşlemesi (POST /demands ile aynı şekil)
                         items:
                           type: object
                           properties:
@@ -1776,14 +1364,7 @@ paths:
                               format: email
                             phone:
                               type: string
-                              description: >-
-                                E.164 biçiminde telefon (ör. `+905551112233`).
-                                Ülke kodu ile birlikte gönderin; fazlalık
-                                şehirlerarası öneki (TRde baş sıfır, `+90
-                                0542…`) sunucuda kaldırılır ve numara kanonik
-                                E.164 biçiminde saklanır. Tanınmayan girdi
-                                olduğu gibi korunur ama SMS teslim
-                                edilemeyebilir.
+                              description: E.164 biçiminde telefon (ör. `+905551112233`). Ülke kodu ile birlikte gönderin; fazlalık şehirlerarası öneki (TRde baş sıfır, `+90 0542…`) sunucuda kaldırılır ve numara kanonik E.164 biçiminde saklanır. Tanınmayan girdi olduğu gibi korunur ama SMS teslim edilemeyebilir.
                             government_id:
                               type: string
                               description: T.C. kimlik numarası (11 hane)
@@ -1799,34 +1380,12 @@ paths:
                               default: true
                             locale:
                               $ref: '#/components/schemas/SignerLocale'
-                              description: >-
-                                İmza sayfasının başlangıç dili (`tr` veya `en`);
-                                imzacı sayfada değiştirebilir. Gönderilmezse
-                                şablon rolünün varsayılan dili
-                                (`default_locale`), o da yoksa tarayıcı dili
-                                İngilizce ise İngilizce, aksi halde Türkçe
-                                kullanılır. `null` gönderilirse şablon
-                                varsayılanı uygulanmaz, dil tarayıcıya göre
-                                belirlenir. Bildirimler (e-posta, SMS) tarafa
-                                atanan dilde gider; dil atanmamışsa Türkçe
-                                gider. WhatsApp'ta İngilizce için kurumunuzun
-                                onaylı İngilizce şablonu gerekir. Geçersiz değer
-                                o satırı `failed` (`error: "INVALID_LOCALE"`)
-                                yapar, diğer satırlar etkilenmez.
+                              description: 'İmza sayfasının başlangıç dili (`tr` veya `en`); imzacı sayfada değiştirebilir. Gönderilmezse şablon rolünün varsayılan dili (`default_locale`), o da yoksa tarayıcı dili İngilizce ise İngilizce, aksi halde Türkçe kullanılır. `null` gönderilirse şablon varsayılanı uygulanmaz, dil tarayıcıya göre belirlenir. Bildirimler (e-posta, SMS) tarafa atanan dilde gider; dil atanmamışsa Türkçe gider. WhatsApp''ta İngilizce için kurumunuzun onaylı İngilizce şablonu gerekir. Geçersiz değer o satırı `failed` (`error: "INVALID_LOCALE"`) yapar, diğer satırlar etkilenmez.'
                               example: en
                             require_phone_verification:
                               type: boolean
                               nullable: true
-                              description: >-
-                                Telefon doğrulamasını yalnız bu taraf için açar
-                                ya da kapatır (bkz.
-                                `PartyMappingInput.require_phone_verification`).
-                                Sözleşmede telefon doğrulaması açıksa imzalayan
-                                taraflar için false etkisizdir. Geçersiz değer
-                                satırı `failed` (`error:
-                                "INVALID_PHONE_VERIFICATION"`), `true` iken boş
-                                `phone` satırı `failed` (`error:
-                                "PHONE_REQUIRED_FOR_VERIFICATION"`) yapar.
+                              description: 'Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. `PartyMappingInput.require_phone_verification`). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı `failed` (`error: "INVALID_PHONE_VERIFICATION"`), `true` iken boş `phone` satırı `failed` (`error: "PHONE_REQUIRED_FOR_VERIFICATION"`) yapar.'
                             custom_message:
                               type: string
                               description: Bu tarafa özel davet mesajı
@@ -1881,38 +1440,22 @@ paths:
                             demand_id:
                               type: string
                               format: uuid
-                              description: >-
-                                status=created ise; veya status=failed olup
-                                sözleşme oluşturulduktan SONRA kredi mutabakatı
-                                reddettiyse ya da atamasız imzacı bulunduysa
-                                (taslak, davet gönderilmedi)
+                              description: status=created ise; veya status=failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi)
                             party_ids:
                               type: array
                               items:
                                 type: string
                                 format: uuid
-                              description: >-
-                                Yalnız error=PARTY_WITHOUT_DOCUMENTS ve sözleşme
-                                oluşturulduktan SONRA tespit edildiyse: hiçbir
-                                belgeye atanmamış taraf id'leri.
+                              description: 'Yalnız error=PARTY_WITHOUT_DOCUMENTS ve sözleşme oluşturulduktan SONRA tespit edildiyse: hiçbir belgeye atanmamış taraf id''leri.'
                             template_party_ids:
                               type: array
                               items:
                                 type: string
                                 format: uuid
-                              description: >-
-                                Yalnız error=PARTY_WITHOUT_DOCUMENTS ve satır
-                                oluşturulmadan ÖNCE tespit edildiyse: seçim
-                                sonucunda hiçbir belgeye atanmamış kalan şablon
-                                rol kimlikleri.
+                              description: 'Yalnız error=PARTY_WITHOUT_DOCUMENTS ve satır oluşturulmadan ÖNCE tespit edildiyse: seçim sonucunda hiçbir belgeye atanmamış kalan şablon rol kimlikleri.'
                             details:
                               type: object
-                              description: >-
-                                Yalnız error=INVALID_DOCUMENT_SELECTION ise:
-                                reason (shape | unknown_document | conflict |
-                                empty) ve varsa document_ids.
-                                error=INVALID_DOCUMENT_VARIABLES ise: reason
-                                (unsupported_endpoint) ve path.
+                              description: 'Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document | conflict | empty) ve varsa document_ids. error=INVALID_DOCUMENT_VARIABLES ise: reason (unsupported_endpoint) ve path.'
                               properties:
                                 reason:
                                   type: string
@@ -1944,97 +1487,52 @@ paths:
                             result_url:
                               type: string
                               format: uri
-                              description: >-
-                                Sonuç sayfası açık rıza belgesini, sayfalarını
-                                ve indirme bağlantısını göstermez.
+                              description: Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez.
                             dispatched:
                               type: integer
                               description: Gönderilen davet (SMS+e-posta) sayısı
                             error:
                               type: string
-                              description: >-
-                                status=failed ise makinece okunabilir kod
-                                (VALIDATION, INVALID_LOCALE,
-                                INVALID_PHONE_VERIFICATION,
-                                PHONE_REQUIRED_FOR_VERIFICATION,
-                                INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED,
-                                PARTY_WITHOUT_DOCUMENTS,
-                                INVALID_DOCUMENT_SELECTION,
-                                INVALID_DOCUMENT_VARIABLES,
-                                TEMPLATE_DOCUMENTS_NOT_READY,
-                                DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED,
-                                DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)
+                              description: status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)
                             message:
                               type: string
                               description: status=failed ise açıklama
         '400':
-          description: >
+          description: |
             Geçersiz istek. Olası kodlar: `BULK_MAX_10` (`rows` 10'dan fazla),
-
             boş `rows`, eksik `template_id`, `INVALID_DOCUMENT_SELECTION`
-
             (`options.documents` gönderildi; belge seçimi satır başınadır,
-
             bkz. `rows[i].documents`), `INVALID_DOCUMENT_VARIABLES`
-
             (`options.document_variables` gönderildi; bu uçta desteklenmez,
-
             `details.reason: "unsupported_endpoint"`), `INVALID_PADES_LEVEL`
-
             (`options.qes_pades_level` satılabilir seviyelerden biri değil),
-
             `FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE` (verilen kimlik bir Alan
-
             Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken
-
             `eidas_timestamp` gönderilirse de 400 döner.
 
-
             `SIGNATURE_VARIANTS_PHONE_ONLY`:
-
             `options.allowed_signature_variants` yalnız `phone` içeriyor.
-
             `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE`: `phone_draw` başka bir
-
             yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için
-
             hiçbir satır oluşturulmaz.
-
             Belge Toplama ön kontrolü: `INVALID_DOCUMENT_COLLECTION_TIMING`,
-
-            `INVALID_DOCUMENT_COLLECTION_FLAG`,
-            `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`.
-
+            `INVALID_DOCUMENT_COLLECTION_FLAG`, `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`.
             Seçili şablonun kalem politikası geçersizse `code` daima
-
             `VERIFICATION_CONTEXT_REQUIRED`, `error` ise kaynak makine kodudur:
-
             `DOCUMENT_TYPE_INVALID` (tür null veya `TR_RESIDENCE` değil),
-
-            `VERIFICATION_POLICY_INVALID` (politika `NONE` veya
-            `SOURCE_AND_FIELDS` değil),
-
-            `VERIFICATION_INSTRUCTION_INVALID` (alıcı/amaç metin değil, çok uzun
-            veya
-
-            kontrol/gizli yön karakteri içeriyor),
-            `VERIFICATION_CONTEXT_REQUIRED`
-
+            `VERIFICATION_POLICY_INVALID` (politika `NONE` veya `SOURCE_AND_FIELDS` değil),
+            `VERIFICATION_INSTRUCTION_INVALID` (alıcı/amaç metin değil, çok uzun veya
+            kontrol/gizli yön karakteri içeriyor), `VERIFICATION_CONTEXT_REQUIRED`
             (doğrulama için tür ya da açık alıcı/amaç eksik),
-
             `VERIFICATION_POLICY_CONFLICT` (`NONE` ile dolu alıcı/amaç).
-
-            Bu zarfta `error` insan-okur metin değildir. Hiçbir sözleşme
-            oluşturulmaz.
+            Bu zarfta `error` insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiV1DemandsBulkPost400Response'
               examples:
                 invalidCollectionPolicy:
-                  summary: >-
-                    Seçili Belge Toplama politikası geçersiz; kaynak kod error
-                    alanında
+                  summary: Seçili Belge Toplama politikası geçersiz; kaynak kod error alanında
                   value:
                     success: false
                     code: VERIFICATION_CONTEXT_REQUIRED
@@ -2052,9 +1550,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
         '403':
-          description: >-
-            INSUFFICIENT_SCOPE (demands:write yok) veya
-            SMS_CUSTOMIZATION_NOT_ALLOWED
+          description: INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED
           content:
             application/json:
               schema:
@@ -2174,9 +1670,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            Tamamlanmış (`DEMAND_COMPLETED`) veya arşivlenmiş
-            (`DEMAND_ARCHIVED`) sözleşme silinemez
+          description: Tamamlanmış (`DEMAND_COMPLETED`) veya arşivlenmiş (`DEMAND_ARCHIVED`) sözleşme silinemez
           content:
             application/json:
               schema:
@@ -2200,46 +1694,28 @@ paths:
         - Reminders
       summary: Anlık hatırlatma tetikle (imzalanmamış taraflara)
       x-required-scope: demands:write
-      description: >
+      description: |
         Sözleşmenin **henüz imzalamamış** taraflarına SMS ve/veya e-posta
-
         hatırlatması anlık olarak gönderir. Şablon-/sözleşme-seviyesi
-
         `reminder_settings` ayarından **bağımsız** olarak çalışır — istediğiniz
-
         zaman elle tetiklenebilir.
 
-
         **Kimlere gitmez:** İmzayı reddetmiş, onayını vermiş, açık düzeltme
-
         talebi olan, imza alanı olmayan (bilgi tarafı) taraflara ve imza ekranı
-
         henüz açılmamış taraflara (sıralı imzada sırası gelmemiş; onay bekleyen
-
         bir onaylayan varken imzacılar) hatırlatma gönderilmez; bu taraflar
-
         `details[]` içinde yer almaz, sayıları `reminders_ineligible` alanında
-
         döner. Onay bekleyen onaylayan hatırlatma alır. Çok belgeli zarfta bir
-
         taraf, zarftaki tüm belgelere kararını verene kadar hatırlatma almaya
-
         devam eder.
 
-
         **Anti-spam koruması:** Aynı sözleşme için son hatırlatmanın üzerinden
-
         5 dakika geçmemişse 429 `RATE_LIMITED` döner ve `Retry-After` header'ı
-
         ile `retry_after_seconds` alanı bilgilendirir. Override için body'de
-
         `force: true` yollayın (yanlışlıkla spam atmamak için kasıtlı kullanın).
 
-
         **Kişi başına sert sınırlar (override edilemez):** Spam ve gönderici
-
         reputasyon koruması için kişi-başına reminder sayısı sınırlıdır:
-
 
         - **Bir kişiye en fazla 3 SMS reminder** gönderilebilir (otomatik
           scheduled + manuel trigger toplam). Sayaç dolu kişi için SMS skip
@@ -2254,53 +1730,32 @@ paths:
           kişi başınadır.
 
         **Davet sırası:** Hatırlatma yalnızca davet sırası gelmiş taraflara
-
         gönderilir. Onaylayan onayını beklerken imzacılar, sıralı sözleşmede
-
         sırası henüz gelmemiş taraflar ve bir onaylayan reddettiyse tüm
-
         taraflar `details[]` içinde `skipped` olarak
-
         `reason: "party_not_eligible"` ile döner.
 
-
-        Sayım kaynağı: `ReminderLog` tablosu (channel + party_id,
-        `status='SENT'`).
-
+        Sayım kaynağı: `ReminderLog` tablosu (channel + party_id, `status='SENT'`).
         Hem otomatik scheduled (ReminderWorker) hem manuel trigger reminders
-
         tek toplamda sayılır.
 
-
         **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla erişilen
-
         organizasyonun sözleşmesi olmalıdır; aksi halde 404 `DEMAND_NOT_FOUND`
-
         (IDOR shield). Kurum çalışma alanında hatırlatma, sözleşme düzenleme
-
         izninin kapsamına bağlıdır: varsayılan rol izinlerinde OWNER ve ADMIN
-
         kurumun tüm sözleşmelerine, MEMBER yalnız kendi oluşturduğu
-
         sözleşmelere hatırlatma gönderebilir; kurumun izin ayarları bu kapsamı
-
         değiştirebilir. Erişim yoksa 404 `DEMAND_NOT_FOUND` döner.
 
-
         **Kanal eligibility:** Bir parti için
-
-        - `email` kanalı: `party.email` dolu **ve** `party.send_email=true`
-        **ve**
+        - `email` kanalı: `party.email` dolu **ve** `party.send_email=true` **ve**
           `demand.send_email_notifications=true` ise gönderilir
         - `sms` kanalı: `party.phone` dolu **ve** `party.send_sms=true` **ve**
           `demand.send_sms_notifications=true` ise gönderilir
 
         **Mesaj içeriği:** Şablonun `sms_reminder_message` alanı (varsa) +
-
         `signer.first_name` / `{{name}}` / `{{link}}` gibi sistem değişkenleri
-
-        substitute edilir. Şablonda yoksa sistem default reminder mesajı
-        kullanılır.
+        substitute edilir. Şablonda yoksa sistem default reminder mesajı kullanılır.
       parameters:
         - name: id
           in: path
@@ -2353,16 +1808,11 @@ paths:
                       reminders_ineligible:
                         type: integer
                         minimum: 0
-                        description: >
+                        description: |
                           İmzasını veya onayını tamamlamamış ama bu çağrıda
-
                           hatırlatma almayan taraf sayısı (reddetmiş, açık
-
-                          düzeltme talebi olan ya da imza ekranı henüz
-                          açılmamış).
-
+                          düzeltme talebi olan ya da imza ekranı henüz açılmamış).
                           Gönderim sayısı 0 iken sözleşmenin tamamlanıp
-
                           tamamlanmadığını ayırt etmek için kullanılabilir.
                       dispatched:
                         type: array
@@ -2385,9 +1835,7 @@ paths:
                                   - sms
                       skipped:
                         type: array
-                        description: >-
-                          Hatırlatma gönderilmeyen partilerin nedenleriyle
-                          birlikte (telefon/email yok, opt-out vs.)
+                        description: Hatırlatma gönderilmeyen partilerin nedenleriyle birlikte (telefon/email yok, opt-out vs.)
                         items:
                           type: object
                           properties:
@@ -2430,31 +1878,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/StandardError'
         '409':
-          description: >
+          description: |
             **ALREADY_COMPLETED** — Tüm taraflar imzalamış. Hatırlatılacak
-
             imzalanmamış parti yok. İmzalamamış taraf varsa ama hiçbiri
-
             hatırlatma almıyorsa (ör. yalnız reddeden taraf kaldıysa) bu kod
-
             dönmez; yanıt 200 ve gönderim sayısı 0 olur.
 
+            **DEMAND_NOT_DISPATCHED**: sözleşme henüz imzaya gönderilmedi (taslak).
 
-            **DEMAND_NOT_DISPATCHED**: sözleşme henüz imzaya gönderilmedi
-            (taslak).
-
-
-            **DEMAND_NOT_DISPATCHABLE**: sözleşme tamamlanmış veya iptal
-            edilmiş.
-
+            **DEMAND_NOT_DISPATCHABLE**: sözleşme tamamlanmış veya iptal edilmiş.
 
             **DEMAND_EXPIRED**: sözleşmenin imza süresi geçmiş.
 
-
             **ENVELOPE_NOT_DISPATCHED**: çok belgeli zarf henüz gönderilmedi.
-
             Önce `POST /demands/{id}/dispatch` çağırın; tek belgeli ve
-
             gönderilmiş sözleşmelerde bu kod hiç dönmez.
           content:
             application/json:
@@ -2484,9 +1921,7 @@ paths:
                     success: false
                     error:
                       code: RATE_LIMITED
-                      message: >-
-                        Reminder rate limited. Try again in 247s or pass
-                        force=true.
+                      message: Reminder rate limited. Try again in 247s or pass force=true.
                       retry_after_seconds: 247
                 smsCapReached:
                   summary: SMS sert üst sınır — retry edilemez
@@ -2494,10 +1929,7 @@ paths:
                     success: false
                     error:
                       code: MAX_SMS_REMINDERS_REACHED
-                      message: >-
-                        This demand has already received 3 SMS reminders (max 3
-                        per contract). SMS cap reached; further reminders
-                        blocked. Email channel still allowed.
+                      message: This demand has already received 3 SMS reminders (max 3 per contract). SMS cap reached; further reminders blocked. Email channel still allowed.
               schema:
                 type: object
                 properties:
@@ -2570,61 +2002,37 @@ paths:
                   type: string
                 parties:
                   type: string
-                  description: >
+                  description: |
                     JSON array of party objects.
-
-                    Her party: first_name, last_name (zorunlu), email VEYA phone
-                    (zorunlu).
-
+                    Her party: first_name, last_name (zorunlu), email VEYA phone (zorunlu).
 
                     `field_template_id` gönderildiğinde her party AYRICA
-
                     `template_party_id` (Alan Şablonu rolü) taşımak zorundadır
-
                     ve şablondaki her rol tam olarak bir kez eşlenmelidir.
 
-
                     Opsiyonel `locale` (`tr`, `en` veya `null`): imzacının
-
                     dijital imza sayfasını ve bildirimlerini göreceği dil (bkz.
-
                     `PartyMappingInput.locale`). Alan Şablonu kullanılırken
-
                     gönderilmezse rolün varsayılan dili uygulanır. Geçersiz
-
                     değer `400 INVALID_LOCALE` döner, sözleşme oluşturulmaz.
 
-
                     Opsiyonel `require_phone_verification` (`true`, `false`
-
                     veya `null`): telefon doğrulamasını yalnız bu taraf için
-
                     açar ya da kapatır (bkz.
-
                     `PartyMappingInput.require_phone_verification`).
-
                     Gönderilmezse sözleşmenin telefon doğrulaması ayarı
-
                     geçerlidir. Sözleşmede telefon doğrulaması açıksa
-
-                    imzalayan taraflar için false etkisizdir. Geçersiz değer
-                    `400 INVALID_PHONE_VERIFICATION`
-
+                    imzalayan taraflar için false etkisizdir. Geçersiz değer `400 INVALID_PHONE_VERIFICATION`
                     döner; `true` iken `phone` boşsa `400
-
                     PHONE_REQUIRED_FOR_VERIFICATION` döner. İki durumda da
-
                     sözleşme oluşturulmaz.
-                  example: >-
-                    [{"first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com"}]
+                  example: '[{"first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com"}]'
                 field_template_id:
                   type: string
                   format: uuid
-                  description: >
+                  description: |
                     Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse
-
                     yüklenen belgeye şablonun alan yerleşimi uygulanır.
-
 
                     - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt
                       doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek
@@ -2634,8 +2042,7 @@ paths:
                     - Çözümleme sözleşme yaratımından ve kredi düşümünden
                       ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi
                       düşmez.
-                    - Ön kontrol için `POST
-                    /api/v1/field-templates/{id}/preview-layout`.
+                    - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.
                 force:
                   type: string
                   enum:
@@ -2659,23 +2066,17 @@ paths:
                     - 'no'
                     - hayir
                     - hayır
-                  description: >
+                  description: |
                     `"true"` (veya `"1"`) verilirse imza davetleri **aynı
-
                     istekte** gönderilir; taraf başına ayrıca
-
                     `POST /api/v1/demands/{id}/parties/{partyId}/resend`
-
                     çağırmanız gerekmez.
-
 
                     - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet
                       göndermiyordu; mevcut entegrasyonların davranışı
                       değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`
                       döner (fail-closed).
-                    - **Açık değerler:** `"true"`, `"1"`, `"all"`, `"email"`,
-                    `"sms"`.
-
+                    - **Açık değerler:** `"true"`, `"1"`, `"all"`, `"email"`, `"sms"`.
                     - **Kapalı değerler:** `"false"`, `"0"`, `"off"`, `"no"`,
                       `"hayir"`, `"hayır"`.
                     - Ad bilerek `dispatch_notifications` **değildir**: o
@@ -2706,28 +2107,19 @@ paths:
                   enum:
                     - block
                     - drop
-                  description: >
+                  description: |
                     Çapa bulunamadığında ne yapılacağı. Yalnız
-
                     `field_template_id` ile anlamlıdır.
 
-
                     Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**:
-
-                    - Gönderilmezse şablon ayarı geçerli değildir, `block`
-                    uygulanır.
-
+                    - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır.
                     - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`
                       ise uygulanır; aksi halde yok sayılır, `block` uygulanır
                       ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner.
                     - İmza alanlarında `drop` hiçbir koşulda uygulanmaz.
-
-                    - `fallback` bu API'de **yoktur** (400
-                    `INVALID_ON_ANCHOR_MISS`).
-
+                    - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).
 
                     Yanıttaki `data.field_layout.on_anchor_miss` istenen değil,
-
                     **uygulanan** değeri taşır.
       responses:
         '201':
@@ -2858,38 +2250,24 @@ paths:
         - Templates
       summary: Alan Şablonlarını listeler
       x-required-scope: templates:read
-      description: >
+      description: |
         Hesabınızdaki (ya da seçili çalışma alanındaki) **Alan Şablonlarını**
-
         (`kind: FIELD_LAYOUT`) döner.
-
 
         ### Neden ayrı bir uç
 
-
         `GET /api/v1/templates` Alan Şablonlarını bilerek listelemez ve
-
         `GET /api/v1/templates/{id}` onlara `404` döner. Alan Şablonunun
-
         referans belgesi hiçbir imzacıya gönderilmez; belgeli şablon
-
         sanılması, o referans belgenin karşı tarafa gitmesi demek olurdu.
-
         Bu yüzden varsayılan davranış hariç tutmaktır ve Alan Şablonlarını
-
         görmek açık bir talep gerektirir.
 
-
         Döndürülen `id`, `POST /api/v1/demands/upload` çağrısındaki
-
-        `field_template_id` ve `POST
-        /api/v1/field-templates/{id}/preview-layout`
-
+        `field_template_id` ve `POST /api/v1/field-templates/{id}/preview-layout`
         için kullanılır.
 
-
         `parties` dizisi taraf sırasına göre döner; upload gövdesindeki
-
         `parties` dizisini bu sırayla kurun.
       parameters:
         - name: page
@@ -3082,32 +2460,23 @@ paths:
         '429':
           description: Dakikalık önizleme sınırı aşıldı (`RATE_LIMITED`)
         '503':
-          description: >-
-            Sınırlayıcı geçici olarak kullanılamıyor
-            (`RATE_LIMITER_UNAVAILABLE`)
+          description: Sınırlayıcı geçici olarak kullanılamıyor (`RATE_LIMITER_UNAVAILABLE`)
   /api/v1/demands/{id}/items:
     post:
       tags:
         - Demands
       summary: Sözleşmeye alan yerleştir (replace)
       x-required-scope: demands:write
-      description: >
+      description: |
         Sözleşmenin sayfalarına imza ve form alanlarını koordinatlarıyla
-
         yerleştirir. Tipik kullanım: `POST /api/v1/demands/upload` ile
-
         demand yarat (`dispatch_notifications=false` ile auto-dispatch'i
-
         ertele) → bu endpoint ile alanları yerleştir → dashboard üzerinden
-
         ya da `POST /api/v1/demands/{id}/reminders` ile gönderim başlat.
-
 
         ### Replace mode
 
-
         Endpoint **replace** semantiği taşır:
-
         - `page_ids` **omitted** → demand'in TÜM mevcut item'ları silinir,
           body'dekiler yaratılır (full replace).
         - `page_ids: [N, M, ...]` → sadece bu sayfaların item'ları silinir,
@@ -3116,35 +2485,19 @@ paths:
 
         ### Item type'ları
 
-
         | `item_type` | `party_id` zorunlu? | `config` örneği |
-
         |-------------|---------------------|-----------------|
-
         | `signature` | ✅ | (yok) veya `{ requireFirstSignatureOtp: true }` |
-
         | `text` | ❌ | `{ default_content }` |
-
         | `dynamic_text` | ✅ | `{ defaultSource: "{{signer.full_name}}" }` |
-
-        | `cells` | ✅ | `{ cellCount: 11, defaultSource:
-        "{{signer.government_id}}" }` |
-
+        | `cells` | ✅ | `{ cellCount: 11, defaultSource: "{{signer.government_id}}" }` |
         | `date` | ✅ | `{ defaultSource, defaultValue }` |
-
         | `dropdown` | ✅ | `{ options: [{label,value}], defaultValue }` |
-
         | `checkbox` | ✅ | `{ checkedByDefault: false }` |
-
         | `radio` | ✅ | `{ options: [{label,value}], defaultValue }` |
-
-        | `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) |
-        `{ source: "INLINE", stampData: { companyName: "Örnek Ltd.", taxNumber:
-        "1234567890" } }` |
-
+        | `stamp` | Yalnız `source: FILLER_PROVIDES` ise (zorunlu kaşede şart) | `{ source: "INLINE", stampData: { companyName: "Örnek Ltd.", taxNumber: "1234567890" } }` |
 
         ### Kaşe (`stamp`) alanı
-
 
         - `config.source`: `INLINE` (varsayılan, kaşe verisi gönderenden gelir),
           `FROM_SAVED` (kayıtlı kaşeden kopya) veya `FILLER_PROVIDES` (kaşeyi
@@ -3165,52 +2518,31 @@ paths:
 
         ### Sistem değişkenleri (dynamic_text/cells/date `config.defaultSource`)
 
-
         `{{signer.first_name}}`, `{{signer.last_name}}`, `{{signer.full_name}}`,
-
         `{{signer.email}}`, `{{signer.phone}}`, `{{signer.government_id}}`,
-
         `{{signer.birth_date}}`, `{{signer.sign_date}}`,
-
-        `{{signer.company_name}}`, `{{signer.tax_number}}`,
-        `{{signer.tax_office}}`,
-
+        `{{signer.company_name}}`, `{{signer.tax_number}}`, `{{signer.tax_office}}`,
         `{{signer.company_address}}`, `{{signer.company_district}}`,
-
         `{{signer.company_city}}`, `{{contract.title}}`,
-
         `{{sender.full_name}}`, `{{current.date}}`, `{{current.datetime}}`.
-
 
         ### Workspace izolasyonu
 
-
         X-API-Key middleware demand'i workspace'e göre filtreler;
-
         başka workspace'in demand'ine item ekleyemezsiniz (404 döner).
-
         Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerine,
-
         MEMBER yalnız kendi oluşturduğu sözleşmelere alan yerleştirebilir.
-
         Erişim yoksa 404 döner.
-
 
         ### Status kontrolü
 
-
         Sadece `PENDING` demand edit edilebilir. `COMPLETED`, `EXPIRED`,
-
         `REJECTED` için 403.
-
 
         ### Örnek
 
-
         ```bash
-
-        curl -X POST https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items
-        \
+        curl -X POST https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items \
           -H "X-API-Key: imz_..." \
           -H "Content-Type: application/json" \
           -d '{
@@ -3256,28 +2588,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/UpsertItemsResponse'
         '400':
-          description: >
+          description: |
             Validation hatası. Olası `error` değerleri:
-
             - `INVALID_ITEMS_BODY` — items array değil
-
             - `VALIDATION_ERROR` — position bounds, slug regex, party-required
-
-            - `INVALID_PAGE_ID` — page_id demand'e ait değil veya page_ids'te
-            yok
-
+            - `INVALID_PAGE_ID` — page_id demand'e ait değil veya page_ids'te yok
             - `INVALID_PARTY_ID` — party_id demand'e ait değil
-
-            - `PARTY_NOT_ASSIGNED_TO_DOCUMENT`: kaşeyi dolduracak taraf, kaşenin
-            belgesine atanmamış
-
-            - `INVALID_STAMP_DATA`: `config.stampData` bilinmeyen alan veya
-            string olmayan değer içeriyor
-
+            - `PARTY_NOT_ASSIGNED_TO_DOCUMENT`: kaşeyi dolduracak taraf, kaşenin belgesine atanmamış
+            - `INVALID_STAMP_DATA`: `config.stampData` bilinmeyen alan veya string olmayan değer içeriyor
             - `PAGE_ID_REQUIRED`: bir öğede tam sayı `page_id` yok
-
-            - `INVALID_ITEM_TYPE`: desteklenmeyen `item_type` (mesaj izinli
-            türleri listeler)
+            - `INVALID_ITEM_TYPE`: desteklenmeyen `item_type` (mesaj izinli türleri listeler)
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -3307,37 +2627,23 @@ paths:
         - Demands
       summary: Kaşe alanını doldur (kısmi güncelleme)
       x-required-scope: demands:write
-      description: >
+      description: |
         Sözleşmedeki var olan TEK bir kaşe alanını yapılandırılmış veriyle
-
         doldurur. `POST /api/v1/demands/{id}/items` tüm alanları yeniden
-
         yazar; bu uç ise yalnız belirtilen kaşeye dokunur, diğer alanlar
-
         değişmez.
 
-
         Kaşe alanının kimliği (`itemId`) `GET /api/v1/demands/{id}` yanıtındaki
-
         `stamp_items[].item_id` alanından alınır.
-
 
         ### Kısmi güncelleme kuralları
 
-
-        - `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk
-        kırpılır).
-
+        - `stamp_data` içinde gönderilen alan yazılır (baştaki/sondaki boşluk kırpılır).
         - `null` veya boş string gönderilen alan kaldırılır.
-
         - Gönderilmeyen alan olduğu gibi korunur.
-
-        - Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA`
-        döner.
-
+        - Bilinmeyen alan veya string olmayan değer `400 INVALID_STAMP_DATA` döner.
 
         ### Kaşe kaynağına göre davranış
-
 
         - `FILLER_PROVIDES`: veri imzalayanın kaşesine önceden doldurulur;
           zorunlu kaşe bu veriyle karşılanmış sayılır. İmzalayan imza
@@ -3345,36 +2651,24 @@ paths:
           düzenlerse onun verisi kaydedilir. Kayıtta verinin gönderen
           tarafından mı imzalayan tarafından mı girildiği ayrıca tutulur.
         - `INLINE`: kaşe verisi güncellenir.
-
         - `FROM_SAVED`: veri artık kayıtlı kaşeyle aynı olmadığı için kaşe
           `INLINE` olur. Görsel kaşe (logo) varsa korunur ve belgede logo gösterilir.
 
         ### Durum kontrolü
 
-
         Yalnız `DRAFT` ve `PENDING` sözleşmeler güncellenebilir. Taraflardan
-
         biri imzaladıysa veya bir belge için karar verdiyse kaşe değiştirilemez.
-
 
         ### Erişim
 
-
         Kurum çalışma alanında OWNER ve ADMIN kurumun tüm sözleşmelerinde,
-
         MEMBER yalnız kendi oluşturduğu sözleşmelerde kaşe doldurabilir.
-
         Erişim yoksa `404 DEMAND_NOT_FOUND` döner.
-
 
         ### Örnek
 
-
         ```bash
-
-        curl -X PATCH
-        https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp
-        \
+        curl -X PATCH https://api-prd.imzala.org/api/v1/demands/$DEMAND_ID/items/$STAMP_ITEM_ID/stamp \
           -H "X-API-Key: imz_..." \
           -H "Content-Type: application/json" \
           -d '{
@@ -3414,17 +2708,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PatchStampItemResponse'
         '400':
-          description: >
+          description: |
             Olası `error` değerleri:
-
             - `INVALID_ITEM_ID`: `itemId` pozitif tam sayı değil
-
-            - `VALIDATION_ERROR`: gövde nesne değil, bilinmeyen gövde alanı veya
-            geçersiz `document_id`
-
-            - `INVALID_STAMP_DATA`: `stamp_data` boş, bilinmeyen alan veya
-            string/null olmayan değer içeriyor
-
+            - `VALIDATION_ERROR`: gövde nesne değil, bilinmeyen gövde alanı veya geçersiz `document_id`
+            - `INVALID_STAMP_DATA`: `stamp_data` boş, bilinmeyen alan veya string/null olmayan değer içeriyor
             - `NOT_A_STAMP_ITEM`: alan kaşe değil
         '401':
           $ref: '#/components/responses/Unauthorized'
@@ -3433,76 +2721,48 @@ paths:
             `DEMAND_NOT_EDITABLE`: sözleşme `DRAFT`/`PENDING` değil.
             `INSUFFICIENT_SCOPE`: API anahtarında `demands:write` yok.
         '404':
-          description: >
+          description: |
             `DEMAND_NOT_FOUND`: sözleşme bu workspace'te yok.
-
-            `ITEM_NOT_FOUND`: alan bu sözleşmede (veya verilen `document_id`
-            belgesinde) yok.
+            `ITEM_NOT_FOUND`: alan bu sözleşmede (veya verilen `document_id` belgesinde) yok.
         '409':
-          description: >
-            `DEMAND_PARTIALLY_SIGNED`: taraflardan biri imzaladı veya karar
-            verdi.
+          description: |
+            `DEMAND_PARTIALLY_SIGNED`: taraflardan biri imzaladı veya karar verdi.
   /api/v1/demands/{id}/embed-session:
     post:
       tags:
         - Demands
       summary: Gömülü imza oturumu başlat (embed token mint)
       x-required-scope: demands:write
-      description: >
+      description: |
         Belirtilen sözleşmedeki bir taraf için kısa ömürlü, tek kullanımlık
-
         gömülü imza token'ı üretir. Dönen `embed_url` bir `<iframe>` içine
-
         yerleştirilerek tarafın kendi uygulamanız içinden imzalaması sağlanır.
 
-
         **İmza sınıfı:** Bu akışla atılan dijital imza, 5070 sayılı Elektronik
-
         İmza Kanunu m.3 anlamında elektronik imzadır; güvenli elektronik imza
-
         değildir ve AB hukuku bakımından gelişmiş veya nitelikli imza olarak
-
         sunulmaz. Telefon doğrulaması, T.C. kimlik numarası kontrolü veya
-
         biyometrik adımlar gibi ek doğrulamalar imzanın delil değerini
-
         güçlendirir; imzayı gelişmiş ya da güvenli elektronik imzaya
-
         dönüştürmez. Güvenli elektronik imza gerekiyorsa bu akış yerine
-
         nitelikli elektronik sertifika ile imzalama akışını kullanın.
 
-
         **Token özellikleri:**
-
         - Tek kullanımlık: imza sayfası açıldığında token tüketilir.
-
         - Kısa ömürlü: `expires_at` alanında belirtilen sürede geçersiz olur.
-
         - `embed_allowed_origins` kısıtı: API anahtarına tanımlanmış
           izin verilen origin'ler dışından `<iframe>` açılamaz (409 döner).
 
         **Güvenlik katmanları:**
-
         - B1: Sözleşme sahiplik kontrolü (workspace-aware IDOR koruması)
-
         - B3: Çapraz sözleşme taraf IDOR koruması (party.demand_id doğrulaması)
-
-        - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token
-        üretilmez)
-
+        - K:  Taraf-eylem kapısı (zaten imzalamış veya reddetmiş tarafa token üretilmez)
 
         **Workspace izolasyonu:** `X-Workspace-Id` header'ıyla yalnızca çağıran
-
-        organizasyonun sözleşmelerine erişilebilir; başka workspace'in
-        sözleşmesi
-
+        organizasyonun sözleşmelerine erişilebilir; başka workspace'in sözleşmesi
         için 404 döner (IDOR koruması). Kurum çalışma alanında sözleşme
-
         düzenleme ile aynı rol kuralı geçerlidir: OWNER ve ADMIN kurumun tüm
-
         sözleşmeleri için, MEMBER yalnız kendi oluşturduğu sözleşmeler için
-
         oturum alır. Erişim yoksa 404 döner.
       parameters:
         - name: id
@@ -3524,19 +2784,13 @@ paths:
                 party_id:
                   type: string
                   format: uuid
-                  description: >
+                  description: |
                     Token üretilecek tarafın ID'si. `POST /api/v1/demands` veya
-
-                    `GET /api/v1/demands/{id}` cevabındaki
-                    `signing_urls[].party_id`
-
+                    `GET /api/v1/demands/{id}` cevabındaki `signing_urls[].party_id`
                     alanından alınır.
                 locale:
                   $ref: '#/components/schemas/SignerLocale'
-                  description: >-
-                    Gömülü imza sayfasının dili. Verilirse `embed_url` `lang`
-                    parametresi taşır. Kaydedilmez; tarafın kayıtlı dilini
-                    değiştirmez. Geçersiz değer `400 INVALID_LOCALE` döner.
+                  description: Gömülü imza sayfasının dili. Verilirse `embed_url` `lang` parametresi taşır. Kaydedilmez; tarafın kayıtlı dilini değiştirmez. Geçersiz değer `400 INVALID_LOCALE` döner.
                   example: en
             example:
               party_id: f47ac10b-58cc-4372-a567-0e02b2c3d479
@@ -3566,13 +2820,10 @@ paths:
                       embed_url:
                         type: string
                         format: uri
-                        description: >
+                        description: |
                           `<iframe src="">` alanına yerleştirilecek tam URL.
-
-                          `https://e.imzala.org/embed/sign?token=<embed_token>`
-                          formatında.
-                        example: >-
-                          https://e.imzala.org/embed/sign?token=emb_a1b2c3d4e5f6...
+                          `https://e.imzala.org/embed/sign?token=<embed_token>` formatında.
+                        example: https://e.imzala.org/embed/sign?token=emb_a1b2c3d4e5f6...
         '400':
           description: |
             `party_id` eksik veya geçersiz format. `INVALID_LOCALE` (`code`
@@ -3599,12 +2850,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
         '404':
-          description: >
-            Sözleşme veya taraf bulunamadı. İki durum ayrıştırılmaz (IDOR
-            koruması):
-
+          description: |
+            Sözleşme veya taraf bulunamadı. İki durum ayrıştırılmaz (IDOR koruması):
             - `Sözleşme bulunamadı` — demand bu workspace'te yok
-
             - `Taraf bulunamadı` — party_id bu demand'e ait değil
           content:
             application/json:
@@ -3618,15 +2866,11 @@ paths:
                     type: string
                     example: Taraf bulunamadı
         '409':
-          description: >
+          description: |
             Token üretilemez. Olası nedenler:
-
             - `Bu taraf zaten imzaladı` — taraf imzalamış
-
             - `Bu taraf imzayı reddetti` — taraf reddetmiş
-
-            - `embed_allowed_origins tanımlı değil` — API anahtarında izin
-            verilen
+            - `embed_allowed_origins tanımlı değil` — API anahtarında izin verilen
               origin listesi boş; dashboard'dan API anahtarı düzenleyerek ekleyin.
           content:
             application/json:
@@ -3746,34 +2990,21 @@ paths:
         - Demands
       summary: İmza denetim izi (maskeli)
       x-required-scope: demands:read
-      description: >
+      description: |
         Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner.
-
         KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham
-
         IP/cihaz asla döndürülmez.
 
-
         `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`,
-
         `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`,
-
         `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED`
-
         (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu),
-
         `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu
-
         olayın `ip_masked` ve `device_label` alanları telefona aittir),
-
         `REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında
-
         sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve
-
         onaylayanların yeniden onay vermesi gerekiyor).
-
-        Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız
-        önerilir.
+        Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
       parameters:
         - name: id
           in: path
@@ -3826,20 +3057,13 @@ paths:
         - Demands
       summary: Sözleşme iptal (void)
       x-required-scope: demands:write
-      description: >
+      description: |
         Bekleyen bir sözleşmeyi iptal eder (status=CANCELLED). Tamamlanmış
-
         (409) veya zaten iptal edilmiş (409) sözleşme iptal edilemez. Bekleyen
-
         hatırlatmalar iptal edilir.
-
-        Koşullar sağlanırsa, imza bekleyen ve toplu olmayan sözleşmede
-        gönderimde
-
+        Koşullar sağlanırsa, imza bekleyen ve toplu olmayan sözleşmede gönderimde
         düşülen kredi iade edilir: hiçbir taraf imzalamamış ya da onaylamamış
-
         olmalı ve bekleyen bir mobil imza isteği bulunmamalıdır. Tamamlanmış
-
         ücretli doğrulama adımlarının kredisi iadeden düşülür.
       parameters:
         - name: id
@@ -3952,9 +3176,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            Arşivlenmiş sözleşme değiştirilemez (`DEMAND_ARCHIVED`); önce `POST
-            .../unarchive` çağırın.
+          description: Arşivlenmiş sözleşme değiştirilemez (`DEMAND_ARCHIVED`); önce `POST .../unarchive` çağırın.
           content:
             application/json:
               schema:
@@ -3965,18 +3187,12 @@ paths:
         - Demands
       summary: Sözleşmeyi arşivle
       x-required-scope: demands:write
-      description: >
+      description: |
         Arşiv sözleşmenin `status`'unu DEĞİŞTİRMEZ; yalnız `archived_at`
-
         damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar
-
         (`PATCH .../term` gibi mutasyonlar 409
-
         `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız
-
-        tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler
-        arşivlenebilir.
-
+        tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir.
         Zaten arşivliyse idempotent (200, mevcut `archived_at` ile).
       parameters:
         - name: id
@@ -4052,16 +3268,11 @@ paths:
         - Demands
       summary: Tekil tarafa imza davetini tekrar gönder
       x-required-scope: demands:write
-      description: >
+      description: |
         Belirtilen tarafa imza davetini (SMS/e-posta/WhatsApp, sözleşme
-
         ayarına göre) tekrar gönderir. İmzalamış/reddetmiş tarafa, onayını
-
         vermiş onaylayana, açık düzeltme talebi olan tarafa veya sıralı imzada
-
-        sırası gelmemiş tarafa gönderilemez (409). Sıralı imzada onaylayanın
-        onayı o adımı tamamlar;
-
+        sırası gelmemiş tarafa gönderilemez (409). Sıralı imzada onaylayanın onayı o adımı tamamlar;
         sıra bir sonraki tarafa geçer.
       parameters:
         - name: id
@@ -4097,11 +3308,9 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >
+          description: |
             Tekrar gönderim yapılamaz. `error` insan-okur mesajı taşır.
-
             - İmzalamış veya reddetmiş taraf (`code` alanı yok)
-
             - `CHANGE_REQUEST_PENDING`: tarafın açık bir düzeltme talebi var;
               talep çözüldükten sonra tekrar gönderilebilir
             - `PARTY_NOT_ELIGIBLE`: tarafa şu an davet gönderilemez. Şu
@@ -4110,13 +3319,9 @@ paths:
               onaylayan katmanının onayı tamamlanmadan imzacıya gönderim
               denendiğinde veya sıralı imzada henüz bu tarafın sırası
               gelmediğinde.
-            - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi
-            (taslak)
-
+            - `DEMAND_NOT_DISPATCHED`: sözleşme henüz imzaya gönderilmedi (taslak)
             - `DEMAND_NOT_DISPATCHABLE`: sözleşme tamamlanmış veya iptal edilmiş
-
             - `DEMAND_EXPIRED`: sözleşmenin imza süresi geçmiş
-
             - `ENVELOPE_NOT_DISPATCHED`: çok belgeli zarf henüz gönderilmedi.
               Önce `POST /demands/{id}/dispatch` çağırın; tek belgeli ve
               gönderilmiş sözleşmelerde bu kod hiç dönmez.
@@ -4189,9 +3394,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            `ENVELOPE_MULTI_DOC_DISABLED` — çok-belgeli zarf yüzeyi bu hesap
-            için henüz kapalı.
+          description: '`ENVELOPE_MULTI_DOC_DISABLED` — çok-belgeli zarf yüzeyi bu hesap için henüz kapalı.'
     post:
       tags:
         - Demands
@@ -4260,16 +3463,11 @@ paths:
                       document:
                         $ref: '#/components/schemas/EnvelopeDocument'
         '400':
-          description: >
+          description: |
             `VALIDATION_FAIL` — başlık boş. `INVALID_DOC_KIND` — geçersiz
-
-            `doc_kind`. `CONSENT_CANNOT_BE_REQUIRED` /
-            `PREINFO_MUST_BE_REQUIRED`
-
+            `doc_kind`. `CONSENT_CANNOT_BE_REQUIRED` / `PREINFO_MUST_BE_REQUIRED`
             — yukarı bakın. `DOCUMENT_LIMIT_EXCEEDED` — zarf başına en fazla
-
             20 belge. `QES_NOT_SUPPORTED_MULTI_DOCUMENT` — NES/Mobil İmza açık
-
             (`enable_qes`) bir sözleşmede ikinci belge eklenemez.
         '404':
           $ref: '#/components/responses/NotFound'
@@ -4360,9 +3558,7 @@ paths:
                       document:
                         $ref: '#/components/schemas/EnvelopeDocument'
         '400':
-          description: >-
-            `VALIDATION_FAIL` (dosya/idempotency_key/başlık eksik) veya
-            `INVALID_DOC_KIND`.
+          description: '`VALIDATION_FAIL` (dosya/idempotency_key/başlık eksik) veya `INVALID_DOC_KIND`.'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
@@ -4429,15 +3625,11 @@ paths:
                         items:
                           $ref: '#/components/schemas/EnvelopeDocument'
         '400':
-          description: >-
-            `ORDER_SET_MISMATCH` — gönderilen id kümesi zarftaki belgelerle
-            eşleşmiyor.
+          description: '`ORDER_SET_MISMATCH` — gönderilen id kümesi zarftaki belgelerle eşleşmiyor.'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` /
-            `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.
+          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.'
   /api/v1/demands/{demandId}/documents/{docId}:
     patch:
       tags:
@@ -4515,9 +3707,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` /
-            `SIGNING_ALREADY_STARTED`.
+          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED`.'
     delete:
       tags:
         - Demands
@@ -4568,9 +3758,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` /
-            `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.
+          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.'
   /api/v1/demands/{demandId}/documents/{docId}/assignments:
     put:
       tags:
@@ -4642,73 +3830,44 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: >-
-            `ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` /
-            `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.
+          description: '`ENVELOPE_MULTI_DOC_DISABLED` / `DEMAND_NOT_EDITABLE` / `SIGNING_ALREADY_STARTED` / `ENVELOPE_ALREADY_DISPATCHED`.'
   /api/v1/demands/{demandId}/dispatch:
     post:
       tags:
         - Demands
       summary: Zarfı imzaya gönder (yayınla + davet)
       x-required-scope: demands:write
-      description: >
+      description: |
         Sözleşmeyi imzaya gönderir: kredi mutabakatı yapar, `DRAFT` ise
-
         sözleşmeyi `PENDING`'e alır ve tarafları imza daveti (SMS/e-posta/
-
         WhatsApp) ile bilgilendirir.
 
-
         **Onaylayan:** Sözleşmede Onaylayan varsa bu uç önce yalnızca onay
-
         bekleyen onaylayanları davet eder; imzacılar tüm onaylayanlar
-
         onayladıktan sonra davet edilir. Bir onaylayan reddettiyse bu uç
-
         kimseye davet göndermez; onay vermiş onaylayan yeniden davet edilmez.
 
-
         🔴 **Bu uçta yukarıdaki `/documents*` ailesinin bayrak kapısı
-
         (`ENVELOPE_DECISION_ENFORCE`) YOKTUR** (bilinçli): gönderim
-
         tek-belgeli zarflarda da anlamlıdır; o bayrak yalnız çok-belgeli zarf
-
         YARATIMINI kapatan bir anahtardır.
 
-
         **İki aşamalı akış örneği:** bir sözleşme önce sessizce hazırlanabilir
-
         — `dispatch_notifications: false` ile oluşturulur, ardından
-
         `POST .../documents` / `POST .../documents/upload` ile belgeler
-
         eklenir (bu iki uç kimseye bildirim GÖNDERMEZ; `send_invitations`
-
         gibi bir parametreleri bile yoktur) — çağıran hazır olduğunda TEK bu
-
         uçla yayına alıp davetleri gönderir. **Bu uç çağrılana kadar** birden
-
         çok belgeli bir zarfın oluşturma yanıtındaki `signing_url`'leri
-
         ÇALIŞMAZ (imzacı için 410; `POST .../parties/{partyId}/resend` ve
-
         `POST .../reminders` için 409 `ENVELOPE_NOT_DISPATCHED` döner); belge
-
         uçları (`/documents*`) ise gönderim beklemeden kullanılabilir.
 
-
-        **Kredi:** tek tahsilat noktası burasıdır
-        (`reconcileDemandSigningCost`).
-
+        **Kredi:** tek tahsilat noktası burasıdır (`reconcileDemandSigningCost`).
         Belge CRUD/yükleme uçları kredi düşmez. Mutabakat **idempotent**tir:
-
         sözleşme zaten yayınlanmışsa (`dispatched: false` döner) fark 0
-
         olduğu için tekrar tahsilat YAPILMAZ — ama davet fazı yine çalışır
-
         (bkz. `v1ResendRateLimiter`, `/parties/{partyId}/resend` ile AYNI
-
         dakika-bazlı freni paylaşır).
       parameters:
         - name: demandId
@@ -4741,23 +3900,13 @@ paths:
                         - 'no'
                         - hayir
                         - hayır
-                  description: >
+                  description: |
                     Hangi kanaldan davet gideceğini **daraltır** (sözleşmenin
-
                     kendi bildirim ayarlarını AÇAMAZ, yalnız kapatabilir).
-
-                    **Kapalı:** `false` (boolean), `"false"`, `"0"`, `"off"`,
-                    `"no"`,
-
-                    `"hayir"`, `"hayır"` → hiçbir davet gönderilmez, sözleşme
-                    yalnız
-
-                    yayına alınır. Tanınmayan değer **400
-                    `INVALID_SEND_INVITATIONS`**
-
-                    döner (fail-closed — davet gitti sanıp gitmemesindense hata
-                    görmek
-
+                    **Kapalı:** `false` (boolean), `"false"`, `"0"`, `"off"`, `"no"`,
+                    `"hayir"`, `"hayır"` → hiçbir davet gönderilmez, sözleşme yalnız
+                    yayına alınır. Tanınmayan değer **400 `INVALID_SEND_INVITATIONS`**
+                    döner (fail-closed — davet gitti sanıp gitmemesindense hata görmek
                     yeğdir).
       responses:
         '200':
@@ -4801,9 +3950,7 @@ paths:
                         properties:
                           sent:
                             type: integer
-                            description: >-
-                              En az bir kanaldan başarıyla gönderilen taraf
-                              sayısı.
+                            description: En az bir kanaldan başarıyla gönderilen taraf sayısı.
                           results:
                             type: array
                             items:
@@ -4824,16 +3971,11 @@ paths:
                                     - DISPATCH_FAILED
                                     - RECIPIENT_QUOTA_EXCEEDED
                                   nullable: true
-                                  description: >
+                                  description: |
                                     Yalnız o taraf için dolar. `DISPATCH_FAILED`
-
-                                    — gönderim patladı.
-                                    `RECIPIENT_QUOTA_EXCEEDED`
-
+                                    — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED`
                                     — alıcı ekseni freni (telefon başına 3/sa +
-
                                     10/gün); yalnız bu taraf ATLANDI, diğerleri
-
                                     gönderilmeye devam etti.
                           error:
                             type: string
@@ -5006,9 +4148,7 @@ paths:
           schema:
             type: string
             default: '-createdAt'
-          description: >-
-            Sıralama: createdAt | timestamp_date | original_file_name |
-            original_file_size | status ('-' öneki azalan)
+          description: 'Sıralama: createdAt | timestamp_date | original_file_name | original_file_size | status (''-'' öneki azalan)'
       responses:
         '200':
           description: Başarılı
@@ -5046,45 +4186,29 @@ paths:
         - Timestamps
       summary: Zaman damgası oluştur (eser tescil)
       x-required-scope: timestamps
-      description: >
+      description: |
         Dosyanın SHA-256 hash'ini RFC 3161 standardında TÜBİTAK KAMU SM TSA ile
-
         imzalar ve bir zaman damgası kaydı oluşturur.
 
-
         **Damga neyi kanıtlar:**
-
         - Dosyanın bu tarih ve saatte var olduğunu (varlık kanıtı)
-
         - Dosya içeriğinin o andan bu yana değişmediğini (bütünlük kanıtı)
 
-
         **Damga neyi kanıtlamaz:**
-
         - Dosyanın kim tarafından yazıldığını (yazarlık kanıtı DEĞİL)
-
-        - `owner_first_name` / `owner_last_name` alanları bilgilendirme
-        amaçlıdır;
+        - `owner_first_name` / `owner_last_name` alanları bilgilendirme amaçlıdır;
           sahiplik beyanı kullanıcı tarafından yapılır, API tarafından doğrulanmaz.
 
         Damga elektronik imza DEĞİLDİR. Güvenli elektronik imza için
-
         ayrı imzalama akışını kullanın.
 
-
         **İdempotency:** `Idempotency-Key` header'ı (UUID önerilir) ile aynı
-
         istek tekrar gönderilirse 5 dakika içinde aynı `id` döner, yeni damga
-
         alınmaz ve kredi kesilmez.
 
-
         **İki içerik formatı desteklenir:**
-
         - `multipart/form-data`: `file` alanıyla ikili dosya yükleme
-
-        - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648
-        §4,
+        - `application/json`: `file_base64` alanıyla standart Base64 (RFC 4648 §4,
           canonical alfabe — data URL öneki veya URL-safe alfabe kabul edilmez)
       parameters:
         - name: Idempotency-Key
@@ -5092,12 +4216,9 @@ paths:
           required: false
           schema:
             type: string
-          description: >
-            Tekrar eden istekleri önlemek için istemci tarafında üretilen
-            benzersiz
-
+          description: |
+            Tekrar eden istekleri önlemek için istemci tarafında üretilen benzersiz
             anahtar (UUID önerilir). 5 dakika içinde aynı key ile yapılan istek
-
             önceki sonucu döner; yeni damga alınmaz, kredi kesilmez.
       requestBody:
         required: true
@@ -5130,13 +4251,10 @@ paths:
               properties:
                 file_base64:
                   type: string
-                  description: >
+                  description: |
                     Standart Base64 kodlanmış dosya içeriği (RFC 4648 §4 —
-
                     A-Za-z0-9+/ alfabesi, '=' padding). data URL öneki
-
-                    (`data:...;base64,`) ve URL-safe alfabe (`-_`) kabul
-                    edilmez.
+                    (`data:...;base64,`) ve URL-safe alfabe (`-_`) kabul edilmez.
                 file_name:
                   type: string
                   description: Orijinal dosya adı (uzantısıyla, ör. "belge.pdf")
@@ -5195,10 +4313,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
         '429':
-          description: >-
-            `RATE_LIMIT_EXCEEDED`: API anahtarı başına dakikada 10 zaman damgası
-            isteği sınırı aşıldı. Genel dakikada 60 istek sınırı da ayrıca
-            geçerlidir.
+          description: '`RATE_LIMIT_EXCEEDED`: API anahtarı başına dakikada 10 zaman damgası isteği sınırı aşıldı. Genel dakikada 60 istek sınırı da ayrıca geçerlidir.'
           content:
             application/json:
               schema:
@@ -5212,10 +4327,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
         '503':
-          description: >
-            TSA_UNAVAILABLE — TÜBİTAK KAMU SM zaman damgası servisi geçici
-            olarak
-
+          description: |
+            TSA_UNAVAILABLE — TÜBİTAK KAMU SM zaman damgası servisi geçici olarak
             erişilemiyor. Kısa süre sonra tekrar deneyin.
           content:
             application/json:
@@ -5261,16 +4374,11 @@ paths:
         - Reports
       summary: Rapor / özet (agrege sözleşme durum sayıları)
       x-required-scope: demands:read
-      description: >
+      description: |
         API key sahibinin workspace'indeki sözleşmelerin agrege durum sayılarını
-
-        döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay
-        oluşturulan).
-
+        döner (bekleyen / tamamlanan / iptal / süresi-dolmuş + bu ay oluşturulan).
         Yalnızca sayı; PII içermez. Kişisel workspace yalnızca sahibinin, org
-
-        workspace org'un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı
-        SSOT).
+        workspace org'un sözleşmelerini sayar (IDOR-safe, GET /demands ile aynı SSOT).
       responses:
         '200':
           description: Özet sayılar
@@ -5329,17 +4437,13 @@ paths:
           in: query
           schema:
             type: string
-          description: >-
-            Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100
-            karakter)
+          description: Ad / soyad / e-posta / telefon / TC üzerinde arama (max 100 karakter)
         - name: sort
           in: query
           schema:
             type: string
             default: '-createdAt'
-          description: >-
-            Sıralama: createdAt | updatedAt | first_name | last_name | email
-            ('-' öneki azalan)
+          description: 'Sıralama: createdAt | updatedAt | first_name | last_name | email (''-'' öneki azalan)'
         - name: company_id
           in: query
           schema:
@@ -5579,9 +4683,7 @@ components:
             $ref: '#/components/schemas/TemplateVariable'
         documents:
           type: array
-          description: >-
-            Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır
-            değilse boş dizi.
+          description: Şablonun zarf belgeleri (order artan). Belge yapısı henüz hazır değilse boş dizi.
           items:
             $ref: '#/components/schemas/TemplateDocumentSummary'
     TemplatePartySummary:
@@ -5599,9 +4701,7 @@ components:
           type: boolean
         default_locale:
           $ref: '#/components/schemas/SignerLocale'
-          description: >-
-            Bu şablondan oluşturulan sözleşmede tarafa varsayılan olarak atanan
-            imzacı dili.
+          description: Bu şablondan oluşturulan sözleşmede tarafa varsayılan olarak atanan imzacı dili.
     TemplateDocumentSummary:
       type: object
       description: |
@@ -5644,9 +4744,7 @@ components:
           type: boolean
         default_included:
           type: boolean
-          description: >-
-            İstek `documents` belirtmezse bu belge imza sürecine (zarfa) dahil
-            edilir mi.
+          description: İstek `documents` belirtmezse bu belge imza sürecine (zarfa) dahil edilir mi.
         assigned_template_party_ids:
           type: array
           items:
@@ -5677,9 +4775,7 @@ components:
           items:
             type: string
             format: uuid
-          description: >-
-            Şablon belge kimlikleri (`GET /api/v1/templates/{id}` →
-            `documents[].id`).
+          description: Şablon belge kimlikleri (`GET /api/v1/templates/{id}` → `documents[].id`).
         exclude:
           type: array
           maxItems: 20
@@ -5735,12 +4831,13 @@ components:
           example: ADRES
         item_type:
           type: string
-          enum:
-            - dynamic_text
-            - cells
-            - date
-            - dropdown
-            - text
+          description: |-
+            `stamp`: gönderenin kaşesi. Bu slug'a `StampData` nesnesi ya da
+            düz metin (firma adı olarak yazılır) gönderebilirsiniz (bkz.
+            `CreateDemandRequest.variables`). İmzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşe bu listede yer almaz.
+
+            Bilinen değerler: dynamic_text, cells, date, dropdown, text, stamp. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
         is_required:
           type: boolean
         default_source:
@@ -5943,11 +5040,7 @@ components:
               description: curl komutu, slug'lar dolu
             json:
               type: object
-              description: >-
-                JSON payload, multi-party ve belge farkında
-                (party_mapping[].variables + root variables; aynı slug birden
-                fazla belgede geçiyorsa document_variables ile belge başına
-                farklı değer)
+              description: JSON payload, multi-party ve belge farkında (party_mapping[].variables + root variables; aynı slug birden fazla belgede geçiyorsa document_variables ile belge başına farklı değer)
     SignerLocale:
       type: string
       enum:
@@ -5994,28 +5087,12 @@ components:
           default: true
         locale:
           $ref: '#/components/schemas/SignerLocale'
-          description: >-
-            İmza sayfasının başlangıç dili (`tr` veya `en`); imzacı sayfada
-            değiştirebilir. Gönderilmezse şablon rolünün varsayılan dili
-            (`default_locale`), o da yoksa tarayıcı dili İngilizce ise
-            İngilizce, aksi halde Türkçe kullanılır. `null` gönderilirse şablon
-            varsayılanı uygulanmaz, dil tarayıcıya göre belirlenir. Bildirimler
-            (e-posta, SMS) tarafa atanan dilde gider; dil atanmamışsa Türkçe
-            gider. WhatsApp'ta İngilizce için kurumunuzun onaylı İngilizce
-            şablonu gerekir. Geçersiz değer `400 INVALID_LOCALE` döner.
+          description: İmza sayfasının başlangıç dili (`tr` veya `en`); imzacı sayfada değiştirebilir. Gönderilmezse şablon rolünün varsayılan dili (`default_locale`), o da yoksa tarayıcı dili İngilizce ise İngilizce, aksi halde Türkçe kullanılır. `null` gönderilirse şablon varsayılanı uygulanmaz, dil tarayıcıya göre belirlenir. Bildirimler (e-posta, SMS) tarafa atanan dilde gider; dil atanmamışsa Türkçe gider. WhatsApp'ta İngilizce için kurumunuzun onaylı İngilizce şablonu gerekir. Geçersiz değer `400 INVALID_LOCALE` döner.
           example: en
         require_phone_verification:
           type: boolean
           nullable: true
-          description: >-
-            Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar
-            (`true`) ya da kapatır (`false`). Gönderilmezse veya `null`
-            gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir;
-            davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon
-            doğrulaması açıksa imzalayan taraflar için false etkisizdir.
-            Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer
-            `400 INVALID_PHONE_VERIFICATION` döner; `true` iken `phone` boşsa
-            `400 PHONE_REQUIRED_FOR_VERIFICATION` döner.
+          description: Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar (`true`) ya da kapatır (`false`). Gönderilmezse veya `null` gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer `400 INVALID_PHONE_VERIFICATION` döner; `true` iken `phone` boşsa `400 PHONE_REQUIRED_FOR_VERIFICATION` döner.
           example: true
         variables:
           type: object
@@ -6026,16 +5103,11 @@ components:
               - type: boolean
               - type: 'null'
               - $ref: '#/components/schemas/StampData'
-          description: >
+          description: |
             Bu PARTİYE AİT dynamic field'lara gönderilen değerler. Slug bazında
-
-            eşleşir. Item'ın template_party_id'si bu partiyle aynı olmalı;
-            değilse
-
+            eşleşir. Item'ın template_party_id'si bu partiyle aynı olmalı; değilse
             değişken atlanır ve variables_ignored'a düşürülür. Kaşe alanının
-
             slug'ına `StampData` nesnesi verilebilir (bkz.
-
             `CreateDemandRequest.variables`).
         document_variables:
           allOf:
@@ -6152,9 +5224,7 @@ components:
           type: string
           format: date
           nullable: true
-          description: >-
-            Hesaplanır (`end_date - notice_days`); `end_date` veya `notice_days`
-            boşsa `null`.
+          description: Hesaplanır (`end_date - notice_days`); `end_date` veya `notice_days` boşsa `null`.
         reminder_offsets:
           type: array
           nullable: true
@@ -6188,23 +5258,15 @@ components:
           nullable: true
     ContractTermInput:
       type: object
-      description: >
+      description: |
         Sözleşme süre/yenileme takibi girdisi. `POST /demands` üzerinde
-
         oluştururken ve `PATCH /demands/{id}/term` üzerinde güncellerken AYNI
-
         alan adları kullanılır. `PATCH`'te kısmi güncelleme uygulanır: yalnız
-
         gövdede GÖNDERİLEN anahtarlar değiştirilir; bir anahtarı `null`
-
         göndermek o alanı temizler, hiç göndermemek dokunmaz.
 
-
         Doğrulama kuralları:
-
-        - `term_fixed_end_date` ile `term_duration_months` birlikte
-        gönderilemez.
-
+        - `term_fixed_end_date` ile `term_duration_months` birlikte gönderilemez.
         - `term_start_mode: FIXED_DATE` ise oluştururken `term_start_date` ya
           da `term_fixed_end_date` gerekir; `ON_FIRST_SIGNATURE` /
           `ON_COMPLETION` modlarında `term_start_date` gönderilse de yok
@@ -6282,20 +5344,12 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: >
-            Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya
-            boş
-
-            dize ise etkin toplama açıkken sözleşme şablonundaki seçim
-            devralınır.
-
+          description: |
+            Mevcut Belge Toplama şablonunun kimliği. Gönderilmezse, null veya boş
+            dize ise etkin toplama açıkken sözleşme şablonundaki seçim devralınır.
             Açıkça verilen dolu kimlik, toplama false olsa da doğrulanır. Seçim
-
-            aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa,
-            arşivliyse,
-
+            aktif ve aynı çalışma alanına ait olmalıdır; bulunamazsa, arşivliyse,
             kapsam dışıysa veya kimlik metin değilse 404
-
             DOCUMENT_COLLECTION_TEMPLATE_NOT_FOUND döner.
         document_collection_timing:
           type: string
@@ -6303,12 +5357,9 @@ components:
             - BEFORE_SIGNING
             - AFTER_SIGNING
           nullable: true
-          description: >
-            Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun
-            ayarı
-
-            devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING
-            döner.
+          description: |
+            Toplama zamanı; gönderilmezse veya null ise sözleşme şablonunun ayarı
+            devralınır. Geçersiz değer 400 INVALID_DOCUMENT_COLLECTION_TIMING döner.
         document_collection_block_signing:
           type: boolean
           nullable: true
@@ -6360,45 +5411,34 @@ components:
               - type: boolean
               - type: 'null'
               - $ref: '#/components/schemas/StampData'
-          description: >
-            **Root scope** — partilerden bağımsız field'lara gönderilen
-            değerler.
-
+          description: |
+            **Root scope** — partilerden bağımsız field'lara gönderilen değerler.
             Item'ın template_party_id'si NULL ise (partisiz) buradan dolar.
-
-            Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan
-            field'lar.
-
+            Multi-party şablonda kira_baslangic_tarihi gibi paylaşılan field'lar.
 
             **Kaşe alanları:** Değer bir `StampData` NESNESİ ise ve slug bir
-
             kaşe alanına aitse, sözleşme oluşturulurken o kaşe
-
-            `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` ile aynı
-            kurallarla
-
+            `PATCH /api/v1/demands/{id}/items/{itemId}/stamp` ile aynı kurallarla
             doldurulur (gönderenin kaşesi yapılandırılmış veriyle; imzalayanın
-
             dolduracağı kaşeye düzenlenebilir ön değer). Aynı slug birden fazla
-
             belgede geçiyorsa hepsine yazılır; öncelik kuralları `variables` ile
-
             aynıdır (bkz. `document_variables`). Nesne değer yalnız kaşe
-
             slug'ına verilebilir: kaşe olmayan ya da gönderilecek belgelerde
-
             bulunmayan slug 400 `INVALID_VARIABLES`
-
             (`details.reason: object_value_for_non_stamp`), geçersiz kaşe
-
             verisi 400 `INVALID_STAMP_DATA` döner; ikisinde de sözleşme
-
-            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin gönderilirse
-
-            kaşeye yazılmaz ve `variables_ignored` içinde görünür. Toplu
-
+            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin (string ya
+            da number) gönderilirse firma adı (`companyName`) olarak yazılır
+            ve `variables_applied` içinde sayılır; alt alanlar (vergi dairesi,
+            vergi no, adres) için nesne gönderin. Düz metin yalnız gönderenin
+            kaşesine (`INLINE`) yazılır; imzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşeye, boş değere, `null` / boolean değere ve
+            500 karakteri aşan metne uygulanmaz, bu durumda slug
+            `variables_ignored` içinde görünür (istek reddedilmez, metin
+            kırpılmaz). Aynı slug'a hem düz metin hem nesne gelirse nesne
+            kazanır; nesne `companyName` taşımıyorsa düz metin firma adı
+            olarak kalır. Bu kurallar toplu uçlarda da geçerlidir. Toplu
             uçlar nesne değeri desteklemez (400 `INVALID_VARIABLES`,
-
             `details.reason: unsupported_endpoint`).
           example:
             kira_baslangic_tarihi: '2026-10-01'
@@ -6441,62 +5481,36 @@ components:
               - upload
               - phone
               - phone_draw
-          description: >
+          description: |
             İmzacının kullanabileceği dijital imza yöntemleri ve görünme sırası.
-
             Dizinin SIRASI imza ekranındaki sekme sırasıdır; listede olmayan
-
-            yöntem o sözleşmede kapalıdır. Değerler: `draw` (parmakla veya
-            fareyle
-
-            çizerek), `type` (adını yazarak), `upload` (imza görselini dosya
-            olarak
-
+            yöntem o sözleşmede kapalıdır. Değerler: `draw` (parmakla veya fareyle
+            çizerek), `type` (adını yazarak), `upload` (imza görselini dosya olarak
             yükleyerek), `phone` (telefonda çizerek).
 
-
             Gönderilmezse (veya `null` gönderilirse) şablonun ayarı, şablonda da
-
             tanımlı değilse organizasyonun ayarı geçerli olur; hiçbiri tanımlı
-
             değilse dört yöntem varsayılan sırayla açıktır.
 
-
             Bu alan toleranslı okunur: boş dizi, dizi olmayan bir değer veya
-
             tanınmayan bir değer gönderilirse alan YOK SAYILIR ve üst katmandan
-
             devralınır. Yani boş dizi göndermek "tüm yöntemleri kapat" anlamına
-
             GELMEZ; en az bir yöntem her zaman açık kalır. Büyük harfli değerler
-
             (`DRAW`) kabul edilir, tekrar eden değerler teke indirilir.
 
-
             Yalnız `phone` içeren bir liste reddedilir (400
-
             `SIGNATURE_VARIANTS_PHONE_ONLY`): telefonda çizim mobil cihazda
-
             kullanılamadığı için tek başına bırakılırsa imzacı yöntemsiz kalır.
-
             En az bir `phone` olmayan yöntem bırakın.
 
-
             `phone_draw` ("Yalnız telefonda çizerek") ayrı bir moddur ve YALNIZ
-
             tek başına gönderilir: `["phone_draw"]`. Bilgisayardan açan imzacı
-
             yalnız QR kod ile telefona yönlendirilir ve imzasını telefonda
-
             çizer; telefondan açan imzacı yalnız çizerek imzalar. Başka bir
-
             yöntemle birlikte gönderilirse 400
-
             `SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE` döner.
 
-
             Ayar sözleşme düzeyindedir; imzacı bazında farklılaştırılamaz.
-
             `party_mapping` girdilerine yazılan böyle bir alan yok sayılır.
           example:
             - type
@@ -6521,29 +5535,17 @@ components:
           description: SMS gönderici adı
         sms_content:
           type: string
-          description: >
-            Custom SMS gövdesi. **Sadece** çağıran organizasyon **PRO veya
-            ENTERPRISE planda**
-
-            ise ve aktif `OrganizationSmsConfig` (sender_name dolu) varsa kabul
-            edilir;
-
+          description: |
+            Custom SMS gövdesi. **Sadece** çağıran organizasyon **PRO veya ENTERPRISE planda**
+            ise ve aktif `OrganizationSmsConfig` (sender_name dolu) varsa kabul edilir;
             aksi halde 403 `SMS_CUSTOMIZATION_NOT_ALLOWED` döner.
 
-
             FREE/BASIC planda olan veya kendi SMS sağlayıcısı tanımlı olmayan
-
-            müşterilerin marka itibarını korumak için sistem default sağlayıcısı
-            (Codeck NetGSM)
-
-            ile gönderim yapılır ve özel metin reddedilir. Kendi sağlayıcınızı
-            tanımlamak için
-
+            müşterilerin marka itibarını korumak için sistem default sağlayıcısı (Codeck NetGSM)
+            ile gönderim yapılır ve özel metin reddedilir. Kendi sağlayıcınızı tanımlamak için
             Dashboard → Organizasyon → SMS Ayarları sayfasını kullanın.
 
-
-            Boş string / null gönderirseniz "clear" olarak yorumlanır
-            (gating'den geçer).
+            Boş string / null gönderirseniz "clear" olarak yorumlanır (gating'den geçer).
         email_content:
           type: string
           description: Custom e-posta gövdesi
@@ -6559,20 +5561,12 @@ components:
         reminder_settings:
           allOf:
             - $ref: '#/components/schemas/ReminderSettings'
-          description: >
-            Bu sözleşme için hatırlatma ayarlarını **şablon default'unu
-            override** ederek
-
+          description: |
+            Bu sözleşme için hatırlatma ayarlarını **şablon default'unu override** ederek
             belirtir. Yollanmazsa şablonun `reminder_*` alanları kullanılır
-
             (PUT /api/templates/:id ile dashboard'dan kaydedilen değerler);
-
-            şablonda da yoksa `{enabled:true, intervals_hours:[48],
-            max_reminders:1, channels:["email"]}`
-
-            default'u uygulanır. Demand oluşumunda `ReminderConfig` satırı
-            yaratılır
-
+            şablonda da yoksa `{enabled:true, intervals_hours:[48], max_reminders:1, channels:["email"]}`
+            default'u uygulanır. Demand oluşumunda `ReminderConfig` satırı yaratılır
             ve BullMQ kuyruğuna scheduled hatırlatmalar yazılır.
         term_start_mode:
           type: string
@@ -6611,9 +5605,7 @@ components:
           nullable: true
           minimum: 1
           maximum: 600
-          description: >-
-            AUTO_RENEW gerektirir; verilmezse term_duration_months'tan
-            devralınır.
+          description: AUTO_RENEW gerektirir; verilmezse term_duration_months'tan devralınır.
         notice_days:
           type: integer
           nullable: true
@@ -6691,12 +5683,9 @@ components:
           default:
             - sms
             - email
-          description: >
-            Bu çağrıda kullanılacak kanal(lar). Yollanmazsa default
-            `["sms","email"]`
-
+          description: |
+            Bu çağrıda kullanılacak kanal(lar). Yollanmazsa default `["sms","email"]`
             ile her iki kanalda da gönderilir (parti `send_sms`/`send_email`
-
             toggle'ı + iletişim alanı + demand global toggle uygunluğuna göre).
           example:
             - sms
@@ -6751,9 +5740,7 @@ components:
           type: string
           format: uri
           example: https://e.imzala.org/sonuc/<demand_id>
-          description: >-
-            Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme
-            bağlantısını göstermez.
+          description: Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez.
         variables_applied:
           type: array
           items:
@@ -6779,9 +5766,8 @@ components:
             type: array
             items:
               type: string
-          description: >
-            template_party_id → o partiye uygulanan slug listesi (sorted per
-            party).
+          description: |
+            template_party_id → o partiye uygulanan slug listesi (sorted per party).
           example:
             <kiraya-veren-id>:
               - address
@@ -6793,10 +5779,8 @@ components:
           type: array
           items:
             type: string
-          description: >
-            Gönderdiğiniz AMA hiçbir item'a uygulanmayan slug'lar (unique,
-            sorted).
-
+          description: |
+            Gönderdiğiniz AMA hiçbir item'a uygulanmayan slug'lar (unique, sorted).
             Boş olmayınca yazım hatası yapmışsınız demektir — kontrol edin.
           example: []
         stamps_applied:
@@ -6815,9 +5799,7 @@ components:
               document_id:
                 type: string
                 nullable: true
-                description: >-
-                  Kaşenin bulunduğu sözleşme belgesi (tek belgeli eski
-                  sözleşmede null olabilir).
+                description: Kaşenin bulunduğu sözleşme belgesi (tek belgeli eski sözleşmede null olabilir).
           example:
             - item_id: 101
               slug: firma_kasesi
@@ -6893,9 +5875,7 @@ components:
         result_url:
           type: string
           format: uri
-          description: >-
-            Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme
-            bağlantısını göstermez.
+          description: Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez.
         dispatch:
           description: |
             YALNIZ istekte `send_invitations` gönderildiğinde döner. Davet
@@ -7221,16 +6201,18 @@ components:
             taraftır (zorunlu kaşede şart); diğer kaynaklarda yok sayılır.
         item_type:
           type: string
-          enum:
-            - signature
-            - text
-            - dynamic_text
-            - cells
-            - date
-            - dropdown
-            - checkbox
-            - radio
-            - stamp
+          description: |-
+            `contract_number` (numaratör): sözleşmeye gönderimde verilen kurum
+            tanımlı sözleşme numarası. Salt okunur ve tarafsızdır (`party_id`
+            null); değeri sözleşme gönderildikten sonra alanın metnidir. Bu alan
+            API ile oluşturulamaz: `POST /demands/{id}/items` isteğindeki
+            `contract_number` öğeleri yok sayılır, sözleşmedeki mevcut alan
+            silinmez. Numaratörü seçilmemiş ya da kullanılamayan (silinmiş,
+            arşivlenmiş) bir numaratör alanı içeren sözleşme gönderilemez:
+            oluşturma ve gönderim istekleri kredi düşülmeden 409
+            `CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE` döner.
+
+            Bilinen değerler: signature, text, dynamic_text, cells, date, dropdown, checkbox, radio, stamp, contract_number. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
         position_x:
           type: number
           minimum: 0
@@ -7413,18 +6395,14 @@ components:
                 format: uri
               locale:
                 $ref: '#/components/schemas/SignerLocale'
-                description: >-
-                  Tarafa atanan dil (gönderen seçimi veya şablon varsayılanı).
-                  `null` = atanmadı.
+                description: Tarafa atanan dil (gönderen seçimi veya şablon varsayılanı). `null` = atanmadı.
               signed_locale:
                 $ref: '#/components/schemas/SignerLocale'
                 description: İmzacının imzaladığı andaki sayfa dili. İmzalanmadıysa `null`.
         stamp_items:
           type: array
-          description: >
-            Sözleşmedeki kaşe alanları. `PATCH
-            /api/v1/demands/{id}/items/{itemId}/stamp`
-
+          description: |
+            Sözleşmedeki kaşe alanları. `PATCH /api/v1/demands/{id}/items/{itemId}/stamp`
             için alan kimliği buradan alınır. Kaşe içeriği bu listede dönmez.
           items:
             type: object
@@ -7462,17 +6440,12 @@ components:
         result_url:
           type: string
           format: uri
-          description: >-
-            Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme
-            bağlantısını göstermez.
+          description: Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez.
         pdf_url:
           type: string
           format: uri
           nullable: true
-          description: >-
-            Sadece status=COMPLETED iken dolu. Açık rıza belgesi bu herkese açık
-            bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404
-            döner); API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanın.
+          description: Sadece status=COMPLETED iken dolu. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla `GET /api/v1/demands/{id}/pdf` kullanın.
         documents:
           type: array
           description: |
@@ -7982,9 +6955,7 @@ components:
           type: string
           format: date
           nullable: true
-          description: >-
-            İhbar için son gün (`term_end_date - notice_days`); tanımsızsa
-            `null`.
+          description: İhbar için son gün (`term_end_date - notice_days`); tanımsızsa `null`.
         term_state:
           type: string
           enum:
@@ -8070,25 +7041,19 @@ components:
           nullable: true
           description: Talep oluşturulurken verilen dış referans.
     ApiV1DemandsPost400Response:
-      description: >
+      description: |
         Eski üretilmiş istemci türleri için belge seçimi uyumluluk görünümü.
-
-        Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı
-        DemandCreationError'dur.
+        Tüm HTTP 400 yanıtlarını sınırlamaz; taşıma zarfı DemandCreationError'dur.
       anyOf:
         - $ref: '#/components/schemas/CodedError'
         - $ref: '#/components/schemas/DocumentSelectionError'
     DemandCreationError:
       type: object
-      description: >
+      description: |
         Sözleşme oluşturma hatalarının açık taşıma zarfı. Alanlar hata türüne
-
         göre bulunur; yeni makine kodları istemci tarafından reddedilmez.
-
         Somut Belge Toplama zarfları DocumentCollectionPolicyError ve
-
-        DocumentVerificationDisabledError şemaları ile yanıt örneklerinde
-        açıklanır.
+        DocumentVerificationDisabledError şemaları ile yanıt örneklerinde açıklanır.
       properties:
         success:
           type: boolean
@@ -8107,9 +7072,7 @@ components:
           additionalProperties: true
     ApiV1DemandsBulkPost400Response:
       type: object
-      description: >-
-        Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre
-        bulunur.
+      description: Toplu oluşturma ön kontrolünün açık hata zarfı; alanlar hata türüne göre bulunur.
       properties:
         success:
           type: boolean
@@ -8128,9 +7091,7 @@ components:
           additionalProperties: true
     DocumentCollectionPolicyError:
       type: object
-      description: >-
-        Seçili Belge Toplama şablonunun politikası geçersiz; error kaynak makine
-        kodudur.
+      description: Seçili Belge Toplama şablonunun politikası geçersiz; error kaynak makine kodudur.
       required:
         - success
         - error
@@ -8286,9 +7247,7 @@ components:
         code:
           type: string
           example: RATE_LIMIT_EXCEEDED
-          description: >-
-            İstek limiti yanıtlarında `error` ile aynı kodu taşır; diğer
-            yanıtlarda bulunmayabilir.
+          description: İstek limiti yanıtlarında `error` ile aynı kodu taşır; diğer yanıtlarda bulunmayabilir.
         retry_after_seconds:
           type: integer
           example: 60
@@ -8499,24 +7458,15 @@ components:
                 type: string
                 example: Şablon bulunamadı
     BadRequest:
-      description: >
+      description: |
         Geçersiz istek. Örnek hatalar:
-
         - "template_id gerekli"
-
         - "party_mapping gerekli (en az 1 taraf)"
-
         - "party_mapping[0].first_name ve last_name gerekli"
-
         - "party_mapping[0].email veya phone gerekli"
-
         - "party_mapping[0].variables object olmalı"
-
-        - "party_mapping[0].variables.adres value'su string|number|boolean|null
-        olmali"
-
+        - "party_mapping[0].variables.adres value'su string|number|boolean|null olmali"
         - "variables object olmalı"
-
         - "template_party_id duplicate'i bulundu: <id>"
       content:
         application/json:

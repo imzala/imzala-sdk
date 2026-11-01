@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.14.4 · **Son güncelleme:** 2026-10-31
+    **Sürüm:** 1.14.6 · **Son güncelleme:** 2026-11-01
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -325,7 +325,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.14.4
+  version: 1.14.6
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -3927,13 +3927,13 @@ components:
         variables:
         - slug: adres
           label: ADRES
-          item_type: dynamic_text
+          item_type: item_type
           is_required: true
           default_source: "{{signer.full_name}}"
           template_party_id: template_party_id
         - slug: adres
           label: ADRES
-          item_type: dynamic_text
+          item_type: item_type
           is_required: true
           default_source: "{{signer.full_name}}"
           template_party_id: template_party_id
@@ -4137,7 +4137,7 @@ components:
       example:
         slug: adres
         label: ADRES
-        item_type: dynamic_text
+        item_type: item_type
         is_required: true
         default_source: "{{signer.full_name}}"
         template_party_id: template_party_id
@@ -4149,12 +4149,13 @@ components:
           example: ADRES
           type: string
         item_type:
-          enum:
-          - dynamic_text
-          - cells
-          - date
-          - dropdown
-          - text
+          description: |-
+            `stamp`: gönderenin kaşesi. Bu slug'a `StampData` nesnesi ya da
+            düz metin (firma adı olarak yazılır) gönderebilirsiniz (bkz.
+            `CreateDemandRequest.variables`). İmzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşe bu listede yer almaz.
+
+            Bilinen değerler: dynamic_text, cells, date, dropdown, text, stamp. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           type: string
         is_required:
           type: boolean
@@ -4858,8 +4859,17 @@ components:
             bulunmayan slug 400 `INVALID_VARIABLES`
             (`details.reason: object_value_for_non_stamp`), geçersiz kaşe
             verisi 400 `INVALID_STAMP_DATA` döner; ikisinde de sözleşme
-            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin gönderilirse
-            kaşeye yazılmaz ve `variables_ignored` içinde görünür. Toplu
+            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin (string ya
+            da number) gönderilirse firma adı (`companyName`) olarak yazılır
+            ve `variables_applied` içinde sayılır; alt alanlar (vergi dairesi,
+            vergi no, adres) için nesne gönderin. Düz metin yalnız gönderenin
+            kaşesine (`INLINE`) yazılır; imzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşeye, boş değere, `null` / boolean değere ve
+            500 karakteri aşan metne uygulanmaz, bu durumda slug
+            `variables_ignored` içinde görünür (istek reddedilmez, metin
+            kırpılmaz). Aynı slug'a hem düz metin hem nesne gelirse nesne
+            kazanır; nesne `companyName` taşımıyorsa düz metin firma adı
+            olarak kalır. Bu kurallar toplu uçlarda da geçerlidir. Toplu
             uçlar nesne değeri desteklemez (400 `INVALID_VARIABLES`,
             `details.reason: unsupported_endpoint`).
           example:
@@ -5726,7 +5736,7 @@ components:
       example:
         page_id: 12345
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        item_type: signature
+        item_type: item_type
         position_x: 0.08008281904610115
         position_y: 0.6027456183070403
         width: 0.14658129805029452
@@ -5752,16 +5762,18 @@ components:
           nullable: true
           type: string
         item_type:
-          enum:
-          - signature
-          - text
-          - dynamic_text
-          - cells
-          - date
-          - dropdown
-          - checkbox
-          - radio
-          - stamp
+          description: |-
+            `contract_number` (numaratör): sözleşmeye gönderimde verilen kurum
+            tanımlı sözleşme numarası. Salt okunur ve tarafsızdır (`party_id`
+            null); değeri sözleşme gönderildikten sonra alanın metnidir. Bu alan
+            API ile oluşturulamaz: `POST /demands/{id}/items` isteğindeki
+            `contract_number` öğeleri yok sayılır, sözleşmedeki mevcut alan
+            silinmez. Numaratörü seçilmemiş ya da kullanılamayan (silinmiş,
+            arşivlenmiş) bir numaratör alanı içeren sözleşme gönderilemez:
+            oluşturma ve gönderim istekleri kredi düşülmeden 409
+            `CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE` döner.
+
+            Bilinen değerler: signature, text, dynamic_text, cells, date, dropdown, checkbox, radio, stamp, contract_number. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           type: string
         position_x:
           description: Sayfa genişliğine göre x koordinatı (sol=0)
@@ -5838,7 +5850,7 @@ components:
         items:
         - page_id: 12345
           party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          item_type: signature
+          item_type: item_type
           position_x: 0.08008281904610115
           position_y: 0.6027456183070403
           width: 0.14658129805029452
@@ -5849,7 +5861,7 @@ components:
           config: "{}"
         - page_id: 12345
           party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          item_type: signature
+          item_type: item_type
           position_x: 0.08008281904610115
           position_y: 0.6027456183070403
           width: 0.14658129805029452
@@ -7235,13 +7247,13 @@ components:
           variables:
           - slug: adres
             label: ADRES
-            item_type: dynamic_text
+            item_type: item_type
             is_required: true
             default_source: "{{signer.full_name}}"
             template_party_id: template_party_id
           - slug: adres
             label: ADRES
-            item_type: dynamic_text
+            item_type: item_type
             is_required: true
             default_source: "{{signer.full_name}}"
             template_party_id: template_party_id

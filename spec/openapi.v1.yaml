@@ -5,11 +5,11 @@
 openapi: 3.1.0
 info:
   title: imzala External API
-  version: 1.14.4
+  version: 1.14.6
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.14.4 · **Son güncelleme:** 2026-10-31
+    **Sürüm:** 1.14.6 · **Son güncelleme:** 2026-11-01
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -5494,6 +5494,12 @@ components:
             - date
             - dropdown
             - text
+            - stamp
+          description: |
+            `stamp`: gönderenin kaşesi. Bu slug'a `StampData` nesnesi ya da
+            düz metin (firma adı olarak yazılır) gönderebilirsiniz (bkz.
+            `CreateDemandRequest.variables`). İmzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşe bu listede yer almaz.
         is_required:
           type: boolean
         default_source:
@@ -6101,8 +6107,17 @@ components:
             bulunmayan slug 400 `INVALID_VARIABLES`
             (`details.reason: object_value_for_non_stamp`), geçersiz kaşe
             verisi 400 `INVALID_STAMP_DATA` döner; ikisinde de sözleşme
-            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin gönderilirse
-            kaşeye yazılmaz ve `variables_ignored` içinde görünür. Toplu
+            oluşturulmaz, kredi düşülmez. Kaşe slug'ına düz metin (string ya
+            da number) gönderilirse firma adı (`companyName`) olarak yazılır
+            ve `variables_applied` içinde sayılır; alt alanlar (vergi dairesi,
+            vergi no, adres) için nesne gönderin. Düz metin yalnız gönderenin
+            kaşesine (`INLINE`) yazılır; imzalayanın dolduracağı ya da
+            kütüphaneden gelen kaşeye, boş değere, `null` / boolean değere ve
+            500 karakteri aşan metne uygulanmaz, bu durumda slug
+            `variables_ignored` içinde görünür (istek reddedilmez, metin
+            kırpılmaz). Aynı slug'a hem düz metin hem nesne gelirse nesne
+            kazanır; nesne `companyName` taşımıyorsa düz metin firma adı
+            olarak kalır. Bu kurallar toplu uçlarda da geçerlidir. Toplu
             uçlar nesne değeri desteklemez (400 `INVALID_VARIABLES`,
             `details.reason: unsupported_endpoint`).
           example:
@@ -6883,6 +6898,17 @@ components:
             - checkbox
             - radio
             - stamp
+            - contract_number
+          description: |
+            `contract_number` (numaratör): sözleşmeye gönderimde verilen kurum
+            tanımlı sözleşme numarası. Salt okunur ve tarafsızdır (`party_id`
+            null); değeri sözleşme gönderildikten sonra alanın metnidir. Bu alan
+            API ile oluşturulamaz: `POST /demands/{id}/items` isteğindeki
+            `contract_number` öğeleri yok sayılır, sözleşmedeki mevcut alan
+            silinmez. Numaratörü seçilmemiş ya da kullanılamayan (silinmiş,
+            arşivlenmiş) bir numaratör alanı içeren sözleşme gönderilemez:
+            oluşturma ve gönderim istekleri kredi düşülmeden 409
+            `CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE` döner.
         position_x:
           type: number
           minimum: 0

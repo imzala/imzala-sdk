@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **page_id** | **int** | AgreementPage.id (&#x60;/upload&#x60; response&#39;undaki &#x60;pages[].id&#x60;) |
 **party_id** | **string** | &#x60;signature&#x60; ve doldurulabilir alanlar (&#x60;dynamic_text&#x60;, &#x60;cells&#x60;, &#x60;date&#x60;, &#x60;dropdown&#x60;, &#x60;checkbox&#x60;, &#x60;radio&#x60;) için **zorunlu** — alanı dolduracak/imzalayacak partinin id&#39;si (&#x60;signing_urls[].party_id&#x60;). &#x60;text&#x60; için null. &#x60;stamp&#x60; için yalnız &#x60;config.source: FILLER_PROVIDES&#x60; ise kaşeyi dolduracak taraftır (zorunlu kaşede şart); diğer kaynaklarda yok sayılır. | [optional]
-**item_type** | **string** |  |
+**item_type** | **string** | &#x60;contract_number&#x60; (numaratör): sözleşmeye gönderimde verilen kurum tanımlı sözleşme numarası. Salt okunur ve tarafsızdır (&#x60;party_id&#x60; null); değeri sözleşme gönderildikten sonra alanın metnidir. Bu alan API ile oluşturulamaz: &#x60;POST /demands/{id}/items&#x60; isteğindeki &#x60;contract_number&#x60; öğeleri yok sayılır, sözleşmedeki mevcut alan silinmez. Numaratörü seçilmemiş ya da kullanılamayan (silinmiş, arşivlenmiş) bir numaratör alanı içeren sözleşme gönderilemez: oluşturma ve gönderim istekleri kredi düşülmeden 409 &#x60;CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE&#x60; döner.  Bilinen değerler: signature, text, dynamic_text, cells, date, dropdown, checkbox, radio, stamp, contract_number. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **position_x** | **float** | Sayfa genişliğine göre x koordinatı (sol&#x3D;0) |
 **position_y** | **float** | Sayfa yüksekliğine göre y koordinatı (üst&#x3D;0) |
 **width** | **float** |  |

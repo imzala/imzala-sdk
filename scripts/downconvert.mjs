@@ -15,6 +15,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import yaml from 'js-yaml';
+import { relaxEnums } from './tolerant-enums.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -98,6 +100,12 @@ function main() {
     process.exit(1);
   }
   outText = outText.replace(notifyDefault, '$1');
+  // Tolerant reader: closed enums on growing properties make older SDKs
+  // throw on additive server values. See scripts/tolerant-enums.mjs.
+  const outDoc = yaml.load(outText);
+  const relaxed = relaxEnums(outDoc);
+  outText = yaml.dump(outDoc, { lineWidth: -1, noRefs: true });
+  console.log(`[downconvert] ${relaxed.count} growing enum(s) relaxed to open strings`);
   writeFileSync(OUTPUT, outText);
   console.log('[downconvert] notify_counterparty default dropped from CreateDemandRequest and ContractTermInput');
 

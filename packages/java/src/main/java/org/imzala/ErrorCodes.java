@@ -149,6 +149,8 @@ public final class ErrorCodes {
         "Kredi mutabakatı beklenmedik bir hatayla düştü; sözleşme yayına geçmedi, istek güvenle tekrarlanabilir.");
     m.put("DISPATCH_PREPARATION_FAILED",
         "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi henüz düşülmedi, davet gönderilmedi. Kredi, taslak gönderildiğinde düşülür. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.");
+    m.put("CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE",
+        "Numaratörü seçilmemiş ya da kullanılamayan (silinmiş, arşivlenmiş) bir numaratör alanı içeren sözleşme oluşturulamadı ya da gönderilemedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. Panelden geçerli bir numaratör seçip taslağı gönderin; aynı isteği tekrarlamayın.");
     m.put("INVALID_CHANNELS",
         "channels boş ya da email/sms dışında bir değer içeriyor.");
     m.put("MAX_SMS_REMINDERS_REACHED",
