@@ -38,7 +38,7 @@ class TestApiV1TemplatesIdUsageGet200Response(unittest.TestCase):
             return ApiV1TemplatesIdUsageGet200Response(
                 success = True,
                 data = imzala_client.models.template_usage.TemplateUsage(
-                    kind = 'DOCUMENT',
+                    kind = '',
                     form_fields = [
                         imzala_client.models.template_usage_form_fields_inner.TemplateUsage_form_fields_inner(
                             key = '',

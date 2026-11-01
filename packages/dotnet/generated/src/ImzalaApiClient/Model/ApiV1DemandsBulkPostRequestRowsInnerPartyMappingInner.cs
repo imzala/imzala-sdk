@@ -33,12 +33,6 @@ namespace ImzalaApiClient.Model
     [DataContract(Name = "_api_v1_demands_bulk_post_request_rows_inner_party_mapping_inner")]
     public partial class ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner : IValidatableObject
     {
-
-        /// <summary>
-        /// Gets or Sets Locale
-        /// </summary>
-        [DataMember(Name = "locale", EmitDefaultValue = true)]
-        public SignerLocale? Locale { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner" /> class.
         /// </summary>
@@ -51,11 +45,11 @@ namespace ImzalaApiClient.Model
         /// <param name="birthDate">ISO 8601 (ör. 1990-05-15).</param>
         /// <param name="sendSms">sendSms (default to true).</param>
         /// <param name="sendEmail">sendEmail (default to true).</param>
-        /// <param name="locale">locale.</param>
+        /// <param name="locale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="requirePhoneVerification">Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. &#x60;PartyMappingInput.require_phone_verification&#x60;). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı &#x60;failed&#x60; (&#x60;error: \&quot;INVALID_PHONE_VERIFICATION\&quot;&#x60;), &#x60;true&#x60; iken boş &#x60;phone&#x60; satırı &#x60;failed&#x60; (&#x60;error: \&quot;PHONE_REQUIRED_FOR_VERIFICATION\&quot;&#x60;) yapar..</param>
         /// <param name="customMessage">Bu tarafa özel davet mesajı.</param>
         /// <param name="variables">Bu tarafa özel değişkenler.</param>
-        public ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner(Guid templatePartyId = default, string firstName = default, string lastName = default, string email = default, string phone = default, string governmentId = default, DateOnly birthDate = default, bool sendSms = true, bool sendEmail = true, SignerLocale? locale = default, bool? requirePhoneVerification = default, string customMessage = default, Object variables = default)
+        public ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner(Guid templatePartyId = default, string firstName = default, string lastName = default, string email = default, string phone = default, string governmentId = default, DateOnly birthDate = default, bool sendSms = true, bool sendEmail = true, string locale = default, bool? requirePhoneVerification = default, string customMessage = default, Object variables = default)
         {
             this.TemplatePartyId = templatePartyId;
             this.FirstName = firstName;
@@ -128,6 +122,16 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "send_email", EmitDefaultValue = true)]
         public bool SendEmail { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "locale", EmitDefaultValue = true)]
+        public string Locale { get; set; }
 
         /// <summary>
         /// Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. &#x60;PartyMappingInput.require_phone_verification&#x60;). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı &#x60;failed&#x60; (&#x60;error: \&quot;INVALID_PHONE_VERIFICATION\&quot;&#x60;), &#x60;true&#x60; iken boş &#x60;phone&#x60; satırı &#x60;failed&#x60; (&#x60;error: \&quot;PHONE_REQUIRED_FOR_VERIFICATION\&quot;&#x60;) yapar.

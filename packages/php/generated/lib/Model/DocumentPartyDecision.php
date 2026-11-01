@@ -266,25 +266,6 @@ class DocumentPartyDecision implements ModelInterface, ArrayAccess, \JsonSeriali
         return self::$openAPIModelName;
     }
 
-    public const DECISION_PENDING = 'PENDING';
-    public const DECISION_ACCEPTED = 'ACCEPTED';
-    public const DECISION_DECLINED = 'DECLINED';
-    public const DECISION_WITHDRAWN = 'WITHDRAWN';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getDecisionAllowableValues()
-    {
-        return [
-            self::DECISION_PENDING,
-            self::DECISION_ACCEPTED,
-            self::DECISION_DECLINED,
-            self::DECISION_WITHDRAWN,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -336,15 +317,6 @@ class DocumentPartyDecision implements ModelInterface, ArrayAccess, \JsonSeriali
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getDecisionAllowableValues();
-        if (!is_null($this->container['decision']) && !in_array($this->container['decision'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'decision', must be one of '%s'",
-                $this->container['decision'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -401,7 +373,7 @@ class DocumentPartyDecision implements ModelInterface, ArrayAccess, \JsonSeriali
     /**
      * Sets decision
      *
-     * @param string|null $decision Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
+     * @param string|null $decision Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -409,16 +381,6 @@ class DocumentPartyDecision implements ModelInterface, ArrayAccess, \JsonSeriali
     {
         if (is_null($decision)) {
             throw new \InvalidArgumentException('non-nullable decision cannot be null');
-        }
-        $allowedValues = $this->getDecisionAllowableValues();
-        if (!in_array($decision, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'decision', must be one of '%s'",
-                    $decision,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['decision'] = $decision;
 

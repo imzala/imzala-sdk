@@ -34,110 +34,24 @@ namespace ImzalaApiClient.Model
     public partial class EnvelopeDocument : IValidatableObject
     {
         /// <summary>
-        /// Defines DocKind
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum DocKindEnum
-        {
-            /// <summary>
-            /// Enum CONTRACT for value: CONTRACT
-            /// </summary>
-            [EnumMember(Value = "CONTRACT")]
-            CONTRACT = 1,
-
-            /// <summary>
-            /// Enum KVKKNOTICE for value: KVKK_NOTICE
-            /// </summary>
-            [EnumMember(Value = "KVKK_NOTICE")]
-            KVKKNOTICE = 2,
-
-            /// <summary>
-            /// Enum KVKKCONSENT for value: KVKK_CONSENT
-            /// </summary>
-            [EnumMember(Value = "KVKK_CONSENT")]
-            KVKKCONSENT = 3,
-
-            /// <summary>
-            /// Enum PREINFO for value: PREINFO
-            /// </summary>
-            [EnumMember(Value = "PREINFO")]
-            PREINFO = 4,
-
-            /// <summary>
-            /// Enum PRICELIST for value: PRICE_LIST
-            /// </summary>
-            [EnumMember(Value = "PRICE_LIST")]
-            PRICELIST = 5,
-
-            /// <summary>
-            /// Enum OTHER for value: OTHER
-            /// </summary>
-            [EnumMember(Value = "OTHER")]
-            OTHER = 6
-        }
-
-
-        /// <summary>
-        /// Gets or Sets DocKind
-        /// </summary>
-        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
-        public DocKindEnum? DocKind { get; set; }
-        /// <summary>
-        /// Defines SealingStatus
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum SealingStatusEnum
-        {
-            /// <summary>
-            /// Enum NONE for value: NONE
-            /// </summary>
-            [EnumMember(Value = "NONE")]
-            NONE = 1,
-
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 2,
-
-            /// <summary>
-            /// Enum SEALED for value: SEALED
-            /// </summary>
-            [EnumMember(Value = "SEALED")]
-            SEALED = 3,
-
-            /// <summary>
-            /// Enum FAILED for value: FAILED
-            /// </summary>
-            [EnumMember(Value = "FAILED")]
-            FAILED = 4
-        }
-
-
-        /// <summary>
-        /// Gets or Sets SealingStatus
-        /// </summary>
-        [DataMember(Name = "sealing_status", EmitDefaultValue = true)]
-        public SealingStatusEnum? SealingStatus { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="EnvelopeDocument" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="order">1&#39;den başlar..</param>
         /// <param name="title">title.</param>
-        /// <param name="docKind">docKind.</param>
+        /// <param name="docKind">Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="isRequired">isRequired.</param>
         /// <param name="signatureRequired">signatureRequired.</param>
         /// <param name="assignedPartyIds">Yalnız &#x60;?view&#x3D;wizard&#x60; yanıtında bulunur..</param>
         /// <param name="decisionCount">Yalnız &#x60;?view&#x3D;wizard&#x60; yanıtında bulunur. Bu belge için verilmiş onay/red kararı sayısı. .</param>
-        /// <param name="sealingStatus">sealingStatus.</param>
+        /// <param name="sealingStatus">Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="hasTimestamp">Yalnız varsayılan (özet) görünümde bulunur. &#x60;sealing_status&#x60; &#x60;SEALED&#x60; değilken daima &#x60;false&#x60; döner. .</param>
         /// <param name="pageCount">pageCount.</param>
         /// <param name="completedAt">completedAt.</param>
         /// <param name="progress">Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur..</param>
         /// <param name="sealing">Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur..</param>
         /// <param name="decisions">Yalnız &#x60;GET .../documents&#x60; liste yanıtında bulunur. Belge başına taraf kararları; &#x60;GET /api/v1/demands/{id}&#x60; yanıtındaki &#x60;documents[].decisions&#x60; ile aynıdır. .</param>
-        public EnvelopeDocument(Guid id = default, int order = default, string title = default, DocKindEnum? docKind = default, bool isRequired = default, bool signatureRequired = default, List<Guid> assignedPartyIds = default, int decisionCount = default, SealingStatusEnum? sealingStatus = default, bool hasTimestamp = default, int pageCount = default, DateTime? completedAt = default, DocumentProgress progress = default, DocumentSealing sealing = default, List<DocumentPartyDecision> decisions = default)
+        public EnvelopeDocument(Guid id = default, int order = default, string title = default, string docKind = default, bool isRequired = default, bool signatureRequired = default, List<Guid> assignedPartyIds = default, int decisionCount = default, string sealingStatus = default, bool hasTimestamp = default, int pageCount = default, DateTime? completedAt = default, DocumentProgress progress = default, DocumentSealing sealing = default, List<DocumentPartyDecision> decisions = default)
         {
             this.Id = id;
             this.Order = order;
@@ -176,6 +90,13 @@ namespace ImzalaApiClient.Model
         public string Title { get; set; }
 
         /// <summary>
+        /// Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
+        public string DocKind { get; set; }
+
+        /// <summary>
         /// Gets or Sets IsRequired
         /// </summary>
         [DataMember(Name = "is_required", EmitDefaultValue = true)]
@@ -200,6 +121,13 @@ namespace ImzalaApiClient.Model
         /// <value>Yalnız &#x60;?view&#x3D;wizard&#x60; yanıtında bulunur. Bu belge için verilmiş onay/red kararı sayısı. </value>
         [DataMember(Name = "decision_count", EmitDefaultValue = false)]
         public int DecisionCount { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "sealing_status", EmitDefaultValue = true)]
+        public string SealingStatus { get; set; }
 
         /// <summary>
         /// Yalnız varsayılan (özet) görünümde bulunur. &#x60;sealing_status&#x60; &#x60;SEALED&#x60; değilken daima &#x60;false&#x60; döner.

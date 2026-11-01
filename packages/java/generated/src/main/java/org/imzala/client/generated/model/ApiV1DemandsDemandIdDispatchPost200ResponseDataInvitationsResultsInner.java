@@ -44,7 +44,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner.JSON_PROPERTY_WHATSAPP,
   ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner.JSON_PROPERTY_ERROR
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nullable
@@ -62,43 +62,8 @@ public class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsIn
   @javax.annotation.Nullable
   private Boolean whatsapp;
 
-  /**
-   * Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
-   */
-  public enum ErrorEnum {
-    DISPATCH_FAILED(String.valueOf("DISPATCH_FAILED")),
-
-    RECIPIENT_QUOTA_EXCEEDED(String.valueOf("RECIPIENT_QUOTA_EXCEEDED"));
-
-    private String value;
-
-    ErrorEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static ErrorEnum fromValue(String value) {
-      for (ErrorEnum b : ErrorEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
-
   public static final String JSON_PROPERTY_ERROR = "error";
-  private JsonNullable<ErrorEnum> error = JsonNullable.<ErrorEnum>undefined();
+  private JsonNullable<String> error = JsonNullable.<String>undefined();
 
   public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner() {
   }
@@ -199,35 +164,35 @@ public class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsIn
   }
 
 
-  public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner error(@javax.annotation.Nullable ErrorEnum error) {
-    this.error = JsonNullable.<ErrorEnum>of(error);
+  public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner error(@javax.annotation.Nullable String error) {
+    this.error = JsonNullable.<String>of(error);
     return this;
   }
 
   /**
-   * Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
+   * Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return error
    */
   @javax.annotation.Nullable
   @JsonIgnore
-  public ErrorEnum getError() {
+  public String getError() {
         return error.orElse(null);
   }
 
   @JsonProperty(value = JSON_PROPERTY_ERROR, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public JsonNullable<ErrorEnum> getError_JsonNullable() {
+  public JsonNullable<String> getError_JsonNullable() {
     return error;
   }
 
   @JsonProperty(JSON_PROPERTY_ERROR)
-  public void setError_JsonNullable(JsonNullable<ErrorEnum> error) {
+  public void setError_JsonNullable(JsonNullable<String> error) {
     this.error = error;
   }
 
-  public void setError(@javax.annotation.Nullable ErrorEnum error) {
-    this.error = JsonNullable.<ErrorEnum>of(error);
+  public void setError(@javax.annotation.Nullable String error) {
+    this.error = JsonNullable.<String>of(error);
   }
 
 

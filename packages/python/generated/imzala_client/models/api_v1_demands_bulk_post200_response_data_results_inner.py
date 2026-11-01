@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.api_v1_demands_bulk_post200_response_data_results_inner_details import ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails
@@ -32,7 +32,7 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner(BaseModel):
     ApiV1DemandsBulkPost200ResponseDataResultsInner
     """ # noqa: E501
     row_index: Optional[StrictInt] = None
-    status: Optional[StrictStr] = None
+    status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     demand_id: Optional[UUID] = Field(default=None, description="status=created ise; veya status=failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi)")
     party_ids: Optional[List[UUID]] = Field(default=None, description="Yalnız error=PARTY_WITHOUT_DOCUMENTS ve sözleşme oluşturulduktan SONRA tespit edildiyse: hiçbir belgeye atanmamış taraf id'leri.")
     template_party_ids: Optional[List[UUID]] = Field(default=None, description="Yalnız error=PARTY_WITHOUT_DOCUMENTS ve satır oluşturulmadan ÖNCE tespit edildiyse: seçim sonucunda hiçbir belgeye atanmamış kalan şablon rol kimlikleri.")
@@ -43,16 +43,6 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner(BaseModel):
     error: Optional[StrictStr] = Field(default=None, description="status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)")
     message: Optional[StrictStr] = Field(default=None, description="status=failed ise açıklama")
     __properties: ClassVar[List[str]] = ["row_index", "status", "demand_id", "party_ids", "template_party_ids", "details", "signing_urls", "result_url", "dispatched", "error", "message"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['created', 'failed']):
-            raise ValueError("must be one of enum values ('created', 'failed')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

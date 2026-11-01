@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Success** | **bool** |  | [optional]
 **Error** | **string** |  | [optional]
-**Code** | **string** |  | [optional]
+**Code** | **string** | Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **Field** | **string** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.  | [optional]
 **Details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional]
 

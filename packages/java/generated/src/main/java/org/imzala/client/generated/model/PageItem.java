@@ -51,7 +51,7 @@ import org.imzala.client.generated.ApiClient;
   PageItem.JSON_PROPERTY_LABEL,
   PageItem.JSON_PROPERTY_CONFIG
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class PageItem {
   public static final String JSON_PROPERTY_PAGE_ID = "page_id";
   @javax.annotation.Nonnull

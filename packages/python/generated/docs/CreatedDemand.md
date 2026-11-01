@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **UUID** |  | [optional]
 **title** | **str** |  | [optional]
-**status** | **str** |  | [optional]
+**status** | **str** | Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **template_id** | **UUID** |  | [optional]
 **signing_urls** | [**List[CreatedDemandSigningUrlsInner]**](CreatedDemandSigningUrlsInner.md) |  | [optional]
 **result_url** | **str** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional]

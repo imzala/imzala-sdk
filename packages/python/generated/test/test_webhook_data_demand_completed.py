@@ -38,7 +38,7 @@ class TestWebhookDataDemandCompleted(unittest.TestCase):
             return WebhookDataDemandCompleted(
                 demand_id = '',
                 title = '',
-                status = 'COMPLETED',
+                status = '',
                 completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 parties = [
                     imzala_client.models.webhook_data_demand_completed_parties_inner.WebhookDataDemandCompleted_parties_inner(
@@ -53,7 +53,7 @@ class TestWebhookDataDemandCompleted(unittest.TestCase):
             return WebhookDataDemandCompleted(
                 demand_id = '',
                 title = '',
-                status = 'COMPLETED',
+                status = '',
                 completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 parties = [
                     imzala_client.models.webhook_data_demand_completed_parties_inner.WebhookDataDemandCompleted_parties_inner(

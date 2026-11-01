@@ -9,22 +9,6 @@ Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre de�
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**id** | **String** | Olay benzersiz id&#39;si. Receiver tarafında idempotency için kullanın (DB&#39;de unique key).  |  |
-|**type** | [**TypeEnum**](#TypeEnum) |  |  |
+|**type** | **String** | Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |
 |**createdAt** | **OffsetDateTime** | Olay zamanı (ISO 8601 UTC). |  |
 |**data** | **Object** | Olay tipine özel veri (aşağıdaki şemalar) |  |
-
-
-
-## Enum: TypeEnum
-
-| Name | Value |
-|---- | -----|
-| DEMAND_CREATED | &quot;demand.created&quot; |
-| DEMAND_COMPLETED | &quot;demand.completed&quot; |
-| DEMAND_EXPIRED | &quot;demand.expired&quot; |
-| PARTY_SIGNED | &quot;party.signed&quot; |
-| PARTY_VIEWED | &quot;party.viewed&quot; |
-| PARTY_REJECTED | &quot;party.rejected&quot; |
-| CONTRACT_EXPIRING | &quot;contract.expiring&quot; |
-| CONTRACT_ENDED | &quot;contract.ended&quot; |
-| CONTRACT_ADVANCED | &quot;contract.advanced&quot; |

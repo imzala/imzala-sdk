@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional]
 **title** | **string** |  | [optional]
-**status** | **string** |  | [optional]
+**status** | **string** | Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **created_at** | **\DateTime** |  | [optional]
 **completed_at** | **\DateTime** |  | [optional]
 **parties** | [**\Imzala\Client\Model\DemandStatusPartiesInner[]**](DemandStatusPartiesInner.md) |  | [optional]

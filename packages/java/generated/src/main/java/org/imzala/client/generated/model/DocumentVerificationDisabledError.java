@@ -37,85 +37,19 @@ import org.imzala.client.generated.ApiClient;
   DocumentVerificationDisabledError.JSON_PROPERTY_CODE,
   DocumentVerificationDisabledError.JSON_PROPERTY_ERROR
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentVerificationDisabledError {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @javax.annotation.Nonnull
   private Boolean success;
 
-  /**
-   * Gets or Sets code
-   */
-  public enum CodeEnum {
-    DOCUMENT_VERIFICATION_DISABLED(String.valueOf("DOCUMENT_VERIFICATION_DISABLED"));
-
-    private String value;
-
-    CodeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static CodeEnum fromValue(String value) {
-      for (CodeEnum b : CodeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nonnull
-  private CodeEnum code;
-
-  /**
-   * Gets or Sets error
-   */
-  public enum ErrorEnum {
-    DOCUMENT_VERIFICATION_DISABLED(String.valueOf("DOCUMENT_VERIFICATION_DISABLED"));
-
-    private String value;
-
-    ErrorEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static ErrorEnum fromValue(String value) {
-      for (ErrorEnum b : ErrorEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
+  private String code;
 
   public static final String JSON_PROPERTY_ERROR = "error";
   @javax.annotation.Nonnull
-  private ErrorEnum error;
+  private String error;
 
   public DocumentVerificationDisabledError() {
   }
@@ -144,50 +78,50 @@ public class DocumentVerificationDisabledError {
   }
 
 
-  public DocumentVerificationDisabledError code(@javax.annotation.Nonnull CodeEnum code) {
+  public DocumentVerificationDisabledError code(@javax.annotation.Nonnull String code) {
     this.code = code;
     return this;
   }
 
   /**
-   * Get code
+   * Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return code
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_CODE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public CodeEnum getCode() {
+  public String getCode() {
     return code;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_CODE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setCode(@javax.annotation.Nonnull CodeEnum code) {
+  public void setCode(@javax.annotation.Nonnull String code) {
     this.code = code;
   }
 
 
-  public DocumentVerificationDisabledError error(@javax.annotation.Nonnull ErrorEnum error) {
+  public DocumentVerificationDisabledError error(@javax.annotation.Nonnull String error) {
     this.error = error;
     return this;
   }
 
   /**
-   * Get error
+   * Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return error
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_ERROR, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public ErrorEnum getError() {
+  public String getError() {
     return error;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_ERROR, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setError(@javax.annotation.Nonnull ErrorEnum error) {
+  public void setError(@javax.annotation.Nonnull String error) {
     this.error = error;
   }
 

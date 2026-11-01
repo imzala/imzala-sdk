@@ -34,31 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class KycWebhookEnvelope : IValidatableObject
     {
         /// <summary>
-        /// Defines Type
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum TypeEnum
-        {
-            /// <summary>
-            /// Enum KycCompleted for value: kyc.completed
-            /// </summary>
-            [EnumMember(Value = "kyc.completed")]
-            KycCompleted = 1,
-
-            /// <summary>
-            /// Enum KycFailed for value: kyc.failed
-            /// </summary>
-            [EnumMember(Value = "kyc.failed")]
-            KycFailed = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Type
-        /// </summary>
-        [DataMember(Name = "type", IsRequired = true, EmitDefaultValue = true)]
-        public TypeEnum Type { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="KycWebhookEnvelope" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -67,10 +42,10 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="KycWebhookEnvelope" /> class.
         /// </summary>
         /// <param name="id">Olay id&#39;si: receiver tarafında idempotency anahtarı. (required).</param>
-        /// <param name="type">type (required).</param>
+        /// <param name="type">Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="createdAt">Olay zamanı (ISO 8601 UTC). (required).</param>
         /// <param name="data">Olay verisi (WebhookDataKycTerminal) (required).</param>
-        public KycWebhookEnvelope(string id = default, TypeEnum type = default, DateTime createdAt = default, Object data = default)
+        public KycWebhookEnvelope(string id = default, string type = default, DateTime createdAt = default, Object data = default)
         {
             // to ensure "id" is required (not null)
             if (id == null)
@@ -78,6 +53,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("id is a required property for KycWebhookEnvelope and cannot be null");
             }
             this.Id = id;
+            // to ensure "type" is required (not null)
+            if (type == null)
+            {
+                throw new ArgumentNullException("type is a required property for KycWebhookEnvelope and cannot be null");
+            }
             this.Type = type;
             this.CreatedAt = createdAt;
             // to ensure "data" is required (not null)
@@ -97,6 +77,13 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "id", IsRequired = true, EmitDefaultValue = true)]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "type", IsRequired = true, EmitDefaultValue = true)]
+        public string Type { get; set; }
 
         /// <summary>
         /// Olay zamanı (ISO 8601 UTC).

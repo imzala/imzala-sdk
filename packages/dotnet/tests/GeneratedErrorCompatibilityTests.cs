@@ -18,7 +18,7 @@ public class GeneratedErrorCompatibilityTests
     [Fact]
     public void RetainsSelectionBranchConstructorAndGetters()
     {
-        var selection = new DocumentSelectionError(success: false, error: "Synthetic selection", code: DocumentSelectionError.CodeEnum.INVALIDDOCUMENTSELECTION);
+        var selection = new DocumentSelectionError(success: false, error: "Synthetic selection", code: "INVALID_DOCUMENT_SELECTION");
         var wrapper = new ApiV1DemandsPost400Response(selection);
         Assert.Same(selection, wrapper.ActualInstance);
         Assert.Same(selection, wrapper.GetDocumentSelectionError());

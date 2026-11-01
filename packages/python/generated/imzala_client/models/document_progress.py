@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,21 +29,11 @@ class DocumentProgress(BaseModel):
     """
     Belgeye atanmış tarafların karar ilerlemesi. Mühürden ve rızadan bağımsızdır: `COMPLETED`, belgeye atanmış tüm tarafların bu belge için karar verdiğini gösterir (isteğe bağlı bir belgede ret de karardır).
     """ # noqa: E501
-    status: Optional[StrictStr] = Field(default=None, description="`PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi. ")
+    status: Optional[StrictStr] = Field(default=None, description="`PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     active_assigned_party_count: Optional[StrictInt] = Field(default=None, description="Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.")
     decided_party_count: Optional[StrictInt] = Field(default=None, description="Bunlardan bu belge için karar vermiş olanların sayısı.")
     completed_at: Optional[datetime] = Field(default=None, description="Belgenin kendi tamamlanma anı. Sistem bu anı kaydetmediyse `null` döner; zarfın tamamlanma zamanı bu alana kopyalanmaz. ")
     __properties: ClassVar[List[str]] = ["status", "active_assigned_party_count", "decided_party_count", "completed_at"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['PENDING', 'PARTIAL', 'COMPLETED']):
-            raise ValueError("must be one of enum values ('PENDING', 'PARTIAL', 'COMPLETED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

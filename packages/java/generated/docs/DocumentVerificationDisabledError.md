@@ -9,21 +9,5 @@ Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor.
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  |
-|**code** | [**CodeEnum**](#CodeEnum) |  |  |
-|**error** | [**ErrorEnum**](#ErrorEnum) |  |  |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| DOCUMENT_VERIFICATION_DISABLED | &quot;DOCUMENT_VERIFICATION_DISABLED&quot; |
-
-
-
-## Enum: ErrorEnum
-
-| Name | Value |
-|---- | -----|
-| DOCUMENT_VERIFICATION_DISABLED | &quot;DOCUMENT_VERIFICATION_DISABLED&quot; |
+|**code** | **String** | Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |
+|**error** | **String** | Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |

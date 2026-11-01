@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional] [default to undefined]
 **title** | **string** |  | [optional] [default to undefined]
-**status** | **string** |  | [optional] [default to undefined]
+**status** | **string** | Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **created_at** | **string** |  | [optional] [default to undefined]
 **completed_at** | **string** |  | [optional] [default to undefined]
 **parties** | [**Array&lt;DemandStatusPartiesInner&gt;**](DemandStatusPartiesInner.md) |  | [optional] [default to undefined]

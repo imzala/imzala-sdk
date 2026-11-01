@@ -34,36 +34,9 @@ namespace ImzalaApiClient.Model
     public partial class TemplateUsage : IValidatableObject
     {
         /// <summary>
-        /// Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).
-        /// </summary>
-        /// <value>Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır). </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum KindEnum
-        {
-            /// <summary>
-            /// Enum DOCUMENT for value: DOCUMENT
-            /// </summary>
-            [EnumMember(Value = "DOCUMENT")]
-            DOCUMENT = 1,
-
-            /// <summary>
-            /// Enum FIELDLAYOUT for value: FIELD_LAYOUT
-            /// </summary>
-            [EnumMember(Value = "FIELD_LAYOUT")]
-            FIELDLAYOUT = 2
-        }
-
-
-        /// <summary>
-        /// Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).
-        /// </summary>
-        /// <value>Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır). </value>
-        [DataMember(Name = "kind", EmitDefaultValue = false)]
-        public KindEnum? Kind { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="TemplateUsage" /> class.
         /// </summary>
-        /// <param name="kind">Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır). .</param>
+        /// <param name="kind">Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="formFields">&#x60;multipart/form-data&#x60; alanları. Belgeli şablon JSON gövde kullandığı için bu uçta boş dizidir. .</param>
         /// <param name="template">template.</param>
         /// <param name="endpoint">endpoint.</param>
@@ -72,7 +45,7 @@ namespace ImzalaApiClient.Model
         /// <param name="variables">variables.</param>
         /// <param name="documents">Şablonun belgeleri (sıra artan). &#x60;document_variables&#x60; anahtarları buradaki &#x60;template_document_id&#x60; değerleridir. .</param>
         /// <param name="exampleRequest">exampleRequest.</param>
-        public TemplateUsage(KindEnum? kind = default, List<TemplateUsageFormFieldsInner> formFields = default, ApiV1TemplatesIdPatch200ResponseData template = default, TemplateUsageEndpoint endpoint = default, Dictionary<string, string> requiredHeaders = default, List<TemplateUsagePartiesInner> parties = default, List<TemplateUsageVariablesInner> variables = default, List<TemplateUsageDocumentsInner> documents = default, TemplateUsageExampleRequest exampleRequest = default)
+        public TemplateUsage(string kind = default, List<TemplateUsageFormFieldsInner> formFields = default, ApiV1TemplatesIdPatch200ResponseData template = default, TemplateUsageEndpoint endpoint = default, Dictionary<string, string> requiredHeaders = default, List<TemplateUsagePartiesInner> parties = default, List<TemplateUsageVariablesInner> variables = default, List<TemplateUsageDocumentsInner> documents = default, TemplateUsageExampleRequest exampleRequest = default)
         {
             this.Kind = kind;
             this.FormFields = formFields;
@@ -84,6 +57,13 @@ namespace ImzalaApiClient.Model
             this.Documents = documents;
             this.ExampleRequest = exampleRequest;
         }
+
+        /// <summary>
+        /// Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "kind", EmitDefaultValue = false)]
+        public string Kind { get; set; }
 
         /// <summary>
         /// &#x60;multipart/form-data&#x60; alanları. Belgeli şablon JSON gövde kullandığı için bu uçta boş dizidir.

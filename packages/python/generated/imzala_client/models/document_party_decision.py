@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -31,23 +31,13 @@ class DocumentPartyDecision(BaseModel):
     Bir tarafın bu belge için kararı. Kişisel veri (ad, e-posta, telefon) içermez; tarafı `party_id` ile `parties` listesiyle eşleyin.
     """ # noqa: E501
     party_id: Optional[UUID] = None
-    decision: Optional[StrictStr] = Field(default=None, description="Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz. ")
+    decision: Optional[StrictStr] = Field(default=None, description="Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     decided_at: Optional[datetime] = Field(default=None, description="Kararın verildiği an. `WITHDRAWN` için geri çekilen onayın anıdır. `recorded` `false` iken `null` döner. ")
     withdrawn_at: Optional[datetime] = Field(default=None, description="Yalnız `WITHDRAWN` için dolu; geri çekme anı.")
     signature_collected: Optional[StrictBool] = Field(default=None, description="Bu kararla birlikte bu belgede dijital imza toplandı mı.")
     recorded: Optional[StrictBool] = Field(default=None, description="`false` ise karar belge bazında kayıtlı değildir; tek belgeli eski sözleşmelerde tarafın imzasından türetilmiştir ve karar delili olarak kullanılamaz. ")
     consent_granted: Optional[StrictBool] = Field(default=None, description="Yalnız `KVKK_CONSENT` belgesinde dolu. Taraf bu belgeyi onaylamış ve onayını geri çekmemişse `true`; reddetmiş, geri çekmiş veya karar vermemişse `false`. Bu alan yalnızca platformdaki onay kaydını yansıtır; açık rızanın KVKK anlamında hukuken geçerli olup olmadığını (belirli konuya ilişkin olması, bilgilendirmeye dayanması, özgür iradeyle verilmesi) imzala.org değerlendirmez. Reddedilen isteğe bağlı bir rıza hizmetin koşulu yapılmamalıdır. Diğer belge türlerinde `null`. ")
     __properties: ClassVar[List[str]] = ["party_id", "decision", "decided_at", "withdrawn_at", "signature_collected", "recorded", "consent_granted"]
-
-    @field_validator('decision')
-    def decision_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['PENDING', 'ACCEPTED', 'DECLINED', 'WITHDRAWN']):
-            raise ValueError("must be one of enum values ('PENDING', 'ACCEPTED', 'DECLINED', 'WITHDRAWN')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

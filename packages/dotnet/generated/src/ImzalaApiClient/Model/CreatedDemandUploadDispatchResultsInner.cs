@@ -34,35 +34,14 @@ namespace ImzalaApiClient.Model
     public partial class CreatedDemandUploadDispatchResultsInner : IValidatableObject
     {
         /// <summary>
-        /// Yalnız o taraf için gönderim patladığında döner.
-        /// </summary>
-        /// <value>Yalnız o taraf için gönderim patladığında döner.</value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DISPATCHFAILED for value: DISPATCH_FAILED
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_FAILED")]
-            DISPATCHFAILED = 1
-        }
-
-
-        /// <summary>
-        /// Yalnız o taraf için gönderim patladığında döner.
-        /// </summary>
-        /// <value>Yalnız o taraf için gönderim patladığında döner.</value>
-        [DataMember(Name = "error", EmitDefaultValue = false)]
-        public ErrorEnum? Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="CreatedDemandUploadDispatchResultsInner" /> class.
         /// </summary>
         /// <param name="partyId">partyId.</param>
         /// <param name="sms">sms.</param>
         /// <param name="email">email.</param>
         /// <param name="whatsapp">whatsapp.</param>
-        /// <param name="error">Yalnız o taraf için gönderim patladığında döner..</param>
-        public CreatedDemandUploadDispatchResultsInner(Guid partyId = default, bool sms = default, bool email = default, bool whatsapp = default, ErrorEnum? error = default)
+        /// <param name="error">Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public CreatedDemandUploadDispatchResultsInner(Guid partyId = default, bool sms = default, bool email = default, bool whatsapp = default, string error = default)
         {
             this.PartyId = partyId;
             this.Sms = sms;
@@ -94,6 +73,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "whatsapp", EmitDefaultValue = true)]
         public bool Whatsapp { get; set; }
+
+        /// <summary>
+        /// Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", EmitDefaultValue = false)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

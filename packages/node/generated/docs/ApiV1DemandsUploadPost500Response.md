@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [optional] [default to undefined]
 **error** | **string** |  | [optional] [default to undefined]
-**code** | **string** |  | [optional] [default to undefined]
+**code** | **string** | Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **demand_id** | **string** |  | [optional] [default to undefined]
 
 ## Example

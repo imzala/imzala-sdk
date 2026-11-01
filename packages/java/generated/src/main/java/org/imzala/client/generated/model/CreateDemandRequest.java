@@ -83,7 +83,7 @@ import org.imzala.client.generated.ApiClient;
   CreateDemandRequest.JSON_PROPERTY_REMINDER_OFFSETS,
   CreateDemandRequest.JSON_PROPERTY_NOTIFY_COUNTERPARTY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreateDemandRequest {
   public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED = "document_collection_enabled";
   private JsonNullable<Boolean> documentCollectionEnabled = JsonNullable.<Boolean>undefined();

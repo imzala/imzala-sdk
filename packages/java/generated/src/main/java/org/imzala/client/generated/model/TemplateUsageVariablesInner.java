@@ -47,7 +47,7 @@ import org.imzala.client.generated.ApiClient;
   TemplateUsageVariablesInner.JSON_PROPERTY_TEMPLATE_DOCUMENT_ID,
   TemplateUsageVariablesInner.JSON_PROPERTY_NOTE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TemplateUsageVariablesInner {
   public static final String JSON_PROPERTY_SLUG = "slug";
   @javax.annotation.Nullable

@@ -67,7 +67,7 @@ class ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner implements ModelInte
         'birth_date' => '\DateTime',
         'send_sms' => 'bool',
         'send_email' => 'bool',
-        'locale' => '\Imzala\Client\Model\SignerLocale',
+        'locale' => 'string',
         'require_phone_verification' => 'bool',
         'custom_message' => 'string',
         'variables' => 'object'
@@ -620,7 +620,7 @@ class ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner implements ModelInte
     /**
      * Gets locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getLocale()
     {
@@ -630,7 +630,7 @@ class ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner implements ModelInte
     /**
      * Sets locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $locale locale
+     * @param string|null $locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */

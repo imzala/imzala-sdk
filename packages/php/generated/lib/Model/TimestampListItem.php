@@ -272,25 +272,6 @@ class TimestampListItem implements ModelInterface, ArrayAccess, \JsonSerializabl
         return self::$openAPIModelName;
     }
 
-    public const STATUS_ACTIVE = 'ACTIVE';
-    public const STATUS_VERIFIED = 'VERIFIED';
-    public const STATUS_EXPIRED = 'EXPIRED';
-    public const STATUS_INVALID = 'INVALID';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_ACTIVE,
-            self::STATUS_VERIFIED,
-            self::STATUS_EXPIRED,
-            self::STATUS_INVALID,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -343,15 +324,6 @@ class TimestampListItem implements ModelInterface, ArrayAccess, \JsonSerializabl
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -489,7 +461,7 @@ class TimestampListItem implements ModelInterface, ArrayAccess, \JsonSerializabl
     /**
      * Sets status
      *
-     * @param string|null $status status
+     * @param string|null $status Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -497,16 +469,6 @@ class TimestampListItem implements ModelInterface, ArrayAccess, \JsonSerializabl
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

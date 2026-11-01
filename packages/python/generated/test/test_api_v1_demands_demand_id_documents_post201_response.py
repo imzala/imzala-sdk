@@ -42,14 +42,14 @@ class TestApiV1DemandsDemandIdDocumentsPost201Response(unittest.TestCase):
                         id = '',
                         order = 56,
                         title = '',
-                        doc_kind = 'CONTRACT',
+                        doc_kind = '',
                         is_required = True,
                         signature_required = True,
                         assigned_party_ids = [
                             ''
                             ],
                         decision_count = 56,
-                        sealing_status = 'NONE',
+                        sealing_status = '',
                         has_timestamp = True,
                         page_count = 56,
                         completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
@@ -58,7 +58,7 @@ class TestApiV1DemandsDemandIdDocumentsPost201Response(unittest.TestCase):
                         decisions = [
                             imzala_client.models.document_party_decision.DocumentPartyDecision(
                                 party_id = '',
-                                decision = 'PENDING',
+                                decision = '',
                                 decided_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                 withdrawn_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                 signature_collected = True,

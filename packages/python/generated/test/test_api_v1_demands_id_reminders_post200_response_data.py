@@ -44,7 +44,7 @@ class TestApiV1DemandsIdRemindersPost200ResponseData(unittest.TestCase):
                         first_name = '',
                         last_name = '',
                         channels = [
-                            'email'
+                            ''
                             ], )
                     ],
                 skipped = [

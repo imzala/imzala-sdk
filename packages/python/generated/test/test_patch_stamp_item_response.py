@@ -42,7 +42,7 @@ class TestPatchStampItemResponse(unittest.TestCase):
                     page_id = 12345,
                     document_id = '',
                     party_id = '',
-                    source = 'INLINE',
+                    source = '',
                     is_required = True,
                     stamp_data = { }, )
             )

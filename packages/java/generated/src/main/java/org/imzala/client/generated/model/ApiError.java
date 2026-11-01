@@ -39,7 +39,7 @@ import org.imzala.client.generated.ApiClient;
   ApiError.JSON_PROPERTY_CODE,
   ApiError.JSON_PROPERTY_RETRY_AFTER_SECONDS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiError {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @javax.annotation.Nullable

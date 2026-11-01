@@ -34,35 +34,10 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsBulkPost200ResponseDataResultsInner : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum Created for value: created
-            /// </summary>
-            [EnumMember(Value = "created")]
-            Created = 1,
-
-            /// <summary>
-            /// Enum Failed for value: failed
-            /// </summary>
-            [EnumMember(Value = "failed")]
-            Failed = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsBulkPost200ResponseDataResultsInner" /> class.
         /// </summary>
         /// <param name="rowIndex">rowIndex.</param>
-        /// <param name="status">status.</param>
+        /// <param name="status">Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="demandId">status&#x3D;created ise; veya status&#x3D;failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi).</param>
         /// <param name="partyIds">Yalnız error&#x3D;PARTY_WITHOUT_DOCUMENTS ve sözleşme oluşturulduktan SONRA tespit edildiyse: hiçbir belgeye atanmamış taraf id&#39;leri..</param>
         /// <param name="templatePartyIds">Yalnız error&#x3D;PARTY_WITHOUT_DOCUMENTS ve satır oluşturulmadan ÖNCE tespit edildiyse: seçim sonucunda hiçbir belgeye atanmamış kalan şablon rol kimlikleri..</param>
@@ -72,7 +47,7 @@ namespace ImzalaApiClient.Model
         /// <param name="dispatched">Gönderilen davet (SMS+e-posta) sayısı.</param>
         /// <param name="error">status&#x3D;failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.).</param>
         /// <param name="message">status&#x3D;failed ise açıklama.</param>
-        public ApiV1DemandsBulkPost200ResponseDataResultsInner(int rowIndex = default, StatusEnum? status = default, Guid demandId = default, List<Guid> partyIds = default, List<Guid> templatePartyIds = default, ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails details = default, List<ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner> signingUrls = default, string resultUrl = default, int dispatched = default, string error = default, string message = default)
+        public ApiV1DemandsBulkPost200ResponseDataResultsInner(int rowIndex = default, string status = default, Guid demandId = default, List<Guid> partyIds = default, List<Guid> templatePartyIds = default, ApiV1DemandsBulkPost200ResponseDataResultsInnerDetails details = default, List<ApiV1DemandsBulkPost200ResponseDataResultsInnerSigningUrlsInner> signingUrls = default, string resultUrl = default, int dispatched = default, string error = default, string message = default)
         {
             this.RowIndex = rowIndex;
             this.Status = status;
@@ -92,6 +67,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "row_index", EmitDefaultValue = false)]
         public int RowIndex { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// status&#x3D;created ise; veya status&#x3D;failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi)

@@ -254,21 +254,6 @@ class CreatedDemandUploadFieldLayout implements ModelInterface, ArrayAccess, \Js
         return self::$openAPIModelName;
     }
 
-    public const ON_ANCHOR_MISS_BLOCK = 'block';
-    public const ON_ANCHOR_MISS_DROP = 'drop';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getOnAnchorMissAllowableValues()
-    {
-        return [
-            self::ON_ANCHOR_MISS_BLOCK,
-            self::ON_ANCHOR_MISS_DROP,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -318,15 +303,6 @@ class CreatedDemandUploadFieldLayout implements ModelInterface, ArrayAccess, \Js
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getOnAnchorMissAllowableValues();
-        if (!is_null($this->container['on_anchor_miss']) && !in_array($this->container['on_anchor_miss'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'on_anchor_miss', must be one of '%s'",
-                $this->container['on_anchor_miss'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -410,7 +386,7 @@ class CreatedDemandUploadFieldLayout implements ModelInterface, ArrayAccess, \Js
     /**
      * Sets on_anchor_miss
      *
-     * @param string|null $on_anchor_miss İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.
+     * @param string|null $on_anchor_miss İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -418,16 +394,6 @@ class CreatedDemandUploadFieldLayout implements ModelInterface, ArrayAccess, \Js
     {
         if (is_null($on_anchor_miss)) {
             throw new \InvalidArgumentException('non-nullable on_anchor_miss cannot be null');
-        }
-        $allowedValues = $this->getOnAnchorMissAllowableValues();
-        if (!in_array($on_anchor_miss, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'on_anchor_miss', must be one of '%s'",
-                    $on_anchor_miss,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['on_anchor_miss'] = $on_anchor_miss;
 

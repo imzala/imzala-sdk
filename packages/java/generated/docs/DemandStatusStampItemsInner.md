@@ -12,16 +12,6 @@
 |**documentId** | **String** |  |  [optional] |
 |**slug** | **String** |  |  [optional] |
 |**label** | **String** |  |  [optional] |
-|**source** | [**SourceEnum**](#SourceEnum) |  |  [optional] |
+|**source** | **String** | Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**partyId** | **UUID** | Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf |  [optional] |
 |**isRequired** | **Boolean** |  |  [optional] |
-
-
-
-## Enum: SourceEnum
-
-| Name | Value |
-|---- | -----|
-| INLINE | &quot;INLINE&quot; |
-| FROM_SAVED | &quot;FROM_SAVED&quot; |
-| FILLER_PROVIDES | &quot;FILLER_PROVIDES&quot; |

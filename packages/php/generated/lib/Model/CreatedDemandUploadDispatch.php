@@ -248,21 +248,6 @@ class CreatedDemandUploadDispatch implements ModelInterface, ArrayAccess, \JsonS
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DISPATCH_SKIPPED = 'DISPATCH_SKIPPED';
-    public const ERROR_DISPATCH_TOO_MANY = 'DISPATCH_TOO_MANY';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DISPATCH_SKIPPED,
-            self::ERROR_DISPATCH_TOO_MANY,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -311,15 +296,6 @@ class CreatedDemandUploadDispatch implements ModelInterface, ArrayAccess, \JsonS
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -430,7 +406,7 @@ class CreatedDemandUploadDispatch implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets error
      *
-     * @param string|null $error `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.
+     * @param string|null $error `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -438,16 +414,6 @@ class CreatedDemandUploadDispatch implements ModelInterface, ArrayAccess, \JsonS
     {
         if (is_null($error)) {
             throw new \InvalidArgumentException('non-nullable error cannot be null');
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 

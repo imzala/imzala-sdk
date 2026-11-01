@@ -47,7 +47,7 @@ import org.imzala.client.generated.ApiClient;
   DemandStatusStampItemsInner.JSON_PROPERTY_PARTY_ID,
   DemandStatusStampItemsInner.JSON_PROPERTY_IS_REQUIRED
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DemandStatusStampItemsInner {
   public static final String JSON_PROPERTY_ITEM_ID = "item_id";
   @javax.annotation.Nullable
@@ -66,46 +66,9 @@ public class DemandStatusStampItemsInner {
   public static final String JSON_PROPERTY_LABEL = "label";
   private JsonNullable<String> label = JsonNullable.<String>undefined();
 
-  /**
-   * Gets or Sets source
-   */
-  public enum SourceEnum {
-    INLINE(String.valueOf("INLINE")),
-
-    FROM_SAVED(String.valueOf("FROM_SAVED")),
-
-    FILLER_PROVIDES(String.valueOf("FILLER_PROVIDES"));
-
-    private String value;
-
-    SourceEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SourceEnum fromValue(String value) {
-      for (SourceEnum b : SourceEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_SOURCE = "source";
   @javax.annotation.Nullable
-  private SourceEnum source;
+  private String source;
 
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   private JsonNullable<UUID> partyId = JsonNullable.<UUID>undefined();
@@ -261,26 +224,26 @@ public class DemandStatusStampItemsInner {
   }
 
 
-  public DemandStatusStampItemsInner source(@javax.annotation.Nullable SourceEnum source) {
+  public DemandStatusStampItemsInner source(@javax.annotation.Nullable String source) {
     this.source = source;
     return this;
   }
 
   /**
-   * Get source
+   * Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return source
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_SOURCE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public SourceEnum getSource() {
+  public String getSource() {
     return source;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_SOURCE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSource(@javax.annotation.Nullable SourceEnum source) {
+  public void setSource(@javax.annotation.Nullable String source) {
     this.source = source;
   }
 

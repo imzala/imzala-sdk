@@ -42,7 +42,7 @@ class TestFieldLayoutUnresolved(unittest.TestCase):
                 diagnostics = [
                     imzala_client.models.field_layout_diagnostic.FieldLayoutDiagnostic(
                         code = 'ANCHOR_TEXT_NOT_FOUND',
-                        severity = 'ERROR',
+                        severity = '',
                         item_id = 56,
                         slug = '',
                         label = '',

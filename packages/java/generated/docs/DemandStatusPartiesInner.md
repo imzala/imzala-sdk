@@ -15,5 +15,5 @@
 |**rejected** | **Boolean** |  |  [optional] |
 |**rejectedAt** | **OffsetDateTime** |  |  [optional] |
 |**signingUrl** | **URI** |  |  [optional] |
-|**locale** | **SignerLocale** |  |  [optional] |
-|**signedLocale** | **SignerLocale** |  |  [optional] |
+|**locale** | **String** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
+|**signedLocale** | **String** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |

@@ -34,39 +34,11 @@ namespace ImzalaApiClient.Model
     public partial class CreatedDemand : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum DRAFT for value: DRAFT
-            /// </summary>
-            [EnumMember(Value = "DRAFT")]
-            DRAFT = 1,
-
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        /*
-        <example>PENDING</example>
-        */
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="CreatedDemand" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="title">title.</param>
-        /// <param name="status">status.</param>
+        /// <param name="status">Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="templateId">templateId.</param>
         /// <param name="signingUrls">signingUrls.</param>
         /// <param name="resultUrl">Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez..</param>
@@ -77,7 +49,7 @@ namespace ImzalaApiClient.Model
         /// <param name="stampsApplied">Yalnız kaşe slug&#39;ına &#x60;StampData&#x60; nesnesi gönderildiyse döner. Nesne değerle doldurulan kaşe alanları (alan kimliği sözleşmeye aittir, şablona değil). .</param>
         /// <param name="variablesAppliedByDocument">Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kimliği → belge kapsamından uygulanan slug&#39;lar: &#x60;_common&#x60; (kök &#x60;document_variables&#x60;) ve &#x60;_by_party&#x60; (template_party_id → slug&#39;lar). .</param>
         /// <param name="variablesIgnoredByDocument">Yalnız &#x60;document_variables&#x60; gönderildiyse döner. Belge kapsamında gönderilip O BELGEDE hiçbir alana yazılmayan slug&#39;lar (aynı biçim). .</param>
-        public CreatedDemand(Guid id = default, string title = default, StatusEnum? status = default, Guid templateId = default, List<CreatedDemandSigningUrlsInner> signingUrls = default, string resultUrl = default, List<string> variablesApplied = default, List<string> variablesAppliedRoot = default, Dictionary<string, List<string>> variablesAppliedByParty = default, List<string> variablesIgnored = default, List<CreatedDemandStampsAppliedInner> stampsApplied = default, Dictionary<string, DocumentScopedSlugs> variablesAppliedByDocument = default, Dictionary<string, DocumentScopedSlugs> variablesIgnoredByDocument = default)
+        public CreatedDemand(Guid id = default, string title = default, string status = default, Guid templateId = default, List<CreatedDemandSigningUrlsInner> signingUrls = default, string resultUrl = default, List<string> variablesApplied = default, List<string> variablesAppliedRoot = default, Dictionary<string, List<string>> variablesAppliedByParty = default, List<string> variablesIgnored = default, List<CreatedDemandStampsAppliedInner> stampsApplied = default, Dictionary<string, DocumentScopedSlugs> variablesAppliedByDocument = default, Dictionary<string, DocumentScopedSlugs> variablesIgnoredByDocument = default)
         {
             this.Id = id;
             this.Title = title;
@@ -105,6 +77,16 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>PENDING</example>
+        */
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Gets or Sets TemplateId

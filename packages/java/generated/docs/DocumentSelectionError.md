@@ -10,13 +10,5 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | **String** |  |  [optional] |
-|**code** | [**CodeEnum**](#CodeEnum) |  |  [optional] |
+|**code** | **String** | Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  |  [optional] |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| INVALID_DOCUMENT_SELECTION | &quot;INVALID_DOCUMENT_SELECTION&quot; |

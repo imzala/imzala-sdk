@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,17 +28,10 @@ class StandardErrorError(BaseModel):
     """
     StandardErrorError
     """ # noqa: E501
-    code: StrictStr = Field(json_schema_extra={"examples": ["DEMAND_NOT_FOUND"]})
+    code: StrictStr = Field(description="Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["DEMAND_NOT_FOUND"]})
     message: StrictStr = Field(json_schema_extra={"examples": ["Demand not found"]})
     retry_after_seconds: Optional[StrictInt] = Field(default=None, description="Sadece RATE_LIMITED'de doludur", json_schema_extra={"examples": [247]})
     __properties: ClassVar[List[str]] = ["code", "message", "retry_after_seconds"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['INVALID_CHANNELS', 'DEMAND_NOT_FOUND', 'ALREADY_COMPLETED', 'RATE_LIMITED', 'MAX_SMS_REMINDERS_REACHED', 'DEMAND_NOT_DISPATCHED', 'DEMAND_NOT_DISPATCHABLE', 'DEMAND_EXPIRED', 'ENVELOPE_NOT_DISPATCHED', 'UNAUTHORIZED', 'INTERNAL_ERROR']):
-            raise ValueError("must be one of enum values ('INVALID_CHANNELS', 'DEMAND_NOT_FOUND', 'ALREADY_COMPLETED', 'RATE_LIMITED', 'MAX_SMS_REMINDERS_REACHED', 'DEMAND_NOT_DISPATCHED', 'DEMAND_NOT_DISPATCHABLE', 'DEMAND_EXPIRED', 'ENVELOPE_NOT_DISPATCHED', 'UNAUTHORIZED', 'INTERNAL_ERROR')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

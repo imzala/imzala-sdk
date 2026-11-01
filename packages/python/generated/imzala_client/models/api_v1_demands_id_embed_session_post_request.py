@@ -18,10 +18,9 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
-from imzala_client.models.signer_locale import SignerLocale
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -31,7 +30,7 @@ class ApiV1DemandsIdEmbedSessionPostRequest(BaseModel):
     ApiV1DemandsIdEmbedSessionPostRequest
     """ # noqa: E501
     party_id: UUID = Field(description="Token üretilecek tarafın ID'si. `POST /api/v1/demands` veya `GET /api/v1/demands/{id}` cevabındaki `signing_urls[].party_id` alanından alınır. ")
-    locale: Optional[SignerLocale] = None
+    locale: Optional[StrictStr] = Field(default=None, description="İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["en"]})
     __properties: ClassVar[List[str]] = ["party_id", "locale"]
 
     model_config = ConfigDict(

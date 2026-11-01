@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **page_id** | **int** |  | [optional]
 **document_id** | **str** |  | [optional]
 **party_id** | **UUID** |  | [optional]
-**source** | **str** | Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur) | [optional]
+**source** | **str** | Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **is_required** | **bool** |  | [optional]
 **stamp_data** | **Dict[str, object]** | Güncelleme sonrası kaşe verisinin tamamı. | [optional]
 

@@ -36,7 +36,7 @@ class TestDocumentSelectionErrorDetails(unittest.TestCase):
         model = DocumentSelectionErrorDetails()
         if include_optional:
             return DocumentSelectionErrorDetails(
-                reason = 'shape',
+                reason = '',
                 document_ids = [
                     ''
                     ]

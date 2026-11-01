@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.document_party_decision import DocumentPartyDecision
@@ -35,7 +35,7 @@ class DemandDocumentStatus(BaseModel):
     id: Optional[UUID] = None
     order: Optional[StrictInt] = Field(default=None, description="1'den başlar.")
     title: Optional[StrictStr] = None
-    doc_kind: Optional[StrictStr] = None
+    doc_kind: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     is_required: Optional[StrictBool] = None
     signature_required: Optional[StrictBool] = None
     assigned_party_ids: Optional[List[UUID]] = None
@@ -43,16 +43,6 @@ class DemandDocumentStatus(BaseModel):
     sealing: Optional[DocumentSealing] = None
     decisions: Optional[List[DocumentPartyDecision]] = None
     __properties: ClassVar[List[str]] = ["id", "order", "title", "doc_kind", "is_required", "signature_required", "assigned_party_ids", "progress", "sealing", "decisions"]
-
-    @field_validator('doc_kind')
-    def doc_kind_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER']):
-            raise ValueError("must be one of enum values ('CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

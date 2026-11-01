@@ -277,21 +277,6 @@ class TemplateUsage implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const KIND_DOCUMENT = 'DOCUMENT';
-    public const KIND_FIELD_LAYOUT = 'FIELD_LAYOUT';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getKindAllowableValues()
-    {
-        return [
-            self::KIND_DOCUMENT,
-            self::KIND_FIELD_LAYOUT,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -346,15 +331,6 @@ class TemplateUsage implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         $invalidProperties = [];
 
-        $allowedValues = $this->getKindAllowableValues();
-        if (!is_null($this->container['kind']) && !in_array($this->container['kind'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'kind', must be one of '%s'",
-                $this->container['kind'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -383,7 +359,7 @@ class TemplateUsage implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets kind
      *
-     * @param string|null $kind Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır).
+     * @param string|null $kind Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -391,16 +367,6 @@ class TemplateUsage implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($kind)) {
             throw new \InvalidArgumentException('non-nullable kind cannot be null');
-        }
-        $allowedValues = $this->getKindAllowableValues();
-        if (!in_array($kind, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'kind', must be one of '%s'",
-                    $kind,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['kind'] = $kind;
 

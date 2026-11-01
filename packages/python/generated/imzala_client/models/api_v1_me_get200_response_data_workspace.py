@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -29,19 +29,9 @@ class ApiV1MeGet200ResponseDataWorkspace(BaseModel):
     """
     ApiV1MeGet200ResponseDataWorkspace
     """ # noqa: E501
-    type: Optional[StrictStr] = None
+    type: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     organization_id: Optional[UUID] = None
     __properties: ClassVar[List[str]] = ["type", "organization_id"]
-
-    @field_validator('type')
-    def type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['personal', 'organization']):
-            raise ValueError("must be one of enum values ('personal', 'organization')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

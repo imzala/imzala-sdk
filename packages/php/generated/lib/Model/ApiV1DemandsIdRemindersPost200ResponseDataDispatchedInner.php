@@ -247,21 +247,6 @@ class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner implements Model
         return self::$openAPIModelName;
     }
 
-    public const CHANNELS_EMAIL = 'email';
-    public const CHANNELS_SMS = 'sms';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getChannelsAllowableValues()
-    {
-        return [
-            self::CHANNELS_EMAIL,
-            self::CHANNELS_SMS,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -428,15 +413,6 @@ class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner implements Model
     {
         if (is_null($channels)) {
             throw new \InvalidArgumentException('non-nullable channels cannot be null');
-        }
-        $allowedValues = $this->getChannelsAllowableValues();
-        if (array_diff($channels, $allowedValues)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value for 'channels', must be one of '%s'",
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['channels'] = $channels;
 

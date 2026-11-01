@@ -38,7 +38,7 @@ class TestApiV1DemandsPost402Response(unittest.TestCase):
             return ApiV1DemandsPost402Response(
                 success = False,
                 error = 'Yeterli krediniz yok',
-                code = 'INSUFFICIENT_CREDITS',
+                code = '',
                 data = imzala_client.models._api_v1_demands_post_402_response_data._api_v1_demands_post_402_response_data(
                     id = '',
                     status = 'DRAFT_UNDISPATCHED', )

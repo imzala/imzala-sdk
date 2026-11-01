@@ -40,7 +40,7 @@ class TestApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner(unittest.Tes
                 first_name = '',
                 last_name = '',
                 channels = [
-                    'email'
+                    ''
                     ]
             )
         else:

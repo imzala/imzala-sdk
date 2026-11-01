@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  | [optional]
 **error** | **str** |  | [optional]
-**code** | **str** |  | [optional]
+**code** | **str** | Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **data** | [**ApiV1DemandsPost402ResponseData**](ApiV1DemandsPost402ResponseData.md) |  | [optional]
 
 ## Example

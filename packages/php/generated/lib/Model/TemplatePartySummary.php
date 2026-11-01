@@ -62,7 +62,7 @@ class TemplatePartySummary implements ModelInterface, ArrayAccess, \JsonSerializ
         'order' => 'int',
         'label' => 'string',
         'is_required' => 'bool',
-        'default_locale' => '\Imzala\Client\Model\SignerLocale'
+        'default_locale' => 'string'
     ];
 
     /**
@@ -429,7 +429,7 @@ class TemplatePartySummary implements ModelInterface, ArrayAccess, \JsonSerializ
     /**
      * Gets default_locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getDefaultLocale()
     {
@@ -439,7 +439,7 @@ class TemplatePartySummary implements ModelInterface, ArrayAccess, \JsonSerializ
     /**
      * Sets default_locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $default_locale default_locale
+     * @param string|null $default_locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */

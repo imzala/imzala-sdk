@@ -34,44 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class DocumentVerificationDisabledError : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum DOCUMENTVERIFICATIONDISABLED for value: DOCUMENT_VERIFICATION_DISABLED
-            /// </summary>
-            [EnumMember(Value = "DOCUMENT_VERIFICATION_DISABLED")]
-            DOCUMENTVERIFICATIONDISABLED = 1
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
-        public CodeEnum Code { get; set; }
-        /// <summary>
-        /// Defines Error
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DOCUMENTVERIFICATIONDISABLED for value: DOCUMENT_VERIFICATION_DISABLED
-            /// </summary>
-            [EnumMember(Value = "DOCUMENT_VERIFICATION_DISABLED")]
-            DOCUMENTVERIFICATIONDISABLED = 1
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Error
-        /// </summary>
-        [DataMember(Name = "error", IsRequired = true, EmitDefaultValue = true)]
-        public ErrorEnum Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentVerificationDisabledError" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -80,12 +42,22 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="DocumentVerificationDisabledError" /> class.
         /// </summary>
         /// <param name="success">success (required).</param>
-        /// <param name="code">code (required).</param>
-        /// <param name="error">error (required).</param>
-        public DocumentVerificationDisabledError(bool success = default, CodeEnum code = default, ErrorEnum error = default)
+        /// <param name="code">Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
+        /// <param name="error">Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
+        public DocumentVerificationDisabledError(bool success = default, string code = default, string error = default)
         {
             this.Success = success;
+            // to ensure "code" is required (not null)
+            if (code == null)
+            {
+                throw new ArgumentNullException("code is a required property for DocumentVerificationDisabledError and cannot be null");
+            }
             this.Code = code;
+            // to ensure "error" is required (not null)
+            if (error == null)
+            {
+                throw new ArgumentNullException("error is a required property for DocumentVerificationDisabledError and cannot be null");
+            }
             this.Error = error;
         }
 
@@ -94,6 +66,20 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "success", IsRequired = true, EmitDefaultValue = true)]
         public bool Success { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", IsRequired = true, EmitDefaultValue = true)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

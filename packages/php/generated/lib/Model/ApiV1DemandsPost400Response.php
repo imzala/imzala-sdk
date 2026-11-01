@@ -254,19 +254,6 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
         return self::$openAPIModelName;
     }
 
-    public const CODE_INVALID_DOCUMENT_SELECTION = 'INVALID_DOCUMENT_SELECTION';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getCodeAllowableValues()
-    {
-        return [
-            self::CODE_INVALID_DOCUMENT_SELECTION,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -316,15 +303,6 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'code', must be one of '%s'",
-                $this->container['code'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -408,7 +386,7 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets code
      *
-     * @param string|null $code code
+     * @param string|null $code Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -416,16 +394,6 @@ class ApiV1DemandsPost400Response implements ModelInterface, ArrayAccess, \JsonS
     {
         if (is_null($code)) {
             throw new \InvalidArgumentException('non-nullable code cannot be null');
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!in_array($code, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'code', must be one of '%s'",
-                    $code,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['code'] = $code;
 

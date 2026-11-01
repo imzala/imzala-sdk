@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -34,21 +34,11 @@ class TimestampListItem(BaseModel):
     original_file_name: Optional[StrictStr] = None
     original_file_size: Optional[StrictInt] = None
     timestamp_date: Optional[datetime] = None
-    status: Optional[StrictStr] = None
+    status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     description: Optional[StrictStr] = None
     created_at: Optional[datetime] = None
     timestamp_file_url: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["id", "original_file_name", "original_file_size", "timestamp_date", "status", "description", "created_at", "timestamp_file_url"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['ACTIVE', 'VERIFIED', 'EXPIRED', 'INVALID']):
-            raise ValueError("must be one of enum values ('ACTIVE', 'VERIFIED', 'EXPIRED', 'INVALID')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

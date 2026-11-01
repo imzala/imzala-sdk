@@ -44,9 +44,9 @@ class TestCreatedDemandUploadDispatch(unittest.TestCase):
                         sms = True,
                         email = True,
                         whatsapp = True,
-                        error = 'DISPATCH_FAILED', )
+                        error = '', )
                     ],
-                error = 'DISPATCH_SKIPPED'
+                error = ''
             )
         else:
             return CreatedDemandUploadDispatch(

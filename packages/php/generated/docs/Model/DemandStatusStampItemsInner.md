@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **document_id** | **string** |  | [optional]
 **slug** | **string** |  | [optional]
 **label** | **string** |  | [optional]
-**source** | **string** |  | [optional]
+**source** | **string** | Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **party_id** | **string** | Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf | [optional]
 **is_required** | **bool** |  | [optional]
 

@@ -9,13 +9,4 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | **String** |  |  [optional] |
-|**code** | [**CodeEnum**](#CodeEnum) |  |  [optional] |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| DEMAND_COMPLETED | &quot;DEMAND_COMPLETED&quot; |
-| DEMAND_ARCHIVED | &quot;DEMAND_ARCHIVED&quot; |
+|**code** | **String** | Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |

@@ -37,7 +37,7 @@ class TestApiV1DemandsBulkPost200ResponseDataResultsInner(unittest.TestCase):
         if include_optional:
             return ApiV1DemandsBulkPost200ResponseDataResultsInner(
                 row_index = 56,
-                status = 'created',
+                status = '',
                 demand_id = '',
                 party_ids = [
                     ''

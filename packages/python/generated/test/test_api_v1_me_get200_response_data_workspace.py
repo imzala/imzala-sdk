@@ -36,7 +36,7 @@ class TestApiV1MeGet200ResponseDataWorkspace(unittest.TestCase):
         model = ApiV1MeGet200ResponseDataWorkspace()
         if include_optional:
             return ApiV1MeGet200ResponseDataWorkspace(
-                type = 'personal',
+                type = '',
                 organization_id = ''
             )
         else:

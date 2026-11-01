@@ -43,48 +43,11 @@ import org.imzala.client.generated.ApiClient;
   DocumentProgress.JSON_PROPERTY_DECIDED_PARTY_COUNT,
   DocumentProgress.JSON_PROPERTY_COMPLETED_AT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentProgress {
-  /**
-   * &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.
-   */
-  public enum StatusEnum {
-    PENDING(String.valueOf("PENDING")),
-
-    PARTIAL(String.valueOf("PARTIAL")),
-
-    COMPLETED(String.valueOf("COMPLETED"));
-
-    private String value;
-
-    StatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nullable
-  private StatusEnum status;
+  private String status;
 
   public static final String JSON_PROPERTY_ACTIVE_ASSIGNED_PARTY_COUNT = "active_assigned_party_count";
   @javax.annotation.Nullable
@@ -100,26 +63,26 @@ public class DocumentProgress {
   public DocumentProgress() {
   }
 
-  public DocumentProgress status(@javax.annotation.Nullable StatusEnum status) {
+  public DocumentProgress status(@javax.annotation.Nullable String status) {
     this.status = status;
     return this;
   }
 
   /**
-   * &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.
+   * &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return status
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public StatusEnum getStatus() {
+  public String getStatus() {
     return status;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setStatus(@javax.annotation.Nullable StatusEnum status) {
+  public void setStatus(@javax.annotation.Nullable String status) {
     this.status = status;
   }
 

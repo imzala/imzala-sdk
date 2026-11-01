@@ -36,7 +36,7 @@ class TestTemplateUsage(unittest.TestCase):
         model = TemplateUsage()
         if include_optional:
             return TemplateUsage(
-                kind = 'DOCUMENT',
+                kind = '',
                 form_fields = [
                     imzala_client.models.template_usage_form_fields_inner.TemplateUsage_form_fields_inner(
                         key = '',

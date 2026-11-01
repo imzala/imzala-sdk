@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.created_demand_signing_urls_inner import CreatedDemandSigningUrlsInner
@@ -34,7 +34,7 @@ class CreatedDemand(BaseModel):
     """ # noqa: E501
     id: Optional[UUID] = None
     title: Optional[StrictStr] = None
-    status: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["PENDING"]})
+    status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["PENDING"]})
     template_id: Optional[UUID] = None
     signing_urls: Optional[List[CreatedDemandSigningUrlsInner]] = None
     result_url: Optional[StrictStr] = Field(default=None, description="Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez.", json_schema_extra={"examples": ["https://e.imzala.org/sonuc/<demand_id>"]})
@@ -46,16 +46,6 @@ class CreatedDemand(BaseModel):
     variables_applied_by_document: Optional[Dict[str, DocumentScopedSlugs]] = Field(default=None, description="Yalnız `document_variables` gönderildiyse döner. Belge kimliği → belge kapsamından uygulanan slug'lar: `_common` (kök `document_variables`) ve `_by_party` (template_party_id → slug'lar). ")
     variables_ignored_by_document: Optional[Dict[str, DocumentScopedSlugs]] = Field(default=None, description="Yalnız `document_variables` gönderildiyse döner. Belge kapsamında gönderilip O BELGEDE hiçbir alana yazılmayan slug'lar (aynı biçim). ")
     __properties: ClassVar[List[str]] = ["id", "title", "status", "template_id", "signing_urls", "result_url", "variables_applied", "variables_applied_root", "variables_applied_by_party", "variables_ignored", "stamps_applied", "variables_applied_by_document", "variables_ignored_by_document"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DRAFT', 'PENDING']):
-            raise ValueError("must be one of enum values ('DRAFT', 'PENDING')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

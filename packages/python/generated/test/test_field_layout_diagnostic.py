@@ -37,7 +37,7 @@ class TestFieldLayoutDiagnostic(unittest.TestCase):
         if include_optional:
             return FieldLayoutDiagnostic(
                 code = 'ANCHOR_TEXT_NOT_FOUND',
-                severity = 'ERROR',
+                severity = '',
                 item_id = 56,
                 slug = '',
                 label = '',
@@ -49,7 +49,7 @@ class TestFieldLayoutDiagnostic(unittest.TestCase):
         else:
             return FieldLayoutDiagnostic(
                 code = 'ANCHOR_TEXT_NOT_FOUND',
-                severity = 'ERROR',
+                severity = '',
                 item_id = 56,
                 item_type = 'signature',
                 message = '',

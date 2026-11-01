@@ -34,38 +34,13 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsUploadPost402Response : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum INSUFFICIENTCREDITS for value: INSUFFICIENT_CREDITS
-            /// </summary>
-            [EnumMember(Value = "INSUFFICIENT_CREDITS")]
-            INSUFFICIENTCREDITS = 1,
-
-            /// <summary>
-            /// Enum MEMBERLIMITEXCEEDED for value: MEMBER_LIMIT_EXCEEDED
-            /// </summary>
-            [EnumMember(Value = "MEMBER_LIMIT_EXCEEDED")]
-            MEMBERLIMITEXCEEDED = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        [DataMember(Name = "code", EmitDefaultValue = false)]
-        public CodeEnum? Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsUploadPost402Response" /> class.
         /// </summary>
         /// <param name="success">success.</param>
         /// <param name="error">error.</param>
-        /// <param name="code">code.</param>
+        /// <param name="code">Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="demandId">demandId.</param>
-        public ApiV1DemandsUploadPost402Response(bool success = default, string error = default, CodeEnum? code = default, Guid demandId = default)
+        public ApiV1DemandsUploadPost402Response(bool success = default, string error = default, string code = default, Guid demandId = default)
         {
             this.Success = success;
             this.Error = error;
@@ -90,6 +65,13 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "error", EmitDefaultValue = false)]
         public string Error { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or Sets DemandId

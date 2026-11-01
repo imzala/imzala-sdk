@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import date
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -32,28 +32,11 @@ class WebhookDataContractTerm(BaseModel):
     """ # noqa: E501
     demand_id: UUID
     term_end_date: Optional[date] = Field(description="Olay anında platformda kayıtlı takip bitiş tarihi.")
-    renewal_type: Optional[StrictStr]
+    renewal_type: Optional[StrictStr] = Field(description="Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     notice_deadline: Optional[date] = Field(description="İhbar için son gün (`term_end_date - notice_days`); tanımsızsa `null`.")
-    term_state: StrictStr = Field(description="Olay anındaki takip durumu (bkz. `ContractTerm.state`).")
+    term_state: StrictStr = Field(description="Olay anındaki takip durumu (bkz. `ContractTerm.state`).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     due_key: Optional[StrictStr] = Field(description="İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için `id` alanını kullanın. ")
     __properties: ClassVar[List[str]] = ["demand_id", "term_end_date", "renewal_type", "notice_deadline", "term_state", "due_key"]
-
-    @field_validator('renewal_type')
-    def renewal_type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['AUTO_RENEW', 'FIXED_TERM']):
-            raise ValueError("must be one of enum values ('AUTO_RENEW', 'FIXED_TERM')")
-        return value
-
-    @field_validator('term_state')
-    def term_state_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['UNTRACKED', 'ACTIVE', 'ENDED', 'STOPPED']):
-            raise ValueError("must be one of enum values ('UNTRACKED', 'ACTIVE', 'ENDED', 'STOPPED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

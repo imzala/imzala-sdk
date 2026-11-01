@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import date, datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from typing import Optional, Set
@@ -30,49 +30,22 @@ class ContractTerm(BaseModel):
     """
     Sözleşme süre/yenileme takibi. Sözleşmede takip hiç tanımlanmadıysa (`start_mode` VE `end_date` boşsa) bu alan `null` döner.  Bu, hukuki bir yenileme veya sona erme beyanı değildir; platformun takip amaçlı kaydıdır. Sözleşmenin fiilen ne zaman sona erdiği veya yenilendiği, tarafların kendi sözleşme hükümlerine ve yürürlükteki hukuka tabidir. Bu alan yalnız hatırlatma ve görünürlük sağlar.
     """ # noqa: E501
-    start_mode: Optional[StrictStr] = Field(description="Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez). ")
+    start_mode: Optional[StrictStr] = Field(description="Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     start_date: Optional[date]
     duration_months: Optional[Annotated[int, Field(le=600, strict=True, ge=1)]]
     fixed_end_date: Optional[date]
     end_date: Optional[date] = Field(description="Takip edilen bitiş tarihi. `renewal_type: AUTO_RENEW` sözleşmelerde her dönemde (günlük olarak) bir sonraki döneme ileri alınır; bkz. `contract.advanced` webhook olayı. ")
     end_date_signed: Optional[date] = Field(description="İmzalanan belge metninde bitiş tarihi bir değişken olarak yazılıysa, sözleşme tamamlandığı anda `end_date`'in dondurulmuş kopyası. `end_date` sonradan ileri alınsa bile bu alan DEĞİŞMEZ. İmzalanan metinle takip değeri arasındaki tarihsel referans budur. ")
-    renewal_type: Optional[StrictStr]
+    renewal_type: Optional[StrictStr] = Field(description="Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     renewal_period_months: Optional[Annotated[int, Field(le=600, strict=True, ge=1)]]
     notice_days: Optional[Annotated[int, Field(le=3650, strict=True, ge=0)]] = Field(description="Fesih ihbarı için bitişten önce kaç gün gerektiği.")
     notice_deadline: Optional[date] = Field(description="Hesaplanır (`end_date - notice_days`); `end_date` veya `notice_days` boşsa `null`.")
     reminder_offsets: Optional[Annotated[List[Annotated[int, Field(le=3650, strict=True, ge=0)]], Field(max_length=5)]] = Field(description="Bitişten kaç gün önce hatırlatma gönderileceği (gün sayıları).")
     notify_counterparty: StrictBool = Field(description="Karşı tarafa da hatırlatma gönderilsin mi.")
-    state: StrictStr = Field(description="`UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu. ")
+    state: StrictStr = Field(description="`UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     days_left: Optional[StrictInt] = Field(description="Bugünden `end_date`'e gün sayısı (negatifse geçmişte).")
     renewal_stopped_at: Optional[datetime]
     __properties: ClassVar[List[str]] = ["start_mode", "start_date", "duration_months", "fixed_end_date", "end_date", "end_date_signed", "renewal_type", "renewal_period_months", "notice_days", "notice_deadline", "reminder_offsets", "notify_counterparty", "state", "days_left", "renewal_stopped_at"]
-
-    @field_validator('start_mode')
-    def start_mode_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['FIXED_DATE', 'ON_FIRST_SIGNATURE', 'ON_COMPLETION']):
-            raise ValueError("must be one of enum values ('FIXED_DATE', 'ON_FIRST_SIGNATURE', 'ON_COMPLETION')")
-        return value
-
-    @field_validator('renewal_type')
-    def renewal_type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['AUTO_RENEW', 'FIXED_TERM']):
-            raise ValueError("must be one of enum values ('AUTO_RENEW', 'FIXED_TERM')")
-        return value
-
-    @field_validator('state')
-    def state_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['UNTRACKED', 'ACTIVE', 'ENDED', 'STOPPED']):
-            raise ValueError("must be one of enum values ('UNTRACKED', 'ACTIVE', 'ENDED', 'STOPPED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

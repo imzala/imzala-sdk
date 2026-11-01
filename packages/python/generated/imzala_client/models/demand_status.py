@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.contract_term import ContractTerm
@@ -36,7 +36,7 @@ class DemandStatus(BaseModel):
     """ # noqa: E501
     id: Optional[UUID] = None
     title: Optional[StrictStr] = None
-    status: Optional[StrictStr] = None
+    status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     created_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     parties: Optional[List[DemandStatusPartiesInner]] = None
@@ -47,16 +47,6 @@ class DemandStatus(BaseModel):
     term: Optional[ContractTerm] = Field(default=None, description="Sözleşmede süre/yenileme takibi tanımlı değilse `null`.")
     archived_at: Optional[datetime] = None
     __properties: ClassVar[List[str]] = ["id", "title", "status", "created_at", "completed_at", "parties", "stamp_items", "result_url", "pdf_url", "documents", "term", "archived_at"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DRAFT', 'PENDING', 'COMPLETED', 'EXPIRED', 'CANCELLED']):
-            raise ValueError("must be one of enum values ('DRAFT', 'PENDING', 'COMPLETED', 'EXPIRED', 'CANCELLED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

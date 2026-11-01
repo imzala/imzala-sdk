@@ -9,7 +9,7 @@
 |------------ | ------------- | ------------- | -------------|
 |**id** | **UUID** |  |  [optional] |
 |**title** | **String** |  |  [optional] |
-|**status** | [**StatusEnum**](#StatusEnum) |  |  [optional] |
+|**status** | **String** | Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**createdAt** | **OffsetDateTime** |  |  [optional] |
 |**completedAt** | **OffsetDateTime** |  |  [optional] |
 |**parties** | [**List&lt;DemandStatusPartiesInner&gt;**](DemandStatusPartiesInner.md) |  |  [optional] |
@@ -19,15 +19,3 @@
 |**documents** | [**List&lt;DemandDocumentStatus&gt;**](DemandDocumentStatus.md) | Zarftaki belgelerin her biri için ayrı durum, &#x60;order&#x60; sırasıyla. Zarf genelindeki &#x60;status&#x60; alanı değişmez; bu liste hangi belgenin ne zaman tamamlandığını, hangisinin beklediğini, mühür durumunu ve her tarafın belge başına kararını ayrıca gösterir. Belge kaydı bulunmayan eski sözleşmelerde boş dizi döner.  |  [optional] |
 |**term** | [**ContractTerm**](ContractTerm.md) | Sözleşmede süre/yenileme takibi tanımlı değilse &#x60;null&#x60;. |  [optional] |
 |**archivedAt** | **OffsetDateTime** |  |  [optional] |
-
-
-
-## Enum: StatusEnum
-
-| Name | Value |
-|---- | -----|
-| DRAFT | &quot;DRAFT&quot; |
-| PENDING | &quot;PENDING&quot; |
-| COMPLETED | &quot;COMPLETED&quot; |
-| EXPIRED | &quot;EXPIRED&quot; |
-| CANCELLED | &quot;CANCELLED&quot; |

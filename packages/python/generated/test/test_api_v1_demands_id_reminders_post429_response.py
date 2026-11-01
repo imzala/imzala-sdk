@@ -38,7 +38,7 @@ class TestApiV1DemandsIdRemindersPost429Response(unittest.TestCase):
             return ApiV1DemandsIdRemindersPost429Response(
                 success = False,
                 error = imzala_client.models._api_v1_demands__id__reminders_post_429_response_error._api_v1_demands__id__reminders_post_429_response_error(
-                    code = 'RATE_LIMITED',
+                    code = '',
                     message = '',
                     retry_after_seconds = 56, )
             )

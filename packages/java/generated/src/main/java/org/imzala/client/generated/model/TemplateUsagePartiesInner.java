@@ -44,7 +44,7 @@ import org.imzala.client.generated.ApiClient;
   TemplateUsagePartiesInner.JSON_PROPERTY_FIELD_COUNT,
   TemplateUsagePartiesInner.JSON_PROPERTY_SUPPORTED_FIELDS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TemplateUsagePartiesInner {
   public static final String JSON_PROPERTY_TEMPLATE_PARTY_ID = "template_party_id";
   @javax.annotation.Nullable

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.UUID;
-import org.imzala.client.generated.model.SignerLocale;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -42,14 +41,14 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsIdEmbedSessionPostRequest.JSON_PROPERTY_PARTY_ID,
   ApiV1DemandsIdEmbedSessionPostRequest.JSON_PROPERTY_LOCALE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsIdEmbedSessionPostRequest {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nonnull
   private UUID partyId;
 
   public static final String JSON_PROPERTY_LOCALE = "locale";
-  private JsonNullable<SignerLocale> locale = JsonNullable.<SignerLocale>undefined();
+  private JsonNullable<String> locale = JsonNullable.<String>undefined();
 
   public ApiV1DemandsIdEmbedSessionPostRequest() {
   }
@@ -78,35 +77,35 @@ public class ApiV1DemandsIdEmbedSessionPostRequest {
   }
 
 
-  public ApiV1DemandsIdEmbedSessionPostRequest locale(@javax.annotation.Nullable SignerLocale locale) {
-    this.locale = JsonNullable.<SignerLocale>of(locale);
+  public ApiV1DemandsIdEmbedSessionPostRequest locale(@javax.annotation.Nullable String locale) {
+    this.locale = JsonNullable.<String>of(locale);
     return this;
   }
 
   /**
-   * Get locale
+   * İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return locale
    */
   @javax.annotation.Nullable
   @JsonIgnore
-  public SignerLocale getLocale() {
+  public String getLocale() {
         return locale.orElse(null);
   }
 
   @JsonProperty(value = JSON_PROPERTY_LOCALE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public JsonNullable<SignerLocale> getLocale_JsonNullable() {
+  public JsonNullable<String> getLocale_JsonNullable() {
     return locale;
   }
 
   @JsonProperty(JSON_PROPERTY_LOCALE)
-  public void setLocale_JsonNullable(JsonNullable<SignerLocale> locale) {
+  public void setLocale_JsonNullable(JsonNullable<String> locale) {
     this.locale = locale;
   }
 
-  public void setLocale(@javax.annotation.Nullable SignerLocale locale) {
-    this.locale = JsonNullable.<SignerLocale>of(locale);
+  public void setLocale(@javax.annotation.Nullable String locale) {
+    this.locale = JsonNullable.<String>of(locale);
   }
 
 

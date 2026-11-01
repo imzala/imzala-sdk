@@ -8,6 +8,6 @@ Name | Type | Description | Notes
 **sms** | **bool** |  | [optional]
 **email** | **bool** |  | [optional]
 **whatsapp** | **bool** |  | [optional]
-**error** | **string** | Yalnız o taraf için gönderim patladığında döner. | [optional]
+**error** | **string** | Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 
 [[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

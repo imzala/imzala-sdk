@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,23 +29,9 @@ class DocumentVerificationDisabledError(BaseModel):
     Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor.
     """ # noqa: E501
     success: StrictBool
-    code: StrictStr
-    error: StrictStr
+    code: StrictStr = Field(description="Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
+    error: StrictStr = Field(description="Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     __properties: ClassVar[List[str]] = ["success", "code", "error"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['DOCUMENT_VERIFICATION_DISABLED']):
-            raise ValueError("must be one of enum values ('DOCUMENT_VERIFICATION_DISABLED')")
-        return value
-
-    @field_validator('error')
-    def error_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['DOCUMENT_VERIFICATION_DISABLED']):
-            raise ValueError("must be one of enum values ('DOCUMENT_VERIFICATION_DISABLED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

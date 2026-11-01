@@ -38,18 +38,18 @@ class TestWebhookDataContractTerm(unittest.TestCase):
             return WebhookDataContractTerm(
                 demand_id = '',
                 term_end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                renewal_type = 'AUTO_RENEW',
+                renewal_type = '',
                 notice_deadline = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                term_state = 'UNTRACKED',
+                term_state = '',
                 due_key = ''
             )
         else:
             return WebhookDataContractTerm(
                 demand_id = '',
                 term_end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                renewal_type = 'AUTO_RENEW',
+                renewal_type = '',
                 notice_deadline = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                term_state = 'UNTRACKED',
+                term_state = '',
                 due_key = '',
         )
         """

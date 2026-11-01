@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.UUID;
-import org.imzala.client.generated.model.SignerLocale;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -45,7 +44,7 @@ import org.imzala.client.generated.ApiClient;
   TemplatePartySummary.JSON_PROPERTY_IS_REQUIRED,
   TemplatePartySummary.JSON_PROPERTY_DEFAULT_LOCALE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TemplatePartySummary {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable
@@ -64,7 +63,7 @@ public class TemplatePartySummary {
   private Boolean isRequired;
 
   public static final String JSON_PROPERTY_DEFAULT_LOCALE = "default_locale";
-  private JsonNullable<SignerLocale> defaultLocale = JsonNullable.<SignerLocale>undefined();
+  private JsonNullable<String> defaultLocale = JsonNullable.<String>undefined();
 
   public TemplatePartySummary() {
   }
@@ -165,35 +164,35 @@ public class TemplatePartySummary {
   }
 
 
-  public TemplatePartySummary defaultLocale(@javax.annotation.Nullable SignerLocale defaultLocale) {
-    this.defaultLocale = JsonNullable.<SignerLocale>of(defaultLocale);
+  public TemplatePartySummary defaultLocale(@javax.annotation.Nullable String defaultLocale) {
+    this.defaultLocale = JsonNullable.<String>of(defaultLocale);
     return this;
   }
 
   /**
-   * Get defaultLocale
+   * İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return defaultLocale
    */
   @javax.annotation.Nullable
   @JsonIgnore
-  public SignerLocale getDefaultLocale() {
+  public String getDefaultLocale() {
         return defaultLocale.orElse(null);
   }
 
   @JsonProperty(value = JSON_PROPERTY_DEFAULT_LOCALE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public JsonNullable<SignerLocale> getDefaultLocale_JsonNullable() {
+  public JsonNullable<String> getDefaultLocale_JsonNullable() {
     return defaultLocale;
   }
 
   @JsonProperty(JSON_PROPERTY_DEFAULT_LOCALE)
-  public void setDefaultLocale_JsonNullable(JsonNullable<SignerLocale> defaultLocale) {
+  public void setDefaultLocale_JsonNullable(JsonNullable<String> defaultLocale) {
     this.defaultLocale = defaultLocale;
   }
 
-  public void setDefaultLocale(@javax.annotation.Nullable SignerLocale defaultLocale) {
-    this.defaultLocale = JsonNullable.<SignerLocale>of(defaultLocale);
+  public void setDefaultLocale(@javax.annotation.Nullable String defaultLocale) {
+    this.defaultLocale = JsonNullable.<String>of(defaultLocale);
   }
 
 

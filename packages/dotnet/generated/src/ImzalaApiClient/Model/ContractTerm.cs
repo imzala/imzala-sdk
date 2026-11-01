@@ -34,103 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class ContractTerm : IValidatableObject
     {
         /// <summary>
-        /// Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).
-        /// </summary>
-        /// <value>Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez). </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StartModeEnum
-        {
-            /// <summary>
-            /// Enum FIXEDDATE for value: FIXED_DATE
-            /// </summary>
-            [EnumMember(Value = "FIXED_DATE")]
-            FIXEDDATE = 1,
-
-            /// <summary>
-            /// Enum ONFIRSTSIGNATURE for value: ON_FIRST_SIGNATURE
-            /// </summary>
-            [EnumMember(Value = "ON_FIRST_SIGNATURE")]
-            ONFIRSTSIGNATURE = 2,
-
-            /// <summary>
-            /// Enum ONCOMPLETION for value: ON_COMPLETION
-            /// </summary>
-            [EnumMember(Value = "ON_COMPLETION")]
-            ONCOMPLETION = 3
-        }
-
-
-        /// <summary>
-        /// Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).
-        /// </summary>
-        /// <value>Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez). </value>
-        [DataMember(Name = "start_mode", IsRequired = true, EmitDefaultValue = true)]
-        public StartModeEnum StartMode { get; set; }
-        /// <summary>
-        /// Defines RenewalType
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum RenewalTypeEnum
-        {
-            /// <summary>
-            /// Enum AUTORENEW for value: AUTO_RENEW
-            /// </summary>
-            [EnumMember(Value = "AUTO_RENEW")]
-            AUTORENEW = 1,
-
-            /// <summary>
-            /// Enum FIXEDTERM for value: FIXED_TERM
-            /// </summary>
-            [EnumMember(Value = "FIXED_TERM")]
-            FIXEDTERM = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets RenewalType
-        /// </summary>
-        [DataMember(Name = "renewal_type", IsRequired = true, EmitDefaultValue = true)]
-        public RenewalTypeEnum RenewalType { get; set; }
-        /// <summary>
-        /// &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.
-        /// </summary>
-        /// <value>&#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StateEnum
-        {
-            /// <summary>
-            /// Enum UNTRACKED for value: UNTRACKED
-            /// </summary>
-            [EnumMember(Value = "UNTRACKED")]
-            UNTRACKED = 1,
-
-            /// <summary>
-            /// Enum ACTIVE for value: ACTIVE
-            /// </summary>
-            [EnumMember(Value = "ACTIVE")]
-            ACTIVE = 2,
-
-            /// <summary>
-            /// Enum ENDED for value: ENDED
-            /// </summary>
-            [EnumMember(Value = "ENDED")]
-            ENDED = 3,
-
-            /// <summary>
-            /// Enum STOPPED for value: STOPPED
-            /// </summary>
-            [EnumMember(Value = "STOPPED")]
-            STOPPED = 4
-        }
-
-
-        /// <summary>
-        /// &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.
-        /// </summary>
-        /// <value>&#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu. </value>
-        [DataMember(Name = "state", IsRequired = true, EmitDefaultValue = true)]
-        public StateEnum State { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ContractTerm" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -138,23 +41,28 @@ namespace ImzalaApiClient.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ContractTerm" /> class.
         /// </summary>
-        /// <param name="startMode">Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).  (required).</param>
+        /// <param name="startMode">Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="startDate">startDate (required).</param>
         /// <param name="durationMonths">durationMonths (required).</param>
         /// <param name="fixedEndDate">fixedEndDate (required).</param>
         /// <param name="endDate">Takip edilen bitiş tarihi. &#x60;renewal_type: AUTO_RENEW&#x60; sözleşmelerde her dönemde (günlük olarak) bir sonraki döneme ileri alınır; bkz. &#x60;contract.advanced&#x60; webhook olayı.  (required).</param>
         /// <param name="endDateSigned">İmzalanan belge metninde bitiş tarihi bir değişken olarak yazılıysa, sözleşme tamamlandığı anda &#x60;end_date&#x60;&#39;in dondurulmuş kopyası. &#x60;end_date&#x60; sonradan ileri alınsa bile bu alan DEĞİŞMEZ. İmzalanan metinle takip değeri arasındaki tarihsel referans budur.  (required).</param>
-        /// <param name="renewalType">renewalType (required).</param>
+        /// <param name="renewalType">Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="renewalPeriodMonths">renewalPeriodMonths (required).</param>
         /// <param name="noticeDays">Fesih ihbarı için bitişten önce kaç gün gerektiği. (required).</param>
         /// <param name="noticeDeadline">Hesaplanır (&#x60;end_date - notice_days&#x60;); &#x60;end_date&#x60; veya &#x60;notice_days&#x60; boşsa &#x60;null&#x60;. (required).</param>
         /// <param name="reminderOffsets">Bitişten kaç gün önce hatırlatma gönderileceği (gün sayıları). (required).</param>
         /// <param name="notifyCounterparty">Karşı tarafa da hatırlatma gönderilsin mi. (required).</param>
-        /// <param name="state">&#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.  (required).</param>
+        /// <param name="state">&#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="daysLeft">Bugünden &#x60;end_date&#x60;&#39;e gün sayısı (negatifse geçmişte). (required).</param>
         /// <param name="renewalStoppedAt">renewalStoppedAt (required).</param>
-        public ContractTerm(StartModeEnum startMode = default, DateOnly? startDate = default, int? durationMonths = default, DateOnly? fixedEndDate = default, DateOnly? endDate = default, DateOnly? endDateSigned = default, RenewalTypeEnum renewalType = default, int? renewalPeriodMonths = default, int? noticeDays = default, DateOnly? noticeDeadline = default, List<int> reminderOffsets = default, bool notifyCounterparty = default, StateEnum state = default, int? daysLeft = default, DateTime? renewalStoppedAt = default)
+        public ContractTerm(string startMode = default, DateOnly? startDate = default, int? durationMonths = default, DateOnly? fixedEndDate = default, DateOnly? endDate = default, DateOnly? endDateSigned = default, string renewalType = default, int? renewalPeriodMonths = default, int? noticeDays = default, DateOnly? noticeDeadline = default, List<int> reminderOffsets = default, bool notifyCounterparty = default, string state = default, int? daysLeft = default, DateTime? renewalStoppedAt = default)
         {
+            // to ensure "startMode" is required (not null)
+            if (startMode == null)
+            {
+                throw new ArgumentNullException("startMode is a required property for ContractTerm and cannot be null");
+            }
             this.StartMode = startMode;
             // to ensure "startDate" is required (not null)
             if (startDate == null)
@@ -186,6 +94,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("endDateSigned is a required property for ContractTerm and cannot be null");
             }
             this.EndDateSigned = endDateSigned;
+            // to ensure "renewalType" is required (not null)
+            if (renewalType == null)
+            {
+                throw new ArgumentNullException("renewalType is a required property for ContractTerm and cannot be null");
+            }
             this.RenewalType = renewalType;
             // to ensure "renewalPeriodMonths" is required (not null)
             if (renewalPeriodMonths == null)
@@ -212,6 +125,11 @@ namespace ImzalaApiClient.Model
             }
             this.ReminderOffsets = reminderOffsets;
             this.NotifyCounterparty = notifyCounterparty;
+            // to ensure "state" is required (not null)
+            if (state == null)
+            {
+                throw new ArgumentNullException("state is a required property for ContractTerm and cannot be null");
+            }
             this.State = state;
             // to ensure "daysLeft" is required (not null)
             if (daysLeft == null)
@@ -226,6 +144,13 @@ namespace ImzalaApiClient.Model
             }
             this.RenewalStoppedAt = renewalStoppedAt;
         }
+
+        /// <summary>
+        /// Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "start_mode", IsRequired = true, EmitDefaultValue = true)]
+        public string StartMode { get; set; }
 
         /// <summary>
         /// Gets or Sets StartDate
@@ -260,6 +185,13 @@ namespace ImzalaApiClient.Model
         public DateOnly? EndDateSigned { get; set; }
 
         /// <summary>
+        /// Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "renewal_type", IsRequired = true, EmitDefaultValue = true)]
+        public string RenewalType { get; set; }
+
+        /// <summary>
         /// Gets or Sets RenewalPeriodMonths
         /// </summary>
         [DataMember(Name = "renewal_period_months", IsRequired = true, EmitDefaultValue = true)]
@@ -292,6 +224,13 @@ namespace ImzalaApiClient.Model
         /// <value>Karşı tarafa da hatırlatma gönderilsin mi.</value>
         [DataMember(Name = "notify_counterparty", IsRequired = true, EmitDefaultValue = true)]
         public bool NotifyCounterparty { get; set; }
+
+        /// <summary>
+        /// &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>&#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "state", IsRequired = true, EmitDefaultValue = true)]
+        public string State { get; set; }
 
         /// <summary>
         /// Bugünden &#x60;end_date&#x60;&#39;e gün sayısı (negatifse geçmişte).

@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -34,20 +34,10 @@ class DemandStatusStampItemsInner(BaseModel):
     document_id: Optional[StrictStr] = None
     slug: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["firma_kasesi"]})
     label: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["Firma kaşesi"]})
-    source: Optional[StrictStr] = None
+    source: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     party_id: Optional[UUID] = Field(default=None, description="Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf")
     is_required: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["item_id", "page_id", "document_id", "slug", "label", "source", "party_id", "is_required"]
-
-    @field_validator('source')
-    def source_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['INLINE', 'FROM_SAVED', 'FILLER_PROVIDES']):
-            raise ValueError("must be one of enum values ('INLINE', 'FROM_SAVED', 'FILLER_PROVIDES')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

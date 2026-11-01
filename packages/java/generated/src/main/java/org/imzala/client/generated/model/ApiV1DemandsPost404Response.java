@@ -55,7 +55,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.imzala.client.generated.ApiClient;
 import org.imzala.client.generated.JSON;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 @JsonDeserialize(using=ApiV1DemandsPost404Response.ApiV1DemandsPost404ResponseDeserializer.class)
 @JsonSerialize(using = ApiV1DemandsPost404Response.ApiV1DemandsPost404ResponseSerializer.class)
 public class ApiV1DemandsPost404Response extends AbstractOpenApiSchema {

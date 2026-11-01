@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -30,18 +30,8 @@ class ApiV1DemandsIdDelete409Response(BaseModel):
     """ # noqa: E501
     success: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [False]})
     error: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["Tamamlanmış sözleşme API üzerinden silinemez"]})
-    code: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["DEMAND_COMPLETED"]})
+    code: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["DEMAND_COMPLETED"]})
     __properties: ClassVar[List[str]] = ["success", "error", "code"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DEMAND_COMPLETED', 'DEMAND_ARCHIVED']):
-            raise ValueError("must be one of enum values ('DEMAND_COMPLETED', 'DEMAND_ARCHIVED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

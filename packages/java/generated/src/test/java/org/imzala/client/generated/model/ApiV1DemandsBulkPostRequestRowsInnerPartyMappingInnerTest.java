@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
-import org.imzala.client.generated.model.SignerLocale;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;

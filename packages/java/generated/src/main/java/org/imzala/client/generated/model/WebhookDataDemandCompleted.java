@@ -45,7 +45,7 @@ import org.imzala.client.generated.ApiClient;
   WebhookDataDemandCompleted.JSON_PROPERTY_PARTIES,
   WebhookDataDemandCompleted.JSON_PROPERTY_BACKFILL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class WebhookDataDemandCompleted {
   public static final String JSON_PROPERTY_DEMAND_ID = "demand_id";
   @javax.annotation.Nonnull
@@ -55,42 +55,9 @@ public class WebhookDataDemandCompleted {
   @javax.annotation.Nonnull
   private String title;
 
-  /**
-   * Gets or Sets status
-   */
-  public enum StatusEnum {
-    COMPLETED(String.valueOf("COMPLETED"));
-
-    private String value;
-
-    StatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nonnull
-  private StatusEnum status;
+  private String status;
 
   public static final String JSON_PROPERTY_COMPLETED_AT = "completed_at";
   @javax.annotation.Nonnull
@@ -155,26 +122,26 @@ public class WebhookDataDemandCompleted {
   }
 
 
-  public WebhookDataDemandCompleted status(@javax.annotation.Nonnull StatusEnum status) {
+  public WebhookDataDemandCompleted status(@javax.annotation.Nonnull String status) {
     this.status = status;
     return this;
   }
 
   /**
-   * Get status
+   * Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return status
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public StatusEnum getStatus() {
+  public String getStatus() {
     return status;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setStatus(@javax.annotation.Nonnull StatusEnum status) {
+  public void setStatus(@javax.annotation.Nonnull String status) {
     this.status = status;
   }
 

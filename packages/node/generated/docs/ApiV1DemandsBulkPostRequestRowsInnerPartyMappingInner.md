@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **birth_date** | **string** | ISO 8601 (ör. 1990-05-15) | [optional] [default to undefined]
 **send_sms** | **boolean** |  | [optional] [default to true]
 **send_email** | **boolean** |  | [optional] [default to true]
-**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
+**locale** | **string** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **require_phone_verification** | **boolean** | Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. &#x60;PartyMappingInput.require_phone_verification&#x60;). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı &#x60;failed&#x60; (&#x60;error: \&quot;INVALID_PHONE_VERIFICATION\&quot;&#x60;), &#x60;true&#x60; iken boş &#x60;phone&#x60; satırı &#x60;failed&#x60; (&#x60;error: \&quot;PHONE_REQUIRED_FOR_VERIFICATION\&quot;&#x60;) yapar. | [optional] [default to undefined]
 **custom_message** | **string** | Bu tarafa özel davet mesajı | [optional] [default to undefined]
 **variables** | **object** | Bu tarafa özel değişkenler | [optional] [default to undefined]

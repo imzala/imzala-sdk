@@ -33,18 +33,6 @@ namespace ImzalaApiClient.Model
     [DataContract(Name = "DemandStatus_parties_inner")]
     public partial class DemandStatusPartiesInner : IValidatableObject
     {
-
-        /// <summary>
-        /// Gets or Sets Locale
-        /// </summary>
-        [DataMember(Name = "locale", EmitDefaultValue = true)]
-        public SignerLocale? Locale { get; set; }
-
-        /// <summary>
-        /// Gets or Sets SignedLocale
-        /// </summary>
-        [DataMember(Name = "signed_locale", EmitDefaultValue = true)]
-        public SignerLocale? SignedLocale { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="DemandStatusPartiesInner" /> class.
         /// </summary>
@@ -56,9 +44,9 @@ namespace ImzalaApiClient.Model
         /// <param name="rejected">rejected.</param>
         /// <param name="rejectedAt">rejectedAt.</param>
         /// <param name="signingUrl">signingUrl.</param>
-        /// <param name="locale">locale.</param>
-        /// <param name="signedLocale">signedLocale.</param>
-        public DemandStatusPartiesInner(Guid partyId = default, string name = default, string emailMasked = default, bool signed = default, DateTime? signedAt = default, bool rejected = default, DateTime? rejectedAt = default, string signingUrl = default, SignerLocale? locale = default, SignerLocale? signedLocale = default)
+        /// <param name="locale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        /// <param name="signedLocale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public DemandStatusPartiesInner(Guid partyId = default, string name = default, string emailMasked = default, bool signed = default, DateTime? signedAt = default, bool rejected = default, DateTime? rejectedAt = default, string signingUrl = default, string locale = default, string signedLocale = default)
         {
             this.PartyId = partyId;
             this.Name = name;
@@ -121,6 +109,26 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "signing_url", EmitDefaultValue = false)]
         public string SigningUrl { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "locale", EmitDefaultValue = true)]
+        public string Locale { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "signed_locale", EmitDefaultValue = true)]
+        public string SignedLocale { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

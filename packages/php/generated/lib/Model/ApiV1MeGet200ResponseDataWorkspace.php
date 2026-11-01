@@ -235,21 +235,6 @@ class ApiV1MeGet200ResponseDataWorkspace implements ModelInterface, ArrayAccess,
         return self::$openAPIModelName;
     }
 
-    public const TYPE_PERSONAL = 'personal';
-    public const TYPE_ORGANIZATION = 'organization';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getTypeAllowableValues()
-    {
-        return [
-            self::TYPE_PERSONAL,
-            self::TYPE_ORGANIZATION,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -297,15 +282,6 @@ class ApiV1MeGet200ResponseDataWorkspace implements ModelInterface, ArrayAccess,
     {
         $invalidProperties = [];
 
-        $allowedValues = $this->getTypeAllowableValues();
-        if (!is_null($this->container['type']) && !in_array($this->container['type'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'type', must be one of '%s'",
-                $this->container['type'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -334,7 +310,7 @@ class ApiV1MeGet200ResponseDataWorkspace implements ModelInterface, ArrayAccess,
     /**
      * Sets type
      *
-     * @param string|null $type type
+     * @param string|null $type Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -342,16 +318,6 @@ class ApiV1MeGet200ResponseDataWorkspace implements ModelInterface, ArrayAccess,
     {
         if (is_null($type)) {
             throw new \InvalidArgumentException('non-nullable type cannot be null');
-        }
-        $allowedValues = $this->getTypeAllowableValues();
-        if (!in_array($type, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'type', must be one of '%s'",
-                    $type,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['type'] = $type;
 

@@ -34,54 +34,11 @@ namespace ImzalaApiClient.Model
     public partial class DemandStatus : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum DRAFT for value: DRAFT
-            /// </summary>
-            [EnumMember(Value = "DRAFT")]
-            DRAFT = 1,
-
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 2,
-
-            /// <summary>
-            /// Enum COMPLETED for value: COMPLETED
-            /// </summary>
-            [EnumMember(Value = "COMPLETED")]
-            COMPLETED = 3,
-
-            /// <summary>
-            /// Enum EXPIRED for value: EXPIRED
-            /// </summary>
-            [EnumMember(Value = "EXPIRED")]
-            EXPIRED = 4,
-
-            /// <summary>
-            /// Enum CANCELLED for value: CANCELLED
-            /// </summary>
-            [EnumMember(Value = "CANCELLED")]
-            CANCELLED = 5
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DemandStatus" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="title">title.</param>
-        /// <param name="status">status.</param>
+        /// <param name="status">Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="createdAt">createdAt.</param>
         /// <param name="completedAt">completedAt.</param>
         /// <param name="parties">parties.</param>
@@ -91,7 +48,7 @@ namespace ImzalaApiClient.Model
         /// <param name="documents">Zarftaki belgelerin her biri için ayrı durum, &#x60;order&#x60; sırasıyla. Zarf genelindeki &#x60;status&#x60; alanı değişmez; bu liste hangi belgenin ne zaman tamamlandığını, hangisinin beklediğini, mühür durumunu ve her tarafın belge başına kararını ayrıca gösterir. Belge kaydı bulunmayan eski sözleşmelerde boş dizi döner. .</param>
         /// <param name="term">Sözleşmede süre/yenileme takibi tanımlı değilse &#x60;null&#x60;..</param>
         /// <param name="archivedAt">archivedAt.</param>
-        public DemandStatus(Guid id = default, string title = default, StatusEnum? status = default, DateTime createdAt = default, DateTime? completedAt = default, List<DemandStatusPartiesInner> parties = default, List<DemandStatusStampItemsInner> stampItems = default, string resultUrl = default, string pdfUrl = default, List<DemandDocumentStatus> documents = default, ContractTerm term = default, DateTime? archivedAt = default)
+        public DemandStatus(Guid id = default, string title = default, string status = default, DateTime createdAt = default, DateTime? completedAt = default, List<DemandStatusPartiesInner> parties = default, List<DemandStatusStampItemsInner> stampItems = default, string resultUrl = default, string pdfUrl = default, List<DemandDocumentStatus> documents = default, ContractTerm term = default, DateTime? archivedAt = default)
         {
             this.Id = id;
             this.Title = title;
@@ -118,6 +75,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Gets or Sets CreatedAt

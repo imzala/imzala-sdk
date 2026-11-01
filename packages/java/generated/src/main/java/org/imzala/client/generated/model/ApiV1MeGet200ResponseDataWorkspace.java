@@ -41,46 +41,11 @@ import org.imzala.client.generated.ApiClient;
   ApiV1MeGet200ResponseDataWorkspace.JSON_PROPERTY_TYPE,
   ApiV1MeGet200ResponseDataWorkspace.JSON_PROPERTY_ORGANIZATION_ID
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1MeGet200ResponseDataWorkspace {
-  /**
-   * Gets or Sets type
-   */
-  public enum TypeEnum {
-    PERSONAL(String.valueOf("personal")),
-
-    ORGANIZATION(String.valueOf("organization"));
-
-    private String value;
-
-    TypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_TYPE = "type";
   @javax.annotation.Nullable
-  private TypeEnum type;
+  private String type;
 
   public static final String JSON_PROPERTY_ORGANIZATION_ID = "organization_id";
   private JsonNullable<UUID> organizationId = JsonNullable.<UUID>undefined();
@@ -88,26 +53,26 @@ public class ApiV1MeGet200ResponseDataWorkspace {
   public ApiV1MeGet200ResponseDataWorkspace() {
   }
 
-  public ApiV1MeGet200ResponseDataWorkspace type(@javax.annotation.Nullable TypeEnum type) {
+  public ApiV1MeGet200ResponseDataWorkspace type(@javax.annotation.Nullable String type) {
     this.type = type;
     return this;
   }
 
   /**
-   * Get type
+   * Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return type
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public TypeEnum getType() {
+  public String getType() {
     return type;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setType(@javax.annotation.Nullable TypeEnum type) {
+  public void setType(@javax.annotation.Nullable String type) {
     this.type = type;
   }
 

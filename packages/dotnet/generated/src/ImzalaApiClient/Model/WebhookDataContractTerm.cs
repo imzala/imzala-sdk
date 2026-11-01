@@ -34,70 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class WebhookDataContractTerm : IValidatableObject
     {
         /// <summary>
-        /// Defines RenewalType
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum RenewalTypeEnum
-        {
-            /// <summary>
-            /// Enum AUTORENEW for value: AUTO_RENEW
-            /// </summary>
-            [EnumMember(Value = "AUTO_RENEW")]
-            AUTORENEW = 1,
-
-            /// <summary>
-            /// Enum FIXEDTERM for value: FIXED_TERM
-            /// </summary>
-            [EnumMember(Value = "FIXED_TERM")]
-            FIXEDTERM = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets RenewalType
-        /// </summary>
-        [DataMember(Name = "renewal_type", IsRequired = true, EmitDefaultValue = true)]
-        public RenewalTypeEnum RenewalType { get; set; }
-        /// <summary>
-        /// Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).
-        /// </summary>
-        /// <value>Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).</value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum TermStateEnum
-        {
-            /// <summary>
-            /// Enum UNTRACKED for value: UNTRACKED
-            /// </summary>
-            [EnumMember(Value = "UNTRACKED")]
-            UNTRACKED = 1,
-
-            /// <summary>
-            /// Enum ACTIVE for value: ACTIVE
-            /// </summary>
-            [EnumMember(Value = "ACTIVE")]
-            ACTIVE = 2,
-
-            /// <summary>
-            /// Enum ENDED for value: ENDED
-            /// </summary>
-            [EnumMember(Value = "ENDED")]
-            ENDED = 3,
-
-            /// <summary>
-            /// Enum STOPPED for value: STOPPED
-            /// </summary>
-            [EnumMember(Value = "STOPPED")]
-            STOPPED = 4
-        }
-
-
-        /// <summary>
-        /// Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).
-        /// </summary>
-        /// <value>Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).</value>
-        [DataMember(Name = "term_state", IsRequired = true, EmitDefaultValue = true)]
-        public TermStateEnum TermState { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="WebhookDataContractTerm" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -107,11 +43,11 @@ namespace ImzalaApiClient.Model
         /// </summary>
         /// <param name="demandId">demandId (required).</param>
         /// <param name="termEndDate">Olay anında platformda kayıtlı takip bitiş tarihi. (required).</param>
-        /// <param name="renewalType">renewalType (required).</param>
+        /// <param name="renewalType">Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="noticeDeadline">İhbar için son gün (&#x60;term_end_date - notice_days&#x60;); tanımsızsa &#x60;null&#x60;. (required).</param>
-        /// <param name="termState">Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;). (required).</param>
+        /// <param name="termState">Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="dueKey">İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için &#x60;id&#x60; alanını kullanın.  (required).</param>
-        public WebhookDataContractTerm(Guid demandId = default, DateOnly? termEndDate = default, RenewalTypeEnum renewalType = default, DateOnly? noticeDeadline = default, TermStateEnum termState = default, string dueKey = default)
+        public WebhookDataContractTerm(Guid demandId = default, DateOnly? termEndDate = default, string renewalType = default, DateOnly? noticeDeadline = default, string termState = default, string dueKey = default)
         {
             this.DemandId = demandId;
             // to ensure "termEndDate" is required (not null)
@@ -120,6 +56,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("termEndDate is a required property for WebhookDataContractTerm and cannot be null");
             }
             this.TermEndDate = termEndDate;
+            // to ensure "renewalType" is required (not null)
+            if (renewalType == null)
+            {
+                throw new ArgumentNullException("renewalType is a required property for WebhookDataContractTerm and cannot be null");
+            }
             this.RenewalType = renewalType;
             // to ensure "noticeDeadline" is required (not null)
             if (noticeDeadline == null)
@@ -127,6 +68,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("noticeDeadline is a required property for WebhookDataContractTerm and cannot be null");
             }
             this.NoticeDeadline = noticeDeadline;
+            // to ensure "termState" is required (not null)
+            if (termState == null)
+            {
+                throw new ArgumentNullException("termState is a required property for WebhookDataContractTerm and cannot be null");
+            }
             this.TermState = termState;
             // to ensure "dueKey" is required (not null)
             if (dueKey == null)
@@ -150,11 +96,25 @@ namespace ImzalaApiClient.Model
         public DateOnly? TermEndDate { get; set; }
 
         /// <summary>
+        /// Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "renewal_type", IsRequired = true, EmitDefaultValue = true)]
+        public string RenewalType { get; set; }
+
+        /// <summary>
         /// İhbar için son gün (&#x60;term_end_date - notice_days&#x60;); tanımsızsa &#x60;null&#x60;.
         /// </summary>
         /// <value>İhbar için son gün (&#x60;term_end_date - notice_days&#x60;); tanımsızsa &#x60;null&#x60;.</value>
         [DataMember(Name = "notice_deadline", IsRequired = true, EmitDefaultValue = true)]
         public DateOnly? NoticeDeadline { get; set; }
+
+        /// <summary>
+        /// Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "term_state", IsRequired = true, EmitDefaultValue = true)]
+        public string TermState { get; set; }
 
         /// <summary>
         /// İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için &#x60;id&#x60; alanını kullanın.

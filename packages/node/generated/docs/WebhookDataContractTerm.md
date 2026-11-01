@@ -8,9 +8,9 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **demand_id** | **string** |  | [default to undefined]
 **term_end_date** | **string** | Olay anında platformda kayıtlı takip bitiş tarihi. | [default to undefined]
-**renewal_type** | **string** |  | [default to undefined]
+**renewal_type** | **string** | Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
 **notice_deadline** | **string** | İhbar için son gün (&#x60;term_end_date - notice_days&#x60;); tanımsızsa &#x60;null&#x60;. | [default to undefined]
-**term_state** | **string** | Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;). | [default to undefined]
+**term_state** | **string** | Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
 **due_key** | **string** | İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için &#x60;id&#x60; alanını kullanın.  | [default to undefined]
 
 ## Example

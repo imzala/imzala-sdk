@@ -462,7 +462,7 @@ public class ResourcesTests
                     id: documentId,
                     order: 1,
                     title: "Sözleşme",
-                    docKind: TemplateDocumentSummary.DocKindEnum.CONTRACT,
+                    docKind: "CONTRACT",
                     isRequired: true,
                     signatureRequired: true,
                     defaultIncluded: true,

@@ -7,15 +7,6 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**code** | [**CodeEnum**](#CodeEnum) |  |  [optional] |
+|**code** | **String** | Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**message** | **String** |  |  [optional] |
 |**retryAfterSeconds** | **Integer** | Sadece RATE_LIMITED&#39;de |  [optional] |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| RATE_LIMITED | &quot;RATE_LIMITED&quot; |
-| MAX_SMS_REMINDERS_REACHED | &quot;MAX_SMS_REMINDERS_REACHED&quot; |

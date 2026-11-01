@@ -34,66 +34,17 @@ namespace ImzalaApiClient.Model
     public partial class TemplateDocumentSummary : IValidatableObject
     {
         /// <summary>
-        /// Defines DocKind
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum DocKindEnum
-        {
-            /// <summary>
-            /// Enum CONTRACT for value: CONTRACT
-            /// </summary>
-            [EnumMember(Value = "CONTRACT")]
-            CONTRACT = 1,
-
-            /// <summary>
-            /// Enum KVKKNOTICE for value: KVKK_NOTICE
-            /// </summary>
-            [EnumMember(Value = "KVKK_NOTICE")]
-            KVKKNOTICE = 2,
-
-            /// <summary>
-            /// Enum KVKKCONSENT for value: KVKK_CONSENT
-            /// </summary>
-            [EnumMember(Value = "KVKK_CONSENT")]
-            KVKKCONSENT = 3,
-
-            /// <summary>
-            /// Enum PREINFO for value: PREINFO
-            /// </summary>
-            [EnumMember(Value = "PREINFO")]
-            PREINFO = 4,
-
-            /// <summary>
-            /// Enum PRICELIST for value: PRICE_LIST
-            /// </summary>
-            [EnumMember(Value = "PRICE_LIST")]
-            PRICELIST = 5,
-
-            /// <summary>
-            /// Enum OTHER for value: OTHER
-            /// </summary>
-            [EnumMember(Value = "OTHER")]
-            OTHER = 6
-        }
-
-
-        /// <summary>
-        /// Gets or Sets DocKind
-        /// </summary>
-        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
-        public DocKindEnum? DocKind { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="TemplateDocumentSummary" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="order">Şablondaki sıra (1&#39;den başlar).</param>
         /// <param name="title">title.</param>
-        /// <param name="docKind">docKind.</param>
+        /// <param name="docKind">Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="isRequired">İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri SEÇMEKLE ilgisi yoktur: zorunlu belge de &#x60;documents.exclude&#x60; ile bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (örneğin &#x60;doc_kind: PREINFO&#x60; ön bilgilendirme formu veya &#x60;KVKK_NOTICE&#x60; aydınlatma metni) başka bir kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir. .</param>
         /// <param name="signatureRequired">signatureRequired.</param>
         /// <param name="defaultIncluded">İstek &#x60;documents&#x60; belirtmezse bu belge imza sürecine (zarfa) dahil edilir mi..</param>
         /// <param name="assignedTemplatePartyIds">Bu belgeyi imzalayacak şablon rollerinin kimlikleri (&#x60;parties[].id&#x60; ve &#x60;party_mapping[].template_party_id&#x60; ile aynı küme). Sözleşme uçlarındaki &#x60;assigned_party_ids&#x60; (imzacı kimliği) ile karıştırmayın. .</param>
-        public TemplateDocumentSummary(Guid id = default, int order = default, string title = default, DocKindEnum? docKind = default, bool isRequired = default, bool signatureRequired = default, bool defaultIncluded = default, List<Guid> assignedTemplatePartyIds = default)
+        public TemplateDocumentSummary(Guid id = default, int order = default, string title = default, string docKind = default, bool isRequired = default, bool signatureRequired = default, bool defaultIncluded = default, List<Guid> assignedTemplatePartyIds = default)
         {
             this.Id = id;
             this.Order = order;
@@ -123,6 +74,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
+        public string DocKind { get; set; }
 
         /// <summary>
         /// İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri SEÇMEKLE ilgisi yoktur: zorunlu belge de &#x60;documents.exclude&#x60; ile bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (örneğin &#x60;doc_kind: PREINFO&#x60; ön bilgilendirme formu veya &#x60;KVKK_NOTICE&#x60; aydınlatma metni) başka bir kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir.

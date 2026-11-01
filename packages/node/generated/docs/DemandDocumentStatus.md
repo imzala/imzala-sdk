@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **id** | **string** |  | [optional] [default to undefined]
 **order** | **number** | 1\&#39;den başlar. | [optional] [default to undefined]
 **title** | **string** |  | [optional] [default to undefined]
-**doc_kind** | **string** |  | [optional] [default to undefined]
+**doc_kind** | **string** | Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **is_required** | **boolean** |  | [optional] [default to undefined]
 **signature_required** | **boolean** |  | [optional] [default to undefined]
 **assigned_party_ids** | **Array&lt;string&gt;** |  | [optional] [default to undefined]

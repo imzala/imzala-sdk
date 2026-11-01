@@ -82,13 +82,13 @@ class ClientTest {
   void demands_get_unwraps_success_data_to_inner_data() throws ApiException {
     UUID id = UUID.randomUUID();
     when(demandsApi.apiV1DemandsIdGet(id)).thenReturn(
-        new ApiV1DemandsIdGet200Response().success(true).data(new DemandStatus().id(id).status(DemandStatus.StatusEnum.PENDING)));
+        new ApiV1DemandsIdGet200Response().success(true).data(new DemandStatus().id(id).status("PENDING")));
 
     DemandsResource resource = new DemandsResource(demandsApi, remindersApi, NO_RETRY);
     DemandStatus result = resource.get(id);
 
     assertEquals(id, result.getId());
-    assertEquals(DemandStatus.StatusEnum.PENDING, result.getStatus());
+    assertEquals("PENDING", result.getStatus());
   }
 
   @Test

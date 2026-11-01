@@ -39,7 +39,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsPost500Response.JSON_PROPERTY_CODE,
   ApiV1DemandsPost500Response.JSON_PROPERTY_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsPost500Response {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @javax.annotation.Nullable
@@ -49,44 +49,9 @@ public class ApiV1DemandsPost500Response {
   @javax.annotation.Nullable
   private String error;
 
-  /**
-   * Gets or Sets code
-   */
-  public enum CodeEnum {
-    RECONCILE_FAILED(String.valueOf("RECONCILE_FAILED")),
-
-    DISPATCH_PREPARATION_FAILED(String.valueOf("DISPATCH_PREPARATION_FAILED"));
-
-    private String value;
-
-    CodeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static CodeEnum fromValue(String value) {
-      for (CodeEnum b : CodeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nullable
-  private CodeEnum code;
+  private String code;
 
   public static final String JSON_PROPERTY_DATA = "data";
   @javax.annotation.Nullable
@@ -143,26 +108,26 @@ public class ApiV1DemandsPost500Response {
   }
 
 
-  public ApiV1DemandsPost500Response code(@javax.annotation.Nullable CodeEnum code) {
+  public ApiV1DemandsPost500Response code(@javax.annotation.Nullable String code) {
     this.code = code;
     return this;
   }
 
   /**
-   * Get code
+   * Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return code
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public CodeEnum getCode() {
+  public String getCode() {
     return code;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCode(@javax.annotation.Nullable CodeEnum code) {
+  public void setCode(@javax.annotation.Nullable String code) {
     this.code = code;
   }
 

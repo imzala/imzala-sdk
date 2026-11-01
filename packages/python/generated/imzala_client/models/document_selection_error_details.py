@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,19 +28,9 @@ class DocumentSelectionErrorDetails(BaseModel):
     """
     DocumentSelectionErrorDetails
     """ # noqa: E501
-    reason: Optional[StrictStr] = Field(default=None, description="`shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı. ")
+    reason: Optional[StrictStr] = Field(default=None, description="`shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     document_ids: Optional[List[StrictStr]] = None
     __properties: ClassVar[List[str]] = ["reason", "document_ids"]
-
-    @field_validator('reason')
-    def reason_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['shape', 'unknown_document', 'conflict', 'empty']):
-            raise ValueError("must be one of enum values ('shape', 'unknown_document', 'conflict', 'empty')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

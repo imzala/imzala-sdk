@@ -78,7 +78,7 @@ var signed = status.Parties.Count(p => p.Signed);
 Console.WriteLine($"{signed} taraf imzaladı");
 
 // 4) Tamamlanınca imzalı PDF'i indir
-if (status.Status == DemandStatus.StatusEnum.COMPLETED)
+if (status.Status == "COMPLETED")
 {
     byte[] pdf = await imzala.Demands.GetPdfAsync(demand.Id);
     await File.WriteAllBytesAsync("sozlesme.pdf", pdf);
@@ -182,7 +182,7 @@ var uploaded = await imzala.Demands.UploadDocumentAsync(new UploadDemandParams
 ```csharp
 var template = await imzala.Templates.GetAsync(templateId);
 var kvkkId = template.Documents
-    .First(d => d.DocKind == TemplateDocumentSummary.DocKindEnum.KVKK_NOTICE)
+    .First(d => d.DocKind == "KVKK_NOTICE")
     .Id;
 
 var demand = await imzala.Demands.CreateAsync(new CreateDemandRequest(

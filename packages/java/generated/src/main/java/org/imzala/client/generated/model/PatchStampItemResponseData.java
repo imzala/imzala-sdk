@@ -48,7 +48,7 @@ import org.imzala.client.generated.ApiClient;
   PatchStampItemResponseData.JSON_PROPERTY_IS_REQUIRED,
   PatchStampItemResponseData.JSON_PROPERTY_STAMP_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class PatchStampItemResponseData {
   public static final String JSON_PROPERTY_ITEM_ID = "item_id";
   @javax.annotation.Nullable
@@ -64,44 +64,9 @@ public class PatchStampItemResponseData {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   private JsonNullable<UUID> partyId = JsonNullable.<UUID>undefined();
 
-  /**
-   * Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
-   */
-  public enum SourceEnum {
-    INLINE(String.valueOf("INLINE")),
-
-    FILLER_PROVIDES(String.valueOf("FILLER_PROVIDES"));
-
-    private String value;
-
-    SourceEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SourceEnum fromValue(String value) {
-      for (SourceEnum b : SourceEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_SOURCE = "source";
   @javax.annotation.Nullable
-  private SourceEnum source;
+  private String source;
 
   public static final String JSON_PROPERTY_IS_REQUIRED = "is_required";
   @javax.annotation.Nullable
@@ -226,26 +191,26 @@ public class PatchStampItemResponseData {
   }
 
 
-  public PatchStampItemResponseData source(@javax.annotation.Nullable SourceEnum source) {
+  public PatchStampItemResponseData source(@javax.annotation.Nullable String source) {
     this.source = source;
     return this;
   }
 
   /**
-   * Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
+   * Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return source
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_SOURCE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public SourceEnum getSource() {
+  public String getSource() {
     return source;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_SOURCE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSource(@javax.annotation.Nullable SourceEnum source) {
+  public void setSource(@javax.annotation.Nullable String source) {
     this.source = source;
   }
 

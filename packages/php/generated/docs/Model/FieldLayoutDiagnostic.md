@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **code** | **string** |  |
-**severity** | **string** |  |
+**severity** | **string** | Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **item_id** | **int** | Şablon alanının kimliği. &#x60;-1&#x60; belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir. |
 **slug** | **string** |  | [optional]
 **label** | **string** |  | [optional]

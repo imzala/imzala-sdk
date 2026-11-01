@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **string** |  | [optional] [default to undefined]
+**code** | **string** | Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **message** | **string** |  | [optional] [default to undefined]
 **retry_after_seconds** | **number** | Sadece RATE_LIMITED\&#39;de | [optional] [default to undefined]
 

@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **template_id** | **UUID** |  | [optional]
 **page_count** | **int** | Yüklenen belgenin sayfa sayısı. | [optional]
 **resolvable** | **bool** | &#x60;true&#x60; ise aynı belge + aynı şablon ile &#x60;POST /api/v1/demands/upload&#x60; çağrısı alan yerleşimi nedeniyle reddedilmez.  | [optional]
-**on_anchor_miss** | **str** | Uygulanan davranış (istenen değil). | [optional]
+**on_anchor_miss** | **str** | Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **placements_summary** | [**FieldLayoutPreviewPlacementsSummary**](FieldLayoutPreviewPlacementsSummary.md) |  | [optional]
 **diagnostics** | [**List[FieldLayoutDiagnostic]**](FieldLayoutDiagnostic.md) |  | [optional]
 **warnings** | [**List[FieldLayoutWarning]**](FieldLayoutWarning.md) |  | [optional]

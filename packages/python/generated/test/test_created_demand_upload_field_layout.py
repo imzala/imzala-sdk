@@ -38,7 +38,7 @@ class TestCreatedDemandUploadFieldLayout(unittest.TestCase):
             return CreatedDemandUploadFieldLayout(
                 template_id = '',
                 applied_fields = 56,
-                on_anchor_miss = 'block',
+                on_anchor_miss = '',
                 warnings = [
                     imzala_client.models.field_layout_warning.FieldLayoutWarning(
                         code = 'ON_ANCHOR_MISS_NOT_RELAXED',
@@ -47,7 +47,7 @@ class TestCreatedDemandUploadFieldLayout(unittest.TestCase):
                 diagnostics = [
                     imzala_client.models.field_layout_diagnostic.FieldLayoutDiagnostic(
                         code = 'ANCHOR_TEXT_NOT_FOUND',
-                        severity = 'ERROR',
+                        severity = '',
                         item_id = 56,
                         slug = '',
                         label = '',

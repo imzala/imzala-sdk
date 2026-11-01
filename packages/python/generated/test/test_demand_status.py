@@ -38,7 +38,7 @@ class TestDemandStatus(unittest.TestCase):
             return DemandStatus(
                 id = '',
                 title = '',
-                status = 'DRAFT',
+                status = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 parties = [
@@ -61,7 +61,7 @@ class TestDemandStatus(unittest.TestCase):
                         document_id = '',
                         slug = 'firma_kasesi',
                         label = 'Firma kaşesi',
-                        source = 'INLINE',
+                        source = '',
                         party_id = '',
                         is_required = True, )
                     ],
@@ -72,24 +72,24 @@ class TestDemandStatus(unittest.TestCase):
                         id = '',
                         order = 56,
                         title = '',
-                        doc_kind = 'CONTRACT',
+                        doc_kind = '',
                         is_required = True,
                         signature_required = True,
                         assigned_party_ids = [
                             ''
                             ],
                         progress = imzala_client.models.document_progress.DocumentProgress(
-                            status = 'PENDING',
+                            status = '',
                             active_assigned_party_count = 56,
                             decided_party_count = 56,
                             completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), ),
                         sealing = imzala_client.models.document_sealing.DocumentSealing(
-                            status = 'NONE',
+                            status = '',
                             has_timestamp = True, ),
                         decisions = [
                             imzala_client.models.document_party_decision.DocumentPartyDecision(
                                 party_id = '',
-                                decision = 'PENDING',
+                                decision = '',
                                 decided_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                 withdrawn_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                 signature_collected = True,
@@ -98,13 +98,13 @@ class TestDemandStatus(unittest.TestCase):
                             ], )
                     ],
                 term = imzala_client.models.contract_term.ContractTerm(
-                    start_mode = 'FIXED_DATE',
+                    start_mode = '',
                     start_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                     duration_months = 1,
                     fixed_end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                     end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                     end_date_signed = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                    renewal_type = 'AUTO_RENEW',
+                    renewal_type = '',
                     renewal_period_months = 1,
                     notice_days = 0,
                     notice_deadline = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
@@ -112,7 +112,7 @@ class TestDemandStatus(unittest.TestCase):
                         0
                         ],
                     notify_counterparty = True,
-                    state = 'UNTRACKED',
+                    state = '',
                     days_left = 56,
                     renewal_stopped_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), ),
                 archived_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')

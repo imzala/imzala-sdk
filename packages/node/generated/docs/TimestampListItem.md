@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **original_file_name** | **string** |  | [optional] [default to undefined]
 **original_file_size** | **number** |  | [optional] [default to undefined]
 **timestamp_date** | **string** |  | [optional] [default to undefined]
-**status** | **string** |  | [optional] [default to undefined]
+**status** | **string** | Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **created_at** | **string** |  | [optional] [default to undefined]
 **timestamp_file_url** | **string** |  | [optional] [default to undefined]

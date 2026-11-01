@@ -9,14 +9,5 @@
 |------------ | ------------- | ------------- | -------------|
 |**success** | **Boolean** |  |  [optional] |
 |**error** | **String** |  |  [optional] |
-|**code** | [**CodeEnum**](#CodeEnum) |  |  [optional] |
+|**code** | **String** | Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**demandId** | **UUID** |  |  [optional] |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| INSUFFICIENT_CREDITS | &quot;INSUFFICIENT_CREDITS&quot; |
-| MEMBER_LIMIT_EXCEEDED | &quot;MEMBER_LIMIT_EXCEEDED&quot; |

@@ -100,12 +100,17 @@ function main() {
     process.exit(1);
   }
   outText = outText.replace(notifyDefault, '$1');
-  // Tolerant reader: closed enums on growing properties make older SDKs
-  // throw on additive server values. See scripts/tolerant-enums.mjs.
+  // Tolerant reader: closed enums on server output make older SDKs throw
+  // on additive server values. Every enum that is not request-only is
+  // opened to a plain string. See scripts/tolerant-enums.mjs.
   const outDoc = yaml.load(outText);
   const relaxed = relaxEnums(outDoc);
   outText = yaml.dump(outDoc, { lineWidth: -1, noRefs: true });
-  console.log(`[downconvert] ${relaxed.count} growing enum(s) relaxed to open strings`);
+  console.log(`[downconvert] ${relaxed.count} response/webhook enum(s) opened to strings:`);
+  for (const loc of relaxed.opened) console.log(`[downconvert]   open      ${loc}`);
+  console.log(`[downconvert] ${relaxed.requestOnly.length} request-only enum(s) kept closed:`);
+  for (const loc of relaxed.requestOnly) console.log(`[downconvert]   closed    ${loc}`);
+  for (const loc of relaxed.nonString) console.log(`[downconvert]   non-string enum kept ${loc}`);
   writeFileSync(OUTPUT, outText);
   console.log('[downconvert] notify_counterparty default dropped from CreateDemandRequest and ContractTermInput');
 

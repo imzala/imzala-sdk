@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  | [optional]
 **error** | **str** |  | [optional]
-**code** | **str** |  | [optional]
+**code** | **str** | Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **demand_id** | **UUID** |  | [optional]
 
 ## Example

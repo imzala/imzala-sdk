@@ -37,14 +37,14 @@ class TestKycWebhookEnvelope(unittest.TestCase):
         if include_optional:
             return KycWebhookEnvelope(
                 id = 'evt_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-                type = 'kyc.completed',
+                type = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 data = None
             )
         else:
             return KycWebhookEnvelope(
                 id = 'evt_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-                type = 'kyc.completed',
+                type = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 data = None,
         )

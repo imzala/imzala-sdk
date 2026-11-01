@@ -278,21 +278,6 @@ class FieldLayoutDiagnostic implements ModelInterface, ArrayAccess, \JsonSeriali
         return self::$openAPIModelName;
     }
 
-    public const SEVERITY_ERROR = 'ERROR';
-    public const SEVERITY_WARNING = 'WARNING';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getSeverityAllowableValues()
-    {
-        return [
-            self::SEVERITY_ERROR,
-            self::SEVERITY_WARNING,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -353,15 +338,6 @@ class FieldLayoutDiagnostic implements ModelInterface, ArrayAccess, \JsonSeriali
         if ($this->container['severity'] === null) {
             $invalidProperties[] = "'severity' can't be null";
         }
-        $allowedValues = $this->getSeverityAllowableValues();
-        if (!is_null($this->container['severity']) && !in_array($this->container['severity'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'severity', must be one of '%s'",
-                $this->container['severity'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['item_id'] === null) {
             $invalidProperties[] = "'item_id' can't be null";
         }
@@ -426,7 +402,7 @@ class FieldLayoutDiagnostic implements ModelInterface, ArrayAccess, \JsonSeriali
     /**
      * Sets severity
      *
-     * @param string $severity severity
+     * @param string $severity Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -434,16 +410,6 @@ class FieldLayoutDiagnostic implements ModelInterface, ArrayAccess, \JsonSeriali
     {
         if (is_null($severity)) {
             throw new \InvalidArgumentException('non-nullable severity cannot be null');
-        }
-        $allowedValues = $this->getSeverityAllowableValues();
-        if (!in_array($severity, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'severity', must be one of '%s'",
-                    $severity,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['severity'] = $severity;
 

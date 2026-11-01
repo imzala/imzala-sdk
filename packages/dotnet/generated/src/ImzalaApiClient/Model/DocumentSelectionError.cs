@@ -34,32 +34,13 @@ namespace ImzalaApiClient.Model
     public partial class DocumentSelectionError : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum INVALIDDOCUMENTSELECTION for value: INVALID_DOCUMENT_SELECTION
-            /// </summary>
-            [EnumMember(Value = "INVALID_DOCUMENT_SELECTION")]
-            INVALIDDOCUMENTSELECTION = 1
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        [DataMember(Name = "code", EmitDefaultValue = false)]
-        public CodeEnum? Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentSelectionError" /> class.
         /// </summary>
         /// <param name="success">success.</param>
         /// <param name="error">error.</param>
-        /// <param name="code">code.</param>
+        /// <param name="code">Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="details">details.</param>
-        public DocumentSelectionError(bool success = default, string error = default, CodeEnum? code = default, DocumentSelectionErrorDetails details = default)
+        public DocumentSelectionError(bool success = default, string error = default, string code = default, DocumentSelectionErrorDetails details = default)
         {
             this.Success = success;
             this.Error = error;
@@ -81,6 +62,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "error", EmitDefaultValue = false)]
         public string Error { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or Sets Details

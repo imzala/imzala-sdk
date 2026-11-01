@@ -116,7 +116,7 @@ internal sealed class Zarf : ISenaryo
 
         // 8) Tamamlanınca belge-özgü imzalı PDF (tüm zarfın birleşik PDF'i için GetPdfAsync).
         var demand = await imzala.Demands.GetAsync(demandId.Value);
-        if (demand.Status == DemandStatus.StatusEnum.COMPLETED && documents.Count > 0)
+        if (demand.Status == "COMPLETED" && documents.Count > 0)
         {
             var ilkBelge = documents[0];
             var pdf = await imzala.Demands.GetDocumentPdfAsync(demandId.Value, ilkBelge.Id);

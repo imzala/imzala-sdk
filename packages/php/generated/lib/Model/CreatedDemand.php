@@ -301,21 +301,6 @@ class CreatedDemand implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const STATUS_DRAFT = 'DRAFT';
-    public const STATUS_PENDING = 'PENDING';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_DRAFT,
-            self::STATUS_PENDING,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -373,15 +358,6 @@ class CreatedDemand implements ModelInterface, ArrayAccess, \JsonSerializable
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -465,7 +441,7 @@ class CreatedDemand implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets status
      *
-     * @param string|null $status status
+     * @param string|null $status Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -473,16 +449,6 @@ class CreatedDemand implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

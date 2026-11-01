@@ -49,50 +49,15 @@ import org.imzala.client.generated.ApiClient;
   FieldLayoutDiagnostic.JSON_PROPERTY_MESSAGE,
   FieldLayoutDiagnostic.JSON_PROPERTY_DETAIL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class FieldLayoutDiagnostic {
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nonnull
   private String code;
 
-  /**
-   * Gets or Sets severity
-   */
-  public enum SeverityEnum {
-    ERROR(String.valueOf("ERROR")),
-
-    WARNING(String.valueOf("WARNING"));
-
-    private String value;
-
-    SeverityEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SeverityEnum fromValue(String value) {
-      for (SeverityEnum b : SeverityEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_SEVERITY = "severity";
   @javax.annotation.Nonnull
-  private SeverityEnum severity;
+  private String severity;
 
   public static final String JSON_PROPERTY_ITEM_ID = "item_id";
   @javax.annotation.Nonnull
@@ -145,26 +110,26 @@ public class FieldLayoutDiagnostic {
   }
 
 
-  public FieldLayoutDiagnostic severity(@javax.annotation.Nonnull SeverityEnum severity) {
+  public FieldLayoutDiagnostic severity(@javax.annotation.Nonnull String severity) {
     this.severity = severity;
     return this;
   }
 
   /**
-   * Get severity
+   * Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return severity
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_SEVERITY, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public SeverityEnum getSeverity() {
+  public String getSeverity() {
     return severity;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_SEVERITY, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setSeverity(@javax.annotation.Nonnull SeverityEnum severity) {
+  public void setSeverity(@javax.annotation.Nonnull String severity) {
     this.severity = severity;
   }
 

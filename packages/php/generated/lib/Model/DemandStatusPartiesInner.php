@@ -66,8 +66,8 @@ class DemandStatusPartiesInner implements ModelInterface, ArrayAccess, \JsonSeri
         'rejected' => 'bool',
         'rejected_at' => '\DateTime',
         'signing_url' => 'string',
-        'locale' => '\Imzala\Client\Model\SignerLocale',
-        'signed_locale' => '\Imzala\Client\Model\SignerLocale'
+        'locale' => 'string',
+        'signed_locale' => 'string'
     ];
 
     /**
@@ -586,7 +586,7 @@ class DemandStatusPartiesInner implements ModelInterface, ArrayAccess, \JsonSeri
     /**
      * Gets locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getLocale()
     {
@@ -596,7 +596,7 @@ class DemandStatusPartiesInner implements ModelInterface, ArrayAccess, \JsonSeri
     /**
      * Sets locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $locale locale
+     * @param string|null $locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -620,7 +620,7 @@ class DemandStatusPartiesInner implements ModelInterface, ArrayAccess, \JsonSeri
     /**
      * Gets signed_locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getSignedLocale()
     {
@@ -630,7 +630,7 @@ class DemandStatusPartiesInner implements ModelInterface, ArrayAccess, \JsonSeri
     /**
      * Sets signed_locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $signed_locale signed_locale
+     * @param string|null $signed_locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */

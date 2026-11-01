@@ -43,7 +43,7 @@ class TestApiV1DemandsBulkPost200ResponseData(unittest.TestCase):
                 results = [
                     imzala_client.models._api_v1_demands_bulk_post_200_response_data_results_inner._api_v1_demands_bulk_post_200_response_data_results_inner(
                         row_index = 56,
-                        status = 'created',
+                        status = '',
                         demand_id = '',
                         party_ids = [
                             ''

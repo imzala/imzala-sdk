@@ -42,7 +42,7 @@ import org.imzala.client.generated.ApiClient;
   WebhookDataContractTerm.JSON_PROPERTY_TERM_STATE,
   WebhookDataContractTerm.JSON_PROPERTY_DUE_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class WebhookDataContractTerm {
   public static final String JSON_PROPERTY_DEMAND_ID = "demand_id";
   @javax.annotation.Nonnull
@@ -52,91 +52,17 @@ public class WebhookDataContractTerm {
   @javax.annotation.Nullable
   private LocalDate termEndDate;
 
-  /**
-   * Gets or Sets renewalType
-   */
-  public enum RenewalTypeEnum {
-    AUTO_RENEW(String.valueOf("AUTO_RENEW")),
-
-    FIXED_TERM(String.valueOf("FIXED_TERM"));
-
-    private String value;
-
-    RenewalTypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RenewalTypeEnum fromValue(String value) {
-      for (RenewalTypeEnum b : RenewalTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
-
   public static final String JSON_PROPERTY_RENEWAL_TYPE = "renewal_type";
   @javax.annotation.Nullable
-  private RenewalTypeEnum renewalType;
+  private String renewalType;
 
   public static final String JSON_PROPERTY_NOTICE_DEADLINE = "notice_deadline";
   @javax.annotation.Nullable
   private LocalDate noticeDeadline;
 
-  /**
-   * Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).
-   */
-  public enum TermStateEnum {
-    UNTRACKED(String.valueOf("UNTRACKED")),
-
-    ACTIVE(String.valueOf("ACTIVE")),
-
-    ENDED(String.valueOf("ENDED")),
-
-    STOPPED(String.valueOf("STOPPED"));
-
-    private String value;
-
-    TermStateEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static TermStateEnum fromValue(String value) {
-      for (TermStateEnum b : TermStateEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_TERM_STATE = "term_state";
   @javax.annotation.Nonnull
-  private TermStateEnum termState;
+  private String termState;
 
   public static final String JSON_PROPERTY_DUE_KEY = "due_key";
   @javax.annotation.Nullable
@@ -193,26 +119,26 @@ public class WebhookDataContractTerm {
   }
 
 
-  public WebhookDataContractTerm renewalType(@javax.annotation.Nullable RenewalTypeEnum renewalType) {
+  public WebhookDataContractTerm renewalType(@javax.annotation.Nullable String renewalType) {
     this.renewalType = renewalType;
     return this;
   }
 
   /**
-   * Get renewalType
+   * Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return renewalType
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_RENEWAL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public RenewalTypeEnum getRenewalType() {
+  public String getRenewalType() {
     return renewalType;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_RENEWAL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setRenewalType(@javax.annotation.Nullable RenewalTypeEnum renewalType) {
+  public void setRenewalType(@javax.annotation.Nullable String renewalType) {
     this.renewalType = renewalType;
   }
 
@@ -241,26 +167,26 @@ public class WebhookDataContractTerm {
   }
 
 
-  public WebhookDataContractTerm termState(@javax.annotation.Nonnull TermStateEnum termState) {
+  public WebhookDataContractTerm termState(@javax.annotation.Nonnull String termState) {
     this.termState = termState;
     return this;
   }
 
   /**
-   * Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).
+   * Olay anındaki takip durumu (bkz. &#x60;ContractTerm.state&#x60;).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return termState
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_TERM_STATE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public TermStateEnum getTermState() {
+  public String getTermState() {
     return termState;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_TERM_STATE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setTermState(@javax.annotation.Nonnull TermStateEnum termState) {
+  public void setTermState(@javax.annotation.Nonnull String termState) {
     this.termState = termState;
   }
 

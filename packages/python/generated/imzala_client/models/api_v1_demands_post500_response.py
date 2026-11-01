@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from imzala_client.models.api_v1_demands_post402_response_data import ApiV1DemandsPost402ResponseData
 from typing import Optional, Set
@@ -31,19 +31,9 @@ class ApiV1DemandsPost500Response(BaseModel):
     """ # noqa: E501
     success: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [False]})
     error: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["Kredi mutabakatı yapılamadı"]})
-    code: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["RECONCILE_FAILED"]})
+    code: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["RECONCILE_FAILED"]})
     data: Optional[ApiV1DemandsPost402ResponseData] = None
     __properties: ClassVar[List[str]] = ["success", "error", "code", "data"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['RECONCILE_FAILED', 'DISPATCH_PREPARATION_FAILED']):
-            raise ValueError("must be one of enum values ('RECONCILE_FAILED', 'DISPATCH_PREPARATION_FAILED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

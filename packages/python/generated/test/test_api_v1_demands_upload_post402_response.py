@@ -38,7 +38,7 @@ class TestApiV1DemandsUploadPost402Response(unittest.TestCase):
             return ApiV1DemandsUploadPost402Response(
                 success = False,
                 error = 'Kredi bakiyeniz yetersiz. Lütfen kredi yükleyin.',
-                code = 'INSUFFICIENT_CREDITS',
+                code = '',
                 demand_id = ''
             )
         else:

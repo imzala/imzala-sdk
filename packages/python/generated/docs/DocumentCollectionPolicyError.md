@@ -7,8 +7,8 @@ Seçili Belge Toplama şablonunun politikası geçersiz; error kaynak makine kod
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  |
-**code** | **str** |  |
-**error** | **str** |  |
+**code** | **str** | Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
+**error** | **str** | Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 
 ## Example
 

@@ -36,7 +36,7 @@ class TestDocumentSealing(unittest.TestCase):
         model = DocumentSealing()
         if include_optional:
             return DocumentSealing(
-                status = 'NONE',
+                status = '',
                 has_timestamp = True
             )
         else:

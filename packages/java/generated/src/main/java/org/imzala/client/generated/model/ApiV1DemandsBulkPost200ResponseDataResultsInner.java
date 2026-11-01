@@ -51,50 +51,15 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsBulkPost200ResponseDataResultsInner.JSON_PROPERTY_ERROR,
   ApiV1DemandsBulkPost200ResponseDataResultsInner.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsBulkPost200ResponseDataResultsInner {
   public static final String JSON_PROPERTY_ROW_INDEX = "row_index";
   @javax.annotation.Nullable
   private Integer rowIndex;
 
-  /**
-   * Gets or Sets status
-   */
-  public enum StatusEnum {
-    CREATED(String.valueOf("created")),
-
-    FAILED(String.valueOf("failed"));
-
-    private String value;
-
-    StatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nullable
-  private StatusEnum status;
+  private String status;
 
   public static final String JSON_PROPERTY_DEMAND_ID = "demand_id";
   @javax.annotation.Nullable
@@ -159,26 +124,26 @@ public class ApiV1DemandsBulkPost200ResponseDataResultsInner {
   }
 
 
-  public ApiV1DemandsBulkPost200ResponseDataResultsInner status(@javax.annotation.Nullable StatusEnum status) {
+  public ApiV1DemandsBulkPost200ResponseDataResultsInner status(@javax.annotation.Nullable String status) {
     this.status = status;
     return this;
   }
 
   /**
-   * Get status
+   * Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return status
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public StatusEnum getStatus() {
+  public String getStatus() {
     return status;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setStatus(@javax.annotation.Nullable StatusEnum status) {
+  public void setStatus(@javax.annotation.Nullable String status) {
     this.status = status;
   }
 

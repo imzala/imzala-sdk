@@ -79,7 +79,10 @@ export interface ApiV1DemandsBulkPost200ResponseData {
 }
 export interface ApiV1DemandsBulkPost200ResponseDataResultsInner {
     'row_index'?: number;
-    'status'?: ApiV1DemandsBulkPost200ResponseDataResultsInnerStatusEnum;
+    /**
+     * Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status'?: string;
     /**
      * status=created ise; veya status=failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi)
      */
@@ -111,14 +114,6 @@ export interface ApiV1DemandsBulkPost200ResponseDataResultsInner {
      */
     'message'?: string;
 }
-
-export const ApiV1DemandsBulkPost200ResponseDataResultsInnerStatusEnum = {
-    Created: 'created',
-    Failed: 'failed',
-} as const;
-
-export type ApiV1DemandsBulkPost200ResponseDataResultsInnerStatusEnum = typeof ApiV1DemandsBulkPost200ResponseDataResultsInnerStatusEnum[keyof typeof ApiV1DemandsBulkPost200ResponseDataResultsInnerStatusEnum];
-
 /**
  * Yalnız error=INVALID_DOCUMENT_SELECTION ise: reason (shape | unknown_document | conflict | empty) ve varsa document_ids. error=INVALID_DOCUMENT_VARIABLES ise: reason (unsupported_endpoint) ve path.
  */
@@ -269,7 +264,10 @@ export interface ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner {
     'birth_date'?: string;
     'send_sms'?: boolean;
     'send_email'?: boolean;
-    'locale'?: SignerLocale | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'locale'?: string | null;
     /**
      * Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. `PartyMappingInput.require_phone_verification`). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı `failed` (`error: \"INVALID_PHONE_VERIFICATION\"`), `true` iken boş `phone` satırı `failed` (`error: \"PHONE_REQUIRED_FOR_VERIFICATION\"`) yapar.
      */
@@ -283,8 +281,6 @@ export interface ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner {
      */
     'variables'?: object;
 }
-
-
 export interface ApiV1DemandsDemandIdDispatchPost200Response {
     'success'?: boolean;
     'data'?: ApiV1DemandsDemandIdDispatchPost200ResponseData;
@@ -320,35 +316,20 @@ export interface ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations {
     'sent'?: number;
     'results'?: Array<ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner>;
     /**
-     * `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.)
+     * `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'error'?: ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsErrorEnum | null;
+    'error'?: string | null;
 }
-
-export const ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsErrorEnum = {
-    DispatchSkipped: 'DISPATCH_SKIPPED',
-} as const;
-
-export type ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsErrorEnum = typeof ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsErrorEnum[keyof typeof ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsErrorEnum];
-
 export interface ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner {
     'party_id'?: string;
     'sms'?: boolean;
     'email'?: boolean;
     'whatsapp'?: boolean;
     /**
-     * Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
+     * Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'error'?: ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInnerErrorEnum | null;
+    'error'?: string | null;
 }
-
-export const ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInnerErrorEnum = {
-    DispatchFailed: 'DISPATCH_FAILED',
-    RecipientQuotaExceeded: 'RECIPIENT_QUOTA_EXCEEDED',
-} as const;
-
-export type ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInnerErrorEnum = typeof ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInnerErrorEnum[keyof typeof ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInnerErrorEnum];
-
 export interface ApiV1DemandsDemandIdDispatchPostRequest {
     'send_invitations'?: ApiV1DemandsDemandIdDispatchPostRequestSendInvitations;
 }
@@ -487,16 +468,11 @@ export interface ApiV1DemandsIdCancelPostRequest {
 export interface ApiV1DemandsIdDelete409Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsIdDelete409ResponseCodeEnum;
+    /**
+     * Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
 }
-
-export const ApiV1DemandsIdDelete409ResponseCodeEnum = {
-    DemandCompleted: 'DEMAND_COMPLETED',
-    DemandArchived: 'DEMAND_ARCHIVED',
-} as const;
-
-export type ApiV1DemandsIdDelete409ResponseCodeEnum = typeof ApiV1DemandsIdDelete409ResponseCodeEnum[keyof typeof ApiV1DemandsIdDelete409ResponseCodeEnum];
-
 export interface ApiV1DemandsIdEmbedSessionPost200Response {
     'success'?: boolean;
     'data'?: ApiV1DemandsIdEmbedSessionPost200ResponseData;
@@ -520,10 +496,11 @@ export interface ApiV1DemandsIdEmbedSessionPostRequest {
      * Token üretilecek tarafın ID\'si. `POST /api/v1/demands` veya `GET /api/v1/demands/{id}` cevabındaki `signing_urls[].party_id` alanından alınır.
      */
     'party_id': string;
-    'locale'?: SignerLocale | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'locale'?: string | null;
 }
-
-
 export interface ApiV1DemandsIdGet200Response {
     'success'?: boolean;
     'data'?: DemandStatus;
@@ -559,16 +536,8 @@ export interface ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner {
     'party_id'?: string;
     'first_name'?: string;
     'last_name'?: string;
-    'channels'?: Array<ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInnerChannelsEnum>;
+    'channels'?: Array<string>;
 }
-
-export const ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInnerChannelsEnum = {
-    Email: 'email',
-    Sms: 'sms',
-} as const;
-
-export type ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInnerChannelsEnum = typeof ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInnerChannelsEnum[keyof typeof ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInnerChannelsEnum];
-
 export interface ApiV1DemandsIdRemindersPost200ResponseDataSkippedInner {
     'party_id'?: string;
     'reason'?: string;
@@ -578,21 +547,16 @@ export interface ApiV1DemandsIdRemindersPost429Response {
     'error'?: ApiV1DemandsIdRemindersPost429ResponseError;
 }
 export interface ApiV1DemandsIdRemindersPost429ResponseError {
-    'code'?: ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum;
+    /**
+     * Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'message'?: string;
     /**
      * Sadece RATE_LIMITED\'de
      */
     'retry_after_seconds'?: number;
 }
-
-export const ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = {
-    RateLimited: 'RATE_LIMITED',
-    MaxSmsRemindersReached: 'MAX_SMS_REMINDERS_REACHED',
-} as const;
-
-export type ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum = typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum[keyof typeof ApiV1DemandsIdRemindersPost429ResponseErrorCodeEnum];
-
 export interface ApiV1DemandsIdTermPatch200Response {
     'success'?: boolean;
     'data'?: ApiV1DemandsIdTermPatch200ResponseData;
@@ -633,34 +597,25 @@ export interface ApiV1DemandsPost201Response {
 export interface ApiV1DemandsPost400Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsPost400ResponseCodeEnum;
+    /**
+     * Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     /**
      * Bazı kodlarda (ör. `TERM_INVALID`) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR.
      */
     'field'?: string | null;
     'details'?: DocumentSelectionErrorDetails;
 }
-
-export const ApiV1DemandsPost400ResponseCodeEnum = {
-    InvalidDocumentSelection: 'INVALID_DOCUMENT_SELECTION',
-} as const;
-
-export type ApiV1DemandsPost400ResponseCodeEnum = typeof ApiV1DemandsPost400ResponseCodeEnum[keyof typeof ApiV1DemandsPost400ResponseCodeEnum];
-
 export interface ApiV1DemandsPost402Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsPost402ResponseCodeEnum;
+    /**
+     * Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'data'?: ApiV1DemandsPost402ResponseData;
 }
-
-export const ApiV1DemandsPost402ResponseCodeEnum = {
-    InsufficientCredits: 'INSUFFICIENT_CREDITS',
-    MemberLimitExceeded: 'MEMBER_LIMIT_EXCEEDED',
-} as const;
-
-export type ApiV1DemandsPost402ResponseCodeEnum = typeof ApiV1DemandsPost402ResponseCodeEnum[keyof typeof ApiV1DemandsPost402ResponseCodeEnum];
-
 export interface ApiV1DemandsPost402ResponseData {
     'id'?: string;
     'status'?: string;
@@ -682,17 +637,12 @@ export interface ApiV1DemandsPost404Response {
 export interface ApiV1DemandsPost500Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsPost500ResponseCodeEnum;
+    /**
+     * Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'data'?: ApiV1DemandsPost402ResponseData;
 }
-
-export const ApiV1DemandsPost500ResponseCodeEnum = {
-    ReconcileFailed: 'RECONCILE_FAILED',
-    DispatchPreparationFailed: 'DISPATCH_PREPARATION_FAILED',
-} as const;
-
-export type ApiV1DemandsPost500ResponseCodeEnum = typeof ApiV1DemandsPost500ResponseCodeEnum[keyof typeof ApiV1DemandsPost500ResponseCodeEnum];
-
 export interface ApiV1DemandsUploadPost201Response {
     'success'?: boolean;
     'data'?: CreatedDemandUpload;
@@ -700,31 +650,21 @@ export interface ApiV1DemandsUploadPost201Response {
 export interface ApiV1DemandsUploadPost402Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsUploadPost402ResponseCodeEnum;
+    /**
+     * Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'demand_id'?: string;
 }
-
-export const ApiV1DemandsUploadPost402ResponseCodeEnum = {
-    InsufficientCredits: 'INSUFFICIENT_CREDITS',
-    MemberLimitExceeded: 'MEMBER_LIMIT_EXCEEDED',
-} as const;
-
-export type ApiV1DemandsUploadPost402ResponseCodeEnum = typeof ApiV1DemandsUploadPost402ResponseCodeEnum[keyof typeof ApiV1DemandsUploadPost402ResponseCodeEnum];
-
 export interface ApiV1DemandsUploadPost500Response {
     'success'?: boolean;
     'error'?: string;
-    'code'?: ApiV1DemandsUploadPost500ResponseCodeEnum;
+    /**
+     * Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'demand_id'?: string;
 }
-
-export const ApiV1DemandsUploadPost500ResponseCodeEnum = {
-    ReconcileFailed: 'RECONCILE_FAILED',
-    DispatchPreparationFailed: 'DISPATCH_PREPARATION_FAILED',
-} as const;
-
-export type ApiV1DemandsUploadPost500ResponseCodeEnum = typeof ApiV1DemandsUploadPost500ResponseCodeEnum[keyof typeof ApiV1DemandsUploadPost500ResponseCodeEnum];
-
 export interface ApiV1FieldTemplatesGet200Response {
     'success'?: boolean;
     'data'?: ApiV1FieldTemplatesGet200ResponseData;
@@ -759,17 +699,12 @@ export interface ApiV1MeGet200ResponseDataCredits {
     'remaining'?: number;
 }
 export interface ApiV1MeGet200ResponseDataWorkspace {
-    'type'?: ApiV1MeGet200ResponseDataWorkspaceTypeEnum;
+    /**
+     * Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'type'?: string;
     'organization_id'?: string | null;
 }
-
-export const ApiV1MeGet200ResponseDataWorkspaceTypeEnum = {
-    Personal: 'personal',
-    Organization: 'organization',
-} as const;
-
-export type ApiV1MeGet200ResponseDataWorkspaceTypeEnum = typeof ApiV1MeGet200ResponseDataWorkspaceTypeEnum[keyof typeof ApiV1MeGet200ResponseDataWorkspaceTypeEnum];
-
 export interface ApiV1ReportsGet200Response {
     'success'?: boolean;
     'data'?: ApiV1ReportsGet200ResponseData;
@@ -919,9 +854,9 @@ export interface ContactSummaryCompany {
  */
 export interface ContractTerm {
     /**
-     * Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`\'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).
+     * Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`\'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'start_mode': ContractTermStartModeEnum | null;
+    'start_mode': string | null;
     'start_date': string | null;
     'duration_months': number | null;
     'fixed_end_date': string | null;
@@ -933,7 +868,10 @@ export interface ContractTerm {
      * İmzalanan belge metninde bitiş tarihi bir değişken olarak yazılıysa, sözleşme tamamlandığı anda `end_date`\'in dondurulmuş kopyası. `end_date` sonradan ileri alınsa bile bu alan DEĞİŞMEZ. İmzalanan metinle takip değeri arasındaki tarihsel referans budur.
      */
     'end_date_signed': string | null;
-    'renewal_type': ContractTermRenewalTypeEnum | null;
+    /**
+     * Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'renewal_type': string | null;
     'renewal_period_months': number | null;
     /**
      * Fesih ihbarı için bitişten önce kaç gün gerektiği.
@@ -952,38 +890,15 @@ export interface ContractTerm {
      */
     'notify_counterparty': boolean;
     /**
-     * `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
+     * `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'state': ContractTermStateEnum;
+    'state': string;
     /**
      * Bugünden `end_date`\'e gün sayısı (negatifse geçmişte).
      */
     'days_left': number | null;
     'renewal_stopped_at': string | null;
 }
-
-export const ContractTermStartModeEnum = {
-    FixedDate: 'FIXED_DATE',
-    OnFirstSignature: 'ON_FIRST_SIGNATURE',
-    OnCompletion: 'ON_COMPLETION',
-} as const;
-
-export type ContractTermStartModeEnum = typeof ContractTermStartModeEnum[keyof typeof ContractTermStartModeEnum];
-export const ContractTermRenewalTypeEnum = {
-    AutoRenew: 'AUTO_RENEW',
-    FixedTerm: 'FIXED_TERM',
-} as const;
-
-export type ContractTermRenewalTypeEnum = typeof ContractTermRenewalTypeEnum[keyof typeof ContractTermRenewalTypeEnum];
-export const ContractTermStateEnum = {
-    Untracked: 'UNTRACKED',
-    Active: 'ACTIVE',
-    Ended: 'ENDED',
-    Stopped: 'STOPPED',
-} as const;
-
-export type ContractTermStateEnum = typeof ContractTermStateEnum[keyof typeof ContractTermStateEnum];
-
 /**
  * Sözleşme süre/yenileme takibi girdisi. `POST /demands` üzerinde oluştururken ve `PATCH /demands/{id}/term` üzerinde güncellerken AYNI alan adları kullanılır. `PATCH`\'te kısmi güncelleme uygulanır: yalnız gövdede GÖNDERİLEN anahtarlar değiştirilir; bir anahtarı `null` göndermek o alanı temizler, hiç göndermemek dokunmaz.  Doğrulama kuralları: - `term_fixed_end_date` ile `term_duration_months` birlikte gönderilemez. - `term_start_mode: FIXED_DATE` ise oluştururken `term_start_date` ya   da `term_fixed_end_date` gerekir; `ON_FIRST_SIGNATURE` /   `ON_COMPLETION` modlarında `term_start_date` gönderilse de yok   sayılır (başlangıç imza anında otomatik yazılır). - `renewal_type: AUTO_RENEW` ise `renewal_period_months` gerekir;   gönderilmezse `term_duration_months`\'tan devralınır. - Geçersiz kombinasyon 400 `TERM_INVALID` + hangi alanı işaret eden   `field` ile döner.
  */
@@ -1148,7 +1063,10 @@ export type CreateDemandRequestRenewalTypeEnum = typeof CreateDemandRequestRenew
 export interface CreatedDemand {
     'id'?: string;
     'title'?: string;
-    'status'?: CreatedDemandStatusEnum;
+    /**
+     * Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status'?: string;
     'template_id'?: string;
     'signing_urls'?: Array<CreatedDemandSigningUrlsInner>;
     /**
@@ -1184,14 +1102,6 @@ export interface CreatedDemand {
      */
     'variables_ignored_by_document'?: { [key: string]: DocumentScopedSlugs; };
 }
-
-export const CreatedDemandStatusEnum = {
-    Draft: 'DRAFT',
-    Pending: 'PENDING',
-} as const;
-
-export type CreatedDemandStatusEnum = typeof CreatedDemandStatusEnum[keyof typeof CreatedDemandStatusEnum];
-
 export interface CreatedDemandSigningUrlsInner {
     'party_id'?: string;
     'first_name'?: string;
@@ -1235,35 +1145,20 @@ export interface CreatedDemandUploadDispatch {
     'sent'?: number;
     'results'?: Array<CreatedDemandUploadDispatchResultsInner>;
     /**
-     * `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.
+     * `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'error'?: CreatedDemandUploadDispatchErrorEnum;
+    'error'?: string;
 }
-
-export const CreatedDemandUploadDispatchErrorEnum = {
-    DispatchSkipped: 'DISPATCH_SKIPPED',
-    DispatchTooMany: 'DISPATCH_TOO_MANY',
-} as const;
-
-export type CreatedDemandUploadDispatchErrorEnum = typeof CreatedDemandUploadDispatchErrorEnum[keyof typeof CreatedDemandUploadDispatchErrorEnum];
-
 export interface CreatedDemandUploadDispatchResultsInner {
     'party_id'?: string;
     'sms'?: boolean;
     'email'?: boolean;
     'whatsapp'?: boolean;
     /**
-     * Yalnız o taraf için gönderim patladığında döner.
+     * Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'error'?: CreatedDemandUploadDispatchResultsInnerErrorEnum;
+    'error'?: string;
 }
-
-export const CreatedDemandUploadDispatchResultsInnerErrorEnum = {
-    DispatchFailed: 'DISPATCH_FAILED',
-} as const;
-
-export type CreatedDemandUploadDispatchResultsInnerErrorEnum = typeof CreatedDemandUploadDispatchResultsInnerErrorEnum[keyof typeof CreatedDemandUploadDispatchResultsInnerErrorEnum];
-
 /**
  * YALNIZ `field_template_id` gönderildiğinde döner. Alan yerleşiminin uygulanma özeti.
  */
@@ -1274,23 +1169,15 @@ export interface CreatedDemandUploadFieldLayout {
      */
     'applied_fields'?: number;
     /**
-     * İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.
+     * İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'on_anchor_miss'?: CreatedDemandUploadFieldLayoutOnAnchorMissEnum;
+    'on_anchor_miss'?: string;
     'warnings'?: Array<FieldLayoutWarning>;
     /**
      * Yalnız `WARNING` seviyesindeki tanılar. `ERROR` seviyesinde bir tanı olsaydı istek 422 ile reddedilir ve sözleşme yaratılmazdı.
      */
     'diagnostics'?: Array<FieldLayoutDiagnostic>;
 }
-
-export const CreatedDemandUploadFieldLayoutOnAnchorMissEnum = {
-    Block: 'block',
-    Drop: 'drop',
-} as const;
-
-export type CreatedDemandUploadFieldLayoutOnAnchorMissEnum = typeof CreatedDemandUploadFieldLayoutOnAnchorMissEnum[keyof typeof CreatedDemandUploadFieldLayoutOnAnchorMissEnum];
-
 /**
  * Sözleşme oluşturma hatalarının açık taşıma zarfı. Alanlar hata türüne göre bulunur; yeni makine kodları istemci tarafından reddedilmez. Somut Belge Toplama zarfları DocumentCollectionPolicyError ve DocumentVerificationDisabledError şemaları ile yanıt örneklerinde açıklanır.
  */
@@ -1312,7 +1199,10 @@ export interface DemandDocumentStatus {
      */
     'order'?: number;
     'title'?: string;
-    'doc_kind'?: DemandDocumentStatusDocKindEnum;
+    /**
+     * Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'doc_kind'?: string;
     'is_required'?: boolean;
     'signature_required'?: boolean;
     'assigned_party_ids'?: Array<string>;
@@ -1320,18 +1210,6 @@ export interface DemandDocumentStatus {
     'sealing'?: DocumentSealing;
     'decisions'?: Array<DocumentPartyDecision>;
 }
-
-export const DemandDocumentStatusDocKindEnum = {
-    Contract: 'CONTRACT',
-    KvkkNotice: 'KVKK_NOTICE',
-    KvkkConsent: 'KVKK_CONSENT',
-    Preinfo: 'PREINFO',
-    PriceList: 'PRICE_LIST',
-    Other: 'OTHER',
-} as const;
-
-export type DemandDocumentStatusDocKindEnum = typeof DemandDocumentStatusDocKindEnum[keyof typeof DemandDocumentStatusDocKindEnum];
-
 export interface DemandPage {
     'id': number;
     /**
@@ -1342,7 +1220,10 @@ export interface DemandPage {
 export interface DemandStatus {
     'id'?: string;
     'title'?: string;
-    'status'?: DemandStatusStatusEnum;
+    /**
+     * Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status'?: string;
     'created_at'?: string;
     'completed_at'?: string | null;
     'parties'?: Array<DemandStatusPartiesInner>;
@@ -1368,17 +1249,6 @@ export interface DemandStatus {
     'term'?: ContractTerm | null;
     'archived_at'?: string | null;
 }
-
-export const DemandStatusStatusEnum = {
-    Draft: 'DRAFT',
-    Pending: 'PENDING',
-    Completed: 'COMPLETED',
-    Expired: 'EXPIRED',
-    Cancelled: 'CANCELLED',
-} as const;
-
-export type DemandStatusStatusEnum = typeof DemandStatusStatusEnum[keyof typeof DemandStatusStatusEnum];
-
 export interface DemandStatusPartiesInner {
     'party_id'?: string;
     /**
@@ -1394,66 +1264,54 @@ export interface DemandStatusPartiesInner {
     'rejected'?: boolean;
     'rejected_at'?: string | null;
     'signing_url'?: string;
-    'locale'?: SignerLocale | null;
-    'signed_locale'?: SignerLocale | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'locale'?: string | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'signed_locale'?: string | null;
 }
-
-
 export interface DemandStatusStampItemsInner {
     'item_id'?: number;
     'page_id'?: number;
     'document_id'?: string | null;
     'slug'?: string | null;
     'label'?: string | null;
-    'source'?: DemandStatusStampItemsInnerSourceEnum;
+    /**
+     * Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'source'?: string;
     /**
      * Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf
      */
     'party_id'?: string | null;
     'is_required'?: boolean;
 }
-
-export const DemandStatusStampItemsInnerSourceEnum = {
-    Inline: 'INLINE',
-    FromSaved: 'FROM_SAVED',
-    FillerProvides: 'FILLER_PROVIDES',
-} as const;
-
-export type DemandStatusStampItemsInnerSourceEnum = typeof DemandStatusStampItemsInnerSourceEnum[keyof typeof DemandStatusStampItemsInnerSourceEnum];
-
 /**
  * Seçili Belge Toplama şablonunun politikası geçersiz; error kaynak makine kodudur.
  */
 export interface DocumentCollectionPolicyError {
     'success': boolean;
-    'code': DocumentCollectionPolicyErrorCodeEnum;
-    'error': DocumentCollectionPolicyErrorErrorEnum;
+    /**
+     * Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code': string;
+    /**
+     * Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'error': string;
 }
-
-export const DocumentCollectionPolicyErrorCodeEnum = {
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
-} as const;
-
-export type DocumentCollectionPolicyErrorCodeEnum = typeof DocumentCollectionPolicyErrorCodeEnum[keyof typeof DocumentCollectionPolicyErrorCodeEnum];
-export const DocumentCollectionPolicyErrorErrorEnum = {
-    DocumentTypeInvalid: 'DOCUMENT_TYPE_INVALID',
-    VerificationPolicyInvalid: 'VERIFICATION_POLICY_INVALID',
-    VerificationInstructionInvalid: 'VERIFICATION_INSTRUCTION_INVALID',
-    VerificationContextRequired: 'VERIFICATION_CONTEXT_REQUIRED',
-    VerificationPolicyConflict: 'VERIFICATION_POLICY_CONFLICT',
-} as const;
-
-export type DocumentCollectionPolicyErrorErrorEnum = typeof DocumentCollectionPolicyErrorErrorEnum[keyof typeof DocumentCollectionPolicyErrorErrorEnum];
-
 /**
  * Bir tarafın bu belge için kararı. Kişisel veri (ad, e-posta, telefon) içermez; tarafı `party_id` ile `parties` listesiyle eşleyin.
  */
 export interface DocumentPartyDecision {
     'party_id'?: string;
     /**
-     * Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
+     * Yürürlükteki karar. `PENDING` karar verilmediğini gösterir. `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'decision'?: DocumentPartyDecisionDecisionEnum;
+    'decision'?: string;
     /**
      * Kararın verildiği an. `WITHDRAWN` için geri çekilen onayın anıdır. `recorded` `false` iken `null` döner.
      */
@@ -1475,24 +1333,14 @@ export interface DocumentPartyDecision {
      */
     'consent_granted'?: boolean | null;
 }
-
-export const DocumentPartyDecisionDecisionEnum = {
-    Pending: 'PENDING',
-    Accepted: 'ACCEPTED',
-    Declined: 'DECLINED',
-    Withdrawn: 'WITHDRAWN',
-} as const;
-
-export type DocumentPartyDecisionDecisionEnum = typeof DocumentPartyDecisionDecisionEnum[keyof typeof DocumentPartyDecisionDecisionEnum];
-
 /**
  * Belgeye atanmış tarafların karar ilerlemesi. Mühürden ve rızadan bağımsızdır: `COMPLETED`, belgeye atanmış tüm tarafların bu belge için karar verdiğini gösterir (isteğe bağlı bir belgede ret de karardır).
  */
 export interface DocumentProgress {
     /**
-     * `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
+     * `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'status'?: DocumentProgressStatusEnum;
+    'status'?: string;
     /**
      * Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.
      */
@@ -1506,15 +1354,6 @@ export interface DocumentProgress {
      */
     'completed_at'?: string | null;
 }
-
-export const DocumentProgressStatusEnum = {
-    Pending: 'PENDING',
-    Partial: 'PARTIAL',
-    Completed: 'COMPLETED',
-} as const;
-
-export type DocumentProgressStatusEnum = typeof DocumentProgressStatusEnum[keyof typeof DocumentProgressStatusEnum];
-
 export interface DocumentScopedSlugs {
     '_common'?: Array<string>;
     '_by_party'?: { [key: string]: Array<string>; };
@@ -1523,55 +1362,34 @@ export interface DocumentScopedSlugs {
  * Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
  */
 export interface DocumentSealing {
-    'status'?: DocumentSealingStatusEnum;
+    /**
+     * Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status'?: string;
     /**
      * Yalnız `status` `SEALED` iken `true` olabilir.
      */
     'has_timestamp'?: boolean;
 }
-
-export const DocumentSealingStatusEnum = {
-    None: 'NONE',
-    Pending: 'PENDING',
-    Sealed: 'SEALED',
-    Failed: 'FAILED',
-} as const;
-
-export type DocumentSealingStatusEnum = typeof DocumentSealingStatusEnum[keyof typeof DocumentSealingStatusEnum];
-
 /**
  * `400 INVALID_DOCUMENT_SELECTION` gövdesi. `details.reason` hatanın sınıfını, `details.document_ids` (varsa) yalnız isteğinizde gönderdiğiniz ve soruna yol açan kimlikleri taşır.
  */
 export interface DocumentSelectionError {
     'success'?: boolean;
     'error'?: string;
-    'code'?: DocumentSelectionErrorCodeEnum;
+    /**
+     * Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code'?: string;
     'details'?: DocumentSelectionErrorDetails;
 }
-
-export const DocumentSelectionErrorCodeEnum = {
-    InvalidDocumentSelection: 'INVALID_DOCUMENT_SELECTION',
-} as const;
-
-export type DocumentSelectionErrorCodeEnum = typeof DocumentSelectionErrorCodeEnum[keyof typeof DocumentSelectionErrorCodeEnum];
-
 export interface DocumentSelectionErrorDetails {
     /**
-     * `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20\'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
+     * `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20\'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'reason'?: DocumentSelectionErrorDetailsReasonEnum;
+    'reason'?: string;
     'document_ids'?: Array<string>;
 }
-
-export const DocumentSelectionErrorDetailsReasonEnum = {
-    Shape: 'shape',
-    UnknownDocument: 'unknown_document',
-    Conflict: 'conflict',
-    Empty: 'empty',
-} as const;
-
-export type DocumentSelectionErrorDetailsReasonEnum = typeof DocumentSelectionErrorDetailsReasonEnum[keyof typeof DocumentSelectionErrorDetailsReasonEnum];
-
 /**
  * Bu istekte gönderilecek belgeleri şablon varsayılanına göre değiştirir. Alan hiç gönderilmezse `default_included: true` olan belgeler gider. `include` varsayılanı kapalı belgeyi ekler, `exclude` varsayılanı açık belgeyi (zorunlu olsa bile) çıkarır. Çıkarılan belge bu imza sürecine (zarfa) eklenmez: imzacıya gösterilmez, imzalı PDF\'te ve tamamlanma sertifikasında yer almaz, kredi hesaplamasına dahil edilmez. Sonuçta en az bir belge kalmalıdır ve eşlediğiniz her role en az bir seçili belge düşmelidir. Mevzuat gereği verilmesi gereken belgeleri çıkarmadan önce `is_required` açıklamasına bakın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir.
  */
@@ -1587,21 +1405,15 @@ export interface DocumentSelectionInput {
  */
 export interface DocumentVerificationDisabledError {
     'success': boolean;
-    'code': DocumentVerificationDisabledErrorCodeEnum;
-    'error': DocumentVerificationDisabledErrorErrorEnum;
+    /**
+     * Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code': string;
+    /**
+     * Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'error': string;
 }
-
-export const DocumentVerificationDisabledErrorCodeEnum = {
-    DocumentVerificationDisabled: 'DOCUMENT_VERIFICATION_DISABLED',
-} as const;
-
-export type DocumentVerificationDisabledErrorCodeEnum = typeof DocumentVerificationDisabledErrorCodeEnum[keyof typeof DocumentVerificationDisabledErrorCodeEnum];
-export const DocumentVerificationDisabledErrorErrorEnum = {
-    DocumentVerificationDisabled: 'DOCUMENT_VERIFICATION_DISABLED',
-} as const;
-
-export type DocumentVerificationDisabledErrorErrorEnum = typeof DocumentVerificationDisabledErrorErrorEnum[keyof typeof DocumentVerificationDisabledErrorErrorEnum];
-
 /**
  * Çok-belgeli imza zarfındaki tek bir belge. `assigned_party_ids` ve `decision_count` yalnız `GET .../documents?view=wizard` yanıtında bulunur; `has_timestamp` yalnız varsayılan (özet) görünümde bulunur — ikisi AYNI ANDA gelmez (dashboard\'un iki ayrı iç DTO\'sunun [`EnvelopeDocumentDTO` / `EnvelopeDocumentSummaryDTO`] tek şema altında birleştirilmiş hâli).
  */
@@ -1612,7 +1424,10 @@ export interface EnvelopeDocument {
      */
     'order'?: number;
     'title'?: string;
-    'doc_kind'?: EnvelopeDocumentDocKindEnum;
+    /**
+     * Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'doc_kind'?: string;
     'is_required'?: boolean;
     'signature_required'?: boolean;
     /**
@@ -1623,7 +1438,10 @@ export interface EnvelopeDocument {
      * Yalnız `?view=wizard` yanıtında bulunur. Bu belge için verilmiş onay/red kararı sayısı.
      */
     'decision_count'?: number;
-    'sealing_status'?: EnvelopeDocumentSealingStatusEnum | null;
+    /**
+     * Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'sealing_status'?: string | null;
     /**
      * Yalnız varsayılan (özet) görünümde bulunur. `sealing_status` `SEALED` değilken daima `false` döner.
      */
@@ -1643,32 +1461,15 @@ export interface EnvelopeDocument {
      */
     'decisions'?: Array<DocumentPartyDecision>;
 }
-
-export const EnvelopeDocumentDocKindEnum = {
-    Contract: 'CONTRACT',
-    KvkkNotice: 'KVKK_NOTICE',
-    KvkkConsent: 'KVKK_CONSENT',
-    Preinfo: 'PREINFO',
-    PriceList: 'PRICE_LIST',
-    Other: 'OTHER',
-} as const;
-
-export type EnvelopeDocumentDocKindEnum = typeof EnvelopeDocumentDocKindEnum[keyof typeof EnvelopeDocumentDocKindEnum];
-export const EnvelopeDocumentSealingStatusEnum = {
-    None: 'NONE',
-    Pending: 'PENDING',
-    Sealed: 'SEALED',
-    Failed: 'FAILED',
-} as const;
-
-export type EnvelopeDocumentSealingStatusEnum = typeof EnvelopeDocumentSealingStatusEnum[keyof typeof EnvelopeDocumentSealingStatusEnum];
-
 /**
  * Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidir (TR). **Bilinmeyen `code` toleranslı okunmalıdır**: yeni kod eklemek kırıcı değişiklik sayılmaz, istemci tanımadığı kodda `message` alanına düşmelidir.  Belgenizden çıkarılan hiçbir metin (çapa metni, eşleşen satır, sayfa metni, dosya adı) bu yapıya girmez.
  */
 export interface FieldLayoutDiagnostic {
     'code': string;
-    'severity': FieldLayoutDiagnosticSeverityEnum;
+    /**
+     * Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'severity': string;
     /**
      * Şablon alanının kimliği. `-1` belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir.
      */
@@ -1686,14 +1487,6 @@ export interface FieldLayoutDiagnostic {
      */
     'detail'?: { [key: string]: any; } | null;
 }
-
-export const FieldLayoutDiagnosticSeverityEnum = {
-    Error: 'ERROR',
-    Warning: 'WARNING',
-} as const;
-
-export type FieldLayoutDiagnosticSeverityEnum = typeof FieldLayoutDiagnosticSeverityEnum[keyof typeof FieldLayoutDiagnosticSeverityEnum];
-
 /**
  * Kuru koşum sonucu — hiçbir yan etki üretilmemiştir.
  */
@@ -1708,21 +1501,13 @@ export interface FieldLayoutPreview {
      */
     'resolvable'?: boolean;
     /**
-     * Uygulanan davranış (istenen değil).
+     * Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'on_anchor_miss'?: FieldLayoutPreviewOnAnchorMissEnum;
+    'on_anchor_miss'?: string;
     'placements_summary'?: FieldLayoutPreviewPlacementsSummary;
     'diagnostics'?: Array<FieldLayoutDiagnostic>;
     'warnings'?: Array<FieldLayoutWarning>;
 }
-
-export const FieldLayoutPreviewOnAnchorMissEnum = {
-    Block: 'block',
-    Drop: 'drop',
-} as const;
-
-export type FieldLayoutPreviewOnAnchorMissEnum = typeof FieldLayoutPreviewOnAnchorMissEnum[keyof typeof FieldLayoutPreviewOnAnchorMissEnum];
-
 export interface FieldLayoutPreviewPlacementsSummary {
     'total'?: number;
     'by_item_type'?: { [key: string]: number; };
@@ -1798,7 +1583,10 @@ export interface KycWebhookEnvelope {
      * Olay id\'si: receiver tarafında idempotency anahtarı.
      */
     'id': string;
-    'type': KycWebhookEnvelopeTypeEnum;
+    /**
+     * Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'type': string;
     /**
      * Olay zamanı (ISO 8601 UTC).
      */
@@ -1808,14 +1596,6 @@ export interface KycWebhookEnvelope {
      */
     'data': object;
 }
-
-export const KycWebhookEnvelopeTypeEnum = {
-    KycCompleted: 'kyc.completed',
-    KycFailed: 'kyc.failed',
-} as const;
-
-export type KycWebhookEnvelopeTypeEnum = typeof KycWebhookEnvelopeTypeEnum[keyof typeof KycWebhookEnvelopeTypeEnum];
-
 /**
  * Sözleşme sayfasına yerleştirilen alan tanımı. Tüm koordinatlar sayfa boyutuna göre normalize edilmiş [0,1] aralığında. Origin top-left (PDF/canvas standardı).
  */
@@ -1884,7 +1664,10 @@ export interface PartyMappingInput {
     'birth_date'?: string;
     'send_sms'?: boolean;
     'send_email'?: boolean;
-    'locale'?: SignerLocale | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'locale'?: string | null;
     /**
      * Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar (`true`) ya da kapatır (`false`). Gönderilmezse veya `null` gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer `400 INVALID_PHONE_VERIFICATION` döner; `true` iken `phone` boşsa `400 PHONE_REQUIRED_FOR_VERIFICATION` döner.
      */
@@ -1898,8 +1681,6 @@ export interface PartyMappingInput {
      */
     'document_variables'?: { [key: string]: { [key: string]: PartyMappingInputVariablesValue; }; };
 }
-
-
 /**
  * @type PartyMappingInputVariablesValue
  */
@@ -1922,23 +1703,15 @@ export interface PatchStampItemResponseData {
     'document_id'?: string | null;
     'party_id'?: string | null;
     /**
-     * Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
+     * Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'source'?: PatchStampItemResponseDataSourceEnum;
+    'source'?: string;
     'is_required'?: boolean;
     /**
      * Güncelleme sonrası kaşe verisinin tamamı.
      */
     'stamp_data'?: { [key: string]: any; };
 }
-
-export const PatchStampItemResponseDataSourceEnum = {
-    Inline: 'INLINE',
-    FillerProvides: 'FILLER_PROVIDES',
-} as const;
-
-export type PatchStampItemResponseDataSourceEnum = typeof PatchStampItemResponseDataSourceEnum[keyof typeof PatchStampItemResponseDataSourceEnum];
-
 /**
  * Hatırlatma yapılandırması. Şablon (`Template.reminder_*`) ve sözleşme (`ReminderConfig`) arasında aynı şemaya sahiptir.
  */
@@ -1969,18 +1742,6 @@ export const ReminderSettingsChannelsEnum = {
 export type ReminderSettingsChannelsEnum = typeof ReminderSettingsChannelsEnum[keyof typeof ReminderSettingsChannelsEnum];
 
 /**
- * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
- */
-
-export const SignerLocale = {
-    Tr: 'tr',
-    En: 'en',
-} as const;
-
-export type SignerLocale = typeof SignerLocale[keyof typeof SignerLocale];
-
-
-/**
  * Yapılandırılmış kaşe verisi. Tüm alanlar isteğe bağlıdır. PATCH isteğinde `null` veya boş string alanı kaldırır.  Belgeye yalnız gerekli kişisel veriyi yazın; bu verilerin hukuka uygunluğu ve aydınlatması sizin sorumluluğunuzdadır.
  */
 export interface StampData {
@@ -2005,30 +1766,16 @@ export interface StandardError {
     'error'?: StandardErrorError;
 }
 export interface StandardErrorError {
-    'code': StandardErrorErrorCodeEnum;
+    /**
+     * Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'code': string;
     'message': string;
     /**
      * Sadece RATE_LIMITED\'de doludur
      */
     'retry_after_seconds'?: number;
 }
-
-export const StandardErrorErrorCodeEnum = {
-    InvalidChannels: 'INVALID_CHANNELS',
-    DemandNotFound: 'DEMAND_NOT_FOUND',
-    AlreadyCompleted: 'ALREADY_COMPLETED',
-    RateLimited: 'RATE_LIMITED',
-    MaxSmsRemindersReached: 'MAX_SMS_REMINDERS_REACHED',
-    DemandNotDispatched: 'DEMAND_NOT_DISPATCHED',
-    DemandNotDispatchable: 'DEMAND_NOT_DISPATCHABLE',
-    DemandExpired: 'DEMAND_EXPIRED',
-    EnvelopeNotDispatched: 'ENVELOPE_NOT_DISPATCHED',
-    Unauthorized: 'UNAUTHORIZED',
-    InternalError: 'INTERNAL_ERROR',
-} as const;
-
-export type StandardErrorErrorCodeEnum = typeof StandardErrorErrorCodeEnum[keyof typeof StandardErrorErrorCodeEnum];
-
 export interface TemplateDetail {
     'id'?: string;
     'name'?: string;
@@ -2053,7 +1800,10 @@ export interface TemplateDocumentSummary {
      */
     'order'?: number;
     'title'?: string;
-    'doc_kind'?: TemplateDocumentSummaryDocKindEnum;
+    /**
+     * Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'doc_kind'?: string;
     /**
      * İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri SEÇMEKLE ilgisi yoktur: zorunlu belge de `documents.exclude` ile bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (örneğin `doc_kind: PREINFO` ön bilgilendirme formu veya `KVKK_NOTICE` aydınlatma metni) başka bir kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir.
      */
@@ -2068,27 +1818,16 @@ export interface TemplateDocumentSummary {
      */
     'assigned_template_party_ids'?: Array<string>;
 }
-
-export const TemplateDocumentSummaryDocKindEnum = {
-    Contract: 'CONTRACT',
-    KvkkNotice: 'KVKK_NOTICE',
-    KvkkConsent: 'KVKK_CONSENT',
-    Preinfo: 'PREINFO',
-    PriceList: 'PRICE_LIST',
-    Other: 'OTHER',
-} as const;
-
-export type TemplateDocumentSummaryDocKindEnum = typeof TemplateDocumentSummaryDocKindEnum[keyof typeof TemplateDocumentSummaryDocKindEnum];
-
 export interface TemplatePartySummary {
     'id'?: string;
     'order'?: number;
     'label'?: string;
     'is_required'?: boolean;
-    'default_locale'?: SignerLocale | null;
+    /**
+     * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'default_locale'?: string | null;
 }
-
-
 export interface TemplateSummary {
     'id'?: string;
     'name'?: string;
@@ -2105,9 +1844,9 @@ export interface TemplateSummaryPartiesInner {
 }
 export interface TemplateUsage {
     /**
-     * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404\'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır).
+     * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404\'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'kind'?: TemplateUsageKindEnum;
+    'kind'?: string;
     /**
      * `multipart/form-data` alanları. Belgeli şablon JSON gövde kullandığı için bu uçta boş dizidir.
      */
@@ -2123,14 +1862,6 @@ export interface TemplateUsage {
     'documents'?: Array<TemplateUsageDocumentsInner>;
     'example_request'?: TemplateUsageExampleRequest;
 }
-
-export const TemplateUsageKindEnum = {
-    Document: 'DOCUMENT',
-    FieldLayout: 'FIELD_LAYOUT',
-} as const;
-
-export type TemplateUsageKindEnum = typeof TemplateUsageKindEnum[keyof typeof TemplateUsageKindEnum];
-
 export interface TemplateUsageDocumentsInner {
     'template_document_id'?: string;
     'title'?: string;
@@ -2217,21 +1948,14 @@ export interface TimestampListItem {
     'original_file_name'?: string;
     'original_file_size'?: number;
     'timestamp_date'?: string;
-    'status'?: TimestampListItemStatusEnum;
+    /**
+     * Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status'?: string;
     'description'?: string | null;
     'created_at'?: string;
     'timestamp_file_url'?: string;
 }
-
-export const TimestampListItemStatusEnum = {
-    Active: 'ACTIVE',
-    Verified: 'VERIFIED',
-    Expired: 'EXPIRED',
-    Invalid: 'INVALID',
-} as const;
-
-export type TimestampListItemStatusEnum = typeof TimestampListItemStatusEnum[keyof typeof TimestampListItemStatusEnum];
-
 export interface TimestampRecord {
     'id'?: string;
     /**
@@ -2325,40 +2049,30 @@ export interface WebhookDataContractTerm {
      * Olay anında platformda kayıtlı takip bitiş tarihi.
      */
     'term_end_date': string | null;
-    'renewal_type': WebhookDataContractTermRenewalTypeEnum | null;
+    /**
+     * Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'renewal_type': string | null;
     /**
      * İhbar için son gün (`term_end_date - notice_days`); tanımsızsa `null`.
      */
     'notice_deadline': string | null;
     /**
-     * Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+     * Olay anındaki takip durumu (bkz. `ContractTerm.state`).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
-    'term_state': WebhookDataContractTermTermStateEnum;
+    'term_state': string;
     /**
      * İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için kullandığı dahili kayıt). Formatı sabit değildir, opak string olarak ele alın; idempotency için `id` alanını kullanın.
      */
     'due_key': string | null;
 }
-
-export const WebhookDataContractTermRenewalTypeEnum = {
-    AutoRenew: 'AUTO_RENEW',
-    FixedTerm: 'FIXED_TERM',
-} as const;
-
-export type WebhookDataContractTermRenewalTypeEnum = typeof WebhookDataContractTermRenewalTypeEnum[keyof typeof WebhookDataContractTermRenewalTypeEnum];
-export const WebhookDataContractTermTermStateEnum = {
-    Untracked: 'UNTRACKED',
-    Active: 'ACTIVE',
-    Ended: 'ENDED',
-    Stopped: 'STOPPED',
-} as const;
-
-export type WebhookDataContractTermTermStateEnum = typeof WebhookDataContractTermTermStateEnum[keyof typeof WebhookDataContractTermTermStateEnum];
-
 export interface WebhookDataDemandCompleted {
     'demand_id': string;
     'title': string;
-    'status': WebhookDataDemandCompletedStatusEnum;
+    /**
+     * Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'status': string;
     'completed_at': string;
     'parties': Array<WebhookDataDemandCompletedPartiesInner>;
     /**
@@ -2366,13 +2080,6 @@ export interface WebhookDataDemandCompleted {
      */
     '_backfill'?: boolean;
 }
-
-export const WebhookDataDemandCompletedStatusEnum = {
-    Completed: 'COMPLETED',
-} as const;
-
-export type WebhookDataDemandCompletedStatusEnum = typeof WebhookDataDemandCompletedStatusEnum[keyof typeof WebhookDataDemandCompletedStatusEnum];
-
 export interface WebhookDataDemandCompletedPartiesInner {
     'id'?: string;
     /**
@@ -2477,7 +2184,10 @@ export interface WebhookEnvelope {
      * Olay benzersiz id\'si. Receiver tarafında idempotency için kullanın (DB\'de unique key).
      */
     'id': string;
-    'type': WebhookEnvelopeTypeEnum;
+    /**
+     * Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+     */
+    'type': string;
     /**
      * Olay zamanı (ISO 8601 UTC).
      */
@@ -2487,21 +2197,6 @@ export interface WebhookEnvelope {
      */
     'data': object;
 }
-
-export const WebhookEnvelopeTypeEnum = {
-    DemandCreated: 'demand.created',
-    DemandCompleted: 'demand.completed',
-    DemandExpired: 'demand.expired',
-    PartySigned: 'party.signed',
-    PartyViewed: 'party.viewed',
-    PartyRejected: 'party.rejected',
-    ContractExpiring: 'contract.expiring',
-    ContractEnded: 'contract.ended',
-    ContractAdvanced: 'contract.advanced',
-} as const;
-
-export type WebhookEnvelopeTypeEnum = typeof WebhookEnvelopeTypeEnum[keyof typeof WebhookEnvelopeTypeEnum];
-
 
 /**
  * AccountApi - axios parameter creator

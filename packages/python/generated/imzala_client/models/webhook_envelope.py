@@ -31,7 +31,7 @@ class WebhookEnvelope(BaseModel):
     Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante.
     """ # noqa: E501
     id: Annotated[str, Field(strict=True)] = Field(description="Olay benzersiz id'si. Receiver tarafında idempotency için kullanın (DB'de unique key). ", json_schema_extra={"examples": ["evt_3a8f9c2b1d4e5f6a7b8c9d0e1f2a3b4c"]})
-    type: StrictStr
+    type: StrictStr = Field(description="Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     created_at: datetime = Field(description="Olay zamanı (ISO 8601 UTC).")
     data: Dict[str, Any] = Field(description="Olay tipine özel veri (aşağıdaki şemalar)")
     __properties: ClassVar[List[str]] = ["id", "type", "created_at", "data"]
@@ -44,13 +44,6 @@ class WebhookEnvelope(BaseModel):
 
         if not re.match(r"^evt_[0-9a-f]{32}$", value):
             raise ValueError(r"must validate the regular expression /^evt_[0-9a-f]{32}$/")
-        return value
-
-    @field_validator('type')
-    def type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['demand.created', 'demand.completed', 'demand.expired', 'party.signed', 'party.viewed', 'party.rejected', 'contract.expiring', 'contract.ended', 'contract.advanced']):
-            raise ValueError("must be one of enum values ('demand.created', 'demand.completed', 'demand.expired', 'party.signed', 'party.viewed', 'party.rejected', 'contract.expiring', 'contract.ended', 'contract.advanced')")
         return value
 
     model_config = ConfigDict(

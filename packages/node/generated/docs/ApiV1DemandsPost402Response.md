@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [optional] [default to undefined]
 **error** | **string** |  | [optional] [default to undefined]
-**code** | **string** |  | [optional] [default to undefined]
+**code** | **string** | Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **data** | [**ApiV1DemandsPost402ResponseData**](ApiV1DemandsPost402ResponseData.md) |  | [optional] [default to undefined]
 
 ## Example

@@ -295,27 +295,6 @@ class DemandStatus implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const STATUS_DRAFT = 'DRAFT';
-    public const STATUS_PENDING = 'PENDING';
-    public const STATUS_COMPLETED = 'COMPLETED';
-    public const STATUS_EXPIRED = 'EXPIRED';
-    public const STATUS_CANCELLED = 'CANCELLED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_DRAFT,
-            self::STATUS_PENDING,
-            self::STATUS_COMPLETED,
-            self::STATUS_EXPIRED,
-            self::STATUS_CANCELLED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -372,15 +351,6 @@ class DemandStatus implements ModelInterface, ArrayAccess, \JsonSerializable
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -464,7 +434,7 @@ class DemandStatus implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets status
      *
-     * @param string|null $status status
+     * @param string|null $status Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -472,16 +442,6 @@ class DemandStatus implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

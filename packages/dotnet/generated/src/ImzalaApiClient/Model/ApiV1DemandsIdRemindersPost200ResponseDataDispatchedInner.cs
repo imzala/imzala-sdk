@@ -34,32 +34,13 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner : IValidatableObject
     {
         /// <summary>
-        /// Defines Channels
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ChannelsEnum
-        {
-            /// <summary>
-            /// Enum Email for value: email
-            /// </summary>
-            [EnumMember(Value = "email")]
-            Email = 1,
-
-            /// <summary>
-            /// Enum Sms for value: sms
-            /// </summary>
-            [EnumMember(Value = "sms")]
-            Sms = 2
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner" /> class.
         /// </summary>
         /// <param name="partyId">partyId.</param>
         /// <param name="firstName">firstName.</param>
         /// <param name="lastName">lastName.</param>
         /// <param name="channels">channels.</param>
-        public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner(Guid partyId = default, string firstName = default, string lastName = default, List<ChannelsEnum> channels = default)
+        public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner(Guid partyId = default, string firstName = default, string lastName = default, List<string> channels = default)
         {
             this.PartyId = partyId;
             this.FirstName = firstName;
@@ -89,7 +70,7 @@ namespace ImzalaApiClient.Model
         /// Gets or Sets Channels
         /// </summary>
         [DataMember(Name = "channels", EmitDefaultValue = false)]
-        public List<ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.ChannelsEnum> Channels { get; set; }
+        public List<string> Channels { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

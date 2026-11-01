@@ -241,21 +241,6 @@ class ApiV1DemandsIdDelete409Response implements ModelInterface, ArrayAccess, \J
         return self::$openAPIModelName;
     }
 
-    public const CODE_DEMAND_COMPLETED = 'DEMAND_COMPLETED';
-    public const CODE_DEMAND_ARCHIVED = 'DEMAND_ARCHIVED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getCodeAllowableValues()
-    {
-        return [
-            self::CODE_DEMAND_COMPLETED,
-            self::CODE_DEMAND_ARCHIVED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -303,15 +288,6 @@ class ApiV1DemandsIdDelete409Response implements ModelInterface, ArrayAccess, \J
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'code', must be one of '%s'",
-                $this->container['code'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -395,7 +371,7 @@ class ApiV1DemandsIdDelete409Response implements ModelInterface, ArrayAccess, \J
     /**
      * Sets code
      *
-     * @param string|null $code code
+     * @param string|null $code Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -403,16 +379,6 @@ class ApiV1DemandsIdDelete409Response implements ModelInterface, ArrayAccess, \J
     {
         if (is_null($code)) {
             throw new \InvalidArgumentException('non-nullable code cannot be null');
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!in_array($code, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'code', must be one of '%s'",
-                    $code,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['code'] = $code;
 

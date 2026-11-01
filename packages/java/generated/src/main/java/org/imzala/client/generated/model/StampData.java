@@ -50,7 +50,7 @@ import org.imzala.client.generated.ApiClient;
   StampData.JSON_PROPERTY_PERSONAL_PHONE,
   StampData.JSON_PROPERTY_EMAIL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class StampData {
   public static final String JSON_PROPERTY_COMPANY_NAME = "companyName";
   private JsonNullable<String> companyName = JsonNullable.<String>undefined();

@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -33,18 +33,8 @@ class CreatedDemandUploadDispatchResultsInner(BaseModel):
     sms: Optional[StrictBool] = None
     email: Optional[StrictBool] = None
     whatsapp: Optional[StrictBool] = None
-    error: Optional[StrictStr] = Field(default=None, description="Yalnız o taraf için gönderim patladığında döner.")
+    error: Optional[StrictStr] = Field(default=None, description="Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     __properties: ClassVar[List[str]] = ["party_id", "sms", "email", "whatsapp", "error"]
-
-    @field_validator('error')
-    def error_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DISPATCH_FAILED']):
-            raise ValueError("must be one of enum values ('DISPATCH_FAILED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

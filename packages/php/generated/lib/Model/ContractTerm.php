@@ -314,57 +314,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const START_MODE_FIXED_DATE = 'FIXED_DATE';
-    public const START_MODE_ON_FIRST_SIGNATURE = 'ON_FIRST_SIGNATURE';
-    public const START_MODE_ON_COMPLETION = 'ON_COMPLETION';
-    public const RENEWAL_TYPE_AUTO_RENEW = 'AUTO_RENEW';
-    public const RENEWAL_TYPE_FIXED_TERM = 'FIXED_TERM';
-    public const STATE_UNTRACKED = 'UNTRACKED';
-    public const STATE_ACTIVE = 'ACTIVE';
-    public const STATE_ENDED = 'ENDED';
-    public const STATE_STOPPED = 'STOPPED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStartModeAllowableValues()
-    {
-        return [
-            self::START_MODE_FIXED_DATE,
-            self::START_MODE_ON_FIRST_SIGNATURE,
-            self::START_MODE_ON_COMPLETION,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getRenewalTypeAllowableValues()
-    {
-        return [
-            self::RENEWAL_TYPE_AUTO_RENEW,
-            self::RENEWAL_TYPE_FIXED_TERM,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStateAllowableValues()
-    {
-        return [
-            self::STATE_UNTRACKED,
-            self::STATE_ACTIVE,
-            self::STATE_ENDED,
-            self::STATE_STOPPED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -428,15 +377,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
         if ($this->container['start_mode'] === null && !$this->isNullableSetToNull('start_mode')) {
             $invalidProperties[] = "'start_mode' is required";
         }
-        $allowedValues = $this->getStartModeAllowableValues();
-        if (!is_null($this->container['start_mode']) && !in_array($this->container['start_mode'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'start_mode', must be one of '%s'",
-                $this->container['start_mode'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['start_date'] === null && !$this->isNullableSetToNull('start_date')) {
             $invalidProperties[] = "'start_date' is required";
         }
@@ -463,15 +403,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
         if ($this->container['renewal_type'] === null && !$this->isNullableSetToNull('renewal_type')) {
             $invalidProperties[] = "'renewal_type' is required";
         }
-        $allowedValues = $this->getRenewalTypeAllowableValues();
-        if (!is_null($this->container['renewal_type']) && !in_array($this->container['renewal_type'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'renewal_type', must be one of '%s'",
-                $this->container['renewal_type'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['renewal_period_months'] === null && !$this->isNullableSetToNull('renewal_period_months')) {
             $invalidProperties[] = "'renewal_period_months' is required";
         }
@@ -510,15 +441,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
         if ($this->container['state'] === null) {
             $invalidProperties[] = "'state' can't be null";
         }
-        $allowedValues = $this->getStateAllowableValues();
-        if (!is_null($this->container['state']) && !in_array($this->container['state'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'state', must be one of '%s'",
-                $this->container['state'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['days_left'] === null && !$this->isNullableSetToNull('days_left')) {
             $invalidProperties[] = "'days_left' is required";
         }
@@ -553,7 +475,7 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets start_mode
      *
-     * @param string|null $start_mode Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).
+     * @param string|null $start_mode Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten. `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -568,16 +490,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getStartModeAllowableValues();
-        if (!is_null($start_mode) && !in_array($start_mode, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'start_mode', must be one of '%s'",
-                    $start_mode,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['start_mode'] = $start_mode;
 
@@ -775,7 +687,7 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets renewal_type
      *
-     * @param string|null $renewal_type renewal_type
+     * @param string|null $renewal_type Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -790,16 +702,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getRenewalTypeAllowableValues();
-        if (!is_null($renewal_type) && !in_array($renewal_type, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'renewal_type', must be one of '%s'",
-                    $renewal_type,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['renewal_type'] = $renewal_type;
 
@@ -1002,7 +904,7 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets state
      *
-     * @param string $state `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
+     * @param string $state `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti. `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -1010,16 +912,6 @@ class ContractTerm implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($state)) {
             throw new \InvalidArgumentException('non-nullable state cannot be null');
-        }
-        $allowedValues = $this->getStateAllowableValues();
-        if (!in_array($state, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'state', must be one of '%s'",
-                    $state,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['state'] = $state;
 

@@ -36,13 +36,13 @@ class TestContractTerm(unittest.TestCase):
         model = ContractTerm()
         if include_optional:
             return ContractTerm(
-                start_mode = 'FIXED_DATE',
+                start_mode = '',
                 start_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 duration_months = 1,
                 fixed_end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 end_date_signed = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                renewal_type = 'AUTO_RENEW',
+                renewal_type = '',
                 renewal_period_months = 1,
                 notice_days = 0,
                 notice_deadline = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
@@ -50,19 +50,19 @@ class TestContractTerm(unittest.TestCase):
                     0
                     ],
                 notify_counterparty = True,
-                state = 'UNTRACKED',
+                state = '',
                 days_left = 56,
                 renewal_stopped_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')
             )
         else:
             return ContractTerm(
-                start_mode = 'FIXED_DATE',
+                start_mode = '',
                 start_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 duration_months = 1,
                 fixed_end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 end_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 end_date_signed = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
-                renewal_type = 'AUTO_RENEW',
+                renewal_type = '',
                 renewal_period_months = 1,
                 notice_days = 0,
                 notice_deadline = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
@@ -70,7 +70,7 @@ class TestContractTerm(unittest.TestCase):
                     0
                     ],
                 notify_counterparty = True,
-                state = 'UNTRACKED',
+                state = '',
                 days_left = 56,
                 renewal_stopped_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
         )

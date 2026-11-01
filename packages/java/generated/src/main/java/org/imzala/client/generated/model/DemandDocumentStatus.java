@@ -50,7 +50,7 @@ import org.imzala.client.generated.ApiClient;
   DemandDocumentStatus.JSON_PROPERTY_SEALING,
   DemandDocumentStatus.JSON_PROPERTY_DECISIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DemandDocumentStatus {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable
@@ -64,52 +64,9 @@ public class DemandDocumentStatus {
   @javax.annotation.Nullable
   private String title;
 
-  /**
-   * Gets or Sets docKind
-   */
-  public enum DocKindEnum {
-    CONTRACT(String.valueOf("CONTRACT")),
-
-    KVKK_NOTICE(String.valueOf("KVKK_NOTICE")),
-
-    KVKK_CONSENT(String.valueOf("KVKK_CONSENT")),
-
-    PREINFO(String.valueOf("PREINFO")),
-
-    PRICE_LIST(String.valueOf("PRICE_LIST")),
-
-    OTHER(String.valueOf("OTHER"));
-
-    private String value;
-
-    DocKindEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static DocKindEnum fromValue(String value) {
-      for (DocKindEnum b : DocKindEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_DOC_KIND = "doc_kind";
   @javax.annotation.Nullable
-  private DocKindEnum docKind;
+  private String docKind;
 
   public static final String JSON_PROPERTY_IS_REQUIRED = "is_required";
   @javax.annotation.Nullable
@@ -210,26 +167,26 @@ public class DemandDocumentStatus {
   }
 
 
-  public DemandDocumentStatus docKind(@javax.annotation.Nullable DocKindEnum docKind) {
+  public DemandDocumentStatus docKind(@javax.annotation.Nullable String docKind) {
     this.docKind = docKind;
     return this;
   }
 
   /**
-   * Get docKind
+   * Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return docKind
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_DOC_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public DocKindEnum getDocKind() {
+  public String getDocKind() {
     return docKind;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_DOC_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDocKind(@javax.annotation.Nullable DocKindEnum docKind) {
+  public void setDocKind(@javax.annotation.Nullable String docKind) {
     this.docKind = docKind;
   }
 

@@ -38,50 +38,11 @@ import org.imzala.client.generated.ApiClient;
   DocumentSelectionErrorDetails.JSON_PROPERTY_REASON,
   DocumentSelectionErrorDetails.JSON_PROPERTY_DOCUMENT_IDS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentSelectionErrorDetails {
-  /**
-   * &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
-   */
-  public enum ReasonEnum {
-    SHAPE(String.valueOf("shape")),
-
-    UNKNOWN_DOCUMENT(String.valueOf("unknown_document")),
-
-    CONFLICT(String.valueOf("conflict")),
-
-    EMPTY(String.valueOf("empty"));
-
-    private String value;
-
-    ReasonEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static ReasonEnum fromValue(String value) {
-      for (ReasonEnum b : ReasonEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_REASON = "reason";
   @javax.annotation.Nullable
-  private ReasonEnum reason;
+  private String reason;
 
   public static final String JSON_PROPERTY_DOCUMENT_IDS = "document_ids";
   @javax.annotation.Nullable
@@ -90,26 +51,26 @@ public class DocumentSelectionErrorDetails {
   public DocumentSelectionErrorDetails() {
   }
 
-  public DocumentSelectionErrorDetails reason(@javax.annotation.Nullable ReasonEnum reason) {
+  public DocumentSelectionErrorDetails reason(@javax.annotation.Nullable String reason) {
     this.reason = reason;
     return this;
   }
 
   /**
-   * &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
+   * &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return reason
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_REASON, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public ReasonEnum getReason() {
+  public String getReason() {
     return reason;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_REASON, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setReason(@javax.annotation.Nullable ReasonEnum reason) {
+  public void setReason(@javax.annotation.Nullable String reason) {
     this.reason = reason;
   }
 

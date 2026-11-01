@@ -63,13 +63,13 @@ class TestCreatedDemandUpload(unittest.TestCase):
                             sms = True,
                             email = True,
                             whatsapp = True,
-                            error = 'DISPATCH_FAILED', )
+                            error = '', )
                         ],
-                    error = 'DISPATCH_SKIPPED', ),
+                    error = '', ),
                 field_layout = imzala_client.models.created_demand_upload_field_layout.CreatedDemandUpload_field_layout(
                     template_id = '',
                     applied_fields = 56,
-                    on_anchor_miss = 'block',
+                    on_anchor_miss = '',
                     warnings = [
                         imzala_client.models.field_layout_warning.FieldLayoutWarning(
                             code = 'ON_ANCHOR_MISS_NOT_RELAXED',
@@ -78,7 +78,7 @@ class TestCreatedDemandUpload(unittest.TestCase):
                     diagnostics = [
                         imzala_client.models.field_layout_diagnostic.FieldLayoutDiagnostic(
                             code = 'ANCHOR_TEXT_NOT_FOUND',
-                            severity = 'ERROR',
+                            severity = '',
                             item_id = 56,
                             slug = '',
                             label = '',

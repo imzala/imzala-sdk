@@ -241,39 +241,6 @@ class StandardErrorError implements ModelInterface, ArrayAccess, \JsonSerializab
         return self::$openAPIModelName;
     }
 
-    public const CODE_INVALID_CHANNELS = 'INVALID_CHANNELS';
-    public const CODE_DEMAND_NOT_FOUND = 'DEMAND_NOT_FOUND';
-    public const CODE_ALREADY_COMPLETED = 'ALREADY_COMPLETED';
-    public const CODE_RATE_LIMITED = 'RATE_LIMITED';
-    public const CODE_MAX_SMS_REMINDERS_REACHED = 'MAX_SMS_REMINDERS_REACHED';
-    public const CODE_DEMAND_NOT_DISPATCHED = 'DEMAND_NOT_DISPATCHED';
-    public const CODE_DEMAND_NOT_DISPATCHABLE = 'DEMAND_NOT_DISPATCHABLE';
-    public const CODE_DEMAND_EXPIRED = 'DEMAND_EXPIRED';
-    public const CODE_ENVELOPE_NOT_DISPATCHED = 'ENVELOPE_NOT_DISPATCHED';
-    public const CODE_UNAUTHORIZED = 'UNAUTHORIZED';
-    public const CODE_INTERNAL_ERROR = 'INTERNAL_ERROR';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getCodeAllowableValues()
-    {
-        return [
-            self::CODE_INVALID_CHANNELS,
-            self::CODE_DEMAND_NOT_FOUND,
-            self::CODE_ALREADY_COMPLETED,
-            self::CODE_RATE_LIMITED,
-            self::CODE_MAX_SMS_REMINDERS_REACHED,
-            self::CODE_DEMAND_NOT_DISPATCHED,
-            self::CODE_DEMAND_NOT_DISPATCHABLE,
-            self::CODE_DEMAND_EXPIRED,
-            self::CODE_ENVELOPE_NOT_DISPATCHED,
-            self::CODE_UNAUTHORIZED,
-            self::CODE_INTERNAL_ERROR,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -325,15 +292,6 @@ class StandardErrorError implements ModelInterface, ArrayAccess, \JsonSerializab
         if ($this->container['code'] === null) {
             $invalidProperties[] = "'code' can't be null";
         }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'code', must be one of '%s'",
-                $this->container['code'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['message'] === null) {
             $invalidProperties[] = "'message' can't be null";
         }
@@ -365,7 +323,7 @@ class StandardErrorError implements ModelInterface, ArrayAccess, \JsonSerializab
     /**
      * Sets code
      *
-     * @param string $code code
+     * @param string $code Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -373,16 +331,6 @@ class StandardErrorError implements ModelInterface, ArrayAccess, \JsonSerializab
     {
         if (is_null($code)) {
             throw new \InvalidArgumentException('non-nullable code cannot be null');
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!in_array($code, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'code', must be one of '%s'",
-                    $code,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['code'] = $code;
 

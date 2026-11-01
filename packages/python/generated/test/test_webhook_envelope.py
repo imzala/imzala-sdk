@@ -37,14 +37,14 @@ class TestWebhookEnvelope(unittest.TestCase):
         if include_optional:
             return WebhookEnvelope(
                 id = 'evt_3a8f9c2b1d4e5f6a7b8c9d0e1f2a3b4c',
-                type = 'demand.created',
+                type = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 data = None
             )
         else:
             return WebhookEnvelope(
                 id = 'evt_3a8f9c2b1d4e5f6a7b8c9d0e1f2a3b4c',
-                type = 'demand.created',
+                type = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 data = None,
         )

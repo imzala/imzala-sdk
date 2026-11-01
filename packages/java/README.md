@@ -86,7 +86,7 @@ long signed = status.getParties().stream().filter(DemandStatusPartiesInner::getS
 System.out.println(signed + " taraf imzaladı");
 
 // 4) Tamamlanınca imzalı PDF'i indir
-if (status.getStatus() == DemandStatus.StatusEnum.COMPLETED) {
+if ("COMPLETED".equals(status.getStatus())) {
     byte[] pdf = imzala.demands().getPdf(demand.getId()); // byte[]
     Files.write(Path.of("sozlesme.pdf"), pdf);
 }
@@ -203,7 +203,7 @@ UploadDemandParams layout = new UploadDemandParams(
 ```java
 TemplateDetail template = imzala.templates().get(templateId);
 UUID kvkkId = template.getDocuments().stream()
-    .filter(d -> d.getDocKind() == TemplateDocumentSummary.DocKindEnum.KVKK_NOTICE)
+    .filter(d -> "KVKK_NOTICE".equals(d.getDocKind()))
     .findFirst()
     .orElseThrow()
     .getId();

@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,20 +28,10 @@ class ApiV1DemandsIdRemindersPost429ResponseError(BaseModel):
     """
     ApiV1DemandsIdRemindersPost429ResponseError
     """ # noqa: E501
-    code: Optional[StrictStr] = None
+    code: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     message: Optional[StrictStr] = None
     retry_after_seconds: Optional[StrictInt] = Field(default=None, description="Sadece RATE_LIMITED'de")
     __properties: ClassVar[List[str]] = ["code", "message", "retry_after_seconds"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['RATE_LIMITED', 'MAX_SMS_REMINDERS_REACHED']):
-            raise ValueError("must be one of enum values ('RATE_LIMITED', 'MAX_SMS_REMINDERS_REACHED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

@@ -54,46 +54,11 @@ import org.imzala.client.generated.ApiClient;
   TemplateUsage.JSON_PROPERTY_DOCUMENTS,
   TemplateUsage.JSON_PROPERTY_EXAMPLE_REQUEST
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TemplateUsage {
-  /**
-   * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).
-   */
-  public enum KindEnum {
-    DOCUMENT(String.valueOf("DOCUMENT")),
-
-    FIELD_LAYOUT(String.valueOf("FIELD_LAYOUT"));
-
-    private String value;
-
-    KindEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static KindEnum fromValue(String value) {
-      for (KindEnum b : KindEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_KIND = "kind";
   @javax.annotation.Nullable
-  private KindEnum kind;
+  private String kind;
 
   public static final String JSON_PROPERTY_FORM_FIELDS = "form_fields";
   @javax.annotation.Nullable
@@ -130,26 +95,26 @@ public class TemplateUsage {
   public TemplateUsage() {
   }
 
-  public TemplateUsage kind(@javax.annotation.Nullable KindEnum kind) {
+  public TemplateUsage kind(@javax.annotation.Nullable String kind) {
     this.kind = kind;
     return this;
   }
 
   /**
-   * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).
+   * Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima &#x60;DOCUMENT&#x60; döner (Alan Şablonu bu uçta 404&#39;tür; kimliği &#x60;GET /api/v1/field-templates&#x60; ile öğrenilir ve &#x60;POST /api/v1/demands/upload&#x60; ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return kind
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public KindEnum getKind() {
+  public String getKind() {
     return kind;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKind(@javax.annotation.Nullable KindEnum kind) {
+  public void setKind(@javax.annotation.Nullable String kind) {
     this.kind = kind;
   }
 

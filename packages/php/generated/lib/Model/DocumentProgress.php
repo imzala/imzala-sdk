@@ -248,23 +248,6 @@ class DocumentProgress implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const STATUS_PENDING = 'PENDING';
-    public const STATUS_PARTIAL = 'PARTIAL';
-    public const STATUS_COMPLETED = 'COMPLETED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_PENDING,
-            self::STATUS_PARTIAL,
-            self::STATUS_COMPLETED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -314,15 +297,6 @@ class DocumentProgress implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         $invalidProperties = [];
 
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -351,7 +325,7 @@ class DocumentProgress implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets status
      *
-     * @param string|null $status `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
+     * @param string|null $status `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -359,16 +333,6 @@ class DocumentProgress implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

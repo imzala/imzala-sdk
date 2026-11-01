@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,7 +29,7 @@ class FieldLayoutDiagnostic(BaseModel):
     Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidir (TR). **Bilinmeyen `code` toleranslı okunmalıdır**: yeni kod eklemek kırıcı değişiklik sayılmaz, istemci tanımadığı kodda `message` alanına düşmelidir.  Belgenizden çıkarılan hiçbir metin (çapa metni, eşleşen satır, sayfa metni, dosya adı) bu yapıya girmez.
     """ # noqa: E501
     code: StrictStr = Field(json_schema_extra={"examples": ["ANCHOR_TEXT_NOT_FOUND"]})
-    severity: StrictStr
+    severity: StrictStr = Field(description="Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     item_id: StrictInt = Field(description="Şablon alanının kimliği. `-1` belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir. ")
     slug: Optional[StrictStr] = None
     label: Optional[StrictStr] = None
@@ -38,13 +38,6 @@ class FieldLayoutDiagnostic(BaseModel):
     message: StrictStr
     detail: Optional[Dict[str, Any]] = Field(default=None, description="Koda göre değişen, kapalı bir anahtar kümesi (yalnız sayısal değerler ve alan kimlikleri). ")
     __properties: ClassVar[List[str]] = ["code", "severity", "item_id", "slug", "label", "item_type", "page", "message", "detail"]
-
-    @field_validator('severity')
-    def severity_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['ERROR', 'WARNING']):
-            raise ValueError("must be one of enum values ('ERROR', 'WARNING')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

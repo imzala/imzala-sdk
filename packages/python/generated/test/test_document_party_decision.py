@@ -37,7 +37,7 @@ class TestDocumentPartyDecision(unittest.TestCase):
         if include_optional:
             return DocumentPartyDecision(
                 party_id = '',
-                decision = 'PENDING',
+                decision = '',
                 decided_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 withdrawn_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 signature_collected = True,

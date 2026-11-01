@@ -7,7 +7,7 @@ Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidi
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **code** | **string** |  | [default to undefined]
-**severity** | **string** |  | [default to undefined]
+**severity** | **string** | Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
 **item_id** | **number** | Şablon alanının kimliği. &#x60;-1&#x60; belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir.  | [default to undefined]
 **slug** | **string** |  | [optional] [default to undefined]
 **label** | **string** |  | [optional] [default to undefined]

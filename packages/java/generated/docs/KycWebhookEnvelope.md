@@ -9,15 +9,6 @@ KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**id** | **String** | Olay id&#39;si: receiver tarafında idempotency anahtarı. |  |
-|**type** | [**TypeEnum**](#TypeEnum) |  |  |
+|**type** | **String** | Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |
 |**createdAt** | **OffsetDateTime** | Olay zamanı (ISO 8601 UTC). |  |
 |**data** | **Object** | Olay verisi (WebhookDataKycTerminal) |  |
-
-
-
-## Enum: TypeEnum
-
-| Name | Value |
-|---- | -----|
-| KYC_COMPLETED | &quot;kyc.completed&quot; |
-| KYC_FAILED | &quot;kyc.failed&quot; |

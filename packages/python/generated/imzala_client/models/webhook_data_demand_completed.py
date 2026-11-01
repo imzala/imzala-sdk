@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.webhook_data_demand_completed_parties_inner import WebhookDataDemandCompletedPartiesInner
@@ -33,18 +33,11 @@ class WebhookDataDemandCompleted(BaseModel):
     """ # noqa: E501
     demand_id: UUID
     title: StrictStr
-    status: StrictStr
+    status: StrictStr = Field(description="Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     completed_at: datetime
     parties: List[WebhookDataDemandCompletedPartiesInner]
     backfill: Optional[StrictBool] = Field(default=None, description="Replay bayrağı (yan etkileri atla)", alias="_backfill")
     __properties: ClassVar[List[str]] = ["demand_id", "title", "status", "completed_at", "parties", "_backfill"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['COMPLETED']):
-            raise ValueError("must be one of enum values ('COMPLETED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

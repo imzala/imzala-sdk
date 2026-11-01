@@ -60,7 +60,7 @@ import org.imzala.client.generated.ApiClient;
   EnvelopeDocument.JSON_PROPERTY_SEALING,
   EnvelopeDocument.JSON_PROPERTY_DECISIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class EnvelopeDocument {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable
@@ -74,52 +74,9 @@ public class EnvelopeDocument {
   @javax.annotation.Nullable
   private String title;
 
-  /**
-   * Gets or Sets docKind
-   */
-  public enum DocKindEnum {
-    CONTRACT(String.valueOf("CONTRACT")),
-
-    KVKK_NOTICE(String.valueOf("KVKK_NOTICE")),
-
-    KVKK_CONSENT(String.valueOf("KVKK_CONSENT")),
-
-    PREINFO(String.valueOf("PREINFO")),
-
-    PRICE_LIST(String.valueOf("PRICE_LIST")),
-
-    OTHER(String.valueOf("OTHER"));
-
-    private String value;
-
-    DocKindEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static DocKindEnum fromValue(String value) {
-      for (DocKindEnum b : DocKindEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_DOC_KIND = "doc_kind";
   @javax.annotation.Nullable
-  private DocKindEnum docKind;
+  private String docKind;
 
   public static final String JSON_PROPERTY_IS_REQUIRED = "is_required";
   @javax.annotation.Nullable
@@ -137,47 +94,8 @@ public class EnvelopeDocument {
   @javax.annotation.Nullable
   private Integer decisionCount;
 
-  /**
-   * Gets or Sets sealingStatus
-   */
-  public enum SealingStatusEnum {
-    NONE(String.valueOf("NONE")),
-
-    PENDING(String.valueOf("PENDING")),
-
-    SEALED(String.valueOf("SEALED")),
-
-    FAILED(String.valueOf("FAILED"));
-
-    private String value;
-
-    SealingStatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SealingStatusEnum fromValue(String value) {
-      for (SealingStatusEnum b : SealingStatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
-
   public static final String JSON_PROPERTY_SEALING_STATUS = "sealing_status";
-  private JsonNullable<SealingStatusEnum> sealingStatus = JsonNullable.<SealingStatusEnum>undefined();
+  private JsonNullable<String> sealingStatus = JsonNullable.<String>undefined();
 
   public static final String JSON_PROPERTY_HAS_TIMESTAMP = "has_timestamp";
   @javax.annotation.Nullable
@@ -277,26 +195,26 @@ public class EnvelopeDocument {
   }
 
 
-  public EnvelopeDocument docKind(@javax.annotation.Nullable DocKindEnum docKind) {
+  public EnvelopeDocument docKind(@javax.annotation.Nullable String docKind) {
     this.docKind = docKind;
     return this;
   }
 
   /**
-   * Get docKind
+   * Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return docKind
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_DOC_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public DocKindEnum getDocKind() {
+  public String getDocKind() {
     return docKind;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_DOC_KIND, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDocKind(@javax.annotation.Nullable DocKindEnum docKind) {
+  public void setDocKind(@javax.annotation.Nullable String docKind) {
     this.docKind = docKind;
   }
 
@@ -405,35 +323,35 @@ public class EnvelopeDocument {
   }
 
 
-  public EnvelopeDocument sealingStatus(@javax.annotation.Nullable SealingStatusEnum sealingStatus) {
-    this.sealingStatus = JsonNullable.<SealingStatusEnum>of(sealingStatus);
+  public EnvelopeDocument sealingStatus(@javax.annotation.Nullable String sealingStatus) {
+    this.sealingStatus = JsonNullable.<String>of(sealingStatus);
     return this;
   }
 
   /**
-   * Get sealingStatus
+   * Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return sealingStatus
    */
   @javax.annotation.Nullable
   @JsonIgnore
-  public SealingStatusEnum getSealingStatus() {
+  public String getSealingStatus() {
         return sealingStatus.orElse(null);
   }
 
   @JsonProperty(value = JSON_PROPERTY_SEALING_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public JsonNullable<SealingStatusEnum> getSealingStatus_JsonNullable() {
+  public JsonNullable<String> getSealingStatus_JsonNullable() {
     return sealingStatus;
   }
 
   @JsonProperty(JSON_PROPERTY_SEALING_STATUS)
-  public void setSealingStatus_JsonNullable(JsonNullable<SealingStatusEnum> sealingStatus) {
+  public void setSealingStatus_JsonNullable(JsonNullable<String> sealingStatus) {
     this.sealingStatus = sealingStatus;
   }
 
-  public void setSealingStatus(@javax.annotation.Nullable SealingStatusEnum sealingStatus) {
-    this.sealingStatus = JsonNullable.<SealingStatusEnum>of(sealingStatus);
+  public void setSealingStatus(@javax.annotation.Nullable String sealingStatus) {
+    this.sealingStatus = JsonNullable.<String>of(sealingStatus);
   }
 
 

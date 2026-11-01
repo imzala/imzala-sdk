@@ -22,7 +22,6 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
-from imzala_client.models.signer_locale import SignerLocale
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -40,7 +39,7 @@ class ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner(BaseModel):
     birth_date: Optional[date] = Field(default=None, description="ISO 8601 (ör. 1990-05-15)")
     send_sms: Optional[StrictBool] = True
     send_email: Optional[StrictBool] = True
-    locale: Optional[SignerLocale] = None
+    locale: Optional[StrictStr] = Field(default=None, description="İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["en"]})
     require_phone_verification: Optional[StrictBool] = Field(default=None, description="Telefon doğrulamasını yalnız bu taraf için açar ya da kapatır (bkz. `PartyMappingInput.require_phone_verification`). Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Geçersiz değer satırı `failed` (`error: \"INVALID_PHONE_VERIFICATION\"`), `true` iken boş `phone` satırı `failed` (`error: \"PHONE_REQUIRED_FOR_VERIFICATION\"`) yapar.")
     custom_message: Optional[StrictStr] = Field(default=None, description="Bu tarafa özel davet mesajı")
     variables: Optional[Dict[str, Any]] = Field(default=None, description="Bu tarafa özel değişkenler")

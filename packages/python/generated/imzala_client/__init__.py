@@ -176,7 +176,6 @@ __all__ = [
     "PatchStampItemResponse",
     "PatchStampItemResponseData",
     "ReminderSettings",
-    "SignerLocale",
     "StampData",
     "StandardError",
     "StandardErrorError",
@@ -379,7 +378,6 @@ from imzala_client.models.patch_stamp_item_request import PatchStampItemRequest 
 from imzala_client.models.patch_stamp_item_response import PatchStampItemResponse as PatchStampItemResponse
 from imzala_client.models.patch_stamp_item_response_data import PatchStampItemResponseData as PatchStampItemResponseData
 from imzala_client.models.reminder_settings import ReminderSettings as ReminderSettings
-from imzala_client.models.signer_locale import SignerLocale as SignerLocale
 from imzala_client.models.stamp_data import StampData as StampData
 from imzala_client.models.standard_error import StandardError as StandardError
 from imzala_client.models.standard_error_error import StandardErrorError as StandardErrorError

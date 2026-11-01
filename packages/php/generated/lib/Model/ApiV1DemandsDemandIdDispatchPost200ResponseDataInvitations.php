@@ -241,19 +241,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations implements Mode
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DISPATCH_SKIPPED = 'DISPATCH_SKIPPED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DISPATCH_SKIPPED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -301,15 +288,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations implements Mode
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -393,7 +371,7 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations implements Mode
     /**
      * Sets error
      *
-     * @param string|null $error `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.)
+     * @param string|null $error `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -408,16 +386,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations implements Mode
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($error) && !in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 

@@ -48,7 +48,7 @@ import org.imzala.client.generated.ApiClient;
   TimestampListItem.JSON_PROPERTY_CREATED_AT,
   TimestampListItem.JSON_PROPERTY_TIMESTAMP_FILE_URL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class TimestampListItem {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nullable
@@ -66,48 +66,9 @@ public class TimestampListItem {
   @javax.annotation.Nullable
   private OffsetDateTime timestampDate;
 
-  /**
-   * Gets or Sets status
-   */
-  public enum StatusEnum {
-    ACTIVE(String.valueOf("ACTIVE")),
-
-    VERIFIED(String.valueOf("VERIFIED")),
-
-    EXPIRED(String.valueOf("EXPIRED")),
-
-    INVALID(String.valueOf("INVALID"));
-
-    private String value;
-
-    StatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nullable
-  private StatusEnum status;
+  private String status;
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private JsonNullable<String> description = JsonNullable.<String>undefined();
@@ -219,26 +180,26 @@ public class TimestampListItem {
   }
 
 
-  public TimestampListItem status(@javax.annotation.Nullable StatusEnum status) {
+  public TimestampListItem status(@javax.annotation.Nullable String status) {
     this.status = status;
     return this;
   }
 
   /**
-   * Get status
+   * Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return status
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public StatusEnum getStatus() {
+  public String getStatus() {
     return status;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setStatus(@javax.annotation.Nullable StatusEnum status) {
+  public void setStatus(@javax.annotation.Nullable String status) {
     this.status = status;
   }
 

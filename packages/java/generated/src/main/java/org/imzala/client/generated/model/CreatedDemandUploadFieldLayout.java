@@ -44,7 +44,7 @@ import org.imzala.client.generated.ApiClient;
   CreatedDemandUploadFieldLayout.JSON_PROPERTY_WARNINGS,
   CreatedDemandUploadFieldLayout.JSON_PROPERTY_DIAGNOSTICS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreatedDemandUploadFieldLayout {
   public static final String JSON_PROPERTY_TEMPLATE_ID = "template_id";
   @javax.annotation.Nullable
@@ -54,44 +54,9 @@ public class CreatedDemandUploadFieldLayout {
   @javax.annotation.Nullable
   private Integer appliedFields;
 
-  /**
-   * İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.
-   */
-  public enum OnAnchorMissEnum {
-    BLOCK(String.valueOf("block")),
-
-    DROP(String.valueOf("drop"));
-
-    private String value;
-
-    OnAnchorMissEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static OnAnchorMissEnum fromValue(String value) {
-      for (OnAnchorMissEnum b : OnAnchorMissEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_ON_ANCHOR_MISS = "on_anchor_miss";
   @javax.annotation.Nullable
-  private OnAnchorMissEnum onAnchorMiss;
+  private String onAnchorMiss;
 
   public static final String JSON_PROPERTY_WARNINGS = "warnings";
   @javax.annotation.Nullable
@@ -152,26 +117,26 @@ public class CreatedDemandUploadFieldLayout {
   }
 
 
-  public CreatedDemandUploadFieldLayout onAnchorMiss(@javax.annotation.Nullable OnAnchorMissEnum onAnchorMiss) {
+  public CreatedDemandUploadFieldLayout onAnchorMiss(@javax.annotation.Nullable String onAnchorMiss) {
     this.onAnchorMiss = onAnchorMiss;
     return this;
   }
 
   /**
-   * İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.
+   * İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return onAnchorMiss
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_ON_ANCHOR_MISS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public OnAnchorMissEnum getOnAnchorMiss() {
+  public String getOnAnchorMiss() {
     return onAnchorMiss;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_ON_ANCHOR_MISS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOnAnchorMiss(@javax.annotation.Nullable OnAnchorMissEnum onAnchorMiss) {
+  public void setOnAnchorMiss(@javax.annotation.Nullable String onAnchorMiss) {
     this.onAnchorMiss = onAnchorMiss;
   }
 

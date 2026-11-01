@@ -38,7 +38,7 @@ import org.imzala.client.generated.ApiClient;
   WebhookDataPartySigned.JSON_PROPERTY_PARTY_ID,
   WebhookDataPartySigned.JSON_PROPERTY_BACKFILL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class WebhookDataPartySigned {
   public static final String JSON_PROPERTY_DEMAND_ID = "demand_id";
   @javax.annotation.Nonnull

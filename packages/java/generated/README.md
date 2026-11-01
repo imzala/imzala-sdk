@@ -4,7 +4,7 @@ imzala External API
 
 - API version: 1.14.6
 
-- Build date: 2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]
+- Build date: 2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
@@ -655,7 +655,6 @@ Class | Method | HTTP request | Description
  - [PatchStampItemResponse](docs/PatchStampItemResponse.md)
  - [PatchStampItemResponseData](docs/PatchStampItemResponseData.md)
  - [ReminderSettings](docs/ReminderSettings.md)
- - [SignerLocale](docs/SignerLocale.md)
  - [StampData](docs/StampData.md)
  - [StandardError](docs/StandardError.md)
  - [StandardErrorError](docs/StandardErrorError.md)

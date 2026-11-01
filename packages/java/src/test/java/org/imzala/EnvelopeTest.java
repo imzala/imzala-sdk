@@ -240,7 +240,7 @@ class EnvelopeTest {
             .stampData(new StampData().companyName("Örnek Ltd.").companyPhone("+905551112233").taxOffice(null))
             .documentId(DOC.toString()));
     assertEquals(42, result.getItemId());
-    assertEquals(PatchStampItemResponseData.SourceEnum.INLINE, result.getSource());
+    assertEquals("INLINE", result.getSource());
     Captured call = srv.calls.get(0);
     assertEquals("PATCH", call.method);
     assertEquals("/api/v1/demands/" + DEMAND + "/items/42/stamp", call.uri);

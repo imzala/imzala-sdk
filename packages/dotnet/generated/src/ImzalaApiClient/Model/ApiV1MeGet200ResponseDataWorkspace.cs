@@ -34,40 +34,22 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1MeGet200ResponseDataWorkspace : IValidatableObject
     {
         /// <summary>
-        /// Defines Type
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum TypeEnum
-        {
-            /// <summary>
-            /// Enum Personal for value: personal
-            /// </summary>
-            [EnumMember(Value = "personal")]
-            Personal = 1,
-
-            /// <summary>
-            /// Enum Organization for value: organization
-            /// </summary>
-            [EnumMember(Value = "organization")]
-            Organization = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Type
-        /// </summary>
-        [DataMember(Name = "type", EmitDefaultValue = false)]
-        public TypeEnum? Type { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1MeGet200ResponseDataWorkspace" /> class.
         /// </summary>
-        /// <param name="type">type.</param>
+        /// <param name="type">Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="organizationId">organizationId.</param>
-        public ApiV1MeGet200ResponseDataWorkspace(TypeEnum? type = default, Guid? organizationId = default)
+        public ApiV1MeGet200ResponseDataWorkspace(string type = default, Guid? organizationId = default)
         {
             this.Type = type;
             this.OrganizationId = organizationId;
         }
+
+        /// <summary>
+        /// Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "type", EmitDefaultValue = false)]
+        public string Type { get; set; }
 
         /// <summary>
         /// Gets or Sets OrganizationId

@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **order** | **int** |  | [optional]
 **label** | **str** |  | [optional]
 **is_required** | **bool** |  | [optional]
-**default_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional]
+**default_locale** | **str** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 
 ## Example
 

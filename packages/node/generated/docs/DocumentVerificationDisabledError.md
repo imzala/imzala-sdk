@@ -7,8 +7,8 @@ Seçili Belge Toplama şablonunun doğrulama politikası kullanılamıyor.
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**code** | **string** |  | [default to undefined]
-**error** | **string** |  | [default to undefined]
+**code** | **string** | Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
+**error** | **string** | Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
 
 ## Example
 

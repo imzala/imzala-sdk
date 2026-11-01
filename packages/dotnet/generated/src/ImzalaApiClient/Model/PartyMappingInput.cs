@@ -33,12 +33,6 @@ namespace ImzalaApiClient.Model
     [DataContract(Name = "PartyMappingInput")]
     public partial class PartyMappingInput : IValidatableObject
     {
-
-        /// <summary>
-        /// Gets or Sets Locale
-        /// </summary>
-        [DataMember(Name = "locale", EmitDefaultValue = true)]
-        public SignerLocale? Locale { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="PartyMappingInput" /> class.
         /// </summary>
@@ -56,11 +50,11 @@ namespace ImzalaApiClient.Model
         /// <param name="birthDate">ISO 8601 (örn. \&quot;1990-05-15\&quot;).</param>
         /// <param name="sendSms">sendSms (default to true).</param>
         /// <param name="sendEmail">sendEmail (default to true).</param>
-        /// <param name="locale">locale.</param>
+        /// <param name="locale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="requirePhoneVerification">Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar (&#x60;true&#x60;) ya da kapatır (&#x60;false&#x60;). Gönderilmezse veya &#x60;null&#x60; gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer &#x60;400 INVALID_PHONE_VERIFICATION&#x60; döner; &#x60;true&#x60; iken &#x60;phone&#x60; boşsa &#x60;400 PHONE_REQUIRED_FOR_VERIFICATION&#x60; döner..</param>
         /// <param name="variables">Bu PARTİYE AİT dynamic field&#39;lara gönderilen değerler. Slug bazında eşleşir. Item&#39;ın template_party_id&#39;si bu partiyle aynı olmalı; değilse değişken atlanır ve variables_ignored&#39;a düşürülür. Kaşe alanının slug&#39;ına &#x60;StampData&#x60; nesnesi verilebilir (bkz. &#x60;CreateDemandRequest.variables&#x60;). .</param>
         /// <param name="documentVariables">Bu partinin BELGE BAŞINA değerleri. Anahtar şablon belgesinin kimliğidir (&#x60;GET /api/v1/templates/{id}/usage&#x60; cevabındaki &#x60;documents[].template_document_id&#x60;); belge başlığı ya da sırası anahtar olarak kullanılamaz. Aynı slug için en yüksek önceliklidir (bkz. &#x60;CreateDemandRequest.document_variables&#x60;). .</param>
-        public PartyMappingInput(Guid templatePartyId = default, string firstName = default, string lastName = default, string email = default, string phone = default, string governmentId = default, DateOnly birthDate = default, bool sendSms = true, bool sendEmail = true, SignerLocale? locale = default, bool? requirePhoneVerification = default, Dictionary<string, PartyMappingInputVariablesValue> variables = default, Dictionary<string, Dictionary<string, PartyMappingInputVariablesValue>> documentVariables = default)
+        public PartyMappingInput(Guid templatePartyId = default, string firstName = default, string lastName = default, string email = default, string phone = default, string governmentId = default, DateOnly birthDate = default, bool sendSms = true, bool sendEmail = true, string locale = default, bool? requirePhoneVerification = default, Dictionary<string, PartyMappingInputVariablesValue> variables = default, Dictionary<string, Dictionary<string, PartyMappingInputVariablesValue>> documentVariables = default)
         {
             this.TemplatePartyId = templatePartyId;
             // to ensure "firstName" is required (not null)
@@ -145,6 +139,16 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "send_email", EmitDefaultValue = true)]
         public bool SendEmail { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "locale", EmitDefaultValue = true)]
+        public string Locale { get; set; }
 
         /// <summary>
         /// Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar (&#x60;true&#x60;) ya da kapatır (&#x60;false&#x60;). Gönderilmezse veya &#x60;null&#x60; gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer &#x60;400 INVALID_PHONE_VERIFICATION&#x60; döner; &#x60;true&#x60; iken &#x60;phone&#x60; boşsa &#x60;400 PHONE_REQUIRED_FOR_VERIFICATION&#x60; döner.

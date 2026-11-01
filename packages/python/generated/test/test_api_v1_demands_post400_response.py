@@ -38,10 +38,10 @@ class TestApiV1DemandsPost400Response(unittest.TestCase):
             return ApiV1DemandsPost400Response(
                 success = False,
                 error = '',
-                code = 'INVALID_DOCUMENT_SELECTION',
+                code = '',
                 var_field = '',
                 details = imzala_client.models.document_selection_error_details.DocumentSelectionError_details(
-                    reason = 'shape',
+                    reason = '',
                     document_ids = [
                         ''
                         ], )

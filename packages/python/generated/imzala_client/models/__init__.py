@@ -155,7 +155,6 @@ from imzala_client.models.patch_stamp_item_request import PatchStampItemRequest
 from imzala_client.models.patch_stamp_item_response import PatchStampItemResponse
 from imzala_client.models.patch_stamp_item_response_data import PatchStampItemResponseData
 from imzala_client.models.reminder_settings import ReminderSettings
-from imzala_client.models.signer_locale import SignerLocale
 from imzala_client.models.stamp_data import StampData
 from imzala_client.models.standard_error import StandardError
 from imzala_client.models.standard_error_error import StandardErrorError

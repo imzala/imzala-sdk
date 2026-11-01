@@ -39,7 +39,7 @@ class TestFieldLayoutPreview(unittest.TestCase):
                 template_id = '',
                 page_count = 56,
                 resolvable = True,
-                on_anchor_miss = 'block',
+                on_anchor_miss = '',
                 placements_summary = imzala_client.models.field_layout_preview_placements_summary.FieldLayoutPreview_placements_summary(
                     total = 56,
                     by_item_type = {"signature":2,"text":5},
@@ -51,7 +51,7 @@ class TestFieldLayoutPreview(unittest.TestCase):
                 diagnostics = [
                     imzala_client.models.field_layout_diagnostic.FieldLayoutDiagnostic(
                         code = 'ANCHOR_TEXT_NOT_FOUND',
-                        severity = 'ERROR',
+                        severity = '',
                         item_id = 56,
                         slug = '',
                         label = '',

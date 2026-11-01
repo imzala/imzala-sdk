@@ -33,12 +33,6 @@ namespace ImzalaApiClient.Model
     [DataContract(Name = "TemplatePartySummary")]
     public partial class TemplatePartySummary : IValidatableObject
     {
-
-        /// <summary>
-        /// Gets or Sets DefaultLocale
-        /// </summary>
-        [DataMember(Name = "default_locale", EmitDefaultValue = true)]
-        public SignerLocale? DefaultLocale { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplatePartySummary" /> class.
         /// </summary>
@@ -46,8 +40,8 @@ namespace ImzalaApiClient.Model
         /// <param name="order">order.</param>
         /// <param name="label">label.</param>
         /// <param name="isRequired">isRequired.</param>
-        /// <param name="defaultLocale">defaultLocale.</param>
-        public TemplatePartySummary(Guid id = default, int order = default, string label = default, bool isRequired = default, SignerLocale? defaultLocale = default)
+        /// <param name="defaultLocale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public TemplatePartySummary(Guid id = default, int order = default, string label = default, bool isRequired = default, string defaultLocale = default)
         {
             this.Id = id;
             this.Order = order;
@@ -82,6 +76,16 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "is_required", EmitDefaultValue = true)]
         public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "default_locale", EmitDefaultValue = true)]
+        public string DefaultLocale { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

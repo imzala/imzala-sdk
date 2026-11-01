@@ -289,21 +289,6 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner implements ModelInterface,
         return self::$openAPIModelName;
     }
 
-    public const STATUS_CREATED = 'created';
-    public const STATUS_FAILED = 'failed';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_CREATED,
-            self::STATUS_FAILED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -360,15 +345,6 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner implements ModelInterface,
     {
         $invalidProperties = [];
 
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -424,7 +400,7 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner implements ModelInterface,
     /**
      * Sets status
      *
-     * @param string|null $status status
+     * @param string|null $status Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -432,16 +408,6 @@ class ApiV1DemandsBulkPost200ResponseDataResultsInner implements ModelInterface,
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

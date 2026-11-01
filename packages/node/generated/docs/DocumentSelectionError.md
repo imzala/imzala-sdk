@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [optional] [default to undefined]
 **error** | **string** |  | [optional] [default to undefined]
-**code** | **string** |  | [optional] [default to undefined]
+**code** | **string** | Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 **details** | [**DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional] [default to undefined]
 
 ## Example

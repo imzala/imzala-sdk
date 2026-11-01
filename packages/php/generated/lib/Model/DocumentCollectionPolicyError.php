@@ -242,40 +242,6 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
         return self::$openAPIModelName;
     }
 
-    public const CODE_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-    public const ERROR_DOCUMENT_TYPE_INVALID = 'DOCUMENT_TYPE_INVALID';
-    public const ERROR_VERIFICATION_POLICY_INVALID = 'VERIFICATION_POLICY_INVALID';
-    public const ERROR_VERIFICATION_INSTRUCTION_INVALID = 'VERIFICATION_INSTRUCTION_INVALID';
-    public const ERROR_VERIFICATION_CONTEXT_REQUIRED = 'VERIFICATION_CONTEXT_REQUIRED';
-    public const ERROR_VERIFICATION_POLICY_CONFLICT = 'VERIFICATION_POLICY_CONFLICT';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getCodeAllowableValues()
-    {
-        return [
-            self::CODE_VERIFICATION_CONTEXT_REQUIRED,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DOCUMENT_TYPE_INVALID,
-            self::ERROR_VERIFICATION_POLICY_INVALID,
-            self::ERROR_VERIFICATION_INSTRUCTION_INVALID,
-            self::ERROR_VERIFICATION_CONTEXT_REQUIRED,
-            self::ERROR_VERIFICATION_POLICY_CONFLICT,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -330,27 +296,9 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
         if ($this->container['code'] === null) {
             $invalidProperties[] = "'code' can't be null";
         }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!is_null($this->container['code']) && !in_array($this->container['code'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'code', must be one of '%s'",
-                $this->container['code'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['error'] === null) {
             $invalidProperties[] = "'error' can't be null";
         }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -406,7 +354,7 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
     /**
      * Sets code
      *
-     * @param string $code code
+     * @param string $code Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -414,16 +362,6 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
     {
         if (is_null($code)) {
             throw new \InvalidArgumentException('non-nullable code cannot be null');
-        }
-        $allowedValues = $this->getCodeAllowableValues();
-        if (!in_array($code, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'code', must be one of '%s'",
-                    $code,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['code'] = $code;
 
@@ -443,7 +381,7 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
     /**
      * Sets error
      *
-     * @param string $error error
+     * @param string $error Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -451,16 +389,6 @@ class DocumentCollectionPolicyError implements ModelInterface, ArrayAccess, \Jso
     {
         if (is_null($error)) {
             throw new \InvalidArgumentException('non-nullable error cannot be null');
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 

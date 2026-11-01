@@ -34,33 +34,12 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations : IValidatableObject
     {
         /// <summary>
-        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)
-        /// </summary>
-        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.) </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DISPATCHSKIPPED for value: DISPATCH_SKIPPED
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_SKIPPED")]
-            DISPATCHSKIPPED = 1
-        }
-
-
-        /// <summary>
-        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)
-        /// </summary>
-        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.) </value>
-        [DataMember(Name = "error", EmitDefaultValue = true)]
-        public ErrorEnum? Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations" /> class.
         /// </summary>
         /// <param name="sent">En az bir kanaldan başarıyla gönderilen taraf sayısı..</param>
         /// <param name="results">results.</param>
-        /// <param name="error">&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.) .</param>
-        public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations(int sent = default, List<ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner> results = default, ErrorEnum? error = default)
+        /// <param name="error">&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations(int sent = default, List<ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner> results = default, string error = default)
         {
             this.Sent = sent;
             this.Results = results;
@@ -79,6 +58,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "results", EmitDefaultValue = false)]
         public List<ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner> Results { get; set; }
+
+        /// <summary>
+        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", EmitDefaultValue = true)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

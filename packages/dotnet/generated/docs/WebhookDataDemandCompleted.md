@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **DemandId** | **Guid** |  |
 **Title** | **string** |  |
-**Status** | **string** |  |
+**Status** | **string** | Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **CompletedAt** | **DateTime** |  |
 **Parties** | [**List&lt;WebhookDataDemandCompletedPartiesInner&gt;**](WebhookDataDemandCompletedPartiesInner.md) |  |
 **Backfill** | **bool** | Replay bayrağı (yan etkileri atla) | [optional]

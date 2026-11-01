@@ -53,9 +53,9 @@ class TestApiV1DemandsDemandIdDispatchPost200Response(unittest.TestCase):
                                 sms = True,
                                 email = True,
                                 whatsapp = True,
-                                error = 'DISPATCH_FAILED', )
+                                error = '', )
                             ],
-                        error = 'DISPATCH_SKIPPED', ), )
+                        error = '', ), )
             )
         else:
             return ApiV1DemandsDemandIdDispatchPost200Response(

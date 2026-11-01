@@ -34,25 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class WebhookDataDemandCompleted : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum COMPLETED for value: COMPLETED
-            /// </summary>
-            [EnumMember(Value = "COMPLETED")]
-            COMPLETED = 1
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [DataMember(Name = "status", IsRequired = true, EmitDefaultValue = true)]
-        public StatusEnum Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="WebhookDataDemandCompleted" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -62,11 +43,11 @@ namespace ImzalaApiClient.Model
         /// </summary>
         /// <param name="demandId">demandId (required).</param>
         /// <param name="title">title (required).</param>
-        /// <param name="status">status (required).</param>
+        /// <param name="status">Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="completedAt">completedAt (required).</param>
         /// <param name="parties">parties (required).</param>
         /// <param name="backfill">Replay bayrağı (yan etkileri atla).</param>
-        public WebhookDataDemandCompleted(Guid demandId = default, string title = default, StatusEnum status = default, DateTime completedAt = default, List<WebhookDataDemandCompletedPartiesInner> parties = default, bool backfill = default)
+        public WebhookDataDemandCompleted(Guid demandId = default, string title = default, string status = default, DateTime completedAt = default, List<WebhookDataDemandCompletedPartiesInner> parties = default, bool backfill = default)
         {
             this.DemandId = demandId;
             // to ensure "title" is required (not null)
@@ -75,6 +56,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("title is a required property for WebhookDataDemandCompleted and cannot be null");
             }
             this.Title = title;
+            // to ensure "status" is required (not null)
+            if (status == null)
+            {
+                throw new ArgumentNullException("status is a required property for WebhookDataDemandCompleted and cannot be null");
+            }
             this.Status = status;
             this.CompletedAt = completedAt;
             // to ensure "parties" is required (not null)
@@ -97,6 +83,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "title", IsRequired = true, EmitDefaultValue = true)]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", IsRequired = true, EmitDefaultValue = true)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Gets or Sets CompletedAt

@@ -93,7 +93,7 @@ class TermTest {
             .termDurationMonths(12)
             .renewalType(ContractTermInput.RenewalTypeEnum.AUTO_RENEW)
             .noticeDays(null));
-    assertEquals(ContractTerm.RenewalTypeEnum.AUTO_RENEW, result.getTerm().getRenewalType());
+    assertEquals("AUTO_RENEW", result.getTerm().getRenewalType());
     Captured call = srv.calls.get(0);
     assertEquals("PATCH", call.method);
     assertEquals("/api/v1/demands/" + DEMAND + "/term", call.uri);

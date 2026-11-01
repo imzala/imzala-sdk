@@ -37,14 +37,14 @@ class TestDocumentVerificationDisabledError(unittest.TestCase):
         if include_optional:
             return DocumentVerificationDisabledError(
                 success = True,
-                code = 'DOCUMENT_VERIFICATION_DISABLED',
-                error = 'DOCUMENT_VERIFICATION_DISABLED'
+                code = '',
+                error = ''
             )
         else:
             return DocumentVerificationDisabledError(
                 success = True,
-                code = 'DOCUMENT_VERIFICATION_DISABLED',
-                error = 'DOCUMENT_VERIFICATION_DISABLED',
+                code = '',
+                error = '',
         )
         """
 

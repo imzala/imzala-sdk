@@ -6,7 +6,7 @@ Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**status** | **str** |  | [optional]
+**status** | **str** | Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **has_timestamp** | **bool** | Yalnız &#x60;status&#x60; &#x60;SEALED&#x60; iken &#x60;true&#x60; olabilir. | [optional]
 
 ## Example

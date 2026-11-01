@@ -34,68 +34,19 @@ namespace ImzalaApiClient.Model
     public partial class DemandDocumentStatus : IValidatableObject
     {
         /// <summary>
-        /// Defines DocKind
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum DocKindEnum
-        {
-            /// <summary>
-            /// Enum CONTRACT for value: CONTRACT
-            /// </summary>
-            [EnumMember(Value = "CONTRACT")]
-            CONTRACT = 1,
-
-            /// <summary>
-            /// Enum KVKKNOTICE for value: KVKK_NOTICE
-            /// </summary>
-            [EnumMember(Value = "KVKK_NOTICE")]
-            KVKKNOTICE = 2,
-
-            /// <summary>
-            /// Enum KVKKCONSENT for value: KVKK_CONSENT
-            /// </summary>
-            [EnumMember(Value = "KVKK_CONSENT")]
-            KVKKCONSENT = 3,
-
-            /// <summary>
-            /// Enum PREINFO for value: PREINFO
-            /// </summary>
-            [EnumMember(Value = "PREINFO")]
-            PREINFO = 4,
-
-            /// <summary>
-            /// Enum PRICELIST for value: PRICE_LIST
-            /// </summary>
-            [EnumMember(Value = "PRICE_LIST")]
-            PRICELIST = 5,
-
-            /// <summary>
-            /// Enum OTHER for value: OTHER
-            /// </summary>
-            [EnumMember(Value = "OTHER")]
-            OTHER = 6
-        }
-
-
-        /// <summary>
-        /// Gets or Sets DocKind
-        /// </summary>
-        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
-        public DocKindEnum? DocKind { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DemandDocumentStatus" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="order">1&#39;den başlar..</param>
         /// <param name="title">title.</param>
-        /// <param name="docKind">docKind.</param>
+        /// <param name="docKind">Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="isRequired">isRequired.</param>
         /// <param name="signatureRequired">signatureRequired.</param>
         /// <param name="assignedPartyIds">assignedPartyIds.</param>
         /// <param name="progress">progress.</param>
         /// <param name="sealing">sealing.</param>
         /// <param name="decisions">decisions.</param>
-        public DemandDocumentStatus(Guid id = default, int order = default, string title = default, DocKindEnum? docKind = default, bool isRequired = default, bool signatureRequired = default, List<Guid> assignedPartyIds = default, DocumentProgress progress = default, DocumentSealing sealing = default, List<DocumentPartyDecision> decisions = default)
+        public DemandDocumentStatus(Guid id = default, int order = default, string title = default, string docKind = default, bool isRequired = default, bool signatureRequired = default, List<Guid> assignedPartyIds = default, DocumentProgress progress = default, DocumentSealing sealing = default, List<DocumentPartyDecision> decisions = default)
         {
             this.Id = id;
             this.Order = order;
@@ -127,6 +78,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "doc_kind", EmitDefaultValue = false)]
+        public string DocKind { get; set; }
 
         /// <summary>
         /// Gets or Sets IsRequired

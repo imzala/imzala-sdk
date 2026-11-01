@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -33,18 +33,8 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner(Bas
     sms: Optional[StrictBool] = None
     email: Optional[StrictBool] = None
     whatsapp: Optional[StrictBool] = None
-    error: Optional[StrictStr] = Field(default=None, description="Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti. ")
+    error: Optional[StrictStr] = Field(default=None, description="Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     __properties: ClassVar[List[str]] = ["party_id", "sms", "email", "whatsapp", "error"]
-
-    @field_validator('error')
-    def error_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DISPATCH_FAILED', 'RECIPIENT_QUOTA_EXCEEDED']):
-            raise ValueError("must be one of enum values ('DISPATCH_FAILED', 'RECIPIENT_QUOTA_EXCEEDED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

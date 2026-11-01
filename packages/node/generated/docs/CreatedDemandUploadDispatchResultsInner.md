@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **sms** | **boolean** |  | [optional] [default to undefined]
 **email** | **boolean** |  | [optional] [default to undefined]
 **whatsapp** | **boolean** |  | [optional] [default to undefined]
-**error** | **string** | Yalnız o taraf için gönderim patladığında döner. | [optional] [default to undefined]
+**error** | **string** | Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 
 ## Example
 

@@ -37,7 +37,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsIdDelete409Response.JSON_PROPERTY_ERROR,
   ApiV1DemandsIdDelete409Response.JSON_PROPERTY_CODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsIdDelete409Response {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @javax.annotation.Nullable
@@ -47,44 +47,9 @@ public class ApiV1DemandsIdDelete409Response {
   @javax.annotation.Nullable
   private String error;
 
-  /**
-   * Gets or Sets code
-   */
-  public enum CodeEnum {
-    DEMAND_COMPLETED(String.valueOf("DEMAND_COMPLETED")),
-
-    DEMAND_ARCHIVED(String.valueOf("DEMAND_ARCHIVED"));
-
-    private String value;
-
-    CodeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static CodeEnum fromValue(String value) {
-      for (CodeEnum b : CodeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nullable
-  private CodeEnum code;
+  private String code;
 
   public ApiV1DemandsIdDelete409Response() {
   }
@@ -137,26 +102,26 @@ public class ApiV1DemandsIdDelete409Response {
   }
 
 
-  public ApiV1DemandsIdDelete409Response code(@javax.annotation.Nullable CodeEnum code) {
+  public ApiV1DemandsIdDelete409Response code(@javax.annotation.Nullable String code) {
     this.code = code;
     return this;
   }
 
   /**
-   * Get code
+   * Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return code
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public CodeEnum getCode() {
+  public String getCode() {
     return code;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCode(@javax.annotation.Nullable CodeEnum code) {
+  public void setCode(@javax.annotation.Nullable String code) {
     this.code = code;
   }
 

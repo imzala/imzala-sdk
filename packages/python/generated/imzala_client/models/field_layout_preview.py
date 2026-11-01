@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.field_layout_diagnostic import FieldLayoutDiagnostic
@@ -35,21 +35,11 @@ class FieldLayoutPreview(BaseModel):
     template_id: Optional[UUID] = None
     page_count: Optional[StrictInt] = Field(default=None, description="Yüklenen belgenin sayfa sayısı.")
     resolvable: Optional[StrictBool] = Field(default=None, description="`true` ise aynı belge + aynı şablon ile `POST /api/v1/demands/upload` çağrısı alan yerleşimi nedeniyle reddedilmez. ")
-    on_anchor_miss: Optional[StrictStr] = Field(default=None, description="Uygulanan davranış (istenen değil).")
+    on_anchor_miss: Optional[StrictStr] = Field(default=None, description="Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     placements_summary: Optional[FieldLayoutPreviewPlacementsSummary] = None
     diagnostics: Optional[List[FieldLayoutDiagnostic]] = None
     warnings: Optional[List[FieldLayoutWarning]] = None
     __properties: ClassVar[List[str]] = ["template_id", "page_count", "resolvable", "on_anchor_miss", "placements_summary", "diagnostics", "warnings"]
-
-    @field_validator('on_anchor_miss')
-    def on_anchor_miss_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['block', 'drop']):
-            raise ValueError("must be one of enum values ('block', 'drop')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

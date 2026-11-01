@@ -34,40 +34,12 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsIdDelete409Response : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum DEMANDCOMPLETED for value: DEMAND_COMPLETED
-            /// </summary>
-            [EnumMember(Value = "DEMAND_COMPLETED")]
-            DEMANDCOMPLETED = 1,
-
-            /// <summary>
-            /// Enum DEMANDARCHIVED for value: DEMAND_ARCHIVED
-            /// </summary>
-            [EnumMember(Value = "DEMAND_ARCHIVED")]
-            DEMANDARCHIVED = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        /*
-        <example>DEMAND_COMPLETED</example>
-        */
-        [DataMember(Name = "code", EmitDefaultValue = false)]
-        public CodeEnum? Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsIdDelete409Response" /> class.
         /// </summary>
         /// <param name="success">success.</param>
         /// <param name="error">error.</param>
-        /// <param name="code">code.</param>
-        public ApiV1DemandsIdDelete409Response(bool success = default, string error = default, CodeEnum? code = default)
+        /// <param name="code">Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public ApiV1DemandsIdDelete409Response(bool success = default, string error = default, string code = default)
         {
             this.Success = success;
             this.Error = error;
@@ -91,6 +63,16 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "error", EmitDefaultValue = false)]
         public string Error { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>DEMAND_COMPLETED</example>
+        */
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

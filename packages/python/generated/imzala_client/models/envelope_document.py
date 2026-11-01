@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.document_party_decision import DocumentPartyDecision
@@ -36,12 +36,12 @@ class EnvelopeDocument(BaseModel):
     id: Optional[UUID] = None
     order: Optional[StrictInt] = Field(default=None, description="1'den başlar.")
     title: Optional[StrictStr] = None
-    doc_kind: Optional[StrictStr] = None
+    doc_kind: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     is_required: Optional[StrictBool] = None
     signature_required: Optional[StrictBool] = None
     assigned_party_ids: Optional[List[UUID]] = Field(default=None, description="Yalnız `?view=wizard` yanıtında bulunur.")
     decision_count: Optional[StrictInt] = Field(default=None, description="Yalnız `?view=wizard` yanıtında bulunur. Bu belge için verilmiş onay/red kararı sayısı. ")
-    sealing_status: Optional[StrictStr] = None
+    sealing_status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     has_timestamp: Optional[StrictBool] = Field(default=None, description="Yalnız varsayılan (özet) görünümde bulunur. `sealing_status` `SEALED` değilken daima `false` döner. ")
     page_count: Optional[StrictInt] = None
     completed_at: Optional[datetime] = None
@@ -49,26 +49,6 @@ class EnvelopeDocument(BaseModel):
     sealing: Optional[DocumentSealing] = Field(default=None, description="Yalnız `GET .../documents` liste yanıtında bulunur.")
     decisions: Optional[List[DocumentPartyDecision]] = Field(default=None, description="Yalnız `GET .../documents` liste yanıtında bulunur. Belge başına taraf kararları; `GET /api/v1/demands/{id}` yanıtındaki `documents[].decisions` ile aynıdır. ")
     __properties: ClassVar[List[str]] = ["id", "order", "title", "doc_kind", "is_required", "signature_required", "assigned_party_ids", "decision_count", "sealing_status", "has_timestamp", "page_count", "completed_at", "progress", "sealing", "decisions"]
-
-    @field_validator('doc_kind')
-    def doc_kind_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER']):
-            raise ValueError("must be one of enum values ('CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER')")
-        return value
-
-    @field_validator('sealing_status')
-    def sealing_status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['NONE', 'PENDING', 'SEALED', 'FAILED']):
-            raise ValueError("must be one of enum values ('NONE', 'PENDING', 'SEALED', 'FAILED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

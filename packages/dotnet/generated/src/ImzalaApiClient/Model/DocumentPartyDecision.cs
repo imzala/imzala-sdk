@@ -34,55 +34,16 @@ namespace ImzalaApiClient.Model
     public partial class DocumentPartyDecision : IValidatableObject
     {
         /// <summary>
-        /// Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
-        /// </summary>
-        /// <value>Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum DecisionEnum
-        {
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 1,
-
-            /// <summary>
-            /// Enum ACCEPTED for value: ACCEPTED
-            /// </summary>
-            [EnumMember(Value = "ACCEPTED")]
-            ACCEPTED = 2,
-
-            /// <summary>
-            /// Enum DECLINED for value: DECLINED
-            /// </summary>
-            [EnumMember(Value = "DECLINED")]
-            DECLINED = 3,
-
-            /// <summary>
-            /// Enum WITHDRAWN for value: WITHDRAWN
-            /// </summary>
-            [EnumMember(Value = "WITHDRAWN")]
-            WITHDRAWN = 4
-        }
-
-
-        /// <summary>
-        /// Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
-        /// </summary>
-        /// <value>Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz. </value>
-        [DataMember(Name = "decision", EmitDefaultValue = false)]
-        public DecisionEnum? Decision { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentPartyDecision" /> class.
         /// </summary>
         /// <param name="partyId">partyId.</param>
-        /// <param name="decision">Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz. .</param>
+        /// <param name="decision">Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="decidedAt">Kararın verildiği an. &#x60;WITHDRAWN&#x60; için geri çekilen onayın anıdır. &#x60;recorded&#x60; &#x60;false&#x60; iken &#x60;null&#x60; döner. .</param>
         /// <param name="withdrawnAt">Yalnız &#x60;WITHDRAWN&#x60; için dolu; geri çekme anı..</param>
         /// <param name="signatureCollected">Bu kararla birlikte bu belgede dijital imza toplandı mı..</param>
         /// <param name="recorded">&#x60;false&#x60; ise karar belge bazında kayıtlı değildir; tek belgeli eski sözleşmelerde tarafın imzasından türetilmiştir ve karar delili olarak kullanılamaz. .</param>
         /// <param name="consentGranted">Yalnız &#x60;KVKK_CONSENT&#x60; belgesinde dolu. Taraf bu belgeyi onaylamış ve onayını geri çekmemişse &#x60;true&#x60;; reddetmiş, geri çekmiş veya karar vermemişse &#x60;false&#x60;. Bu alan yalnızca platformdaki onay kaydını yansıtır; açık rızanın KVKK anlamında hukuken geçerli olup olmadığını (belirli konuya ilişkin olması, bilgilendirmeye dayanması, özgür iradeyle verilmesi) imzala.org değerlendirmez. Reddedilen isteğe bağlı bir rıza hizmetin koşulu yapılmamalıdır. Diğer belge türlerinde &#x60;null&#x60;. .</param>
-        public DocumentPartyDecision(Guid partyId = default, DecisionEnum? decision = default, DateTime? decidedAt = default, DateTime? withdrawnAt = default, bool signatureCollected = default, bool recorded = default, bool? consentGranted = default)
+        public DocumentPartyDecision(Guid partyId = default, string decision = default, DateTime? decidedAt = default, DateTime? withdrawnAt = default, bool signatureCollected = default, bool recorded = default, bool? consentGranted = default)
         {
             this.PartyId = partyId;
             this.Decision = decision;
@@ -98,6 +59,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "party_id", EmitDefaultValue = false)]
         public Guid PartyId { get; set; }
+
+        /// <summary>
+        /// Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "decision", EmitDefaultValue = false)]
+        public string Decision { get; set; }
 
         /// <summary>
         /// Kararın verildiği an. &#x60;WITHDRAWN&#x60; için geri çekilen onayın anıdır. &#x60;recorded&#x60; &#x60;false&#x60; iken &#x60;null&#x60; döner.

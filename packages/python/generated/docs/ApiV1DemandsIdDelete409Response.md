@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  | [optional]
 **error** | **str** |  | [optional]
-**code** | **str** |  | [optional]
+**code** | **str** | Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 
 ## Example
 

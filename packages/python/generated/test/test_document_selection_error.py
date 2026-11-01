@@ -38,9 +38,9 @@ class TestDocumentSelectionError(unittest.TestCase):
             return DocumentSelectionError(
                 success = False,
                 error = '',
-                code = 'INVALID_DOCUMENT_SELECTION',
+                code = '',
                 details = imzala_client.models.document_selection_error_details.DocumentSelectionError_details(
-                    reason = 'shape',
+                    reason = '',
                     document_ids = [
                         ''
                         ], )

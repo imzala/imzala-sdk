@@ -36,7 +36,7 @@ class TestDocumentProgress(unittest.TestCase):
         model = DocumentProgress()
         if include_optional:
             return DocumentProgress(
-                status = 'PENDING',
+                status = '',
                 active_assigned_party_count = 56,
                 decided_party_count = 56,
                 completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')

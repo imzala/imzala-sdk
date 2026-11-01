@@ -259,19 +259,6 @@ class WebhookDataDemandCompleted implements ModelInterface, ArrayAccess, \JsonSe
         return self::$openAPIModelName;
     }
 
-    public const STATUS_COMPLETED = 'COMPLETED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getStatusAllowableValues()
-    {
-        return [
-            self::STATUS_COMPLETED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -332,15 +319,6 @@ class WebhookDataDemandCompleted implements ModelInterface, ArrayAccess, \JsonSe
         if ($this->container['status'] === null) {
             $invalidProperties[] = "'status' can't be null";
         }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!is_null($this->container['status']) && !in_array($this->container['status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'status', must be one of '%s'",
-                $this->container['status'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['completed_at'] === null) {
             $invalidProperties[] = "'completed_at' can't be null";
         }
@@ -429,7 +407,7 @@ class WebhookDataDemandCompleted implements ModelInterface, ArrayAccess, \JsonSe
     /**
      * Sets status
      *
-     * @param string $status status
+     * @param string $status Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -437,16 +415,6 @@ class WebhookDataDemandCompleted implements ModelInterface, ArrayAccess, \JsonSe
     {
         if (is_null($status)) {
             throw new \InvalidArgumentException('non-nullable status cannot be null');
-        }
-        $allowedValues = $this->getStatusAllowableValues();
-        if (!in_array($status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'status', must be one of '%s'",
-                    $status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['status'] = $status;
 

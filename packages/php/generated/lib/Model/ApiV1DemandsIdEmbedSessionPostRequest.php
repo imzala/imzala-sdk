@@ -59,7 +59,7 @@ class ApiV1DemandsIdEmbedSessionPostRequest implements ModelInterface, ArrayAcce
      */
     protected static $openAPITypes = [
         'party_id' => 'string',
-        'locale' => '\Imzala\Client\Model\SignerLocale'
+        'locale' => 'string'
     ];
 
     /**
@@ -330,7 +330,7 @@ class ApiV1DemandsIdEmbedSessionPostRequest implements ModelInterface, ArrayAcce
     /**
      * Gets locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getLocale()
     {
@@ -340,7 +340,7 @@ class ApiV1DemandsIdEmbedSessionPostRequest implements ModelInterface, ArrayAcce
     /**
      * Sets locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $locale locale
+     * @param string|null $locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */

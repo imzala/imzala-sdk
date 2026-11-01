@@ -34,41 +34,14 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner : IValidatableObject
     {
         /// <summary>
-        /// Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
-        /// </summary>
-        /// <value>Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DISPATCHFAILED for value: DISPATCH_FAILED
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_FAILED")]
-            DISPATCHFAILED = 1,
-
-            /// <summary>
-            /// Enum RECIPIENTQUOTAEXCEEDED for value: RECIPIENT_QUOTA_EXCEEDED
-            /// </summary>
-            [EnumMember(Value = "RECIPIENT_QUOTA_EXCEEDED")]
-            RECIPIENTQUOTAEXCEEDED = 2
-        }
-
-
-        /// <summary>
-        /// Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
-        /// </summary>
-        /// <value>Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti. </value>
-        [DataMember(Name = "error", EmitDefaultValue = true)]
-        public ErrorEnum? Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner" /> class.
         /// </summary>
         /// <param name="partyId">partyId.</param>
         /// <param name="sms">sms.</param>
         /// <param name="email">email.</param>
         /// <param name="whatsapp">whatsapp.</param>
-        /// <param name="error">Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti. .</param>
-        public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner(Guid partyId = default, bool sms = default, bool email = default, bool whatsapp = default, ErrorEnum? error = default)
+        /// <param name="error">Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner(Guid partyId = default, bool sms = default, bool email = default, bool whatsapp = default, string error = default)
         {
             this.PartyId = partyId;
             this.Sms = sms;
@@ -100,6 +73,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "whatsapp", EmitDefaultValue = true)]
         public bool Whatsapp { get; set; }
+
+        /// <summary>
+        /// Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Yalnız o taraf için dolar. &#x60;DISPATCH_FAILED&#x60; — gönderim patladı. &#x60;RECIPIENT_QUOTA_EXCEEDED&#x60; — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", EmitDefaultValue = true)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

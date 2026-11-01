@@ -90,7 +90,7 @@ class RetryTest {
         .thenThrow(fakeApiException(503, """
             {"success":false,"error":"SERVICE_UNAVAILABLE"}"""))
         .thenReturn(new ApiV1DemandsIdGet200Response().success(true)
-            .data(new DemandStatus().id(id).status(DemandStatus.StatusEnum.PENDING)));
+            .data(new DemandStatus().id(id).status("PENDING")));
 
     DemandsResource resource = new DemandsResource(demandsApi, remindersApi, new RetryConfig(2, 1));
     DemandStatus result = resource.get(id);

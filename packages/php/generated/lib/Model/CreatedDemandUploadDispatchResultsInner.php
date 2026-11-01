@@ -253,19 +253,6 @@ class CreatedDemandUploadDispatchResultsInner implements ModelInterface, ArrayAc
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DISPATCH_FAILED = 'DISPATCH_FAILED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DISPATCH_FAILED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -315,15 +302,6 @@ class CreatedDemandUploadDispatchResultsInner implements ModelInterface, ArrayAc
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -461,7 +439,7 @@ class CreatedDemandUploadDispatchResultsInner implements ModelInterface, ArrayAc
     /**
      * Sets error
      *
-     * @param string|null $error Yalnız o taraf için gönderim patladığında döner.
+     * @param string|null $error Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -469,16 +447,6 @@ class CreatedDemandUploadDispatchResultsInner implements ModelInterface, ArrayAc
     {
         if (is_null($error)) {
             throw new \InvalidArgumentException('non-nullable error cannot be null');
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 

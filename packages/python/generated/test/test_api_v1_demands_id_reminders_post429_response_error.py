@@ -36,7 +36,7 @@ class TestApiV1DemandsIdRemindersPost429ResponseError(unittest.TestCase):
         model = ApiV1DemandsIdRemindersPost429ResponseError()
         if include_optional:
             return ApiV1DemandsIdRemindersPost429ResponseError(
-                code = 'RATE_LIMITED',
+                code = '',
                 message = '',
                 retry_after_seconds = 56
             )

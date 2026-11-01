@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.imzala.client.generated.model.PartyMappingInputVariablesValue;
-import org.imzala.client.generated.model.SignerLocale;
 import org.openapitools.jackson.nullable.JsonNullable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;

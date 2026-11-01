@@ -31,7 +31,7 @@ class KycWebhookEnvelope(BaseModel):
     KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type` enum'u yalnız KYC olaylarını içerir.
     """ # noqa: E501
     id: Annotated[str, Field(strict=True)] = Field(description="Olay id'si: receiver tarafında idempotency anahtarı.", json_schema_extra={"examples": ["evt_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"]})
-    type: StrictStr
+    type: StrictStr = Field(description="Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     created_at: datetime = Field(description="Olay zamanı (ISO 8601 UTC).")
     data: Dict[str, Any] = Field(description="Olay verisi (WebhookDataKycTerminal)")
     __properties: ClassVar[List[str]] = ["id", "type", "created_at", "data"]
@@ -44,13 +44,6 @@ class KycWebhookEnvelope(BaseModel):
 
         if not re.match(r"^evt_[0-9a-f]{32}$", value):
             raise ValueError(r"must validate the regular expression /^evt_[0-9a-f]{32}$/")
-        return value
-
-    @field_validator('type')
-    def type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['kyc.completed', 'kyc.failed']):
-            raise ValueError("must be one of enum values ('kyc.completed', 'kyc.failed')")
         return value
 
     model_config = ConfigDict(

@@ -36,50 +36,11 @@ import org.imzala.client.generated.ApiClient;
   DocumentSealing.JSON_PROPERTY_STATUS,
   DocumentSealing.JSON_PROPERTY_HAS_TIMESTAMP
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentSealing {
-  /**
-   * Gets or Sets status
-   */
-  public enum StatusEnum {
-    NONE(String.valueOf("NONE")),
-
-    PENDING(String.valueOf("PENDING")),
-
-    SEALED(String.valueOf("SEALED")),
-
-    FAILED(String.valueOf("FAILED"));
-
-    private String value;
-
-    StatusEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nullable
-  private StatusEnum status;
+  private String status;
 
   public static final String JSON_PROPERTY_HAS_TIMESTAMP = "has_timestamp";
   @javax.annotation.Nullable
@@ -88,26 +49,26 @@ public class DocumentSealing {
   public DocumentSealing() {
   }
 
-  public DocumentSealing status(@javax.annotation.Nullable StatusEnum status) {
+  public DocumentSealing status(@javax.annotation.Nullable String status) {
     this.status = status;
     return this;
   }
 
   /**
-   * Get status
+   * Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return status
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public StatusEnum getStatus() {
+  public String getStatus() {
     return status;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setStatus(@javax.annotation.Nullable StatusEnum status) {
+  public void setStatus(@javax.annotation.Nullable String status) {
     this.status = status;
   }
 

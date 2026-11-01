@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from imzala_client.models.created_demand_upload_dispatch_results_inner import CreatedDemandUploadDispatchResultsInner
 from typing import Optional, Set
@@ -32,18 +32,8 @@ class CreatedDemandUploadDispatch(BaseModel):
     requested: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [True]})
     sent: Optional[StrictInt] = Field(default=None, description="En az bir kanaldan (SMS/e-posta/WhatsApp) davet **gönderilen taraf** sayısı — kanal sayısı DEĞİL. (`POST /api/v1/demands` yanıtındaki `dispatched` alanı kanal sayar; bu alan saymaz.) ")
     results: Optional[List[CreatedDemandUploadDispatchResultsInner]] = None
-    error: Optional[StrictStr] = Field(default=None, description="`DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor. ")
+    error: Optional[StrictStr] = Field(default=None, description="`DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     __properties: ClassVar[List[str]] = ["requested", "sent", "results", "error"]
-
-    @field_validator('error')
-    def error_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DISPATCH_SKIPPED', 'DISPATCH_TOO_MANY']):
-            raise ValueError("must be one of enum values ('DISPATCH_SKIPPED', 'DISPATCH_TOO_MANY')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

@@ -41,7 +41,7 @@ class TestDemandStatusStampItemsInner(unittest.TestCase):
                 document_id = '',
                 slug = 'firma_kasesi',
                 label = 'Firma kaşesi',
-                source = 'INLINE',
+                source = '',
                 party_id = '',
                 is_required = True
             )

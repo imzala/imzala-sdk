@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from imzala_client.models.document_selection_error_details import DocumentSelectionErrorDetails
 from typing import Optional, Set
@@ -31,19 +31,9 @@ class DocumentSelectionError(BaseModel):
     """ # noqa: E501
     success: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [False]})
     error: Optional[StrictStr] = None
-    code: Optional[StrictStr] = None
+    code: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     details: Optional[DocumentSelectionErrorDetails] = None
     __properties: ClassVar[List[str]] = ["success", "error", "code", "details"]
-
-    @field_validator('code')
-    def code_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['INVALID_DOCUMENT_SELECTION']):
-            raise ValueError("must be one of enum values ('INVALID_DOCUMENT_SELECTION')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

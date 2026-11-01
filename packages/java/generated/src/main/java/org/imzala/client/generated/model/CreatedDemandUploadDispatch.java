@@ -41,7 +41,7 @@ import org.imzala.client.generated.ApiClient;
   CreatedDemandUploadDispatch.JSON_PROPERTY_RESULTS,
   CreatedDemandUploadDispatch.JSON_PROPERTY_ERROR
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreatedDemandUploadDispatch {
   public static final String JSON_PROPERTY_REQUESTED = "requested";
   @javax.annotation.Nullable
@@ -55,44 +55,9 @@ public class CreatedDemandUploadDispatch {
   @javax.annotation.Nullable
   private List<CreatedDemandUploadDispatchResultsInner> results = new ArrayList<>();
 
-  /**
-   * &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.
-   */
-  public enum ErrorEnum {
-    DISPATCH_SKIPPED(String.valueOf("DISPATCH_SKIPPED")),
-
-    DISPATCH_TOO_MANY(String.valueOf("DISPATCH_TOO_MANY"));
-
-    private String value;
-
-    ErrorEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static ErrorEnum fromValue(String value) {
-      for (ErrorEnum b : ErrorEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_ERROR = "error";
   @javax.annotation.Nullable
-  private ErrorEnum error;
+  private String error;
 
   public CreatedDemandUploadDispatch() {
   }
@@ -177,26 +142,26 @@ public class CreatedDemandUploadDispatch {
   }
 
 
-  public CreatedDemandUploadDispatch error(@javax.annotation.Nullable ErrorEnum error) {
+  public CreatedDemandUploadDispatch error(@javax.annotation.Nullable String error) {
     this.error = error;
     return this;
   }
 
   /**
-   * &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.
+   * &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return error
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_ERROR, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public ErrorEnum getError() {
+  public String getError() {
     return error;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_ERROR, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setError(@javax.annotation.Nullable ErrorEnum error) {
+  public void setError(@javax.annotation.Nullable String error) {
     this.error = error;
   }
 

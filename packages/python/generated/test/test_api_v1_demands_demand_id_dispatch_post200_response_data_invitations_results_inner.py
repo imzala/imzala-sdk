@@ -40,7 +40,7 @@ class TestApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner
                 sms = True,
                 email = True,
                 whatsapp = True,
-                error = 'DISPATCH_FAILED'
+                error = ''
             )
         else:
             return ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner(

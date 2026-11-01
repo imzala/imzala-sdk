@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional]
 **title** | **string** |  | [optional]
-**status** | **string** |  | [optional]
+**status** | **string** | Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **template_id** | **string** |  | [optional]
 **signing_urls** | [**\Imzala\Client\Model\CreatedDemandSigningUrlsInner[]**](CreatedDemandSigningUrlsInner.md) |  | [optional]
 **result_url** | **string** | Sonuç sayfası açık rıza belgesini, sayfalarını ve indirme bağlantısını göstermez. | [optional]

@@ -53,48 +53,11 @@ import org.imzala.client.generated.ApiClient;
   ContractTerm.JSON_PROPERTY_DAYS_LEFT,
   ContractTerm.JSON_PROPERTY_RENEWAL_STOPPED_AT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ContractTerm {
-  /**
-   * Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).
-   */
-  public enum StartModeEnum {
-    FIXED_DATE(String.valueOf("FIXED_DATE")),
-
-    ON_FIRST_SIGNATURE(String.valueOf("ON_FIRST_SIGNATURE")),
-
-    ON_COMPLETION(String.valueOf("ON_COMPLETION"));
-
-    private String value;
-
-    StartModeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StartModeEnum fromValue(String value) {
-      for (StartModeEnum b : StartModeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
-
   public static final String JSON_PROPERTY_START_MODE = "start_mode";
   @javax.annotation.Nullable
-  private StartModeEnum startMode;
+  private String startMode;
 
   public static final String JSON_PROPERTY_START_DATE = "start_date";
   @javax.annotation.Nullable
@@ -116,44 +79,9 @@ public class ContractTerm {
   @javax.annotation.Nullable
   private LocalDate endDateSigned;
 
-  /**
-   * Gets or Sets renewalType
-   */
-  public enum RenewalTypeEnum {
-    AUTO_RENEW(String.valueOf("AUTO_RENEW")),
-
-    FIXED_TERM(String.valueOf("FIXED_TERM"));
-
-    private String value;
-
-    RenewalTypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RenewalTypeEnum fromValue(String value) {
-      for (RenewalTypeEnum b : RenewalTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
-
   public static final String JSON_PROPERTY_RENEWAL_TYPE = "renewal_type";
   @javax.annotation.Nullable
-  private RenewalTypeEnum renewalType;
+  private String renewalType;
 
   public static final String JSON_PROPERTY_RENEWAL_PERIOD_MONTHS = "renewal_period_months";
   @javax.annotation.Nullable
@@ -175,48 +103,9 @@ public class ContractTerm {
   @javax.annotation.Nonnull
   private Boolean notifyCounterparty;
 
-  /**
-   * &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.
-   */
-  public enum StateEnum {
-    UNTRACKED(String.valueOf("UNTRACKED")),
-
-    ACTIVE(String.valueOf("ACTIVE")),
-
-    ENDED(String.valueOf("ENDED")),
-
-    STOPPED(String.valueOf("STOPPED"));
-
-    private String value;
-
-    StateEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static StateEnum fromValue(String value) {
-      for (StateEnum b : StateEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_STATE = "state";
   @javax.annotation.Nonnull
-  private StateEnum state;
+  private String state;
 
   public static final String JSON_PROPERTY_DAYS_LEFT = "days_left";
   @javax.annotation.Nullable
@@ -229,26 +118,26 @@ public class ContractTerm {
   public ContractTerm() {
   }
 
-  public ContractTerm startMode(@javax.annotation.Nullable StartModeEnum startMode) {
+  public ContractTerm startMode(@javax.annotation.Nullable String startMode) {
     this.startMode = startMode;
     return this;
   }
 
   /**
-   * Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).
+   * Takibin ne zaman başladığı. &#x60;FIXED_DATE&#x60;: &#x60;start_date&#x60;&#39;ten. &#x60;ON_FIRST_SIGNATURE&#x60; / &#x60;ON_COMPLETION&#x60;: ilk imza / tüm imzalar tamamlandığı anda otomatik (o ana kadar &#x60;end_date&#x60; bilinmez).  Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return startMode
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_START_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public StartModeEnum getStartMode() {
+  public String getStartMode() {
     return startMode;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_START_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setStartMode(@javax.annotation.Nullable StartModeEnum startMode) {
+  public void setStartMode(@javax.annotation.Nullable String startMode) {
     this.startMode = startMode;
   }
 
@@ -375,26 +264,26 @@ public class ContractTerm {
   }
 
 
-  public ContractTerm renewalType(@javax.annotation.Nullable RenewalTypeEnum renewalType) {
+  public ContractTerm renewalType(@javax.annotation.Nullable String renewalType) {
     this.renewalType = renewalType;
     return this;
   }
 
   /**
-   * Get renewalType
+   * Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return renewalType
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_RENEWAL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public RenewalTypeEnum getRenewalType() {
+  public String getRenewalType() {
     return renewalType;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_RENEWAL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setRenewalType(@javax.annotation.Nullable RenewalTypeEnum renewalType) {
+  public void setRenewalType(@javax.annotation.Nullable String renewalType) {
     this.renewalType = renewalType;
   }
 
@@ -531,26 +420,26 @@ public class ContractTerm {
   }
 
 
-  public ContractTerm state(@javax.annotation.Nonnull StateEnum state) {
+  public ContractTerm state(@javax.annotation.Nonnull String state) {
     this.state = state;
     return this;
   }
 
   /**
-   * &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.
+   * &#x60;UNTRACKED&#x60;: takip yok (&#x60;end_date&#x60; bilinmiyor). &#x60;ACTIVE&#x60;: takip sürüyor. &#x60;ENDED&#x60;: &#x60;FIXED_TERM&#x60; sözleşmenin bitiş tarihi geçti. &#x60;STOPPED&#x60;: yenileme takibi kullanıcı tarafından durduruldu.  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return state
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_STATE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public StateEnum getState() {
+  public String getState() {
     return state;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_STATE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setState(@javax.annotation.Nonnull StateEnum state) {
+  public void setState(@javax.annotation.Nonnull String state) {
     this.state = state;
   }
 

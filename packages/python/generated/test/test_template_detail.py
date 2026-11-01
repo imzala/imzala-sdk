@@ -64,7 +64,7 @@ class TestTemplateDetail(unittest.TestCase):
                         id = '',
                         order = 56,
                         title = '',
-                        doc_kind = 'CONTRACT',
+                        doc_kind = '',
                         is_required = True,
                         signature_required = True,
                         default_included = True,

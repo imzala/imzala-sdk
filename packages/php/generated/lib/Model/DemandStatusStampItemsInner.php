@@ -271,23 +271,6 @@ class DemandStatusStampItemsInner implements ModelInterface, ArrayAccess, \JsonS
         return self::$openAPIModelName;
     }
 
-    public const SOURCE_INLINE = 'INLINE';
-    public const SOURCE_FROM_SAVED = 'FROM_SAVED';
-    public const SOURCE_FILLER_PROVIDES = 'FILLER_PROVIDES';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getSourceAllowableValues()
-    {
-        return [
-            self::SOURCE_INLINE,
-            self::SOURCE_FROM_SAVED,
-            self::SOURCE_FILLER_PROVIDES,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -340,15 +323,6 @@ class DemandStatusStampItemsInner implements ModelInterface, ArrayAccess, \JsonS
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getSourceAllowableValues();
-        if (!is_null($this->container['source']) && !in_array($this->container['source'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'source', must be one of '%s'",
-                $this->container['source'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -534,7 +508,7 @@ class DemandStatusStampItemsInner implements ModelInterface, ArrayAccess, \JsonS
     /**
      * Sets source
      *
-     * @param string|null $source source
+     * @param string|null $source Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -542,16 +516,6 @@ class DemandStatusStampItemsInner implements ModelInterface, ArrayAccess, \JsonS
     {
         if (is_null($source)) {
             throw new \InvalidArgumentException('non-nullable source cannot be null');
-        }
-        $allowedValues = $this->getSourceAllowableValues();
-        if (!in_array($source, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'source', must be one of '%s'",
-                    $source,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['source'] = $source;
 

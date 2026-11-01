@@ -23,7 +23,6 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.party_mapping_input_variables_value import PartyMappingInputVariablesValue
-from imzala_client.models.signer_locale import SignerLocale
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -41,7 +40,7 @@ class PartyMappingInput(BaseModel):
     birth_date: Optional[date] = Field(default=None, description="ISO 8601 (örn. \"1990-05-15\")")
     send_sms: Optional[StrictBool] = True
     send_email: Optional[StrictBool] = True
-    locale: Optional[SignerLocale] = None
+    locale: Optional[StrictStr] = Field(default=None, description="İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["en"]})
     require_phone_verification: Optional[StrictBool] = Field(default=None, description="Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için açar (`true`) ya da kapatır (`false`). Gönderilmezse veya `null` gönderilirse sözleşmenin telefon doğrulaması ayarı geçerlidir; davranış alan olmadan önceki ile aynıdır. Sözleşmede telefon doğrulaması açıksa imzalayan taraflar için false etkisizdir. Sözleşme gönderildikten sonra bu ayar değiştirilemez. Geçersiz değer `400 INVALID_PHONE_VERIFICATION` döner; `true` iken `phone` boşsa `400 PHONE_REQUIRED_FOR_VERIFICATION` döner.", json_schema_extra={"examples": [True]})
     variables: Optional[Dict[str, Optional[PartyMappingInputVariablesValue]]] = Field(default=None, description="Bu PARTİYE AİT dynamic field'lara gönderilen değerler. Slug bazında eşleşir. Item'ın template_party_id'si bu partiyle aynı olmalı; değilse değişken atlanır ve variables_ignored'a düşürülür. Kaşe alanının slug'ına `StampData` nesnesi verilebilir (bkz. `CreateDemandRequest.variables`). ")
     document_variables: Optional[Dict[str, Dict[str, Optional[PartyMappingInputVariablesValue]]]] = Field(default=None, description="Bu partinin BELGE BAŞINA değerleri. Anahtar şablon belgesinin kimliğidir (`GET /api/v1/templates/{id}/usage` cevabındaki `documents[].template_document_id`); belge başlığı ya da sırası anahtar olarak kullanılamaz. Aynı slug için en yüksek önceliklidir (bkz. `CreateDemandRequest.document_variables`). ")

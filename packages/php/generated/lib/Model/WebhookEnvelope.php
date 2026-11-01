@@ -248,35 +248,6 @@ class WebhookEnvelope implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const TYPE_DEMAND_CREATED = 'demand.created';
-    public const TYPE_DEMAND_COMPLETED = 'demand.completed';
-    public const TYPE_DEMAND_EXPIRED = 'demand.expired';
-    public const TYPE_PARTY_SIGNED = 'party.signed';
-    public const TYPE_PARTY_VIEWED = 'party.viewed';
-    public const TYPE_PARTY_REJECTED = 'party.rejected';
-    public const TYPE_CONTRACT_EXPIRING = 'contract.expiring';
-    public const TYPE_CONTRACT_ENDED = 'contract.ended';
-    public const TYPE_CONTRACT_ADVANCED = 'contract.advanced';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getTypeAllowableValues()
-    {
-        return [
-            self::TYPE_DEMAND_CREATED,
-            self::TYPE_DEMAND_COMPLETED,
-            self::TYPE_DEMAND_EXPIRED,
-            self::TYPE_PARTY_SIGNED,
-            self::TYPE_PARTY_VIEWED,
-            self::TYPE_PARTY_REJECTED,
-            self::TYPE_CONTRACT_EXPIRING,
-            self::TYPE_CONTRACT_ENDED,
-            self::TYPE_CONTRACT_ADVANCED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -336,15 +307,6 @@ class WebhookEnvelope implements ModelInterface, ArrayAccess, \JsonSerializable
         if ($this->container['type'] === null) {
             $invalidProperties[] = "'type' can't be null";
         }
-        $allowedValues = $this->getTypeAllowableValues();
-        if (!is_null($this->container['type']) && !in_array($this->container['type'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'type', must be one of '%s'",
-                $this->container['type'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['created_at'] === null) {
             $invalidProperties[] = "'created_at' can't be null";
         }
@@ -411,7 +373,7 @@ class WebhookEnvelope implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets type
      *
-     * @param string $type type
+     * @param string $type Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -419,16 +381,6 @@ class WebhookEnvelope implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($type)) {
             throw new \InvalidArgumentException('non-nullable type cannot be null');
-        }
-        $allowedValues = $this->getTypeAllowableValues();
-        if (!in_array($type, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'type', must be one of '%s'",
-                    $type,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['type'] = $type;
 

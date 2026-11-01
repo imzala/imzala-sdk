@@ -34,43 +34,16 @@ namespace ImzalaApiClient.Model
     public partial class FieldLayoutPreview : IValidatableObject
     {
         /// <summary>
-        /// Uygulanan davranış (istenen değil).
-        /// </summary>
-        /// <value>Uygulanan davranış (istenen değil).</value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum OnAnchorMissEnum
-        {
-            /// <summary>
-            /// Enum Block for value: block
-            /// </summary>
-            [EnumMember(Value = "block")]
-            Block = 1,
-
-            /// <summary>
-            /// Enum Drop for value: drop
-            /// </summary>
-            [EnumMember(Value = "drop")]
-            Drop = 2
-        }
-
-
-        /// <summary>
-        /// Uygulanan davranış (istenen değil).
-        /// </summary>
-        /// <value>Uygulanan davranış (istenen değil).</value>
-        [DataMember(Name = "on_anchor_miss", EmitDefaultValue = false)]
-        public OnAnchorMissEnum? OnAnchorMiss { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="FieldLayoutPreview" /> class.
         /// </summary>
         /// <param name="templateId">templateId.</param>
         /// <param name="pageCount">Yüklenen belgenin sayfa sayısı..</param>
         /// <param name="resolvable">&#x60;true&#x60; ise aynı belge + aynı şablon ile &#x60;POST /api/v1/demands/upload&#x60; çağrısı alan yerleşimi nedeniyle reddedilmez. .</param>
-        /// <param name="onAnchorMiss">Uygulanan davranış (istenen değil)..</param>
+        /// <param name="onAnchorMiss">Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="placementsSummary">placementsSummary.</param>
         /// <param name="diagnostics">diagnostics.</param>
         /// <param name="warnings">warnings.</param>
-        public FieldLayoutPreview(Guid templateId = default, int pageCount = default, bool resolvable = default, OnAnchorMissEnum? onAnchorMiss = default, FieldLayoutPreviewPlacementsSummary placementsSummary = default, List<FieldLayoutDiagnostic> diagnostics = default, List<FieldLayoutWarning> warnings = default)
+        public FieldLayoutPreview(Guid templateId = default, int pageCount = default, bool resolvable = default, string onAnchorMiss = default, FieldLayoutPreviewPlacementsSummary placementsSummary = default, List<FieldLayoutDiagnostic> diagnostics = default, List<FieldLayoutWarning> warnings = default)
         {
             this.TemplateId = templateId;
             this.PageCount = pageCount;
@@ -100,6 +73,13 @@ namespace ImzalaApiClient.Model
         /// <value>&#x60;true&#x60; ise aynı belge + aynı şablon ile &#x60;POST /api/v1/demands/upload&#x60; çağrısı alan yerleşimi nedeniyle reddedilmez. </value>
         [DataMember(Name = "resolvable", EmitDefaultValue = true)]
         public bool Resolvable { get; set; }
+
+        /// <summary>
+        /// Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Uygulanan davranış (istenen değil).  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "on_anchor_miss", EmitDefaultValue = false)]
+        public string OnAnchorMiss { get; set; }
 
         /// <summary>
         /// Gets or Sets PlacementsSummary

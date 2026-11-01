@@ -41,7 +41,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.JSON_PROPERTY_LAST_NAME,
   ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner.JSON_PROPERTY_CHANNELS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nullable
@@ -55,44 +55,9 @@ public class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner {
   @javax.annotation.Nullable
   private String lastName;
 
-  /**
-   * Gets or Sets channels
-   */
-  public enum ChannelsEnum {
-    EMAIL(String.valueOf("email")),
-
-    SMS(String.valueOf("sms"));
-
-    private String value;
-
-    ChannelsEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static ChannelsEnum fromValue(String value) {
-      for (ChannelsEnum b : ChannelsEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_CHANNELS = "channels";
   @javax.annotation.Nullable
-  private List<ChannelsEnum> channels = new ArrayList<>();
+  private List<String> channels = new ArrayList<>();
 
   public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner() {
   }
@@ -169,12 +134,12 @@ public class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner {
   }
 
 
-  public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner channels(@javax.annotation.Nullable List<ChannelsEnum> channels) {
+  public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner channels(@javax.annotation.Nullable List<String> channels) {
     this.channels = channels;
     return this;
   }
 
-  public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner addChannelsItem(ChannelsEnum channelsItem) {
+  public ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner addChannelsItem(String channelsItem) {
     if (this.channels == null) {
       this.channels = new ArrayList<>();
     }
@@ -189,14 +154,14 @@ public class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner {
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_CHANNELS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public List<ChannelsEnum> getChannels() {
+  public List<String> getChannels() {
     return channels;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_CHANNELS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setChannels(@javax.annotation.Nullable List<ChannelsEnum> channels) {
+  public void setChannels(@javax.annotation.Nullable List<String> channels) {
     this.channels = channels;
   }
 

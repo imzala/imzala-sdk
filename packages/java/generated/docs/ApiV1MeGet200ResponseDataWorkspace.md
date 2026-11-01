@@ -7,14 +7,5 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | [**TypeEnum**](#TypeEnum) |  |  [optional] |
+|**type** | **String** | Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |
 |**organizationId** | **UUID** |  |  [optional] |
-
-
-
-## Enum: TypeEnum
-
-| Name | Value |
-|---- | -----|
-| PERSONAL | &quot;personal&quot; |
-| ORGANIZATION | &quot;organization&quot; |

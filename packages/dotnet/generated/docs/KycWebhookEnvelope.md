@@ -6,7 +6,7 @@ KYC olaylarının zarfı. Sözleşme olaylarıyla aynı alanları taşır; `type
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** | Olay id&#39;si: receiver tarafında idempotency anahtarı. |
-**Type** | **string** |  |
+**Type** | **string** | Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **CreatedAt** | **DateTime** | Olay zamanı (ISO 8601 UTC). |
 **Data** | **Object** | Olay verisi (WebhookDataKycTerminal) |
 

@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from imzala_client.models.field_layout_diagnostic import FieldLayoutDiagnostic
@@ -33,20 +33,10 @@ class CreatedDemandUploadFieldLayout(BaseModel):
     """ # noqa: E501
     template_id: Optional[UUID] = None
     applied_fields: Optional[StrictInt] = Field(default=None, description="Sözleşmeye yazılan alan sayısı.")
-    on_anchor_miss: Optional[StrictStr] = Field(default=None, description="İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur. ")
+    on_anchor_miss: Optional[StrictStr] = Field(default=None, description="İstenen değil, **uygulanan** davranış. `drop` istenip uygulanamadıysa burada `block` görürsünüz ve `warnings` içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     warnings: Optional[List[FieldLayoutWarning]] = None
     diagnostics: Optional[List[FieldLayoutDiagnostic]] = Field(default=None, description="Yalnız `WARNING` seviyesindeki tanılar. `ERROR` seviyesinde bir tanı olsaydı istek 422 ile reddedilir ve sözleşme yaratılmazdı. ")
     __properties: ClassVar[List[str]] = ["template_id", "applied_fields", "on_anchor_miss", "warnings", "diagnostics"]
-
-    @field_validator('on_anchor_miss')
-    def on_anchor_miss_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['block', 'drop']):
-            raise ValueError("must be one of enum values ('block', 'drop')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

@@ -34,54 +34,17 @@ namespace ImzalaApiClient.Model
     public partial class TimestampListItem : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum ACTIVE for value: ACTIVE
-            /// </summary>
-            [EnumMember(Value = "ACTIVE")]
-            ACTIVE = 1,
-
-            /// <summary>
-            /// Enum VERIFIED for value: VERIFIED
-            /// </summary>
-            [EnumMember(Value = "VERIFIED")]
-            VERIFIED = 2,
-
-            /// <summary>
-            /// Enum EXPIRED for value: EXPIRED
-            /// </summary>
-            [EnumMember(Value = "EXPIRED")]
-            EXPIRED = 3,
-
-            /// <summary>
-            /// Enum INVALID for value: INVALID
-            /// </summary>
-            [EnumMember(Value = "INVALID")]
-            INVALID = 4
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="TimestampListItem" /> class.
         /// </summary>
         /// <param name="id">id.</param>
         /// <param name="originalFileName">originalFileName.</param>
         /// <param name="originalFileSize">originalFileSize.</param>
         /// <param name="timestampDate">timestampDate.</param>
-        /// <param name="status">status.</param>
+        /// <param name="status">Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="description">description.</param>
         /// <param name="createdAt">createdAt.</param>
         /// <param name="timestampFileUrl">timestampFileUrl.</param>
-        public TimestampListItem(Guid id = default, string originalFileName = default, int originalFileSize = default, DateTime timestampDate = default, StatusEnum? status = default, string description = default, DateTime createdAt = default, string timestampFileUrl = default)
+        public TimestampListItem(Guid id = default, string originalFileName = default, int originalFileSize = default, DateTime timestampDate = default, string status = default, string description = default, DateTime createdAt = default, string timestampFileUrl = default)
         {
             this.Id = id;
             this.OriginalFileName = originalFileName;
@@ -116,6 +79,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "timestamp_date", EmitDefaultValue = false)]
         public DateTime TimestampDate { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Gets or Sets Description

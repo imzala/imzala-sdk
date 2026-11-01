@@ -21,7 +21,6 @@ import json
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
-from imzala_client.models.signer_locale import SignerLocale
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -34,7 +33,7 @@ class TemplatePartySummary(BaseModel):
     order: Optional[StrictInt] = None
     label: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["Musteri"]})
     is_required: Optional[StrictBool] = None
-    default_locale: Optional[SignerLocale] = None
+    default_locale: Optional[StrictStr] = Field(default=None, description="İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.", json_schema_extra={"examples": ["en"]})
     __properties: ClassVar[List[str]] = ["id", "order", "label", "is_required", "default_locale"]
 
     model_config = ConfigDict(

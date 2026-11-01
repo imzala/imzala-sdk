@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from imzala_client.models.api_v1_templates_id_patch200_response_data import ApiV1TemplatesIdPatch200ResponseData
 from imzala_client.models.template_usage_documents_inner import TemplateUsageDocumentsInner
@@ -35,7 +35,7 @@ class TemplateUsage(BaseModel):
     """
     TemplateUsage
     """ # noqa: E501
-    kind: Optional[StrictStr] = Field(default=None, description="Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır). ")
+    kind: Optional[StrictStr] = Field(default=None, description="Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer, dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta 404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve `POST /api/v1/demands/upload` ile kullanılır).  Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     form_fields: Optional[List[TemplateUsageFormFieldsInner]] = Field(default=None, description="`multipart/form-data` alanları. Belgeli şablon JSON gövde kullandığı için bu uçta boş dizidir. ")
     template: Optional[ApiV1TemplatesIdPatch200ResponseData] = None
     endpoint: Optional[TemplateUsageEndpoint] = None
@@ -45,16 +45,6 @@ class TemplateUsage(BaseModel):
     documents: Optional[List[TemplateUsageDocumentsInner]] = Field(default=None, description="Şablonun belgeleri (sıra artan). `document_variables` anahtarları buradaki `template_document_id` değerleridir. ")
     example_request: Optional[TemplateUsageExampleRequest] = None
     __properties: ClassVar[List[str]] = ["kind", "form_fields", "template", "endpoint", "required_headers", "parties", "variables", "documents", "example_request"]
-
-    @field_validator('kind')
-    def kind_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DOCUMENT', 'FIELD_LAYOUT']):
-            raise ValueError("must be one of enum values ('DOCUMENT', 'FIELD_LAYOUT')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

@@ -133,7 +133,7 @@ public final class Zarf {
 
     // 8) Tamamlanınca belge-özgü imzalı PDF (tüm zarfın birleşik PDF'i için getPdf).
     var demand = imzala.demands().get(demandId);
-    if (demand.getStatus() == DemandStatus.StatusEnum.COMPLETED && !documents.isEmpty()) {
+    if ("COMPLETED".equals(demand.getStatus()) && !documents.isEmpty()) {
       var ilkBelge = documents.get(0);
       byte[] pdf = imzala.demands().getDocumentPdf(demandId, ilkBelge.getId());
       Path dosya = Path.of("belge-" + ilkBelge.getId() + ".pdf");

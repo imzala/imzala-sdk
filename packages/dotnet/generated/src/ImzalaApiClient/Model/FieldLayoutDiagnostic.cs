@@ -34,31 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class FieldLayoutDiagnostic : IValidatableObject
     {
         /// <summary>
-        /// Defines Severity
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum SeverityEnum
-        {
-            /// <summary>
-            /// Enum ERROR for value: ERROR
-            /// </summary>
-            [EnumMember(Value = "ERROR")]
-            ERROR = 1,
-
-            /// <summary>
-            /// Enum WARNING for value: WARNING
-            /// </summary>
-            [EnumMember(Value = "WARNING")]
-            WARNING = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Severity
-        /// </summary>
-        [DataMember(Name = "severity", IsRequired = true, EmitDefaultValue = true)]
-        public SeverityEnum Severity { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="FieldLayoutDiagnostic" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -67,7 +42,7 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="FieldLayoutDiagnostic" /> class.
         /// </summary>
         /// <param name="code">code (required).</param>
-        /// <param name="severity">severity (required).</param>
+        /// <param name="severity">Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="itemId">Şablon alanının kimliği. &#x60;-1&#x60; belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir.  (required).</param>
         /// <param name="slug">slug.</param>
         /// <param name="label">label.</param>
@@ -75,7 +50,7 @@ namespace ImzalaApiClient.Model
         /// <param name="page">1 tabanlı sayfa numarası; bilinmiyorsa null..</param>
         /// <param name="message">message (required).</param>
         /// <param name="detail">Koda göre değişen, kapalı bir anahtar kümesi (yalnız sayısal değerler ve alan kimlikleri). .</param>
-        public FieldLayoutDiagnostic(string code = default, SeverityEnum severity = default, int itemId = default, string slug = default, string label = default, string itemType = default, int? page = default, string message = default, Dictionary<string, Object> detail = default)
+        public FieldLayoutDiagnostic(string code = default, string severity = default, int itemId = default, string slug = default, string label = default, string itemType = default, int? page = default, string message = default, Dictionary<string, Object> detail = default)
         {
             // to ensure "code" is required (not null)
             if (code == null)
@@ -83,6 +58,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("code is a required property for FieldLayoutDiagnostic and cannot be null");
             }
             this.Code = code;
+            // to ensure "severity" is required (not null)
+            if (severity == null)
+            {
+                throw new ArgumentNullException("severity is a required property for FieldLayoutDiagnostic and cannot be null");
+            }
             this.Severity = severity;
             this.ItemId = itemId;
             // to ensure "itemType" is required (not null)
@@ -111,6 +91,13 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
         public string Code { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "severity", IsRequired = true, EmitDefaultValue = true)]
+        public string Severity { get; set; }
 
         /// <summary>
         /// Şablon alanının kimliği. &#x60;-1&#x60; belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir.

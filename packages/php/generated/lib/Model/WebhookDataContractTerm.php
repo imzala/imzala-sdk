@@ -260,40 +260,6 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
         return self::$openAPIModelName;
     }
 
-    public const RENEWAL_TYPE_AUTO_RENEW = 'AUTO_RENEW';
-    public const RENEWAL_TYPE_FIXED_TERM = 'FIXED_TERM';
-    public const TERM_STATE_UNTRACKED = 'UNTRACKED';
-    public const TERM_STATE_ACTIVE = 'ACTIVE';
-    public const TERM_STATE_ENDED = 'ENDED';
-    public const TERM_STATE_STOPPED = 'STOPPED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getRenewalTypeAllowableValues()
-    {
-        return [
-            self::RENEWAL_TYPE_AUTO_RENEW,
-            self::RENEWAL_TYPE_FIXED_TERM,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getTermStateAllowableValues()
-    {
-        return [
-            self::TERM_STATE_UNTRACKED,
-            self::TERM_STATE_ACTIVE,
-            self::TERM_STATE_ENDED,
-            self::TERM_STATE_STOPPED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -354,30 +320,12 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
         if ($this->container['renewal_type'] === null && !$this->isNullableSetToNull('renewal_type')) {
             $invalidProperties[] = "'renewal_type' is required";
         }
-        $allowedValues = $this->getRenewalTypeAllowableValues();
-        if (!is_null($this->container['renewal_type']) && !in_array($this->container['renewal_type'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'renewal_type', must be one of '%s'",
-                $this->container['renewal_type'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['notice_deadline'] === null && !$this->isNullableSetToNull('notice_deadline')) {
             $invalidProperties[] = "'notice_deadline' is required";
         }
         if ($this->container['term_state'] === null) {
             $invalidProperties[] = "'term_state' can't be null";
         }
-        $allowedValues = $this->getTermStateAllowableValues();
-        if (!is_null($this->container['term_state']) && !in_array($this->container['term_state'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'term_state', must be one of '%s'",
-                $this->container['term_state'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         if ($this->container['due_key'] === null && !$this->isNullableSetToNull('due_key')) {
             $invalidProperties[] = "'due_key' is required";
         }
@@ -470,7 +418,7 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
     /**
      * Sets renewal_type
      *
-     * @param string|null $renewal_type renewal_type
+     * @param string|null $renewal_type Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -485,16 +433,6 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getRenewalTypeAllowableValues();
-        if (!is_null($renewal_type) && !in_array($renewal_type, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'renewal_type', must be one of '%s'",
-                    $renewal_type,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['renewal_type'] = $renewal_type;
 
@@ -548,7 +486,7 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
     /**
      * Sets term_state
      *
-     * @param string $term_state Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+     * @param string $term_state Olay anındaki takip durumu (bkz. `ContractTerm.state`).  Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -556,16 +494,6 @@ class WebhookDataContractTerm implements ModelInterface, ArrayAccess, \JsonSeria
     {
         if (is_null($term_state)) {
             throw new \InvalidArgumentException('non-nullable term_state cannot be null');
-        }
-        $allowedValues = $this->getTermStateAllowableValues();
-        if (!in_array($term_state, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'term_state', must be one of '%s'",
-                    $term_state,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['term_state'] = $term_state;
 

@@ -39,64 +39,15 @@ import org.imzala.client.generated.ApiClient;
   WebhookEnvelope.JSON_PROPERTY_CREATED_AT,
   WebhookEnvelope.JSON_PROPERTY_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class WebhookEnvelope {
   public static final String JSON_PROPERTY_ID = "id";
   @javax.annotation.Nonnull
   private String id;
 
-  /**
-   * Gets or Sets type
-   */
-  public enum TypeEnum {
-    DEMAND_CREATED(String.valueOf("demand.created")),
-
-    DEMAND_COMPLETED(String.valueOf("demand.completed")),
-
-    DEMAND_EXPIRED(String.valueOf("demand.expired")),
-
-    PARTY_SIGNED(String.valueOf("party.signed")),
-
-    PARTY_VIEWED(String.valueOf("party.viewed")),
-
-    PARTY_REJECTED(String.valueOf("party.rejected")),
-
-    CONTRACT_EXPIRING(String.valueOf("contract.expiring")),
-
-    CONTRACT_ENDED(String.valueOf("contract.ended")),
-
-    CONTRACT_ADVANCED(String.valueOf("contract.advanced"));
-
-    private String value;
-
-    TypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_TYPE = "type";
   @javax.annotation.Nonnull
-  private TypeEnum type;
+  private String type;
 
   public static final String JSON_PROPERTY_CREATED_AT = "created_at";
   @javax.annotation.Nonnull
@@ -133,26 +84,26 @@ public class WebhookEnvelope {
   }
 
 
-  public WebhookEnvelope type(@javax.annotation.Nonnull TypeEnum type) {
+  public WebhookEnvelope type(@javax.annotation.Nonnull String type) {
     this.type = type;
     return this;
   }
 
   /**
-   * Get type
+   * Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return type
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_TYPE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public TypeEnum getType() {
+  public String getType() {
     return type;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_TYPE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(@javax.annotation.Nonnull TypeEnum type) {
+  public void setType(@javax.annotation.Nonnull String type) {
     this.type = type;
   }
 

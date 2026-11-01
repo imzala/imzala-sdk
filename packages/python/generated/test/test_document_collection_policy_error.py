@@ -37,14 +37,14 @@ class TestDocumentCollectionPolicyError(unittest.TestCase):
         if include_optional:
             return DocumentCollectionPolicyError(
                 success = True,
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
-                error = 'DOCUMENT_TYPE_INVALID'
+                code = '',
+                error = ''
             )
         else:
             return DocumentCollectionPolicyError(
                 success = True,
-                code = 'VERIFICATION_CONTEXT_REQUIRED',
-                error = 'DOCUMENT_TYPE_INVALID',
+                code = '',
+                error = '',
         )
         """
 

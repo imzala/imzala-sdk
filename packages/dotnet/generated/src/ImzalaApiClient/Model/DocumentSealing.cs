@@ -34,52 +34,22 @@ namespace ImzalaApiClient.Model
     public partial class DocumentSealing : IValidatableObject
     {
         /// <summary>
-        /// Defines Status
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum NONE for value: NONE
-            /// </summary>
-            [EnumMember(Value = "NONE")]
-            NONE = 1,
-
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 2,
-
-            /// <summary>
-            /// Enum SEALED for value: SEALED
-            /// </summary>
-            [EnumMember(Value = "SEALED")]
-            SEALED = 3,
-
-            /// <summary>
-            /// Enum FAILED for value: FAILED
-            /// </summary>
-            [EnumMember(Value = "FAILED")]
-            FAILED = 4
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentSealing" /> class.
         /// </summary>
-        /// <param name="status">status.</param>
+        /// <param name="status">Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="hasTimestamp">Yalnız &#x60;status&#x60; &#x60;SEALED&#x60; iken &#x60;true&#x60; olabilir..</param>
-        public DocumentSealing(StatusEnum? status = default, bool hasTimestamp = default)
+        public DocumentSealing(string status = default, bool hasTimestamp = default)
         {
             this.Status = status;
             this.HasTimestamp = hasTimestamp;
         }
+
+        /// <summary>
+        /// Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Yalnız &#x60;status&#x60; &#x60;SEALED&#x60; iken &#x60;true&#x60; olabilir.

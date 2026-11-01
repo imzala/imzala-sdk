@@ -34,41 +34,14 @@ namespace ImzalaApiClient.Model
     public partial class CreatedDemandUploadFieldLayout : IValidatableObject
     {
         /// <summary>
-        /// İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.
-        /// </summary>
-        /// <value>İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum OnAnchorMissEnum
-        {
-            /// <summary>
-            /// Enum Block for value: block
-            /// </summary>
-            [EnumMember(Value = "block")]
-            Block = 1,
-
-            /// <summary>
-            /// Enum Drop for value: drop
-            /// </summary>
-            [EnumMember(Value = "drop")]
-            Drop = 2
-        }
-
-
-        /// <summary>
-        /// İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.
-        /// </summary>
-        /// <value>İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur. </value>
-        [DataMember(Name = "on_anchor_miss", EmitDefaultValue = false)]
-        public OnAnchorMissEnum? OnAnchorMiss { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="CreatedDemandUploadFieldLayout" /> class.
         /// </summary>
         /// <param name="templateId">templateId.</param>
         /// <param name="appliedFields">Sözleşmeye yazılan alan sayısı..</param>
-        /// <param name="onAnchorMiss">İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur. .</param>
+        /// <param name="onAnchorMiss">İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="warnings">warnings.</param>
         /// <param name="diagnostics">Yalnız &#x60;WARNING&#x60; seviyesindeki tanılar. &#x60;ERROR&#x60; seviyesinde bir tanı olsaydı istek 422 ile reddedilir ve sözleşme yaratılmazdı. .</param>
-        public CreatedDemandUploadFieldLayout(Guid templateId = default, int appliedFields = default, OnAnchorMissEnum? onAnchorMiss = default, List<FieldLayoutWarning> warnings = default, List<FieldLayoutDiagnostic> diagnostics = default)
+        public CreatedDemandUploadFieldLayout(Guid templateId = default, int appliedFields = default, string onAnchorMiss = default, List<FieldLayoutWarning> warnings = default, List<FieldLayoutDiagnostic> diagnostics = default)
         {
             this.TemplateId = templateId;
             this.AppliedFields = appliedFields;
@@ -89,6 +62,13 @@ namespace ImzalaApiClient.Model
         /// <value>Sözleşmeye yazılan alan sayısı.</value>
         [DataMember(Name = "applied_fields", EmitDefaultValue = false)]
         public int AppliedFields { get; set; }
+
+        /// <summary>
+        /// İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İstenen değil, **uygulanan** davranış. &#x60;drop&#x60; istenip uygulanamadıysa burada &#x60;block&#x60; görürsünüz ve &#x60;warnings&#x60; içinde &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; bulunur.  Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "on_anchor_miss", EmitDefaultValue = false)]
+        public string OnAnchorMiss { get; set; }
 
         /// <summary>
         /// Gets or Sets Warnings

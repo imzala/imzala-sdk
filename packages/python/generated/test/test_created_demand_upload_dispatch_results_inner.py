@@ -40,7 +40,7 @@ class TestCreatedDemandUploadDispatchResultsInner(unittest.TestCase):
                 sms = True,
                 email = True,
                 whatsapp = True,
-                error = 'DISPATCH_FAILED'
+                error = ''
             )
         else:
             return CreatedDemandUploadDispatchResultsInner(

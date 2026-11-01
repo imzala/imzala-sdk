@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from imzala_client.models.api_v1_demands_demand_id_dispatch_post200_response_data_invitations_results_inner import ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner
 from typing import Optional, Set
@@ -31,18 +31,8 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitations(BaseModel):
     """ # noqa: E501
     sent: Optional[StrictInt] = Field(default=None, description="En az bir kanaldan başarıyla gönderilen taraf sayısı.")
     results: Optional[List[ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner]] = None
-    error: Optional[StrictStr] = Field(default=None, description="`DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.) ")
+    error: Optional[StrictStr] = Field(default=None, description="`DISPATCH_SKIPPED` — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     __properties: ClassVar[List[str]] = ["sent", "results", "error"]
-
-    @field_validator('error')
-    def error_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['DISPATCH_SKIPPED']):
-            raise ValueError("must be one of enum values ('DISPATCH_SKIPPED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

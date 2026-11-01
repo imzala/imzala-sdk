@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **UUID** |  | [optional]
 **title** | **str** |  | [optional]
-**status** | **str** |  | [optional]
+**status** | **str** | Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **created_at** | **datetime** |  | [optional]
 **completed_at** | **datetime** |  | [optional]
 **parties** | [**List[DemandStatusPartiesInner]**](DemandStatusPartiesInner.md) |  | [optional]

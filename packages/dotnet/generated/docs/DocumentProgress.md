@@ -5,7 +5,7 @@ Belgeye atanmış tarafların karar ilerlemesi. Mühürden ve rızadan bağıms�
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Status** | **string** | &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  | [optional]
+**Status** | **string** | &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **ActiveAssignedPartyCount** | **int** | Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı. | [optional]
 **DecidedPartyCount** | **int** | Bunlardan bu belge için karar vermiş olanların sayısı. | [optional]
 **CompletedAt** | **DateTime?** | Belgenin kendi tamamlanma anı. Sistem bu anı kaydetmediyse &#x60;null&#x60; döner; zarfın tamamlanma zamanı bu alana kopyalanmaz.  | [optional]

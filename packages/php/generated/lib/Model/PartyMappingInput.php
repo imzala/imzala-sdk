@@ -67,7 +67,7 @@ class PartyMappingInput implements ModelInterface, ArrayAccess, \JsonSerializabl
         'birth_date' => '\DateTime',
         'send_sms' => 'bool',
         'send_email' => 'bool',
-        'locale' => '\Imzala\Client\Model\SignerLocale',
+        'locale' => 'string',
         'require_phone_verification' => 'bool',
         'variables' => 'array<string,\Imzala\Client\Model\PartyMappingInputVariablesValue>',
         'document_variables' => 'array<string,array<string,\Imzala\Client\Model\PartyMappingInputVariablesValue>>'
@@ -633,7 +633,7 @@ class PartyMappingInput implements ModelInterface, ArrayAccess, \JsonSerializabl
     /**
      * Gets locale
      *
-     * @return \Imzala\Client\Model\SignerLocale|null
+     * @return string|null
      */
     public function getLocale()
     {
@@ -643,7 +643,7 @@ class PartyMappingInput implements ModelInterface, ArrayAccess, \JsonSerializabl
     /**
      * Sets locale
      *
-     * @param \Imzala\Client\Model\SignerLocale|null $locale locale
+     * @param string|null $locale İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */

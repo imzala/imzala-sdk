@@ -34,54 +34,22 @@ namespace ImzalaApiClient.Model
     public partial class DocumentSelectionErrorDetails : IValidatableObject
     {
         /// <summary>
-        /// &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
-        /// </summary>
-        /// <value>&#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ReasonEnum
-        {
-            /// <summary>
-            /// Enum Shape for value: shape
-            /// </summary>
-            [EnumMember(Value = "shape")]
-            Shape = 1,
-
-            /// <summary>
-            /// Enum UnknownDocument for value: unknown_document
-            /// </summary>
-            [EnumMember(Value = "unknown_document")]
-            UnknownDocument = 2,
-
-            /// <summary>
-            /// Enum Conflict for value: conflict
-            /// </summary>
-            [EnumMember(Value = "conflict")]
-            Conflict = 3,
-
-            /// <summary>
-            /// Enum Empty for value: empty
-            /// </summary>
-            [EnumMember(Value = "empty")]
-            Empty = 4
-        }
-
-
-        /// <summary>
-        /// &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
-        /// </summary>
-        /// <value>&#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı. </value>
-        [DataMember(Name = "reason", EmitDefaultValue = false)]
-        public ReasonEnum? Reason { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentSelectionErrorDetails" /> class.
         /// </summary>
-        /// <param name="reason">&#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı. .</param>
+        /// <param name="reason">&#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="documentIds">documentIds.</param>
-        public DocumentSelectionErrorDetails(ReasonEnum? reason = default, List<string> documentIds = default)
+        public DocumentSelectionErrorDetails(string reason = default, List<string> documentIds = default)
         {
             this.Reason = reason;
             this.DocumentIds = documentIds;
         }
+
+        /// <summary>
+        /// &#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>&#x60;shape&#x60;: &#x60;documents&#x60; nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20&#39;den fazla kimlik ya da toplu uçta &#x60;options.documents&#x60;. &#x60;unknown_document&#x60;: kimlik bu şablonun belgesi değil. &#x60;conflict&#x60;: aynı kimlik hem &#x60;include&#x60; hem &#x60;exclude&#x60; listesinde. &#x60;empty&#x60;: seçim sonucunda ya da &#x60;documents&#x60; göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "reason", EmitDefaultValue = false)]
+        public string Reason { get; set; }
 
         /// <summary>
         /// Gets or Sets DocumentIds

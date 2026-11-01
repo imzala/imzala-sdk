@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** | Olay id&#39;si: receiver tarafında idempotency anahtarı. |
-**type** | **string** |  |
+**type** | **string** | Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **created_at** | **\DateTime** | Olay zamanı (ISO 8601 UTC). |
 **data** | **object** | Olay verisi (WebhookDataKycTerminal) |
 

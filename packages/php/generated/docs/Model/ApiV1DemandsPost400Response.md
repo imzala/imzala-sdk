@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  | [optional]
 **error** | **string** |  | [optional]
-**code** | **string** |  | [optional]
+**code** | **string** | Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **field** | **string** | Bazı kodlarda (ör. &#x60;TERM_INVALID&#x60;) hangi alanın reddedildiğini gösterir. Yalnız bu tür kodlarda bulunur; her hata gövdesinde YOKTUR. | [optional]
 **details** | [**\Imzala\Client\Model\DocumentSelectionErrorDetails**](DocumentSelectionErrorDetails.md) |  | [optional]
 

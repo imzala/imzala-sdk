@@ -31,14 +31,14 @@ public class ClientTests
         var mockDemands = new Mock<IDemandsApi>();
         mockDemands
             .Setup(a => a.ApiV1DemandsIdGetAsync(id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ApiV1DemandsIdGet200Response(true, new DemandStatus(id: id, status: DemandStatus.StatusEnum.PENDING)));
+            .ReturnsAsync(new ApiV1DemandsIdGet200Response(true, new DemandStatus(id: id, status: "PENDING")));
         var mockReminders = new Mock<IRemindersApi>();
 
         var resource = new DemandsResource(mockDemands.Object, mockReminders.Object, DefaultRetry);
         var result = await resource.GetAsync(id);
 
         Assert.Equal(id, result.Id);
-        Assert.Equal(DemandStatus.StatusEnum.PENDING, result.Status);
+        Assert.Equal("PENDING", result.Status);
     }
 
     [Fact]

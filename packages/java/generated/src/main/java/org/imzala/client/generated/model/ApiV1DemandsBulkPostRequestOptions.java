@@ -55,7 +55,7 @@ import org.imzala.client.generated.ApiClient;
   ApiV1DemandsBulkPostRequestOptions.JSON_PROPERTY_REQUIRE_ID_PHOTO,
   ApiV1DemandsBulkPostRequestOptions.JSON_PROPERTY_REQUIRE_LIVENESS_CHECK
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class ApiV1DemandsBulkPostRequestOptions {
   public static final String JSON_PROPERTY_DOCUMENT_COLLECTION_ENABLED = "document_collection_enabled";
   private JsonNullable<Boolean> documentCollectionEnabled = JsonNullable.<Boolean>undefined();

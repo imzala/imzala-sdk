@@ -867,7 +867,8 @@ paths:
                     example: Yeterli krediniz yok
                   code:
                     type: string
-                    enum:
+                    description: 'Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                    x-known-values:
                       - INSUFFICIENT_CREDITS
                       - MEMBER_LIMIT_EXCEEDED
                   data:
@@ -984,10 +985,11 @@ paths:
                     example: Kredi mutabakatı yapılamadı
                   code:
                     type: string
-                    enum:
+                    example: RECONCILE_FAILED
+                    description: 'Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                    x-known-values:
                       - RECONCILE_FAILED
                       - DISPATCH_PREPARATION_FAILED
-                    example: RECONCILE_FAILED
                   data:
                     type: object
                     properties:
@@ -1434,7 +1436,8 @@ paths:
                               type: integer
                             status:
                               type: string
-                              enum:
+                              description: 'Bilinen değerler: created, failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                              x-known-values:
                                 - created
                                 - failed
                             demand_id:
@@ -1684,10 +1687,11 @@ paths:
                     example: Tamamlanmış sözleşme API üzerinden silinemez
                   code:
                     type: string
-                    enum:
+                    example: DEMAND_COMPLETED
+                    description: 'Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                    x-known-values:
                       - DEMAND_COMPLETED
                       - DEMAND_ARCHIVED
-                    example: DEMAND_COMPLETED
   /api/v1/demands/{id}/reminders:
     post:
       tags:
@@ -1830,7 +1834,8 @@ paths:
                               type: array
                               items:
                                 type: string
-                                enum:
+                                description: 'Bilinen değerler: email, sms. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                                x-known-values:
                                   - email
                                   - sms
                       skipped:
@@ -1941,7 +1946,8 @@ paths:
                     properties:
                       code:
                         type: string
-                        enum:
+                        description: 'Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                        x-known-values:
                           - RATE_LIMITED
                           - MAX_SMS_REMINDERS_REACHED
                       message:
@@ -2157,7 +2163,8 @@ paths:
                     example: Kredi bakiyeniz yetersiz. Lütfen kredi yükleyin.
                   code:
                     type: string
-                    enum:
+                    description: 'Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                    x-known-values:
                       - INSUFFICIENT_CREDITS
                       - MEMBER_LIMIT_EXCEEDED
                   demand_id:
@@ -2237,10 +2244,11 @@ paths:
                     example: Kredi mutabakatı yapılamadı
                   code:
                     type: string
-                    enum:
+                    example: RECONCILE_FAILED
+                    description: 'Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                    x-known-values:
                       - RECONCILE_FAILED
                       - DISPATCH_PREPARATION_FAILED
-                    example: RECONCILE_FAILED
                   demand_id:
                     type: string
                     format: uuid
@@ -3967,27 +3975,31 @@ paths:
                                   type: boolean
                                 error:
                                   type: string
-                                  enum:
-                                    - DISPATCH_FAILED
-                                    - RECIPIENT_QUOTA_EXCEEDED
                                   nullable: true
-                                  description: |
+                                  description: |-
                                     Yalnız o taraf için dolar. `DISPATCH_FAILED`
                                     — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED`
                                     — alıcı ekseni freni (telefon başına 3/sa +
                                     10/gün); yalnız bu taraf ATLANDI, diğerleri
                                     gönderilmeye devam etti.
+
+                                    Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+                                  x-known-values:
+                                    - DISPATCH_FAILED
+                                    - RECIPIENT_QUOTA_EXCEEDED
                           error:
                             type: string
-                            enum:
-                              - DISPATCH_SKIPPED
                             nullable: true
-                            description: |
+                            description: |-
                               `DISPATCH_SKIPPED` — sözleşme satırı okunamadı,
                               körlemesine gönderim yapılmadı.
                               (Taraf sayısı tavanı bu uçta davet fazından
                               ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`**
                               olarak döner; 200 gövdesinde görünmez.)
+
+                              Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+                            x-known-values:
+                              - DISPATCH_SKIPPED
         '400':
           description: '`INVALID_SEND_INVITATIONS` — tanınmayan `send_invitations` değeri.'
         '402':
@@ -4080,7 +4092,8 @@ paths:
                         properties:
                           type:
                             type: string
-                            enum:
+                            description: 'Bilinen değerler: personal, organization. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                            x-known-values:
                               - personal
                               - organization
                           organization_id:
@@ -4723,7 +4736,8 @@ components:
           type: string
         doc_kind:
           type: string
-          enum:
+          description: 'Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - CONTRACT
             - KVKK_NOTICE
             - KVKK_CONSENT
@@ -4796,19 +4810,15 @@ components:
           type: string
         code:
           type: string
-          enum:
+          description: 'Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - INVALID_DOCUMENT_SELECTION
         details:
           type: object
           properties:
             reason:
               type: string
-              enum:
-                - shape
-                - unknown_document
-                - conflict
-                - empty
-              description: |
+              description: |-
                 `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler
                 metin değil, listede 20'den fazla kimlik ya da toplu uçta
                 `options.documents`. `unknown_document`: kimlik bu şablonun
@@ -4816,6 +4826,13 @@ components:
                 `exclude` listesinde. `empty`: seçim sonucunda ya da
                 `documents` göndermediyseniz şablonun varsayılan belge
                 kümesinde gönderilecek belge kalmadı.
+
+                Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+              x-known-values:
+                - shape
+                - unknown_document
+                - conflict
+                - empty
             document_ids:
               type: array
               items:
@@ -4838,6 +4855,13 @@ components:
             kütüphaneden gelen kaşe bu listede yer almaz.
 
             Bilinen değerler: dynamic_text, cells, date, dropdown, text, stamp. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
+            - dynamic_text
+            - cells
+            - date
+            - dropdown
+            - text
+            - stamp
         is_required:
           type: boolean
         default_source:
@@ -4897,14 +4921,16 @@ components:
       properties:
         kind:
           type: string
-          enum:
-            - DOCUMENT
-            - FIELD_LAYOUT
-          description: |
+          description: |-
             Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer,
             dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta
             404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve
             `POST /api/v1/demands/upload` ile kullanılır).
+
+            Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
+            - DOCUMENT
+            - FIELD_LAYOUT
         form_fields:
           type: array
           description: |
@@ -5043,13 +5069,15 @@ components:
               description: JSON payload, multi-party ve belge farkında (party_mapping[].variables + root variables; aynı slug birden fazla belgede geçiyorsa document_variables ile belge başına farklı değer)
     SignerLocale:
       type: string
-      enum:
-        - tr
-        - en
-        - null
-      description: İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+      description: |-
+        İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+        Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
       example: en
       nullable: true
+      x-known-values:
+        - tr
+        - en
     PartyMappingInput:
       type: object
       required:
@@ -5165,14 +5193,16 @@ components:
         start_mode:
           type: string
           nullable: true
-          enum:
-            - FIXED_DATE
-            - ON_FIRST_SIGNATURE
-            - ON_COMPLETION
-          description: |
+          description: |-
             Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten.
             `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar
             tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).
+
+            Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
+            - FIXED_DATE
+            - ON_FIRST_SIGNATURE
+            - ON_COMPLETION
         start_date:
           type: string
           format: date
@@ -5206,7 +5236,8 @@ components:
         renewal_type:
           type: string
           nullable: true
-          enum:
+          description: 'Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - AUTO_RENEW
             - FIXED_TERM
         renewal_period_months:
@@ -5239,15 +5270,17 @@ components:
           description: Karşı tarafa da hatırlatma gönderilsin mi.
         state:
           type: string
-          enum:
+          description: |-
+            `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip
+            sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti.
+            `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
+
+            Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
             - UNTRACKED
             - ACTIVE
             - ENDED
             - STOPPED
-          description: |
-            `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip
-            sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti.
-            `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
         days_left:
           type: integer
           nullable: true
@@ -5708,7 +5741,8 @@ components:
         status:
           type: string
           example: PENDING
-          enum:
+          description: 'Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - DRAFT
             - PENDING
         template_id:
@@ -5908,18 +5942,23 @@ components:
                     type: boolean
                   error:
                     type: string
-                    enum:
+                    description: |-
+                      Yalnız o taraf için gönderim patladığında döner.
+
+                      Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+                    x-known-values:
                       - DISPATCH_FAILED
-                    description: Yalnız o taraf için gönderim patladığında döner.
             error:
               type: string
-              enum:
-                - DISPATCH_SKIPPED
-                - DISPATCH_TOO_MANY
-              description: |
+              description: |-
                 `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim
                 ayarları bilinmediği için hiç davet gönderilmedi.
                 `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.
+
+                Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+              x-known-values:
+                - DISPATCH_SKIPPED
+                - DISPATCH_TOO_MANY
         field_layout:
           description: |
             YALNIZ `field_template_id` gönderildiğinde döner. Alan yerleşiminin
@@ -5934,13 +5973,15 @@ components:
               description: Sözleşmeye yazılan alan sayısı.
             on_anchor_miss:
               type: string
-              enum:
-                - block
-                - drop
-              description: |
+              description: |-
                 İstenen değil, **uygulanan** davranış. `drop` istenip
                 uygulanamadıysa burada `block` görürsünüz ve `warnings`
                 içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.
+
+                Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+              x-known-values:
+                - block
+                - drop
             warnings:
               type: array
               items:
@@ -5985,7 +6026,8 @@ components:
           example: ANCHOR_TEXT_NOT_FOUND
         severity:
           type: string
-          enum:
+          description: 'Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - ERROR
             - WARNING
         item_id:
@@ -6123,10 +6165,13 @@ components:
             reddedilmez.
         on_anchor_miss:
           type: string
-          enum:
+          description: |-
+            Uygulanan davranış (istenen değil).
+
+            Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
             - block
             - drop
-          description: Uygulanan davranış (istenen değil).
         placements_summary:
           type: object
           properties:
@@ -6213,6 +6258,17 @@ components:
             `CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE` döner.
 
             Bilinen değerler: signature, text, dynamic_text, cells, date, dropdown, checkbox, radio, stamp, contract_number. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
+            - signature
+            - text
+            - dynamic_text
+            - cells
+            - date
+            - dropdown
+            - checkbox
+            - radio
+            - stamp
+            - contract_number
         position_x:
           type: number
           minimum: 0
@@ -6351,7 +6407,8 @@ components:
           type: string
         status:
           type: string
-          enum:
+          description: 'Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - DRAFT
             - PENDING
             - COMPLETED
@@ -6426,7 +6483,8 @@ components:
                 example: Firma kaşesi
               source:
                 type: string
-                enum:
+                description: 'Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+                x-known-values:
                   - INLINE
                   - FROM_SAVED
                   - FILLER_PROVIDES
@@ -6479,7 +6537,8 @@ components:
           type: string
         doc_kind:
           type: string
-          enum:
+          description: 'Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - CONTRACT
             - KVKK_NOTICE
             - KVKK_CONSENT
@@ -6512,13 +6571,15 @@ components:
       properties:
         status:
           type: string
-          enum:
+          description: |-
+            `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir
+            kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
+
+            Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
             - PENDING
             - PARTIAL
             - COMPLETED
-          description: |
-            `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir
-            kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
         active_assigned_party_count:
           type: integer
           description: Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.
@@ -6538,7 +6599,8 @@ components:
       properties:
         status:
           type: string
-          enum:
+          description: 'Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - NONE
             - PENDING
             - SEALED
@@ -6557,15 +6619,17 @@ components:
           format: uuid
         decision:
           type: string
-          enum:
+          description: |-
+            Yürürlükteki karar. `PENDING` karar verilmediğini gösterir.
+            `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini
+            gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
+
+            Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
             - PENDING
             - ACCEPTED
             - DECLINED
             - WITHDRAWN
-          description: |
-            Yürürlükteki karar. `PENDING` karar verilmediğini gösterir.
-            `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini
-            gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
         decided_at:
           type: string
           format: date-time
@@ -6707,10 +6771,13 @@ components:
               nullable: true
             source:
               type: string
-              enum:
+              description: |-
+                Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
+
+                Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+              x-known-values:
                 - INLINE
                 - FILLER_PROVIDES
-              description: Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
             is_required:
               type: boolean
             stamp_data:
@@ -6737,7 +6804,8 @@ components:
             (DB'de unique key).
         type:
           type: string
-          enum:
+          description: 'Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - demand.created
             - demand.completed
             - demand.expired
@@ -6804,7 +6872,8 @@ components:
           type: string
         status:
           type: string
-          enum:
+          description: 'Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - COMPLETED
         completed_at:
           type: string
@@ -6948,7 +7017,8 @@ components:
         renewal_type:
           type: string
           nullable: true
-          enum:
+          description: 'Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - AUTO_RENEW
             - FIXED_TERM
         notice_deadline:
@@ -6958,12 +7028,15 @@ components:
           description: İhbar için son gün (`term_end_date - notice_days`); tanımsızsa `null`.
         term_state:
           type: string
-          enum:
+          description: |-
+            Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+
+            Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          x-known-values:
             - UNTRACKED
             - ACTIVE
             - ENDED
             - STOPPED
-          description: Olay anındaki takip durumu (bkz. `ContractTerm.state`).
         due_key:
           type: string
           nullable: true
@@ -6989,7 +7062,8 @@ components:
           description: 'Olay id''si: receiver tarafında idempotency anahtarı.'
         type:
           type: string
-          enum:
+          description: 'Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - kyc.completed
             - kyc.failed
         created_at:
@@ -7103,11 +7177,13 @@ components:
             - false
         code:
           type: string
-          enum:
+          description: 'Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - VERIFICATION_CONTEXT_REQUIRED
         error:
           type: string
-          enum:
+          description: 'Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - DOCUMENT_TYPE_INVALID
             - VERIFICATION_POLICY_INVALID
             - VERIFICATION_INSTRUCTION_INVALID
@@ -7127,11 +7203,13 @@ components:
             - false
         code:
           type: string
-          enum:
+          description: 'Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - DOCUMENT_VERIFICATION_DISABLED
         error:
           type: string
-          enum:
+          description: 'Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - DOCUMENT_VERIFICATION_DISABLED
     CodedError:
       type: object
@@ -7174,7 +7252,8 @@ components:
             code:
               type: string
               example: DEMAND_NOT_FOUND
-              enum:
+              description: 'Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+              x-known-values:
                 - INVALID_CHANNELS
                 - DEMAND_NOT_FOUND
                 - ALREADY_COMPLETED
@@ -7270,7 +7349,8 @@ components:
           format: date-time
         status:
           type: string
-          enum:
+          description: 'Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - ACTIVE
             - VERIFIED
             - EXPIRED
@@ -7370,7 +7450,8 @@ components:
           type: string
         doc_kind:
           type: string
-          enum:
+          description: 'Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - CONTRACT
             - KVKK_NOTICE
             - KVKK_CONSENT
@@ -7394,12 +7475,13 @@ components:
             onay/red kararı sayısı.
         sealing_status:
           type: string
-          enum:
+          nullable: true
+          description: 'Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.'
+          x-known-values:
             - NONE
             - PENDING
             - SEALED
             - FAILED
-          nullable: true
         has_timestamp:
           type: boolean
           description: |

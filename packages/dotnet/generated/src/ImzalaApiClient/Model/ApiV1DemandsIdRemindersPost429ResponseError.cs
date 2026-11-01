@@ -34,42 +34,24 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsIdRemindersPost429ResponseError : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum RATELIMITED for value: RATE_LIMITED
-            /// </summary>
-            [EnumMember(Value = "RATE_LIMITED")]
-            RATELIMITED = 1,
-
-            /// <summary>
-            /// Enum MAXSMSREMINDERSREACHED for value: MAX_SMS_REMINDERS_REACHED
-            /// </summary>
-            [EnumMember(Value = "MAX_SMS_REMINDERS_REACHED")]
-            MAXSMSREMINDERSREACHED = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        [DataMember(Name = "code", EmitDefaultValue = false)]
-        public CodeEnum? Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsIdRemindersPost429ResponseError" /> class.
         /// </summary>
-        /// <param name="code">code.</param>
+        /// <param name="code">Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="message">message.</param>
         /// <param name="retryAfterSeconds">Sadece RATE_LIMITED&#39;de.</param>
-        public ApiV1DemandsIdRemindersPost429ResponseError(CodeEnum? code = default, string message = default, int retryAfterSeconds = default)
+        public ApiV1DemandsIdRemindersPost429ResponseError(string code = default, string message = default, int retryAfterSeconds = default)
         {
             this.Code = code;
             this.Message = message;
             this.RetryAfterSeconds = retryAfterSeconds;
         }
+
+        /// <summary>
+        /// Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or Sets Message

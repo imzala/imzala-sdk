@@ -34,52 +34,26 @@ namespace ImzalaApiClient.Model
     public partial class DocumentProgress : IValidatableObject
     {
         /// <summary>
-        /// &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.
-        /// </summary>
-        /// <value>&#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum StatusEnum
-        {
-            /// <summary>
-            /// Enum PENDING for value: PENDING
-            /// </summary>
-            [EnumMember(Value = "PENDING")]
-            PENDING = 1,
-
-            /// <summary>
-            /// Enum PARTIAL for value: PARTIAL
-            /// </summary>
-            [EnumMember(Value = "PARTIAL")]
-            PARTIAL = 2,
-
-            /// <summary>
-            /// Enum COMPLETED for value: COMPLETED
-            /// </summary>
-            [EnumMember(Value = "COMPLETED")]
-            COMPLETED = 3
-        }
-
-
-        /// <summary>
-        /// &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.
-        /// </summary>
-        /// <value>&#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi. </value>
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public StatusEnum? Status { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentProgress" /> class.
         /// </summary>
-        /// <param name="status">&#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi. .</param>
+        /// <param name="status">&#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="activeAssignedPartyCount">Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı..</param>
         /// <param name="decidedPartyCount">Bunlardan bu belge için karar vermiş olanların sayısı..</param>
         /// <param name="completedAt">Belgenin kendi tamamlanma anı. Sistem bu anı kaydetmediyse &#x60;null&#x60; döner; zarfın tamamlanma zamanı bu alana kopyalanmaz. .</param>
-        public DocumentProgress(StatusEnum? status = default, int activeAssignedPartyCount = default, int decidedPartyCount = default, DateTime? completedAt = default)
+        public DocumentProgress(string status = default, int activeAssignedPartyCount = default, int decidedPartyCount = default, DateTime? completedAt = default)
         {
             this.Status = status;
             this.ActiveAssignedPartyCount = activeAssignedPartyCount;
             this.DecidedPartyCount = decidedPartyCount;
             this.CompletedAt = completedAt;
         }
+
+        /// <summary>
+        /// &#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>&#x60;PENDING&#x60;: henüz kimse karar vermedi. &#x60;PARTIAL&#x60;: tarafların bir kısmı karar verdi. &#x60;COMPLETED&#x60;: atanmış tüm taraflar karar verdi.  Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "status", EmitDefaultValue = false)]
+        public string Status { get; set; }
 
         /// <summary>
         /// Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.

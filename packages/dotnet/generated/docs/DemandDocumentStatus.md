@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **Id** | **Guid** |  | [optional]
 **Order** | **int** | 1&#39;den başlar. | [optional]
 **Title** | **string** |  | [optional]
-**DocKind** | **string** |  | [optional]
+**DocKind** | **string** | Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **IsRequired** | **bool** |  | [optional]
 **SignatureRequired** | **bool** |  | [optional]
 **AssignedPartyIds** | **List&lt;Guid&gt;** |  | [optional]

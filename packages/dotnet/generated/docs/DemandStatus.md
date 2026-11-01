@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **Guid** |  | [optional]
 **Title** | **string** |  | [optional]
-**Status** | **string** |  | [optional]
+**Status** | **string** | Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **CreatedAt** | **DateTime** |  | [optional]
 **CompletedAt** | **DateTime?** |  | [optional]
 **Parties** | [**List&lt;DemandStatusPartiesInner&gt;**](DemandStatusPartiesInner.md) |  | [optional]

@@ -7,24 +7,6 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**code** | [**CodeEnum**](#CodeEnum) |  |  |
+|**code** | **String** | Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |
 |**message** | **String** |  |  |
 |**retryAfterSeconds** | **Integer** | Sadece RATE_LIMITED&#39;de doludur |  [optional] |
-
-
-
-## Enum: CodeEnum
-
-| Name | Value |
-|---- | -----|
-| INVALID_CHANNELS | &quot;INVALID_CHANNELS&quot; |
-| DEMAND_NOT_FOUND | &quot;DEMAND_NOT_FOUND&quot; |
-| ALREADY_COMPLETED | &quot;ALREADY_COMPLETED&quot; |
-| RATE_LIMITED | &quot;RATE_LIMITED&quot; |
-| MAX_SMS_REMINDERS_REACHED | &quot;MAX_SMS_REMINDERS_REACHED&quot; |
-| DEMAND_NOT_DISPATCHED | &quot;DEMAND_NOT_DISPATCHED&quot; |
-| DEMAND_NOT_DISPATCHABLE | &quot;DEMAND_NOT_DISPATCHABLE&quot; |
-| DEMAND_EXPIRED | &quot;DEMAND_EXPIRED&quot; |
-| ENVELOPE_NOT_DISPATCHED | &quot;ENVELOPE_NOT_DISPATCHED&quot; |
-| UNAUTHORIZED | &quot;UNAUTHORIZED&quot; |
-| INTERNAL_ERROR | &quot;INTERNAL_ERROR&quot; |

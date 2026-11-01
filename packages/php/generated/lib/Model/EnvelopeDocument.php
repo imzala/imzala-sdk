@@ -314,48 +314,6 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
-    public const DOC_KIND_CONTRACT = 'CONTRACT';
-    public const DOC_KIND_KVKK_NOTICE = 'KVKK_NOTICE';
-    public const DOC_KIND_KVKK_CONSENT = 'KVKK_CONSENT';
-    public const DOC_KIND_PREINFO = 'PREINFO';
-    public const DOC_KIND_PRICE_LIST = 'PRICE_LIST';
-    public const DOC_KIND_OTHER = 'OTHER';
-    public const SEALING_STATUS_NONE = 'NONE';
-    public const SEALING_STATUS_PENDING = 'PENDING';
-    public const SEALING_STATUS_SEALED = 'SEALED';
-    public const SEALING_STATUS_FAILED = 'FAILED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getDocKindAllowableValues()
-    {
-        return [
-            self::DOC_KIND_CONTRACT,
-            self::DOC_KIND_KVKK_NOTICE,
-            self::DOC_KIND_KVKK_CONSENT,
-            self::DOC_KIND_PREINFO,
-            self::DOC_KIND_PRICE_LIST,
-            self::DOC_KIND_OTHER,
-        ];
-    }
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getSealingStatusAllowableValues()
-    {
-        return [
-            self::SEALING_STATUS_NONE,
-            self::SEALING_STATUS_PENDING,
-            self::SEALING_STATUS_SEALED,
-            self::SEALING_STATUS_FAILED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -415,24 +373,6 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getDocKindAllowableValues();
-        if (!is_null($this->container['doc_kind']) && !in_array($this->container['doc_kind'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'doc_kind', must be one of '%s'",
-                $this->container['doc_kind'],
-                implode("', '", $allowedValues)
-            );
-        }
-
-        $allowedValues = $this->getSealingStatusAllowableValues();
-        if (!is_null($this->container['sealing_status']) && !in_array($this->container['sealing_status'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'sealing_status', must be one of '%s'",
-                $this->container['sealing_status'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -543,7 +483,7 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets doc_kind
      *
-     * @param string|null $doc_kind doc_kind
+     * @param string|null $doc_kind Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -551,16 +491,6 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
     {
         if (is_null($doc_kind)) {
             throw new \InvalidArgumentException('non-nullable doc_kind cannot be null');
-        }
-        $allowedValues = $this->getDocKindAllowableValues();
-        if (!in_array($doc_kind, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'doc_kind', must be one of '%s'",
-                    $doc_kind,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['doc_kind'] = $doc_kind;
 
@@ -688,7 +618,7 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets sealing_status
      *
-     * @param string|null $sealing_status sealing_status
+     * @param string|null $sealing_status Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -703,16 +633,6 @@ class EnvelopeDocument implements ModelInterface, ArrayAccess, \JsonSerializable
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getSealingStatusAllowableValues();
-        if (!is_null($sealing_status) && !in_array($sealing_status, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'sealing_status', must be one of '%s'",
-                    $sealing_status,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['sealing_status'] = $sealing_status;
 

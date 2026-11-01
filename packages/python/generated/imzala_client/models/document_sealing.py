@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,19 +28,9 @@ class DocumentSealing(BaseModel):
     """
     Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
     """ # noqa: E501
-    status: Optional[StrictStr] = None
+    status: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     has_timestamp: Optional[StrictBool] = Field(default=None, description="Yalnız `status` `SEALED` iken `true` olabilir.")
     __properties: ClassVar[List[str]] = ["status", "has_timestamp"]
-
-    @field_validator('status')
-    def status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['NONE', 'PENDING', 'SEALED', 'FAILED']):
-            raise ValueError("must be one of enum values ('NONE', 'PENDING', 'SEALED', 'FAILED')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

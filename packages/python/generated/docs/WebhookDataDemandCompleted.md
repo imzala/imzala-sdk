@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **demand_id** | **UUID** |  |
 **title** | **str** |  |
-**status** | **str** |  |
+**status** | **str** | Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **completed_at** | **datetime** |  |
 **parties** | [**List[WebhookDataDemandCompletedPartiesInner]**](WebhookDataDemandCompletedPartiesInner.md) |  |
 **backfill** | **bool** | Replay bayrağı (yan etkileri atla) | [optional]

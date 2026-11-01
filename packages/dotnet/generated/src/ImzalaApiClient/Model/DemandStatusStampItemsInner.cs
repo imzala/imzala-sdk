@@ -34,37 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class DemandStatusStampItemsInner : IValidatableObject
     {
         /// <summary>
-        /// Defines Source
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum SourceEnum
-        {
-            /// <summary>
-            /// Enum INLINE for value: INLINE
-            /// </summary>
-            [EnumMember(Value = "INLINE")]
-            INLINE = 1,
-
-            /// <summary>
-            /// Enum FROMSAVED for value: FROM_SAVED
-            /// </summary>
-            [EnumMember(Value = "FROM_SAVED")]
-            FROMSAVED = 2,
-
-            /// <summary>
-            /// Enum FILLERPROVIDES for value: FILLER_PROVIDES
-            /// </summary>
-            [EnumMember(Value = "FILLER_PROVIDES")]
-            FILLERPROVIDES = 3
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Source
-        /// </summary>
-        [DataMember(Name = "source", EmitDefaultValue = false)]
-        public SourceEnum? Source { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DemandStatusStampItemsInner" /> class.
         /// </summary>
         /// <param name="itemId">itemId.</param>
@@ -72,10 +41,10 @@ namespace ImzalaApiClient.Model
         /// <param name="documentId">documentId.</param>
         /// <param name="slug">slug.</param>
         /// <param name="label">label.</param>
-        /// <param name="source">source.</param>
+        /// <param name="source">Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="partyId">Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf.</param>
         /// <param name="isRequired">isRequired.</param>
-        public DemandStatusStampItemsInner(int itemId = default, int pageId = default, string documentId = default, string slug = default, string label = default, SourceEnum? source = default, Guid? partyId = default, bool isRequired = default)
+        public DemandStatusStampItemsInner(int itemId = default, int pageId = default, string documentId = default, string slug = default, string label = default, string source = default, Guid? partyId = default, bool isRequired = default)
         {
             this.ItemId = itemId;
             this.PageId = pageId;
@@ -128,6 +97,13 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "label", EmitDefaultValue = true)]
         public string Label { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "source", EmitDefaultValue = false)]
+        public string Source { get; set; }
 
         /// <summary>
         /// Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf

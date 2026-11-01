@@ -37,64 +37,11 @@ import org.imzala.client.generated.ApiClient;
   StandardErrorError.JSON_PROPERTY_MESSAGE,
   StandardErrorError.JSON_PROPERTY_RETRY_AFTER_SECONDS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class StandardErrorError {
-  /**
-   * Gets or Sets code
-   */
-  public enum CodeEnum {
-    INVALID_CHANNELS(String.valueOf("INVALID_CHANNELS")),
-
-    DEMAND_NOT_FOUND(String.valueOf("DEMAND_NOT_FOUND")),
-
-    ALREADY_COMPLETED(String.valueOf("ALREADY_COMPLETED")),
-
-    RATE_LIMITED(String.valueOf("RATE_LIMITED")),
-
-    MAX_SMS_REMINDERS_REACHED(String.valueOf("MAX_SMS_REMINDERS_REACHED")),
-
-    DEMAND_NOT_DISPATCHED(String.valueOf("DEMAND_NOT_DISPATCHED")),
-
-    DEMAND_NOT_DISPATCHABLE(String.valueOf("DEMAND_NOT_DISPATCHABLE")),
-
-    DEMAND_EXPIRED(String.valueOf("DEMAND_EXPIRED")),
-
-    ENVELOPE_NOT_DISPATCHED(String.valueOf("ENVELOPE_NOT_DISPATCHED")),
-
-    UNAUTHORIZED(String.valueOf("UNAUTHORIZED")),
-
-    INTERNAL_ERROR(String.valueOf("INTERNAL_ERROR"));
-
-    private String value;
-
-    CodeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static CodeEnum fromValue(String value) {
-      for (CodeEnum b : CodeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_CODE = "code";
   @javax.annotation.Nonnull
-  private CodeEnum code;
+  private String code;
 
   public static final String JSON_PROPERTY_MESSAGE = "message";
   @javax.annotation.Nonnull
@@ -107,26 +54,26 @@ public class StandardErrorError {
   public StandardErrorError() {
   }
 
-  public StandardErrorError code(@javax.annotation.Nonnull CodeEnum code) {
+  public StandardErrorError code(@javax.annotation.Nonnull String code) {
     this.code = code;
     return this;
   }
 
   /**
-   * Get code
+   * Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return code
    */
   @javax.annotation.Nonnull
   @JsonProperty(value = JSON_PROPERTY_CODE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public CodeEnum getCode() {
+  public String getCode() {
     return code;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_CODE, required = true)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setCode(@javax.annotation.Nonnull CodeEnum code) {
+  public void setCode(@javax.annotation.Nonnull String code) {
     this.code = code;
   }
 

@@ -34,68 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class DocumentCollectionPolicyError : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum VERIFICATIONCONTEXTREQUIRED for value: VERIFICATION_CONTEXT_REQUIRED
-            /// </summary>
-            [EnumMember(Value = "VERIFICATION_CONTEXT_REQUIRED")]
-            VERIFICATIONCONTEXTREQUIRED = 1
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
-        public CodeEnum Code { get; set; }
-        /// <summary>
-        /// Defines Error
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DOCUMENTTYPEINVALID for value: DOCUMENT_TYPE_INVALID
-            /// </summary>
-            [EnumMember(Value = "DOCUMENT_TYPE_INVALID")]
-            DOCUMENTTYPEINVALID = 1,
-
-            /// <summary>
-            /// Enum VERIFICATIONPOLICYINVALID for value: VERIFICATION_POLICY_INVALID
-            /// </summary>
-            [EnumMember(Value = "VERIFICATION_POLICY_INVALID")]
-            VERIFICATIONPOLICYINVALID = 2,
-
-            /// <summary>
-            /// Enum VERIFICATIONINSTRUCTIONINVALID for value: VERIFICATION_INSTRUCTION_INVALID
-            /// </summary>
-            [EnumMember(Value = "VERIFICATION_INSTRUCTION_INVALID")]
-            VERIFICATIONINSTRUCTIONINVALID = 3,
-
-            /// <summary>
-            /// Enum VERIFICATIONCONTEXTREQUIRED for value: VERIFICATION_CONTEXT_REQUIRED
-            /// </summary>
-            [EnumMember(Value = "VERIFICATION_CONTEXT_REQUIRED")]
-            VERIFICATIONCONTEXTREQUIRED = 4,
-
-            /// <summary>
-            /// Enum VERIFICATIONPOLICYCONFLICT for value: VERIFICATION_POLICY_CONFLICT
-            /// </summary>
-            [EnumMember(Value = "VERIFICATION_POLICY_CONFLICT")]
-            VERIFICATIONPOLICYCONFLICT = 5
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Error
-        /// </summary>
-        [DataMember(Name = "error", IsRequired = true, EmitDefaultValue = true)]
-        public ErrorEnum Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="DocumentCollectionPolicyError" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -104,12 +42,22 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="DocumentCollectionPolicyError" /> class.
         /// </summary>
         /// <param name="success">success (required).</param>
-        /// <param name="code">code (required).</param>
-        /// <param name="error">error (required).</param>
-        public DocumentCollectionPolicyError(bool success = default, CodeEnum code = default, ErrorEnum error = default)
+        /// <param name="code">Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
+        /// <param name="error">Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
+        public DocumentCollectionPolicyError(bool success = default, string code = default, string error = default)
         {
             this.Success = success;
+            // to ensure "code" is required (not null)
+            if (code == null)
+            {
+                throw new ArgumentNullException("code is a required property for DocumentCollectionPolicyError and cannot be null");
+            }
             this.Code = code;
+            // to ensure "error" is required (not null)
+            if (error == null)
+            {
+                throw new ArgumentNullException("error is a required property for DocumentCollectionPolicyError and cannot be null");
+            }
             this.Error = error;
         }
 
@@ -118,6 +66,20 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "success", IsRequired = true, EmitDefaultValue = true)]
         public bool Success { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID, VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", IsRequired = true, EmitDefaultValue = true)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

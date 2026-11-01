@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **Id** | **Guid** |  | [optional]
 **Order** | **int** | Şablondaki sıra (1&#39;den başlar) | [optional]
 **Title** | **string** |  | [optional]
-**DocKind** | **string** |  | [optional]
+**DocKind** | **string** | Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **IsRequired** | **bool** | İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri SEÇMEKLE ilgisi yoktur: zorunlu belge de &#x60;documents.exclude&#x60; ile bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (örneğin &#x60;doc_kind: PREINFO&#x60; ön bilgilendirme formu veya &#x60;KVKK_NOTICE&#x60; aydınlatma metni) başka bir kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir.  | [optional]
 **SignatureRequired** | **bool** |  | [optional]
 **DefaultIncluded** | **bool** | İstek &#x60;documents&#x60; belirtmezse bu belge imza sürecine (zarfa) dahil edilir mi. | [optional]

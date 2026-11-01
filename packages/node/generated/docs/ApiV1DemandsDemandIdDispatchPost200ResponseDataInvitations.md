@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **sent** | **number** | En az bir kanaldan başarıyla gönderilen taraf sayısı. | [optional] [default to undefined]
 **results** | [**Array&lt;ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner&gt;**](ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner.md) |  | [optional] [default to undefined]
-**error** | **string** | &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)  | [optional] [default to undefined]
+**error** | **string** | &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, körlemesine gönderim yapılmadı. (Taraf sayısı tavanı bu uçta davet fazından ÖNCE denetlenir ve **409 &#x60;DISPATCH_TOO_MANY&#x60;** olarak döner; 200 gövdesinde görünmez.)  Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 
 ## Example
 

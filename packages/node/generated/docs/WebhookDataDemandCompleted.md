@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **demand_id** | **string** |  | [default to undefined]
 **title** | **string** |  | [default to undefined]
-**status** | **string** |  | [default to undefined]
+**status** | **string** | Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [default to undefined]
 **completed_at** | **string** |  | [default to undefined]
 **parties** | [**Array&lt;WebhookDataDemandCompletedPartiesInner&gt;**](WebhookDataDemandCompletedPartiesInner.md) |  | [default to undefined]
 **_backfill** | **boolean** | Replay bayrağı (yan etkileri atla) | [optional] [default to undefined]

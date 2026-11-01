@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -32,22 +32,12 @@ class TemplateDocumentSummary(BaseModel):
     id: Optional[UUID] = None
     order: Optional[StrictInt] = Field(default=None, description="Şablondaki sıra (1'den başlar)")
     title: Optional[StrictStr] = None
-    doc_kind: Optional[StrictStr] = None
+    doc_kind: Optional[StrictStr] = Field(default=None, description="Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.")
     is_required: Optional[StrictBool] = Field(default=None, description="İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri SEÇMEKLE ilgisi yoktur: zorunlu belge de `documents.exclude` ile bu imza sürecinden çıkarılabilir. Mevzuat gereği karşı tarafa verilmesi gereken bir belgeyi (örneğin `doc_kind: PREINFO` ön bilgilendirme formu veya `KVKK_NOTICE` aydınlatma metni) başka bir kanaldan vermiyorsanız çıkarmayın; bu belgelerin verilmesi yükümlülüğü sözleşmeyi gönderene aittir. ")
     signature_required: Optional[StrictBool] = None
     default_included: Optional[StrictBool] = Field(default=None, description="İstek `documents` belirtmezse bu belge imza sürecine (zarfa) dahil edilir mi.")
     assigned_template_party_ids: Optional[List[UUID]] = Field(default=None, description="Bu belgeyi imzalayacak şablon rollerinin kimlikleri (`parties[].id` ve `party_mapping[].template_party_id` ile aynı küme). Sözleşme uçlarındaki `assigned_party_ids` (imzacı kimliği) ile karıştırmayın. ")
     __properties: ClassVar[List[str]] = ["id", "order", "title", "doc_kind", "is_required", "signature_required", "default_included", "assigned_template_party_ids"]
-
-    @field_validator('doc_kind')
-    def doc_kind_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER']):
-            raise ValueError("must be one of enum values ('CONTRACT', 'KVKK_NOTICE', 'KVKK_CONSENT', 'PREINFO', 'PRICE_LIST', 'OTHER')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

@@ -34,43 +34,16 @@ namespace ImzalaApiClient.Model
     public partial class PatchStampItemResponseData : IValidatableObject
     {
         /// <summary>
-        /// Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
-        /// </summary>
-        /// <value>Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)</value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum SourceEnum
-        {
-            /// <summary>
-            /// Enum INLINE for value: INLINE
-            /// </summary>
-            [EnumMember(Value = "INLINE")]
-            INLINE = 1,
-
-            /// <summary>
-            /// Enum FILLERPROVIDES for value: FILLER_PROVIDES
-            /// </summary>
-            [EnumMember(Value = "FILLER_PROVIDES")]
-            FILLERPROVIDES = 2
-        }
-
-
-        /// <summary>
-        /// Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
-        /// </summary>
-        /// <value>Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)</value>
-        [DataMember(Name = "source", EmitDefaultValue = false)]
-        public SourceEnum? Source { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="PatchStampItemResponseData" /> class.
         /// </summary>
         /// <param name="itemId">itemId.</param>
         /// <param name="pageId">pageId.</param>
         /// <param name="documentId">documentId.</param>
         /// <param name="partyId">partyId.</param>
-        /// <param name="source">Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur).</param>
+        /// <param name="source">Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="isRequired">isRequired.</param>
         /// <param name="stampData">Güncelleme sonrası kaşe verisinin tamamı..</param>
-        public PatchStampItemResponseData(int itemId = default, int pageId = default, string documentId = default, Guid? partyId = default, SourceEnum? source = default, bool isRequired = default, Dictionary<string, Object> stampData = default)
+        public PatchStampItemResponseData(int itemId = default, int pageId = default, string documentId = default, Guid? partyId = default, string source = default, bool isRequired = default, Dictionary<string, Object> stampData = default)
         {
             this.ItemId = itemId;
             this.PageId = pageId;
@@ -110,6 +83,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "party_id", EmitDefaultValue = true)]
         public Guid? PartyId { get; set; }
+
+        /// <summary>
+        /// Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)  Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "source", EmitDefaultValue = false)]
+        public string Source { get; set; }
 
         /// <summary>
         /// Gets or Sets IsRequired

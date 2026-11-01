@@ -11,12 +11,4 @@
 |**sms** | **Boolean** |  |  [optional] |
 |**email** | **Boolean** |  |  [optional] |
 |**whatsapp** | **Boolean** |  |  [optional] |
-|**error** | [**ErrorEnum**](#ErrorEnum) | Yalnız o taraf için gönderim patladığında döner. |  [optional] |
-
-
-
-## Enum: ErrorEnum
-
-| Name | Value |
-|---- | -----|
-| DISPATCH_FAILED | &quot;DISPATCH_FAILED&quot; |
+|**error** | **String** | Yalnız o taraf için gönderim patladığında döner.  Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  [optional] |

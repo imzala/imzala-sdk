@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **OriginalFileName** | **string** |  | [optional]
 **OriginalFileSize** | **int** |  | [optional]
 **TimestampDate** | **DateTime** |  | [optional]
-**Status** | **string** |  | [optional]
+**Status** | **string** | Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **Description** | **string** |  | [optional]
 **CreatedAt** | **DateTime** |  | [optional]
 **TimestampFileUrl** | **string** |  | [optional]

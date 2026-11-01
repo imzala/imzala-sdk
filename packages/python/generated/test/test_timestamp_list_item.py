@@ -40,7 +40,7 @@ class TestTimestampListItem(unittest.TestCase):
                 original_file_name = '',
                 original_file_size = 56,
                 timestamp_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
-                status = 'ACTIVE',
+                status = '',
                 description = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 timestamp_file_url = ''

@@ -41,7 +41,7 @@ class TestApiV1MeGet200ResponseData(unittest.TestCase):
                 first_name = '',
                 last_name = '',
                 workspace = imzala_client.models._api_v1_me_get_200_response_data_workspace._api_v1_me_get_200_response_data_workspace(
-                    type = 'personal',
+                    type = '',
                     organization_id = '', ),
                 credits = imzala_client.models._api_v1_me_get_200_response_data_credits._api_v1_me_get_200_response_data_credits(
                     remaining = 56, )

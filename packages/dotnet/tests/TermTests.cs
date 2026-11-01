@@ -152,7 +152,7 @@ public class TermTests : IDisposable
         };
         update.Clear.Add("notice_days");
         var result = await Client(srv).Demands.UpdateTermAsync(Demand, update);
-        Assert.Equal(ContractTerm.RenewalTypeEnum.AUTORENEW, result.Term.RenewalType);
+        Assert.Equal("AUTO_RENEW", result.Term.RenewalType);
         var call = srv.Calls[0];
         Assert.Equal("PATCH", call.Method);
         Assert.Equal($"/api/v1/demands/{Demand}/term", call.Uri);

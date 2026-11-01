@@ -34,41 +34,13 @@ namespace ImzalaApiClient.Model
     public partial class ApiV1DemandsPost500Response : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum RECONCILEFAILED for value: RECONCILE_FAILED
-            /// </summary>
-            [EnumMember(Value = "RECONCILE_FAILED")]
-            RECONCILEFAILED = 1,
-
-            /// <summary>
-            /// Enum DISPATCHPREPARATIONFAILED for value: DISPATCH_PREPARATION_FAILED
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_PREPARATION_FAILED")]
-            DISPATCHPREPARATIONFAILED = 2
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        /*
-        <example>RECONCILE_FAILED</example>
-        */
-        [DataMember(Name = "code", EmitDefaultValue = false)]
-        public CodeEnum? Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsPost500Response" /> class.
         /// </summary>
         /// <param name="success">success.</param>
         /// <param name="error">error.</param>
-        /// <param name="code">code.</param>
+        /// <param name="code">Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
         /// <param name="data">data.</param>
-        public ApiV1DemandsPost500Response(bool success = default, string error = default, CodeEnum? code = default, ApiV1DemandsPost402ResponseData data = default)
+        public ApiV1DemandsPost500Response(bool success = default, string error = default, string code = default, ApiV1DemandsPost402ResponseData data = default)
         {
             this.Success = success;
             this.Error = error;
@@ -93,6 +65,16 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "error", EmitDefaultValue = false)]
         public string Error { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>RECONCILE_FAILED</example>
+        */
+        [DataMember(Name = "code", EmitDefaultValue = false)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or Sets Data

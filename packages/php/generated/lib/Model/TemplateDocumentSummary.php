@@ -272,29 +272,6 @@ class TemplateDocumentSummary implements ModelInterface, ArrayAccess, \JsonSeria
         return self::$openAPIModelName;
     }
 
-    public const DOC_KIND_CONTRACT = 'CONTRACT';
-    public const DOC_KIND_KVKK_NOTICE = 'KVKK_NOTICE';
-    public const DOC_KIND_KVKK_CONSENT = 'KVKK_CONSENT';
-    public const DOC_KIND_PREINFO = 'PREINFO';
-    public const DOC_KIND_PRICE_LIST = 'PRICE_LIST';
-    public const DOC_KIND_OTHER = 'OTHER';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getDocKindAllowableValues()
-    {
-        return [
-            self::DOC_KIND_CONTRACT,
-            self::DOC_KIND_KVKK_NOTICE,
-            self::DOC_KIND_KVKK_CONSENT,
-            self::DOC_KIND_PREINFO,
-            self::DOC_KIND_PRICE_LIST,
-            self::DOC_KIND_OTHER,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -347,15 +324,6 @@ class TemplateDocumentSummary implements ModelInterface, ArrayAccess, \JsonSeria
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getDocKindAllowableValues();
-        if (!is_null($this->container['doc_kind']) && !in_array($this->container['doc_kind'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'doc_kind', must be one of '%s'",
-                $this->container['doc_kind'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -466,7 +434,7 @@ class TemplateDocumentSummary implements ModelInterface, ArrayAccess, \JsonSeria
     /**
      * Sets doc_kind
      *
-     * @param string|null $doc_kind doc_kind
+     * @param string|null $doc_kind Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -474,16 +442,6 @@ class TemplateDocumentSummary implements ModelInterface, ArrayAccess, \JsonSeria
     {
         if (is_null($doc_kind)) {
             throw new \InvalidArgumentException('non-nullable doc_kind cannot be null');
-        }
-        $allowedValues = $this->getDocKindAllowableValues();
-        if (!in_array($doc_kind, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'doc_kind', must be one of '%s'",
-                    $doc_kind,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['doc_kind'] = $doc_kind;
 

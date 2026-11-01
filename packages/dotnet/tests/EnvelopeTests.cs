@@ -228,7 +228,7 @@ public class EnvelopeTests : IDisposable
                 new StampData(companyName: "Örnek Ltd.", companyPhone: "+905551112233", taxOffice: ""),
                 documentId: Doc.ToString()));
         Assert.Equal(42, result.ItemId);
-        Assert.Equal(PatchStampItemResponseData.SourceEnum.INLINE, result.Source);
+        Assert.Equal("INLINE", result.Source);
         var call = srv.Calls[0];
         Assert.Equal("PATCH", call.Method);
         Assert.Equal($"/api/v1/demands/{Demand}/items/42/stamp", call.Uri);

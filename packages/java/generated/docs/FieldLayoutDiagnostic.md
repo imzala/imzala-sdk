@@ -9,7 +9,7 @@ Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidi
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**code** | **String** |  |  |
-|**severity** | [**SeverityEnum**](#SeverityEnum) |  |  |
+|**severity** | **String** | Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |  |
 |**itemId** | **Integer** | Şablon alanının kimliği. &#x60;-1&#x60; belge/taraf düzeyindeki tanılar için kullanılan sentinel değerdir.  |  |
 |**slug** | **String** |  |  [optional] |
 |**label** | **String** |  |  [optional] |
@@ -17,12 +17,3 @@ Alan yerleşimi tanısı. `code` makine sözleşmesidir, `message` insan metnidi
 |**page** | **Integer** | 1 tabanlı sayfa numarası; bilinmiyorsa null. |  [optional] |
 |**message** | **String** |  |  |
 |**detail** | **Map&lt;String, Object&gt;** | Koda göre değişen, kapalı bir anahtar kümesi (yalnız sayısal değerler ve alan kimlikleri).  |  [optional] |
-
-
-
-## Enum: SeverityEnum
-
-| Name | Value |
-|---- | -----|
-| ERROR | &quot;ERROR&quot; |
-| WARNING | &quot;WARNING&quot; |

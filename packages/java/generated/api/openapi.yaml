@@ -3941,7 +3941,7 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 5
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           default_included: true
@@ -3951,7 +3951,7 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 5
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           default_included: true
@@ -4008,7 +4008,16 @@ components:
         is_required:
           type: boolean
         default_locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
       type: object
     TemplateDocumentSummary:
       description: |
@@ -4023,7 +4032,7 @@ components:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         order: 5
         title: title
-        doc_kind: CONTRACT
+        doc_kind: doc_kind
         is_required: true
         signature_required: true
         default_included: true
@@ -4040,14 +4049,17 @@ components:
         title:
           type: string
         doc_kind:
-          enum:
+          description: "Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO,\
+            \ PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen\
+            \ değeri hata saymayın."
+          type: string
+          x-known-values:
           - CONTRACT
           - KVKK_NOTICE
           - KVKK_CONSENT
           - PREINFO
           - PRICE_LIST
           - OTHER
-          type: string
         is_required:
           description: |
             İmzacının bu belgeyi atlayıp atlayamayacağı. Gönderilecek belgeleri
@@ -4127,9 +4139,11 @@ components:
         error:
           type: string
         code:
-          enum:
-          - INVALID_DOCUMENT_SELECTION
+          description: "Bilinen değerler: INVALID_DOCUMENT_SELECTION. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
           type: string
+          x-known-values:
+          - INVALID_DOCUMENT_SELECTION
         details:
           $ref: "#/components/schemas/DocumentSelectionError_details"
       type: object
@@ -4157,6 +4171,13 @@ components:
 
             Bilinen değerler: dynamic_text, cells, date, dropdown, text, stamp. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           type: string
+          x-known-values:
+          - dynamic_text
+          - cells
+          - date
+          - dropdown
+          - text
+          - stamp
         is_required:
           type: boolean
         default_source:
@@ -4214,7 +4235,7 @@ components:
       type: object
     TemplateUsage:
       example:
-        kind: DOCUMENT
+        kind: kind
         form_fields:
         - key: key
           type: type
@@ -4302,15 +4323,17 @@ components:
           json: "{}"
       properties:
         kind:
-          description: |
+          description: |-
             Rehberin anlattığı akış. Bu uç yalnız belgeli şablonu çözer,
             dolayısıyla burada daima `DOCUMENT` döner (Alan Şablonu bu uçta
             404'tür; kimliği `GET /api/v1/field-templates` ile öğrenilir ve
             `POST /api/v1/demands/upload` ile kullanılır).
-          enum:
+
+            Bilinen değerler: DOCUMENT, FIELD_LAYOUT. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - DOCUMENT
           - FIELD_LAYOUT
-          type: string
         form_fields:
           description: |
             `multipart/form-data` alanları. Belgeli şablon JSON gövde
@@ -4349,15 +4372,16 @@ components:
           $ref: "#/components/schemas/TemplateUsage_example_request"
       type: object
     SignerLocale:
-      description: "İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı\
-        )."
-      enum:
-      - tr
-      - en
-      - null
+      description: |-
+        İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+        Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
       example: en
       nullable: true
       type: string
+      x-known-values:
+      - tr
+      - en
     PartyMappingInput:
       example:
         template_party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -4404,7 +4428,16 @@ components:
           default: true
           type: boolean
         locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
         require_phone_verification:
           description: Telefon doğrulamasını (SMS ile gelen kod) yalnız bu taraf için
             açar (`true`) ya da kapatır (`false`). Gönderilmezse veya `null` gönderilirse
@@ -4462,13 +4495,13 @@ components:
         yenilendiği, tarafların kendi sözleşme hükümlerine ve yürürlükteki
         hukuka tabidir. Bu alan yalnız hatırlatma ve görünürlük sağlar.
       example:
-        start_mode: FIXED_DATE
+        start_mode: start_mode
         start_date: 2000-01-23
         duration_months: 48
         fixed_end_date: 2000-01-23
         end_date: 2000-01-23
         end_date_signed: 2000-01-23
-        renewal_type: AUTO_RENEW
+        renewal_type: renewal_type
         renewal_period_months: 362
         notice_days: 535
         notice_deadline: 2000-01-23
@@ -4479,21 +4512,23 @@ components:
         - 2176
         - 2176
         notify_counterparty: true
-        state: UNTRACKED
+        state: state
         days_left: 5
         renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
       properties:
         start_mode:
-          description: |
+          description: |-
             Takibin ne zaman başladığı. `FIXED_DATE`: `start_date`'ten.
             `ON_FIRST_SIGNATURE` / `ON_COMPLETION`: ilk imza / tüm imzalar
             tamamlandığı anda otomatik (o ana kadar `end_date` bilinmez).
-          enum:
+
+            Bilinen değerler: FIXED_DATE, ON_FIRST_SIGNATURE, ON_COMPLETION. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          nullable: true
+          type: string
+          x-known-values:
           - FIXED_DATE
           - ON_FIRST_SIGNATURE
           - ON_COMPLETION
-          nullable: true
-          type: string
         start_date:
           format: date
           nullable: true
@@ -4525,11 +4560,13 @@ components:
           nullable: true
           type: string
         renewal_type:
-          enum:
-          - AUTO_RENEW
-          - FIXED_TERM
+          description: "Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni\
+            \ değer ekleyebilir; bilinmeyen değeri hata saymayın."
           nullable: true
           type: string
+          x-known-values:
+          - AUTO_RENEW
+          - FIXED_TERM
         renewal_period_months:
           maximum: 600
           minimum: 1
@@ -4560,16 +4597,18 @@ components:
           description: Karşı tarafa da hatırlatma gönderilsin mi.
           type: boolean
         state:
-          description: |
+          description: |-
             `UNTRACKED`: takip yok (`end_date` bilinmiyor). `ACTIVE`: takip
             sürüyor. `ENDED`: `FIXED_TERM` sözleşmenin bitiş tarihi geçti.
             `STOPPED`: yenileme takibi kullanıcı tarafından durduruldu.
-          enum:
+
+            Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - UNTRACKED
           - ACTIVE
           - ENDED
           - STOPPED
-          type: string
         days_left:
           description: Bugünden `end_date`'e gün sayısı (negatifse geçmişte).
           nullable: true
@@ -5202,11 +5241,13 @@ components:
         title:
           type: string
         status:
-          enum:
-          - DRAFT
-          - PENDING
+          description: "Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değ\
+            er ekleyebilir; bilinmeyen değeri hata saymayın."
           example: PENDING
           type: string
+          x-known-values:
+          - DRAFT
+          - PENDING
         template_id:
           format: uuid
           type: string
@@ -5343,17 +5384,17 @@ components:
             sms: true
             email: true
             whatsapp: true
-            error: DISPATCH_FAILED
+            error: error
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             sms: true
             email: true
             whatsapp: true
-            error: DISPATCH_FAILED
-          error: DISPATCH_SKIPPED
+            error: error
+          error: error
         field_layout:
           template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           applied_fields: 6
-          on_anchor_miss: block
+          on_anchor_miss: on_anchor_miss
           warnings:
           - code: ON_ANCHOR_MISS_NOT_RELAXED
             message: message
@@ -5361,7 +5402,7 @@ components:
             message: message
           diagnostics:
           - code: ANCHOR_TEXT_NOT_FOUND
-            severity: ERROR
+            severity: severity
             item_id: 1
             slug: slug
             label: label
@@ -5371,7 +5412,7 @@ components:
             detail:
               key: ""
           - code: ANCHOR_TEXT_NOT_FOUND
-            severity: ERROR
+            severity: severity
             item_id: 1
             slug: slug
             label: label
@@ -5436,7 +5477,7 @@ components:
         metni, dosya adı) bu yapıya girmez.
       example:
         code: ANCHOR_TEXT_NOT_FOUND
-        severity: ERROR
+        severity: severity
         item_id: 1
         slug: slug
         label: label
@@ -5450,10 +5491,12 @@ components:
           example: ANCHOR_TEXT_NOT_FOUND
           type: string
         severity:
-          enum:
+          description: "Bilinen değerler: ERROR, WARNING. Sunucu ileride yeni değ\
+            er ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - ERROR
           - WARNING
-          type: string
         item_id:
           description: |
             Şablon alanının kimliği. `-1` belge/taraf düzeyindeki tanılar için
@@ -5498,7 +5541,7 @@ components:
         message: message
         diagnostics:
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -5508,7 +5551,7 @@ components:
           detail:
             key: ""
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -5645,7 +5688,7 @@ components:
         template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         page_count: 0
         resolvable: true
-        on_anchor_miss: block
+        on_anchor_miss: on_anchor_miss
         placements_summary:
           total: 6
           by_item_type:
@@ -5658,7 +5701,7 @@ components:
             count: 5
         diagnostics:
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -5668,7 +5711,7 @@ components:
           detail:
             key: ""
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -5696,11 +5739,14 @@ components:
             reddedilmez.
           type: boolean
         on_anchor_miss:
-          description: Uygulanan davranış (istenen değil).
-          enum:
+          description: |-
+            Uygulanan davranış (istenen değil).
+
+            Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - block
           - drop
-          type: string
         placements_summary:
           $ref: "#/components/schemas/FieldLayoutPreview_placements_summary"
         diagnostics:
@@ -5775,6 +5821,17 @@ components:
 
             Bilinen değerler: signature, text, dynamic_text, cells, date, dropdown, checkbox, radio, stamp, contract_number. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           type: string
+          x-known-values:
+          - signature
+          - text
+          - dynamic_text
+          - cells
+          - date
+          - dropdown
+          - checkbox
+          - radio
+          - stamp
+          - contract_number
         position_x:
           description: Sayfa genişliğine göre x koordinatı (sol=0)
           maximum: 1
@@ -5930,7 +5987,7 @@ components:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         title: title
-        status: DRAFT
+        status: status
         created_at: 2000-01-23T04:56:07.000+00:00
         completed_at: 2000-01-23T04:56:07.000+00:00
         parties:
@@ -5960,7 +6017,7 @@ components:
           document_id: document_id
           slug: firma_kasesi
           label: Firma kaşesi
-          source: INLINE
+          source: source
           party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           is_required: true
         - item_id: 4821
@@ -5968,7 +6025,7 @@ components:
           document_id: document_id
           slug: firma_kasesi
           label: Firma kaşesi
-          source: INLINE
+          source: source
           party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           is_required: true
         result_url: https://openapi-generator.tech
@@ -5977,30 +6034,30 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           assigned_party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           progress:
-            status: PENDING
+            status: status
             active_assigned_party_count: 6
             decided_party_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
           sealing:
-            status: NONE
+            status: status
             has_timestamp: true
           decisions:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
             recorded: true
             consent_granted: true
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
@@ -6009,30 +6066,30 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           assigned_party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           progress:
-            status: PENDING
+            status: status
             active_assigned_party_count: 6
             decided_party_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
           sealing:
-            status: NONE
+            status: status
             has_timestamp: true
           decisions:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
             recorded: true
             consent_granted: true
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
@@ -6047,13 +6104,16 @@ components:
         title:
           type: string
         status:
-          enum:
+          description: "Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          type: string
+          x-known-values:
           - DRAFT
           - PENDING
           - COMPLETED
           - EXPIRED
           - CANCELLED
-          type: string
         created_at:
           format: date-time
           type: string
@@ -6110,30 +6170,30 @@ components:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         order: 0
         title: title
-        doc_kind: CONTRACT
+        doc_kind: doc_kind
         is_required: true
         signature_required: true
         assigned_party_ids:
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         progress:
-          status: PENDING
+          status: status
           active_assigned_party_count: 6
           decided_party_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
         sealing:
-          status: NONE
+          status: status
           has_timestamp: true
         decisions:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          decision: PENDING
+          decision: decision
           decided_at: 2000-01-23T04:56:07.000+00:00
           withdrawn_at: 2000-01-23T04:56:07.000+00:00
           signature_collected: true
           recorded: true
           consent_granted: true
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          decision: PENDING
+          decision: decision
           decided_at: 2000-01-23T04:56:07.000+00:00
           withdrawn_at: 2000-01-23T04:56:07.000+00:00
           signature_collected: true
@@ -6149,14 +6209,17 @@ components:
         title:
           type: string
         doc_kind:
-          enum:
+          description: "Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO,\
+            \ PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen\
+            \ değeri hata saymayın."
+          type: string
+          x-known-values:
           - CONTRACT
           - KVKK_NOTICE
           - KVKK_CONSENT
           - PREINFO
           - PRICE_LIST
           - OTHER
-          type: string
         is_required:
           type: boolean
         signature_required:
@@ -6181,20 +6244,22 @@ components:
         bağımsızdır: `COMPLETED`, belgeye atanmış tüm tarafların bu belge için
         karar verdiğini gösterir (isteğe bağlı bir belgede ret de karardır).
       example:
-        status: PENDING
+        status: status
         active_assigned_party_count: 6
         decided_party_count: 1
         completed_at: 2000-01-23T04:56:07.000+00:00
       properties:
         status:
-          description: |
+          description: |-
             `PENDING`: henüz kimse karar vermedi. `PARTIAL`: tarafların bir
             kısmı karar verdi. `COMPLETED`: atanmış tüm taraflar karar verdi.
-          enum:
+
+            Bilinen değerler: PENDING, PARTIAL, COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - PENDING
           - PARTIAL
           - COMPLETED
-          type: string
         active_assigned_party_count:
           description: Belgeye atanmış ve doldurulmuş (boş bırakılmamış) taraf sayısı.
           type: integer
@@ -6212,16 +6277,18 @@ components:
     DocumentSealing:
       description: Belgenin mühür durumu. Karar ilerlemesinden ayrı bir olgudur.
       example:
-        status: NONE
+        status: status
         has_timestamp: true
       properties:
         status:
-          enum:
+          description: "Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - NONE
           - PENDING
           - SEALED
           - FAILED
-          type: string
         has_timestamp:
           description: Yalnız `status` `SEALED` iken `true` olabilir.
           type: boolean
@@ -6232,7 +6299,7 @@ components:
         içermez; tarafı `party_id` ile `parties` listesiyle eşleyin.
       example:
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        decision: PENDING
+        decision: decision
         decided_at: 2000-01-23T04:56:07.000+00:00
         withdrawn_at: 2000-01-23T04:56:07.000+00:00
         signature_collected: true
@@ -6243,16 +6310,18 @@ components:
           format: uuid
           type: string
         decision:
-          description: |
+          description: |-
             Yürürlükteki karar. `PENDING` karar verilmediğini gösterir.
             `WITHDRAWN`, önce verilmiş bir onayın sonradan geri çekildiğini
             gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
-          enum:
+
+            Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - PENDING
           - ACCEPTED
           - DECLINED
           - WITHDRAWN
-          type: string
         decided_at:
           description: |
             Kararın verildiği an. `WITHDRAWN` için geri çekilen onayın anıdır.
@@ -6379,7 +6448,7 @@ components:
           page_id: 12345
           document_id: document_id
           party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          source: INLINE
+          source: source
           is_required: true
           stamp_data:
             key: ""
@@ -6403,7 +6472,12 @@ components:
           pattern: "^evt_[0-9a-f]{32}$"
           type: string
         type:
-          enum:
+          description: "Bilinen değerler: demand.created, demand.completed, demand.expired,\
+            \ party.signed, party.viewed, party.rejected, contract.expiring, contract.ended,\
+            \ contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen\
+            \ değeri hata saymayın."
+          type: string
+          x-known-values:
           - demand.created
           - demand.completed
           - demand.expired
@@ -6413,7 +6487,6 @@ components:
           - contract.expiring
           - contract.ended
           - contract.advanced
-          type: string
         created_at:
           description: Olay zamanı (ISO 8601 UTC).
           format: date-time
@@ -6469,9 +6542,11 @@ components:
         title:
           type: string
         status:
-          enum:
-          - COMPLETED
+          description: "Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir;\
+            \ bilinmeyen değeri hata saymayın."
           type: string
+          x-known-values:
+          - COMPLETED
         completed_at:
           format: date-time
           type: string
@@ -6566,11 +6641,13 @@ components:
           nullable: true
           type: string
         renewal_type:
-          enum:
-          - AUTO_RENEW
-          - FIXED_TERM
+          description: "Bilinen değerler: AUTO_RENEW, FIXED_TERM. Sunucu ileride yeni\
+            \ değer ekleyebilir; bilinmeyen değeri hata saymayın."
           nullable: true
           type: string
+          x-known-values:
+          - AUTO_RENEW
+          - FIXED_TERM
         notice_deadline:
           description: İhbar için son gün (`term_end_date - notice_days`); tanımsızsa
             `null`.
@@ -6578,13 +6655,16 @@ components:
           nullable: true
           type: string
         term_state:
-          description: Olay anındaki takip durumu (bkz. `ContractTerm.state`).
-          enum:
+          description: |-
+            Olay anındaki takip durumu (bkz. `ContractTerm.state`).
+
+            Bilinen değerler: UNTRACKED, ACTIVE, ENDED, STOPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - UNTRACKED
           - ACTIVE
           - ENDED
           - STOPPED
-          type: string
         due_key:
           description: |
             İşçinin tekillik anahtarı (aynı olayı tekrar göndermemek için
@@ -6611,10 +6691,12 @@ components:
           pattern: "^evt_[0-9a-f]{32}$"
           type: string
         type:
-          enum:
+          description: "Bilinen değerler: kyc.completed, kyc.failed. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - kyc.completed
           - kyc.failed
-          type: string
         created_at:
           description: Olay zamanı (ISO 8601 UTC).
           format: date-time
@@ -6735,17 +6817,23 @@ components:
         success:
           type: boolean
         code:
-          enum:
-          - VERIFICATION_CONTEXT_REQUIRED
+          description: "Bilinen değerler: VERIFICATION_CONTEXT_REQUIRED. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
           type: string
+          x-known-values:
+          - VERIFICATION_CONTEXT_REQUIRED
         error:
-          enum:
+          description: "Bilinen değerler: DOCUMENT_TYPE_INVALID, VERIFICATION_POLICY_INVALID,\
+            \ VERIFICATION_INSTRUCTION_INVALID, VERIFICATION_CONTEXT_REQUIRED, VERIFICATION_POLICY_CONFLICT.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          type: string
+          x-known-values:
           - DOCUMENT_TYPE_INVALID
           - VERIFICATION_POLICY_INVALID
           - VERIFICATION_INSTRUCTION_INVALID
           - VERIFICATION_CONTEXT_REQUIRED
           - VERIFICATION_POLICY_CONFLICT
-          type: string
       required:
       - code
       - error
@@ -6757,13 +6845,17 @@ components:
         success:
           type: boolean
         code:
-          enum:
-          - DOCUMENT_VERIFICATION_DISABLED
+          description: "Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
           type: string
+          x-known-values:
+          - DOCUMENT_VERIFICATION_DISABLED
         error:
-          enum:
-          - DOCUMENT_VERIFICATION_DISABLED
+          description: "Bilinen değerler: DOCUMENT_VERIFICATION_DISABLED. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
           type: string
+          x-known-values:
+          - DOCUMENT_VERIFICATION_DISABLED
       required:
       - code
       - error
@@ -6898,7 +6990,7 @@ components:
         original_file_name: original_file_name
         original_file_size: 0
         timestamp_date: 2000-01-23T04:56:07.000+00:00
-        status: ACTIVE
+        status: status
         description: description
         created_at: 2000-01-23T04:56:07.000+00:00
         timestamp_file_url: timestamp_file_url
@@ -6914,12 +7006,14 @@ components:
           format: date-time
           type: string
         status:
-          enum:
+          description: "Bilinen değerler: ACTIVE, VERIFIED, EXPIRED, INVALID. Sunucu\
+            \ ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - ACTIVE
           - VERIFIED
           - EXPIRED
           - INVALID
-          type: string
         description:
           nullable: true
           type: string
@@ -7022,14 +7116,14 @@ components:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         order: 0
         title: title
-        doc_kind: CONTRACT
+        doc_kind: doc_kind
         is_required: true
         signature_required: true
         assigned_party_ids:
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         decision_count: 6
-        sealing_status: NONE
+        sealing_status: sealing_status
         has_timestamp: true
         page_count: 1
         completed_at: 2000-01-23T04:56:07.000+00:00
@@ -7037,14 +7131,14 @@ components:
         sealing: ""
         decisions:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          decision: PENDING
+          decision: decision
           decided_at: 2000-01-23T04:56:07.000+00:00
           withdrawn_at: 2000-01-23T04:56:07.000+00:00
           signature_collected: true
           recorded: true
           consent_granted: true
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          decision: PENDING
+          decision: decision
           decided_at: 2000-01-23T04:56:07.000+00:00
           withdrawn_at: 2000-01-23T04:56:07.000+00:00
           signature_collected: true
@@ -7060,14 +7154,17 @@ components:
         title:
           type: string
         doc_kind:
-          enum:
+          description: "Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO,\
+            \ PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen\
+            \ değeri hata saymayın."
+          type: string
+          x-known-values:
           - CONTRACT
           - KVKK_NOTICE
           - KVKK_CONSENT
           - PREINFO
           - PRICE_LIST
           - OTHER
-          type: string
         is_required:
           type: boolean
         signature_required:
@@ -7084,13 +7181,15 @@ components:
             onay/red kararı sayısı.
           type: integer
         sealing_status:
-          enum:
+          description: "Bilinen değerler: NONE, PENDING, SEALED, FAILED. Sunucu ileride\
+            \ yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          nullable: true
+          type: string
+          x-known-values:
           - NONE
           - PENDING
           - SEALED
           - FAILED
-          nullable: true
-          type: string
         has_timestamp:
           description: |
             Yalnız varsayılan (özet) görünümde bulunur. `sealing_status`
@@ -7261,7 +7360,7 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 5
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             default_included: true
@@ -7271,7 +7370,7 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 5
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             default_included: true
@@ -7365,7 +7464,7 @@ components:
       example:
         success: true
         data:
-          kind: DOCUMENT
+          kind: kind
           form_fields:
           - key: key
             type: type
@@ -7659,7 +7758,7 @@ components:
       example:
         success: false
         error: Yeterli krediniz yok
-        code: INSUFFICIENT_CREDITS
+        code: code
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           status: DRAFT_UNDISPATCHED
@@ -7671,10 +7770,13 @@ components:
           example: Yeterli krediniz yok
           type: string
         code:
-          enum:
+          description: "Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          type: string
+          x-known-values:
           - INSUFFICIENT_CREDITS
           - MEMBER_LIMIT_EXCEEDED
-          type: string
         data:
           $ref: "#/components/schemas/_api_v1_demands_post_402_response_data"
       type: object
@@ -7698,11 +7800,14 @@ components:
           example: Kredi mutabakatı yapılamadı
           type: string
         code:
-          enum:
-          - RECONCILE_FAILED
-          - DISPATCH_PREPARATION_FAILED
+          description: "Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
           example: RECONCILE_FAILED
           type: string
+          x-known-values:
+          - RECONCILE_FAILED
+          - DISPATCH_PREPARATION_FAILED
         data:
           $ref: "#/components/schemas/_api_v1_demands_post_402_response_data"
       type: object
@@ -7843,7 +7948,16 @@ components:
           default: true
           type: boolean
         locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
         require_phone_verification:
           description: "Telefon doğrulamasını yalnız bu taraf için açar ya da kapatı\
             r (bkz. `PartyMappingInput.require_phone_verification`). Sözleşmede telefon\
@@ -7941,7 +8055,7 @@ components:
     _api_v1_demands_bulk_post_200_response_data_results_inner:
       example:
         row_index: 0
-        status: created
+        status: status
         demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         party_ids:
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -7976,10 +8090,12 @@ components:
         row_index:
           type: integer
         status:
-          enum:
+          description: "Bilinen değerler: created, failed. Sunucu ileride yeni değ\
+            er ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - created
           - failed
-          type: string
         demand_id:
           description: "status=created ise; veya status=failed olup sözleşme oluş\
             turulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa\
@@ -8034,7 +8150,7 @@ components:
         failed: 1
         results:
         - row_index: 0
-          status: created
+          status: status
           demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8066,7 +8182,7 @@ components:
           error: error
           message: message
         - row_index: 0
-          status: created
+          status: status
           demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8125,7 +8241,7 @@ components:
           failed: 1
           results:
           - row_index: 0
-            status: created
+            status: status
             demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8157,7 +8273,7 @@ components:
             error: error
             message: message
           - row_index: 0
-            status: created
+            status: status
             demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8201,7 +8317,7 @@ components:
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           title: title
-          status: DRAFT
+          status: status
           created_at: 2000-01-23T04:56:07.000+00:00
           completed_at: 2000-01-23T04:56:07.000+00:00
           parties:
@@ -8231,7 +8347,7 @@ components:
             document_id: document_id
             slug: firma_kasesi
             label: Firma kaşesi
-            source: INLINE
+            source: source
             party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             is_required: true
           - item_id: 4821
@@ -8239,7 +8355,7 @@ components:
             document_id: document_id
             slug: firma_kasesi
             label: Firma kaşesi
-            source: INLINE
+            source: source
             party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             is_required: true
           result_url: https://openapi-generator.tech
@@ -8248,30 +8364,30 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             assigned_party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             progress:
-              status: PENDING
+              status: status
               active_assigned_party_count: 6
               decided_party_count: 1
               completed_at: 2000-01-23T04:56:07.000+00:00
             sealing:
-              status: NONE
+              status: status
               has_timestamp: true
             decisions:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
               recorded: true
               consent_granted: true
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
@@ -8280,30 +8396,30 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             assigned_party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             progress:
-              status: PENDING
+              status: status
               active_assigned_party_count: 6
               decided_party_count: 1
               completed_at: 2000-01-23T04:56:07.000+00:00
             sealing:
-              status: NONE
+              status: status
               has_timestamp: true
             decisions:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
               recorded: true
               consent_granted: true
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
@@ -8330,11 +8446,13 @@ components:
           example: Tamamlanmış sözleşme API üzerinden silinemez
           type: string
         code:
-          enum:
-          - DEMAND_COMPLETED
-          - DEMAND_ARCHIVED
+          description: "Bilinen değerler: DEMAND_COMPLETED, DEMAND_ARCHIVED. Sunucu\
+            \ ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
           example: DEMAND_COMPLETED
           type: string
+          x-known-values:
+          - DEMAND_COMPLETED
+          - DEMAND_ARCHIVED
       type: object
     _api_v1_demands__id__reminders_post_200_response_data_dispatched_inner:
       example:
@@ -8342,8 +8460,8 @@ components:
         first_name: first_name
         last_name: last_name
         channels:
-        - email
-        - email
+        - channels
+        - channels
       properties:
         party_id:
           format: uuid
@@ -8354,10 +8472,12 @@ components:
           type: string
         channels:
           items:
-            enum:
+            description: "Bilinen değerler: email, sms. Sunucu ileride yeni değer\
+              \ ekleyebilir; bilinmeyen değeri hata saymayın."
+            type: string
+            x-known-values:
             - email
             - sms
-            type: string
           type: array
       type: object
     _api_v1_demands__id__reminders_post_200_response_data_skipped_inner:
@@ -8381,14 +8501,14 @@ components:
           first_name: first_name
           last_name: last_name
           channels:
-          - email
-          - email
+          - channels
+          - channels
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           first_name: first_name
           last_name: last_name
           channels:
-          - email
-          - email
+          - channels
+          - channels
         skipped:
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           reason: no_phone_number
@@ -8433,14 +8553,14 @@ components:
             first_name: first_name
             last_name: last_name
             channels:
-            - email
-            - email
+            - channels
+            - channels
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             first_name: first_name
             last_name: last_name
             channels:
-            - email
-            - email
+            - channels
+            - channels
           skipped:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             reason: no_phone_number
@@ -8456,15 +8576,18 @@ components:
       type: object
     _api_v1_demands__id__reminders_post_429_response_error:
       example:
-        code: RATE_LIMITED
+        code: code
         message: message
         retry_after_seconds: 6
       properties:
         code:
-          enum:
+          description: "Bilinen değerler: RATE_LIMITED, MAX_SMS_REMINDERS_REACHED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          type: string
+          x-known-values:
           - RATE_LIMITED
           - MAX_SMS_REMINDERS_REACHED
-          type: string
         message:
           type: string
         retry_after_seconds:
@@ -8475,7 +8598,7 @@ components:
       example:
         success: false
         error:
-          code: RATE_LIMITED
+          code: code
           message: message
           retry_after_seconds: 6
       properties:
@@ -8666,17 +8789,17 @@ components:
               sms: true
               email: true
               whatsapp: true
-              error: DISPATCH_FAILED
+              error: error
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               sms: true
               email: true
               whatsapp: true
-              error: DISPATCH_FAILED
-            error: DISPATCH_SKIPPED
+              error: error
+            error: error
           field_layout:
             template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             applied_fields: 6
-            on_anchor_miss: block
+            on_anchor_miss: on_anchor_miss
             warnings:
             - code: ON_ANCHOR_MISS_NOT_RELAXED
               message: message
@@ -8684,7 +8807,7 @@ components:
               message: message
             diagnostics:
             - code: ANCHOR_TEXT_NOT_FOUND
-              severity: ERROR
+              severity: severity
               item_id: 1
               slug: slug
               label: label
@@ -8694,7 +8817,7 @@ components:
               detail:
                 key: ""
             - code: ANCHOR_TEXT_NOT_FOUND
-              severity: ERROR
+              severity: severity
               item_id: 1
               slug: slug
               label: label
@@ -8713,7 +8836,7 @@ components:
       example:
         success: false
         error: Kredi bakiyeniz yetersiz. Lütfen kredi yükleyin.
-        code: INSUFFICIENT_CREDITS
+        code: code
         demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         success:
@@ -8723,10 +8846,13 @@ components:
           example: Kredi bakiyeniz yetersiz. Lütfen kredi yükleyin.
           type: string
         code:
-          enum:
+          description: "Bilinen değerler: INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          type: string
+          x-known-values:
           - INSUFFICIENT_CREDITS
           - MEMBER_LIMIT_EXCEEDED
-          type: string
         demand_id:
           format: uuid
           type: string
@@ -8745,11 +8871,14 @@ components:
           example: Kredi mutabakatı yapılamadı
           type: string
         code:
-          enum:
-          - RECONCILE_FAILED
-          - DISPATCH_PREPARATION_FAILED
+          description: "Bilinen değerler: RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
           example: RECONCILE_FAILED
           type: string
+          x-known-values:
+          - RECONCILE_FAILED
+          - DISPATCH_PREPARATION_FAILED
         demand_id:
           format: uuid
           type: string
@@ -8894,7 +9023,7 @@ components:
           template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           page_count: 0
           resolvable: true
-          on_anchor_miss: block
+          on_anchor_miss: on_anchor_miss
           placements_summary:
             total: 6
             by_item_type:
@@ -8907,7 +9036,7 @@ components:
               count: 5
           diagnostics:
           - code: ANCHOR_TEXT_NOT_FOUND
-            severity: ERROR
+            severity: severity
             item_id: 1
             slug: slug
             label: label
@@ -8917,7 +9046,7 @@ components:
             detail:
               key: ""
           - code: ANCHOR_TEXT_NOT_FOUND
-            severity: ERROR
+            severity: severity
             item_id: 1
             slug: slug
             label: label
@@ -8948,7 +9077,16 @@ components:
           format: uuid
           type: string
         locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
       required:
       - party_id
       type: object
@@ -9115,13 +9253,13 @@ components:
     _api_v1_demands__id__term_patch_200_response_data:
       example:
         term:
-          start_mode: FIXED_DATE
+          start_mode: start_mode
           start_date: 2000-01-23
           duration_months: 48
           fixed_end_date: 2000-01-23
           end_date: 2000-01-23
           end_date_signed: 2000-01-23
-          renewal_type: AUTO_RENEW
+          renewal_type: renewal_type
           renewal_period_months: 362
           notice_days: 535
           notice_deadline: 2000-01-23
@@ -9132,7 +9270,7 @@ components:
           - 2176
           - 2176
           notify_counterparty: true
-          state: UNTRACKED
+          state: state
           days_left: 5
           renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
       properties:
@@ -9144,13 +9282,13 @@ components:
         success: true
         data:
           term:
-            start_mode: FIXED_DATE
+            start_mode: start_mode
             start_date: 2000-01-23
             duration_months: 48
             fixed_end_date: 2000-01-23
             end_date: 2000-01-23
             end_date_signed: 2000-01-23
-            renewal_type: AUTO_RENEW
+            renewal_type: renewal_type
             renewal_period_months: 362
             notice_days: 535
             notice_deadline: 2000-01-23
@@ -9161,7 +9299,7 @@ components:
             - 2176
             - 2176
             notify_counterparty: true
-            state: UNTRACKED
+            state: state
             days_left: 5
             renewal_stopped_at: 2000-01-23T04:56:07.000+00:00
       properties:
@@ -9239,14 +9377,14 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           assigned_party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           decision_count: 6
-          sealing_status: NONE
+          sealing_status: sealing_status
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9254,14 +9392,14 @@ components:
           sealing: ""
           decisions:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
             recorded: true
             consent_granted: true
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
@@ -9270,14 +9408,14 @@ components:
         - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           assigned_party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           decision_count: 6
-          sealing_status: NONE
+          sealing_status: sealing_status
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9285,14 +9423,14 @@ components:
           sealing: ""
           decisions:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
             recorded: true
             consent_granted: true
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
@@ -9312,14 +9450,14 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             assigned_party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             decision_count: 6
-            sealing_status: NONE
+            sealing_status: sealing_status
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9327,14 +9465,14 @@ components:
             sealing: ""
             decisions:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
               recorded: true
               consent_granted: true
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
@@ -9343,14 +9481,14 @@ components:
           - id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             assigned_party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             decision_count: 6
-            sealing_status: NONE
+            sealing_status: sealing_status
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9358,14 +9496,14 @@ components:
             sealing: ""
             decisions:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
               recorded: true
               consent_granted: true
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
@@ -9413,14 +9551,14 @@ components:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           order: 0
           title: title
-          doc_kind: CONTRACT
+          doc_kind: doc_kind
           is_required: true
           signature_required: true
           assigned_party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           decision_count: 6
-          sealing_status: NONE
+          sealing_status: sealing_status
           has_timestamp: true
           page_count: 1
           completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9428,14 +9566,14 @@ components:
           sealing: ""
           decisions:
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
             recorded: true
             consent_granted: true
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-            decision: PENDING
+            decision: decision
             decided_at: 2000-01-23T04:56:07.000+00:00
             withdrawn_at: 2000-01-23T04:56:07.000+00:00
             signature_collected: true
@@ -9453,14 +9591,14 @@ components:
             id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             order: 0
             title: title
-            doc_kind: CONTRACT
+            doc_kind: doc_kind
             is_required: true
             signature_required: true
             assigned_party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             decision_count: 6
-            sealing_status: NONE
+            sealing_status: sealing_status
             has_timestamp: true
             page_count: 1
             completed_at: 2000-01-23T04:56:07.000+00:00
@@ -9468,14 +9606,14 @@ components:
             sealing: ""
             decisions:
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
               recorded: true
               consent_granted: true
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-              decision: PENDING
+              decision: decision
               decided_at: 2000-01-23T04:56:07.000+00:00
               withdrawn_at: 2000-01-23T04:56:07.000+00:00
               signature_collected: true
@@ -9617,7 +9755,7 @@ components:
         sms: true
         email: true
         whatsapp: true
-        error: DISPATCH_FAILED
+        error: error
       properties:
         party_id:
           format: uuid
@@ -9629,17 +9767,19 @@ components:
         whatsapp:
           type: boolean
         error:
-          description: |
+          description: |-
             Yalnız o taraf için dolar. `DISPATCH_FAILED`
             — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED`
             — alıcı ekseni freni (telefon başına 3/sa +
             10/gün); yalnız bu taraf ATLANDI, diğerleri
             gönderilmeye devam etti.
-          enum:
-          - DISPATCH_FAILED
-          - RECIPIENT_QUOTA_EXCEEDED
+
+            Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           nullable: true
           type: string
+          x-known-values:
+          - DISPATCH_FAILED
+          - RECIPIENT_QUOTA_EXCEEDED
       type: object
     _api_v1_demands__demandId__dispatch_post_200_response_data_invitations:
       example:
@@ -9649,13 +9789,13 @@ components:
           sms: true
           email: true
           whatsapp: true
-          error: DISPATCH_FAILED
+          error: error
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           sms: true
           email: true
           whatsapp: true
-          error: DISPATCH_FAILED
-        error: DISPATCH_SKIPPED
+          error: error
+        error: error
       properties:
         sent:
           description: En az bir kanaldan başarıyla gönderilen taraf sayısı.
@@ -9665,16 +9805,18 @@ components:
             $ref: "#/components/schemas/_api_v1_demands__demandId__dispatch_post_200_response_data_invitations_results_inner"
           type: array
         error:
-          description: |
+          description: |-
             `DISPATCH_SKIPPED` — sözleşme satırı okunamadı,
             körlemesine gönderim yapılmadı.
             (Taraf sayısı tavanı bu uçta davet fazından
             ÖNCE denetlenir ve **409 `DISPATCH_TOO_MANY`**
             olarak döner; 200 gövdesinde görünmez.)
-          enum:
-          - DISPATCH_SKIPPED
+
+            Bilinen değerler: DISPATCH_SKIPPED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           nullable: true
           type: string
+          x-known-values:
+          - DISPATCH_SKIPPED
       type: object
     _api_v1_demands__demandId__dispatch_post_200_response_data:
       example:
@@ -9692,13 +9834,13 @@ components:
             sms: true
             email: true
             whatsapp: true
-            error: DISPATCH_FAILED
+            error: error
           - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             sms: true
             email: true
             whatsapp: true
-            error: DISPATCH_FAILED
-          error: DISPATCH_SKIPPED
+            error: error
+          error: error
       properties:
         demand_id:
           format: uuid
@@ -9735,13 +9877,13 @@ components:
               sms: true
               email: true
               whatsapp: true
-              error: DISPATCH_FAILED
+              error: error
             - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
               sms: true
               email: true
               whatsapp: true
-              error: DISPATCH_FAILED
-            error: DISPATCH_SKIPPED
+              error: error
+            error: error
       properties:
         success:
           type: boolean
@@ -9750,14 +9892,16 @@ components:
       type: object
     _api_v1_me_get_200_response_data_workspace:
       example:
-        type: personal
+        type: type
         organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         type:
-          enum:
+          description: "Bilinen değerler: personal, organization. Sunucu ileride yeni\
+            \ değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - personal
           - organization
-          type: string
         organization_id:
           format: uuid
           nullable: true
@@ -9777,7 +9921,7 @@ components:
         first_name: first_name
         last_name: last_name
         workspace:
-          type: personal
+          type: type
           organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         credits:
           remaining: 0
@@ -9806,7 +9950,7 @@ components:
           first_name: first_name
           last_name: last_name
           workspace:
-            type: personal
+            type: type
             organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           credits:
             remaining: 0
@@ -9824,7 +9968,7 @@ components:
           original_file_name: original_file_name
           original_file_size: 0
           timestamp_date: 2000-01-23T04:56:07.000+00:00
-          status: ACTIVE
+          status: status
           description: description
           created_at: 2000-01-23T04:56:07.000+00:00
           timestamp_file_url: timestamp_file_url
@@ -9832,7 +9976,7 @@ components:
           original_file_name: original_file_name
           original_file_size: 0
           timestamp_date: 2000-01-23T04:56:07.000+00:00
-          status: ACTIVE
+          status: status
           description: description
           created_at: 2000-01-23T04:56:07.000+00:00
           timestamp_file_url: timestamp_file_url
@@ -9860,7 +10004,7 @@ components:
             original_file_name: original_file_name
             original_file_size: 0
             timestamp_date: 2000-01-23T04:56:07.000+00:00
-            status: ACTIVE
+            status: status
             description: description
             created_at: 2000-01-23T04:56:07.000+00:00
             timestamp_file_url: timestamp_file_url
@@ -9868,7 +10012,7 @@ components:
             original_file_name: original_file_name
             original_file_size: 0
             timestamp_date: 2000-01-23T04:56:07.000+00:00
-            status: ACTIVE
+            status: status
             description: description
             created_at: 2000-01-23T04:56:07.000+00:00
             timestamp_file_url: timestamp_file_url
@@ -9951,7 +10095,7 @@ components:
           original_file_name: original_file_name
           original_file_size: 0
           timestamp_date: 2000-01-23T04:56:07.000+00:00
-          status: ACTIVE
+          status: status
           description: description
           created_at: 2000-01-23T04:56:07.000+00:00
           timestamp_file_url: timestamp_file_url
@@ -10217,7 +10361,7 @@ components:
     DocumentSelectionError_details:
       properties:
         reason:
-          description: |
+          description: |-
             `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler
             metin değil, listede 20'den fazla kimlik ya da toplu uçta
             `options.documents`. `unknown_document`: kimlik bu şablonun
@@ -10225,12 +10369,14 @@ components:
             `exclude` listesinde. `empty`: seçim sonucunda ya da
             `documents` göndermediyseniz şablonun varsayılan belge
             kümesinde gönderilecek belge kalmadı.
-          enum:
+
+            Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - shape
           - unknown_document
           - conflict
           - empty
-          type: string
         document_ids:
           items:
             type: string
@@ -10442,7 +10588,7 @@ components:
         sms: true
         email: true
         whatsapp: true
-        error: DISPATCH_FAILED
+        error: error
       properties:
         party_id:
           format: uuid
@@ -10454,10 +10600,13 @@ components:
         whatsapp:
           type: boolean
         error:
-          description: Yalnız o taraf için gönderim patladığında döner.
-          enum:
-          - DISPATCH_FAILED
+          description: |-
+            Yalnız o taraf için gönderim patladığında döner.
+
+            Bilinen değerler: DISPATCH_FAILED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
           type: string
+          x-known-values:
+          - DISPATCH_FAILED
       type: object
     CreatedDemandUpload_dispatch:
       description: |
@@ -10472,13 +10621,13 @@ components:
           sms: true
           email: true
           whatsapp: true
-          error: DISPATCH_FAILED
+          error: error
         - party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           sms: true
           email: true
           whatsapp: true
-          error: DISPATCH_FAILED
-        error: DISPATCH_SKIPPED
+          error: error
+        error: error
       properties:
         requested:
           example: true
@@ -10494,14 +10643,16 @@ components:
             $ref: "#/components/schemas/CreatedDemandUpload_dispatch_results_inner"
           type: array
         error:
-          description: |
+          description: |-
             `DISPATCH_SKIPPED` — sözleşme satırı okunamadı, bildirim
             ayarları bilinmediği için hiç davet gönderilmedi.
             `DISPATCH_TOO_MANY` — taraf sayısı 20 sınırını aşıyor.
-          enum:
+
+            Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - DISPATCH_SKIPPED
           - DISPATCH_TOO_MANY
-          type: string
       type: object
     CreatedDemandUpload_field_layout:
       description: |
@@ -10510,7 +10661,7 @@ components:
       example:
         template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         applied_fields: 6
-        on_anchor_miss: block
+        on_anchor_miss: on_anchor_miss
         warnings:
         - code: ON_ANCHOR_MISS_NOT_RELAXED
           message: message
@@ -10518,7 +10669,7 @@ components:
           message: message
         diagnostics:
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -10528,7 +10679,7 @@ components:
           detail:
             key: ""
         - code: ANCHOR_TEXT_NOT_FOUND
-          severity: ERROR
+          severity: severity
           item_id: 1
           slug: slug
           label: label
@@ -10545,14 +10696,16 @@ components:
           description: Sözleşmeye yazılan alan sayısı.
           type: integer
         on_anchor_miss:
-          description: |
+          description: |-
             İstenen değil, **uygulanan** davranış. `drop` istenip
             uygulanamadıysa burada `block` görürsünüz ve `warnings`
             içinde `ON_ANCHOR_MISS_NOT_RELAXED` bulunur.
-          enum:
+
+            Bilinen değerler: block, drop. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - block
           - drop
-          type: string
         warnings:
           items:
             $ref: "#/components/schemas/FieldLayoutWarning"
@@ -10737,9 +10890,27 @@ components:
           format: uri
           type: string
         locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
         signed_locale:
-          $ref: "#/components/schemas/SignerLocale"
+          description: |-
+            İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).
+
+            Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          example: en
+          nullable: true
+          type: string
+          x-known-values:
+          - tr
+          - en
       type: object
     DemandStatus_stamp_items_inner:
       example:
@@ -10748,7 +10919,7 @@ components:
         document_id: document_id
         slug: firma_kasesi
         label: Firma kaşesi
-        source: INLINE
+        source: source
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         is_required: true
       properties:
@@ -10770,11 +10941,13 @@ components:
           nullable: true
           type: string
         source:
-          enum:
+          description: "Bilinen değerler: INLINE, FROM_SAVED, FILLER_PROVIDES. Sunucu\
+            \ ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın."
+          type: string
+          x-known-values:
           - INLINE
           - FROM_SAVED
           - FILLER_PROVIDES
-          type: string
         party_id:
           description: Yalnız FILLER_PROVIDES kaşede kaşeyi dolduracak taraf
           format: uuid
@@ -10789,7 +10962,7 @@ components:
         page_id: 12345
         document_id: document_id
         party_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        source: INLINE
+        source: source
         is_required: true
         stamp_data:
           key: ""
@@ -10808,11 +10981,14 @@ components:
           nullable: true
           type: string
         source:
-          description: Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
-          enum:
+          description: |-
+            Güncelleme sonrası kaynak (FROM_SAVED kaşe INLINE olur)
+
+            Bilinen değerler: INLINE, FILLER_PROVIDES. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+          type: string
+          x-known-values:
           - INLINE
           - FILLER_PROVIDES
-          type: string
         is_required:
           type: boolean
         stamp_data:
@@ -10887,7 +11063,14 @@ components:
         retry_after_seconds: 247
       properties:
         code:
-          enum:
+          description: "Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED,\
+            \ RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE,\
+            \ DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR.\
+            \ Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayı\
+            n."
+          example: DEMAND_NOT_FOUND
+          type: string
+          x-known-values:
           - INVALID_CHANNELS
           - DEMAND_NOT_FOUND
           - ALREADY_COMPLETED
@@ -10899,8 +11082,6 @@ components:
           - ENVELOPE_NOT_DISPATCHED
           - UNAUTHORIZED
           - INTERNAL_ERROR
-          example: DEMAND_NOT_FOUND
-          type: string
         message:
           example: Demand not found
           type: string

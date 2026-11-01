@@ -253,21 +253,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner imp
         return self::$openAPIModelName;
     }
 
-    public const ERROR_DISPATCH_FAILED = 'DISPATCH_FAILED';
-    public const ERROR_RECIPIENT_QUOTA_EXCEEDED = 'RECIPIENT_QUOTA_EXCEEDED';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getErrorAllowableValues()
-    {
-        return [
-            self::ERROR_DISPATCH_FAILED,
-            self::ERROR_RECIPIENT_QUOTA_EXCEEDED,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -317,15 +302,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner imp
     public function listInvalidProperties()
     {
         $invalidProperties = [];
-
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($this->container['error']) && !in_array($this->container['error'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'error', must be one of '%s'",
-                $this->container['error'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -463,7 +439,7 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner imp
     /**
      * Sets error
      *
-     * @param string|null $error Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.
+     * @param string|null $error Yalnız o taraf için dolar. `DISPATCH_FAILED` — gönderim patladı. `RECIPIENT_QUOTA_EXCEEDED` — alıcı ekseni freni (telefon başına 3/sa + 10/gün); yalnız bu taraf ATLANDI, diğerleri gönderilmeye devam etti.  Bilinen değerler: DISPATCH_FAILED, RECIPIENT_QUOTA_EXCEEDED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -478,16 +454,6 @@ class ApiV1DemandsDemandIdDispatchPost200ResponseDataInvitationsResultsInner imp
                 unset($nullablesSetToNull[$index]);
                 $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
             }
-        }
-        $allowedValues = $this->getErrorAllowableValues();
-        if (!is_null($error) && !in_array($error, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'error', must be one of '%s'",
-                    $error,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['error'] = $error;
 

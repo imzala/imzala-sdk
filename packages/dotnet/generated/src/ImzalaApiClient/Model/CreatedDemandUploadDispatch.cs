@@ -34,40 +34,13 @@ namespace ImzalaApiClient.Model
     public partial class CreatedDemandUploadDispatch : IValidatableObject
     {
         /// <summary>
-        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.
-        /// </summary>
-        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor. </value>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ErrorEnum
-        {
-            /// <summary>
-            /// Enum DISPATCHSKIPPED for value: DISPATCH_SKIPPED
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_SKIPPED")]
-            DISPATCHSKIPPED = 1,
-
-            /// <summary>
-            /// Enum DISPATCHTOOMANY for value: DISPATCH_TOO_MANY
-            /// </summary>
-            [EnumMember(Value = "DISPATCH_TOO_MANY")]
-            DISPATCHTOOMANY = 2
-        }
-
-
-        /// <summary>
-        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.
-        /// </summary>
-        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor. </value>
-        [DataMember(Name = "error", EmitDefaultValue = false)]
-        public ErrorEnum? Error { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="CreatedDemandUploadDispatch" /> class.
         /// </summary>
         /// <param name="requested">requested.</param>
         /// <param name="sent">En az bir kanaldan (SMS/e-posta/WhatsApp) davet **gönderilen taraf** sayısı — kanal sayısı DEĞİL. (&#x60;POST /api/v1/demands&#x60; yanıtındaki &#x60;dispatched&#x60; alanı kanal sayar; bu alan saymaz.) .</param>
         /// <param name="results">results.</param>
-        /// <param name="error">&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor. .</param>
-        public CreatedDemandUploadDispatch(bool requested = default, int sent = default, List<CreatedDemandUploadDispatchResultsInner> results = default, ErrorEnum? error = default)
+        /// <param name="error">&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public CreatedDemandUploadDispatch(bool requested = default, int sent = default, List<CreatedDemandUploadDispatchResultsInner> results = default, string error = default)
         {
             this.Requested = requested;
             this.Sent = sent;
@@ -96,6 +69,13 @@ namespace ImzalaApiClient.Model
         /// </summary>
         [DataMember(Name = "results", EmitDefaultValue = false)]
         public List<CreatedDemandUploadDispatchResultsInner> Results { get; set; }
+
+        /// <summary>
+        /// &#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>&#x60;DISPATCH_SKIPPED&#x60; — sözleşme satırı okunamadı, bildirim ayarları bilinmediği için hiç davet gönderilmedi. &#x60;DISPATCH_TOO_MANY&#x60; — taraf sayısı 20 sınırını aşıyor.  Bilinen değerler: DISPATCH_SKIPPED, DISPATCH_TOO_MANY. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "error", EmitDefaultValue = false)]
+        public string Error { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

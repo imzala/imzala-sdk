@@ -40,7 +40,7 @@ class TestApiV1DemandsIdGet200Response(unittest.TestCase):
                 data = imzala_client.models.demand_status.DemandStatus(
                     id = '',
                     title = '',
-                    status = 'DRAFT',
+                    status = '',
                     created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                     completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                     parties = [
@@ -63,7 +63,7 @@ class TestApiV1DemandsIdGet200Response(unittest.TestCase):
                             document_id = '',
                             slug = 'firma_kasesi',
                             label = 'Firma kaşesi',
-                            source = 'INLINE',
+                            source = '',
                             party_id = '',
                             is_required = True, )
                         ],
@@ -74,24 +74,24 @@ class TestApiV1DemandsIdGet200Response(unittest.TestCase):
                             id = '',
                             order = 56,
                             title = '',
-                            doc_kind = 'CONTRACT',
+                            doc_kind = '',
                             is_required = True,
                             signature_required = True,
                             assigned_party_ids = [
                                 ''
                                 ],
                             progress = imzala_client.models.document_progress.DocumentProgress(
-                                status = 'PENDING',
+                                status = '',
                                 active_assigned_party_count = 56,
                                 decided_party_count = 56,
                                 completed_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), ),
                             sealing = imzala_client.models.document_sealing.DocumentSealing(
-                                status = 'NONE',
+                                status = '',
                                 has_timestamp = True, ),
                             decisions = [
                                 imzala_client.models.document_party_decision.DocumentPartyDecision(
                                     party_id = '',
-                                    decision = 'PENDING',
+                                    decision = '',
                                     decided_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                     withdrawn_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                                     signature_collected = True,

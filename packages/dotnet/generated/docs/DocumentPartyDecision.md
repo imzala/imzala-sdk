@@ -6,7 +6,7 @@ Bir tarafın bu belge için kararı. Kişisel veri (ad, e-posta, telefon) içerm
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **PartyId** | **Guid** |  | [optional]
-**Decision** | **string** | Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  | [optional]
+**Decision** | **string** | Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **DecidedAt** | **DateTime?** | Kararın verildiği an. &#x60;WITHDRAWN&#x60; için geri çekilen onayın anıdır. &#x60;recorded&#x60; &#x60;false&#x60; iken &#x60;null&#x60; döner.  | [optional]
 **WithdrawnAt** | **DateTime?** | Yalnız &#x60;WITHDRAWN&#x60; için dolu; geri çekme anı. | [optional]
 **SignatureCollected** | **bool** | Bu kararla birlikte bu belgede dijital imza toplandı mı. | [optional]

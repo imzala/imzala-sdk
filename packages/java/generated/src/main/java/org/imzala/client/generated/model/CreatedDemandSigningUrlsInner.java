@@ -46,7 +46,7 @@ import org.imzala.client.generated.ApiClient;
   CreatedDemandSigningUrlsInner.JSON_PROPERTY_PHONE,
   CreatedDemandSigningUrlsInner.JSON_PROPERTY_SIGNING_URL
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class CreatedDemandSigningUrlsInner {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nullable

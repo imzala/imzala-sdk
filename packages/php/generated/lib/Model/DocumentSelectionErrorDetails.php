@@ -235,25 +235,6 @@ class DocumentSelectionErrorDetails implements ModelInterface, ArrayAccess, \Jso
         return self::$openAPIModelName;
     }
 
-    public const REASON_SHAPE = 'shape';
-    public const REASON_UNKNOWN_DOCUMENT = 'unknown_document';
-    public const REASON_CONFLICT = 'conflict';
-    public const REASON__EMPTY = 'empty';
-
-    /**
-     * Gets allowable values of the enum
-     *
-     * @return string[]
-     */
-    public function getReasonAllowableValues()
-    {
-        return [
-            self::REASON_SHAPE,
-            self::REASON_UNKNOWN_DOCUMENT,
-            self::REASON_CONFLICT,
-            self::REASON__EMPTY,
-        ];
-    }
 
     /**
      * Associative array for storing property values
@@ -301,15 +282,6 @@ class DocumentSelectionErrorDetails implements ModelInterface, ArrayAccess, \Jso
     {
         $invalidProperties = [];
 
-        $allowedValues = $this->getReasonAllowableValues();
-        if (!is_null($this->container['reason']) && !in_array($this->container['reason'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'reason', must be one of '%s'",
-                $this->container['reason'],
-                implode("', '", $allowedValues)
-            );
-        }
-
         return $invalidProperties;
     }
 
@@ -338,7 +310,7 @@ class DocumentSelectionErrorDetails implements ModelInterface, ArrayAccess, \Jso
     /**
      * Sets reason
      *
-     * @param string|null $reason `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.
+     * @param string|null $reason `shape`: `documents` nesne değil, bilinmeyen alan, kimlikler metin değil, listede 20'den fazla kimlik ya da toplu uçta `options.documents`. `unknown_document`: kimlik bu şablonun belgesi değil. `conflict`: aynı kimlik hem `include` hem `exclude` listesinde. `empty`: seçim sonucunda ya da `documents` göndermediyseniz şablonun varsayılan belge kümesinde gönderilecek belge kalmadı.  Bilinen değerler: shape, unknown_document, conflict, empty. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      *
      * @return self
      */
@@ -346,16 +318,6 @@ class DocumentSelectionErrorDetails implements ModelInterface, ArrayAccess, \Jso
     {
         if (is_null($reason)) {
             throw new \InvalidArgumentException('non-nullable reason cannot be null');
-        }
-        $allowedValues = $this->getReasonAllowableValues();
-        if (!in_array($reason, $allowedValues, true)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'reason', must be one of '%s'",
-                    $reason,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['reason'] = $reason;
 

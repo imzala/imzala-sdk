@@ -34,88 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class StandardErrorError : IValidatableObject
     {
         /// <summary>
-        /// Defines Code
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum CodeEnum
-        {
-            /// <summary>
-            /// Enum INVALIDCHANNELS for value: INVALID_CHANNELS
-            /// </summary>
-            [EnumMember(Value = "INVALID_CHANNELS")]
-            INVALIDCHANNELS = 1,
-
-            /// <summary>
-            /// Enum DEMANDNOTFOUND for value: DEMAND_NOT_FOUND
-            /// </summary>
-            [EnumMember(Value = "DEMAND_NOT_FOUND")]
-            DEMANDNOTFOUND = 2,
-
-            /// <summary>
-            /// Enum ALREADYCOMPLETED for value: ALREADY_COMPLETED
-            /// </summary>
-            [EnumMember(Value = "ALREADY_COMPLETED")]
-            ALREADYCOMPLETED = 3,
-
-            /// <summary>
-            /// Enum RATELIMITED for value: RATE_LIMITED
-            /// </summary>
-            [EnumMember(Value = "RATE_LIMITED")]
-            RATELIMITED = 4,
-
-            /// <summary>
-            /// Enum MAXSMSREMINDERSREACHED for value: MAX_SMS_REMINDERS_REACHED
-            /// </summary>
-            [EnumMember(Value = "MAX_SMS_REMINDERS_REACHED")]
-            MAXSMSREMINDERSREACHED = 5,
-
-            /// <summary>
-            /// Enum DEMANDNOTDISPATCHED for value: DEMAND_NOT_DISPATCHED
-            /// </summary>
-            [EnumMember(Value = "DEMAND_NOT_DISPATCHED")]
-            DEMANDNOTDISPATCHED = 6,
-
-            /// <summary>
-            /// Enum DEMANDNOTDISPATCHABLE for value: DEMAND_NOT_DISPATCHABLE
-            /// </summary>
-            [EnumMember(Value = "DEMAND_NOT_DISPATCHABLE")]
-            DEMANDNOTDISPATCHABLE = 7,
-
-            /// <summary>
-            /// Enum DEMANDEXPIRED for value: DEMAND_EXPIRED
-            /// </summary>
-            [EnumMember(Value = "DEMAND_EXPIRED")]
-            DEMANDEXPIRED = 8,
-
-            /// <summary>
-            /// Enum ENVELOPENOTDISPATCHED for value: ENVELOPE_NOT_DISPATCHED
-            /// </summary>
-            [EnumMember(Value = "ENVELOPE_NOT_DISPATCHED")]
-            ENVELOPENOTDISPATCHED = 9,
-
-            /// <summary>
-            /// Enum UNAUTHORIZED for value: UNAUTHORIZED
-            /// </summary>
-            [EnumMember(Value = "UNAUTHORIZED")]
-            UNAUTHORIZED = 10,
-
-            /// <summary>
-            /// Enum INTERNALERROR for value: INTERNAL_ERROR
-            /// </summary>
-            [EnumMember(Value = "INTERNAL_ERROR")]
-            INTERNALERROR = 11
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Code
-        /// </summary>
-        /*
-        <example>DEMAND_NOT_FOUND</example>
-        */
-        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
-        public CodeEnum Code { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="StandardErrorError" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -123,11 +41,16 @@ namespace ImzalaApiClient.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="StandardErrorError" /> class.
         /// </summary>
-        /// <param name="code">code (required).</param>
+        /// <param name="code">Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="message">message (required).</param>
         /// <param name="retryAfterSeconds">Sadece RATE_LIMITED&#39;de doludur.</param>
-        public StandardErrorError(CodeEnum code = default, string message = default, int retryAfterSeconds = default)
+        public StandardErrorError(string code = default, string message = default, int retryAfterSeconds = default)
         {
+            // to ensure "code" is required (not null)
+            if (code == null)
+            {
+                throw new ArgumentNullException("code is a required property for StandardErrorError and cannot be null");
+            }
             this.Code = code;
             // to ensure "message" is required (not null)
             if (message == null)
@@ -137,6 +60,16 @@ namespace ImzalaApiClient.Model
             this.Message = message;
             this.RetryAfterSeconds = retryAfterSeconds;
         }
+
+        /// <summary>
+        /// Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: INVALID_CHANNELS, DEMAND_NOT_FOUND, ALREADY_COMPLETED, RATE_LIMITED, MAX_SMS_REMINDERS_REACHED, DEMAND_NOT_DISPATCHED, DEMAND_NOT_DISPATCHABLE, DEMAND_EXPIRED, ENVELOPE_NOT_DISPATCHED, UNAUTHORIZED, INTERNAL_ERROR. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>DEMAND_NOT_FOUND</example>
+        */
+        [DataMember(Name = "code", IsRequired = true, EmitDefaultValue = true)]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or Sets Message

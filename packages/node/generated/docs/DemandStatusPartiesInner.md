@@ -13,8 +13,8 @@ Name | Type | Description | Notes
 **rejected** | **boolean** |  | [optional] [default to undefined]
 **rejected_at** | **string** |  | [optional] [default to undefined]
 **signing_url** | **string** |  | [optional] [default to undefined]
-**locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
-**signed_locale** | [**SignerLocale**](SignerLocale.md) |  | [optional] [default to undefined]
+**locale** | **string** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
+**signed_locale** | **string** | İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional] [default to undefined]
 
 ## Example
 

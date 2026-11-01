@@ -580,7 +580,6 @@ Class | Method | HTTP request | Description
 - [PatchStampItemResponse](docs/Model/PatchStampItemResponse.md)
 - [PatchStampItemResponseData](docs/Model/PatchStampItemResponseData.md)
 - [ReminderSettings](docs/Model/ReminderSettings.md)
-- [SignerLocale](docs/Model/SignerLocale.md)
 - [StampData](docs/Model/StampData.md)
 - [StandardError](docs/Model/StandardError.md)
 - [StandardErrorError](docs/Model/StandardErrorError.md)

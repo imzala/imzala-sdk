@@ -34,73 +34,6 @@ namespace ImzalaApiClient.Model
     public partial class WebhookEnvelope : IValidatableObject
     {
         /// <summary>
-        /// Defines Type
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum TypeEnum
-        {
-            /// <summary>
-            /// Enum DemandCreated for value: demand.created
-            /// </summary>
-            [EnumMember(Value = "demand.created")]
-            DemandCreated = 1,
-
-            /// <summary>
-            /// Enum DemandCompleted for value: demand.completed
-            /// </summary>
-            [EnumMember(Value = "demand.completed")]
-            DemandCompleted = 2,
-
-            /// <summary>
-            /// Enum DemandExpired for value: demand.expired
-            /// </summary>
-            [EnumMember(Value = "demand.expired")]
-            DemandExpired = 3,
-
-            /// <summary>
-            /// Enum PartySigned for value: party.signed
-            /// </summary>
-            [EnumMember(Value = "party.signed")]
-            PartySigned = 4,
-
-            /// <summary>
-            /// Enum PartyViewed for value: party.viewed
-            /// </summary>
-            [EnumMember(Value = "party.viewed")]
-            PartyViewed = 5,
-
-            /// <summary>
-            /// Enum PartyRejected for value: party.rejected
-            /// </summary>
-            [EnumMember(Value = "party.rejected")]
-            PartyRejected = 6,
-
-            /// <summary>
-            /// Enum ContractExpiring for value: contract.expiring
-            /// </summary>
-            [EnumMember(Value = "contract.expiring")]
-            ContractExpiring = 7,
-
-            /// <summary>
-            /// Enum ContractEnded for value: contract.ended
-            /// </summary>
-            [EnumMember(Value = "contract.ended")]
-            ContractEnded = 8,
-
-            /// <summary>
-            /// Enum ContractAdvanced for value: contract.advanced
-            /// </summary>
-            [EnumMember(Value = "contract.advanced")]
-            ContractAdvanced = 9
-        }
-
-
-        /// <summary>
-        /// Gets or Sets Type
-        /// </summary>
-        [DataMember(Name = "type", IsRequired = true, EmitDefaultValue = true)]
-        public TypeEnum Type { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="WebhookEnvelope" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -109,10 +42,10 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="WebhookEnvelope" /> class.
         /// </summary>
         /// <param name="id">Olay benzersiz id&#39;si. Receiver tarafında idempotency için kullanın (DB&#39;de unique key).  (required).</param>
-        /// <param name="type">type (required).</param>
+        /// <param name="type">Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. (required).</param>
         /// <param name="createdAt">Olay zamanı (ISO 8601 UTC). (required).</param>
         /// <param name="data">Olay tipine özel veri (aşağıdaki şemalar) (required).</param>
-        public WebhookEnvelope(string id = default, TypeEnum type = default, DateTime createdAt = default, Object data = default)
+        public WebhookEnvelope(string id = default, string type = default, DateTime createdAt = default, Object data = default)
         {
             // to ensure "id" is required (not null)
             if (id == null)
@@ -120,6 +53,11 @@ namespace ImzalaApiClient.Model
                 throw new ArgumentNullException("id is a required property for WebhookEnvelope and cannot be null");
             }
             this.Id = id;
+            // to ensure "type" is required (not null)
+            if (type == null)
+            {
+                throw new ArgumentNullException("type is a required property for WebhookEnvelope and cannot be null");
+            }
             this.Type = type;
             this.CreatedAt = createdAt;
             // to ensure "data" is required (not null)
@@ -139,6 +77,13 @@ namespace ImzalaApiClient.Model
         */
         [DataMember(Name = "id", IsRequired = true, EmitDefaultValue = true)]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        [DataMember(Name = "type", IsRequired = true, EmitDefaultValue = true)]
+        public string Type { get; set; }
 
         /// <summary>
         /// Olay zamanı (ISO 8601 UTC).

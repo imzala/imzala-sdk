@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from uuid import UUID
 from typing import Optional, Set
@@ -34,17 +34,6 @@ class ApiV1DemandsIdRemindersPost200ResponseDataDispatchedInner(BaseModel):
     last_name: Optional[StrictStr] = None
     channels: Optional[List[StrictStr]] = None
     __properties: ClassVar[List[str]] = ["party_id", "first_name", "last_name", "channels"]
-
-    @field_validator('channels')
-    def channels_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        for i in value:
-            if i not in set(['email', 'sms']):
-                raise ValueError("each list item must be one of ('email', 'sms')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,

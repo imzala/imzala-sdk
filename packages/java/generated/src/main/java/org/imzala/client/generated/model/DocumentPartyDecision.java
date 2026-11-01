@@ -47,54 +47,15 @@ import org.imzala.client.generated.ApiClient;
   DocumentPartyDecision.JSON_PROPERTY_RECORDED,
   DocumentPartyDecision.JSON_PROPERTY_CONSENT_GRANTED
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:10:13.099761+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-11-01T12:25:34.417539+03:00[Europe/Istanbul]", comments = "Generator version: 7.23.0")
 public class DocumentPartyDecision {
   public static final String JSON_PROPERTY_PARTY_ID = "party_id";
   @javax.annotation.Nullable
   private UUID partyId;
 
-  /**
-   * Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
-   */
-  public enum DecisionEnum {
-    PENDING(String.valueOf("PENDING")),
-
-    ACCEPTED(String.valueOf("ACCEPTED")),
-
-    DECLINED(String.valueOf("DECLINED")),
-
-    WITHDRAWN(String.valueOf("WITHDRAWN"));
-
-    private String value;
-
-    DecisionEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static DecisionEnum fromValue(String value) {
-      for (DecisionEnum b : DecisionEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   public static final String JSON_PROPERTY_DECISION = "decision";
   @javax.annotation.Nullable
-  private DecisionEnum decision;
+  private String decision;
 
   public static final String JSON_PROPERTY_DECIDED_AT = "decided_at";
   private JsonNullable<OffsetDateTime> decidedAt = JsonNullable.<OffsetDateTime>undefined();
@@ -140,26 +101,26 @@ public class DocumentPartyDecision {
   }
 
 
-  public DocumentPartyDecision decision(@javax.annotation.Nullable DecisionEnum decision) {
+  public DocumentPartyDecision decision(@javax.annotation.Nullable String decision) {
     this.decision = decision;
     return this;
   }
 
   /**
-   * Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.
+   * Yürürlükteki karar. &#x60;PENDING&#x60; karar verilmediğini gösterir. &#x60;WITHDRAWN&#x60;, önce verilmiş bir onayın sonradan geri çekildiğini gösterir; geri çekme tamamlanmış belgeyi yeniden açmaz.  Bilinen değerler: PENDING, ACCEPTED, DECLINED, WITHDRAWN. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
    * @return decision
    */
   @javax.annotation.Nullable
   @JsonProperty(value = JSON_PROPERTY_DECISION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public DecisionEnum getDecision() {
+  public String getDecision() {
     return decision;
   }
 
 
   @JsonProperty(value = JSON_PROPERTY_DECISION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDecision(@javax.annotation.Nullable DecisionEnum decision) {
+  public void setDecision(@javax.annotation.Nullable String decision) {
     this.decision = decision;
   }
 

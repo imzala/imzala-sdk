@@ -33,12 +33,6 @@ namespace ImzalaApiClient.Model
     [DataContract(Name = "_api_v1_demands__id__embed_session_post_request")]
     public partial class ApiV1DemandsIdEmbedSessionPostRequest : IValidatableObject
     {
-
-        /// <summary>
-        /// Gets or Sets Locale
-        /// </summary>
-        [DataMember(Name = "locale", EmitDefaultValue = true)]
-        public SignerLocale? Locale { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiV1DemandsIdEmbedSessionPostRequest" /> class.
         /// </summary>
@@ -48,8 +42,8 @@ namespace ImzalaApiClient.Model
         /// Initializes a new instance of the <see cref="ApiV1DemandsIdEmbedSessionPostRequest" /> class.
         /// </summary>
         /// <param name="partyId">Token üretilecek tarafın ID&#39;si. &#x60;POST /api/v1/demands&#x60; veya &#x60;GET /api/v1/demands/{id}&#x60; cevabındaki &#x60;signing_urls[].party_id&#x60; alanından alınır.  (required).</param>
-        /// <param name="locale">locale.</param>
-        public ApiV1DemandsIdEmbedSessionPostRequest(Guid partyId = default, SignerLocale? locale = default)
+        /// <param name="locale">İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın..</param>
+        public ApiV1DemandsIdEmbedSessionPostRequest(Guid partyId = default, string locale = default)
         {
             this.PartyId = partyId;
             this.Locale = locale;
@@ -61,6 +55,16 @@ namespace ImzalaApiClient.Model
         /// <value>Token üretilecek tarafın ID&#39;si. &#x60;POST /api/v1/demands&#x60; veya &#x60;GET /api/v1/demands/{id}&#x60; cevabındaki &#x60;signing_urls[].party_id&#x60; alanından alınır. </value>
         [DataMember(Name = "party_id", IsRequired = true, EmitDefaultValue = true)]
         public Guid PartyId { get; set; }
+
+        /// <summary>
+        /// İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
+        /// </summary>
+        /// <value>İmzacı dili. &#x60;tr&#x60; (Türkçe), &#x60;en&#x60; (İngilizce) veya &#x60;null&#x60; (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.</value>
+        /*
+        <example>en</example>
+        */
+        [DataMember(Name = "locale", EmitDefaultValue = true)]
+        public string Locale { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

@@ -7,7 +7,7 @@ Tüm webhook payload'larının ortak zarfı. `data` alanı olay tipine göre de�
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **str** | Olay benzersiz id&#39;si. Receiver tarafında idempotency için kullanın (DB&#39;de unique key).  |
-**type** | **str** |  |
+**type** | **str** | Bilinen değerler: demand.created, demand.completed, demand.expired, party.signed, party.viewed, party.rejected, contract.expiring, contract.ended, contract.advanced. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **created_at** | **datetime** | Olay zamanı (ISO 8601 UTC). |
 **data** | **object** | Olay tipine özel veri (aşağıdaki şemalar) |
 

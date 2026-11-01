@@ -649,7 +649,6 @@ Class | Method | HTTP request | Description
  - [Model.PatchStampItemResponse](docs/PatchStampItemResponse.md)
  - [Model.PatchStampItemResponseData](docs/PatchStampItemResponseData.md)
  - [Model.ReminderSettings](docs/ReminderSettings.md)
- - [Model.SignerLocale](docs/SignerLocale.md)
  - [Model.StampData](docs/StampData.md)
  - [Model.StandardError](docs/StandardError.md)
  - [Model.StandardErrorError](docs/StandardErrorError.md)

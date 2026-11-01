@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **id** | **UUID** |  | [optional]
 **order** | **int** | 1&#39;den başlar. | [optional]
 **title** | **str** |  | [optional]
-**doc_kind** | **str** |  | [optional]
+**doc_kind** | **str** | Bilinen değerler: CONTRACT, KVKK_NOTICE, KVKK_CONSENT, PREINFO, PRICE_LIST, OTHER. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. | [optional]
 **is_required** | **bool** |  | [optional]
 **signature_required** | **bool** |  | [optional]
 **assigned_party_ids** | **List[UUID]** |  | [optional]
