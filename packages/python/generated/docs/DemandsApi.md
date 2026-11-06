@@ -60,7 +60,8 @@ onaylayan reddederse imzacılar davet edilmez.
   fiyatlı bir indirim uygulanır (1 belge %0, 2 belge %30, 3 ve üzeri
   %50, imzacı başına ayrı yukarı yuvarlanır; bkz. `POST /demands`
   "Kredi (çok belgeli zarf)" bölümü). PAdES seviye eki yalnız QES'te
-  uygulanır: B-T +0, B-LT +0, **B-LTA +1**. Doğrulama yöntemlerinden
+  uygulanır: B-LT +0, **B-LTA +1** (`PAdES_BASELINE_T` kabul edilir ve
+  B-LT olarak işlenir, ücreti aynıdır). Doğrulama yöntemlerinden
   `ocr_id` ve `liveness` +1 kredi, diğerleri 0'dır. `options`
   batch-seviye geçerlidir ve şablon varsayılanını ezer. İstek başında N satırın
   toplam maliyeti için yeterlilik kontrol edilir (yetersizse 402,
