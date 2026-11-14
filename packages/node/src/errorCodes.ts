@@ -107,7 +107,7 @@ export const IMZALA_ERROR_CODES = {
   CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE:
     'Numaratörü seçilmemiş ya da kullanılamayan (silinmiş, arşivlenmiş) bir numaratör alanı içeren sözleşme oluşturulamadı ya da gönderilemedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. Panelden geçerli bir numaratör seçip taslağı gönderin; aynı isteği tekrarlamayın.',
   CONTRACT_NUMBER_SEQUENCE_COLLISION:
-    'Numaratörün sıradaki numaraları daha önce verilmiş numaralarla çakışıyor; sözleşme gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalabilir. Panelde numaratör ayarlarından sıradaki numarayı ileri alıp tekrar deneyin; ayar değişmeden aynı istek aynı hatayı verir.',
+    'Numaratörün sıradaki numaraları daha önce verilmiş numaralarla çakışıyor; sözleşme gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada kayıt açılmaz; numaratörün sıradaki değerini panelden ileri alıp yeniden deneyin. Yanıtta sözleşme kimliği varsa oluşturmayı tekrarlamayın, taslağı gönderin.',
   INVALID_CHANNELS: 'channels boş ya da email/sms dışında bir değer içeriyor.',
   MAX_SMS_REMINDERS_REACHED: 'Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.',
   ENVELOPE_NOT_DISPATCHED:

@@ -172,9 +172,9 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
     ),
     "CONTRACT_NUMBER_SEQUENCE_COLLISION": (
         "Numaratörün sıradaki numaraları daha önce verilmiş numaralarla çakışıyor; sözleşme "
-        "gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalabilir. "
-        "Panelde numaratör ayarlarından sıradaki numarayı ileri alıp tekrar deneyin; ayar "
-        "değişmeden aynı istek aynı hatayı verir."
+        "gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada kayıt açılmaz; "
+        "numaratörün sıradaki değerini panelden ileri alıp yeniden deneyin. Yanıtta sözleşme "
+        "kimliği varsa oluşturmayı tekrarlamayın, taslağı gönderin."
     ),
     "INVALID_CHANNELS": "channels boş ya da email/sms dışında bir değer içeriyor.",
     "MAX_SMS_REMINDERS_REACHED": "Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.",
