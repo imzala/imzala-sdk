@@ -92,6 +92,7 @@ export type {
   ApiV1DemandsIdRemindersPost200ResponseData as ReminderDispatchResult,
   ApiV1MeGet200ResponseData as MeInfo,
   ApiV1TemplatesGet200ResponseData as TemplateList,
+  ContractNumber,
   ContractTerm,
   ContractTermInput,
   CreateDemandRequest,

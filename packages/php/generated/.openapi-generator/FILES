@@ -108,6 +108,7 @@ docs/Model/ApiV1TimestampsPostRequest1.md
 docs/Model/CodedError.md
 docs/Model/ContactSummary.md
 docs/Model/ContactSummaryCompany.md
+docs/Model/ContractNumber.md
 docs/Model/ContractTerm.md
 docs/Model/ContractTermInput.md
 docs/Model/CreateDemandRequest.md
@@ -299,6 +300,7 @@ lib/Model/ApiV1TimestampsPostRequest1.php
 lib/Model/CodedError.php
 lib/Model/ContactSummary.php
 lib/Model/ContactSummaryCompany.php
+lib/Model/ContractNumber.php
 lib/Model/ContractTerm.php
 lib/Model/ContractTermInput.php
 lib/Model/CreateDemandRequest.php
@@ -488,6 +490,7 @@ test/Model/ApiV1TimestampsPostRequest1Test.php
 test/Model/CodedErrorTest.php
 test/Model/ContactSummaryCompanyTest.php
 test/Model/ContactSummaryTest.php
+test/Model/ContractNumberTest.php
 test/Model/ContractTermInputTest.php
 test/Model/ContractTermTest.php
 test/Model/CreateDemandRequestTest.php

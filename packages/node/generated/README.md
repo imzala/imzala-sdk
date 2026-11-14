@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.15.1
+## @imzala/server-sdk-node@1.17.0
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.15.1 --save
+npm install @imzala/server-sdk-node@1.17.0 --save
 ```
 
 _unPublished (not recommended):_
@@ -194,6 +194,7 @@ Class | Method | HTTP request | Description
  - [CodedError](docs/CodedError.md)
  - [ContactSummary](docs/ContactSummary.md)
  - [ContactSummaryCompany](docs/ContactSummaryCompany.md)
+ - [ContractNumber](docs/ContractNumber.md)
  - [ContractTerm](docs/ContractTerm.md)
  - [ContractTermInput](docs/ContractTermInput.md)
  - [CreateDemandRequest](docs/CreateDemandRequest.md)

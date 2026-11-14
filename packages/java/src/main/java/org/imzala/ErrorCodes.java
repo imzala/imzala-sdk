@@ -120,6 +120,8 @@ public final class ErrorCodes {
         "Tarafın telefon doğrulaması ayarı (require_phone_verification) true, false veya null olmalı; hatalı alanın yolu error alanındadır.");
     m.put("PHONE_REQUIRED_FOR_VERIFICATION",
         "Telefon doğrulaması açık tarafın telefon numarası boş; SMS ile kod gönderilebilmesi için phone gerekir.");
+    m.put("PARTY_PHONE_MISSING",
+        "Sözleşmede telefon doğrulaması açık ama bir imzacının telefon numarası yok ya da geçersiz; kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. İlgili taraflar party_ids alanındadır; numaraları tamamlayıp POST /demands/{demandId}/dispatch ile gönderin ya da telefon doğrulamasını kapatın.");
     m.put("CHANGE_REQUEST_PENDING",
         "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.");
     m.put("PARTY_NOT_ELIGIBLE",
@@ -151,6 +153,8 @@ public final class ErrorCodes {
         "Gönderim öncesi kontroller beklenmedik bir hatayla düştü; sözleşme oluşturuldu ve taslakta kaldı, kredi henüz düşülmedi, davet gönderilmedi. Kredi, taslak gönderildiğinde düşülür. Aynı oluşturma isteğini tekrarlamayın; sözleşmeyi POST /demands/{demandId}/dispatch ile gönderin.");
     m.put("CONTRACT_NUMBER_SEQUENCE_UNAVAILABLE",
         "Numaratörü seçilmemiş ya da kullanılamayan (silinmiş, arşivlenmiş) bir numaratör alanı içeren sözleşme oluşturulamadı ya da gönderilemedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. Panelden geçerli bir numaratör seçip taslağı gönderin; aynı isteği tekrarlamayın.");
+    m.put("CONTRACT_NUMBER_SEQUENCE_COLLISION",
+        "Numaratörün sıradaki numaraları daha önce verilmiş numaralarla çakışıyor; sözleşme gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalabilir. Panelde numaratör ayarlarından sıradaki numarayı ileri alıp tekrar deneyin; ayar değişmeden aynı istek aynı hatayı verir.");
     m.put("INVALID_CHANNELS",
         "channels boş ya da email/sms dışında bir değer içeriyor.");
     m.put("MAX_SMS_REMINDERS_REACHED",

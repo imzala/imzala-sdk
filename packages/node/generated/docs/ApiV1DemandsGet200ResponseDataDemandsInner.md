@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **parties_total** | **number** |  | [optional] [default to undefined]
 **parties_signed** | **number** |  | [optional] [default to undefined]
 **pdf_url** | **string** | COMPLETED ise imzalı PDF public URL\&#39;i. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla &#x60;GET /api/v1/demands/{id}/pdf&#x60; kullanın. | [optional] [default to undefined]
+**contract_numbers** | [**Array&lt;ContractNumber&gt;**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları. Numara yoksa boş dizi.  | [optional] [default to undefined]
 
 ## Example
 
@@ -32,6 +33,7 @@ const instance: ApiV1DemandsGet200ResponseDataDemandsInner = {
     parties_total,
     parties_signed,
     pdf_url,
+    contract_numbers,
 };
 ```
 

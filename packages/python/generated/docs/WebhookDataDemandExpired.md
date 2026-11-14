@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **title** | **str** |  |
 **expiry_date** | **datetime** |  |
 **parties** | [**List[WebhookDataDemandExpiredPartiesInner]**](WebhookDataDemandExpiredPartiesInner.md) |  |
+**contract_numbers** | [**List[ContractNumber]**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.  | [optional]
 
 ## Example
 

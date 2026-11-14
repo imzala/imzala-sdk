@@ -653,7 +653,7 @@ $apiInstance = new Imzala\Client\Api\DemandsApi(
     $config
 );
 $status = 'status_example'; // string
-$q = 'q_example'; // string | Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+$q = 'q_example'; // string | Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. `CODECK-2026-042`) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
 $from = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
 $to = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
 $template_id = 'template_id_example'; // string
@@ -675,7 +675,7 @@ try {
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **status** | **string**|  | [optional] |
-| **q** | **string**| Sözleşme kimliği, başlığı ve açıklamasında arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] |
+| **q** | **string**| Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] |
 | **from** | **\DateTime**|  | [optional] |
 | **to** | **\DateTime**|  | [optional] |
 | **template_id** | **string**|  | [optional] |

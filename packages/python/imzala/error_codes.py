@@ -126,6 +126,12 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
     "INVALID_LOCALE": "İmzacı dili tr, en veya null olmalı; hatalı alanın yolu error alanındadır.",
     "INVALID_PHONE_VERIFICATION": "Tarafın telefon doğrulaması ayarı (require_phone_verification) true, false veya null olmalı; hatalı alanın yolu error alanındadır.",
     "PHONE_REQUIRED_FOR_VERIFICATION": "Telefon doğrulaması açık tarafın telefon numarası boş; SMS ile kod gönderilebilmesi için phone gerekir.",
+    "PARTY_PHONE_MISSING": (
+        "Sözleşmede telefon doğrulaması açık ama bir imzacının telefon numarası yok ya da geçersiz; "
+        "kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalır. İlgili taraflar "
+        "party_ids alanındadır; numaraları tamamlayıp POST /demands/{demandId}/dispatch ile gönderin "
+        "ya da telefon doğrulamasını kapatın."
+    ),
     "CHANGE_REQUEST_PENDING": "Tarafın açık bir düzeltme talebi var; talep çözülmeden tekrar gönderilemez.",
     "PARTY_NOT_ELIGIBLE": "Tarafa şu an davet gönderilemez (onay vermiş onaylayan, onaylayan reddi, onay adımı tamamlanmadı veya sıralı imzada sırası gelmedi).",
     "DEMAND_EXPIRED": "Sözleşmenin imza süresi geçmiş.",
@@ -163,6 +169,12 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
         "içeren sözleşme oluşturulamadı ya da gönderilemedi, kredi düşülmedi, davet gönderilmedi. "
         "Oluşturmada sözleşme taslakta kalır. Panelden geçerli bir numaratör seçip taslağı "
         "gönderin; aynı isteği tekrarlamayın."
+    ),
+    "CONTRACT_NUMBER_SEQUENCE_COLLISION": (
+        "Numaratörün sıradaki numaraları daha önce verilmiş numaralarla çakışıyor; sözleşme "
+        "gönderilmedi, kredi düşülmedi, davet gönderilmedi. Oluşturmada sözleşme taslakta kalabilir. "
+        "Panelde numaratör ayarlarından sıradaki numarayı ileri alıp tekrar deneyin; ayar "
+        "değişmeden aynı istek aynı hatayı verir."
     ),
     "INVALID_CHANNELS": "channels boş ya da email/sms dışında bir değer içeriyor.",
     "MAX_SMS_REMINDERS_REACHED": "Sözleşme için SMS hatırlatma üst sınırına ulaşıldı.",

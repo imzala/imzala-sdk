@@ -105,6 +105,7 @@ docs/CodedError.md
 docs/ContactSummary.md
 docs/ContactSummaryCompany.md
 docs/ContactsApi.md
+docs/ContractNumber.md
 docs/ContractTerm.md
 docs/ContractTermInput.md
 docs/CreateDemandRequest.md
@@ -317,6 +318,7 @@ src/main/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1.java
 src/main/java/org/imzala/client/generated/model/CodedError.java
 src/main/java/org/imzala/client/generated/model/ContactSummary.java
 src/main/java/org/imzala/client/generated/model/ContactSummaryCompany.java
+src/main/java/org/imzala/client/generated/model/ContractNumber.java
 src/main/java/org/imzala/client/generated/model/ContractTerm.java
 src/main/java/org/imzala/client/generated/model/ContractTermInput.java
 src/main/java/org/imzala/client/generated/model/CreateDemandRequest.java
@@ -503,6 +505,7 @@ src/test/java/org/imzala/client/generated/model/ApiV1TimestampsPostRequest1Test.
 src/test/java/org/imzala/client/generated/model/CodedErrorTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryCompanyTest.java
 src/test/java/org/imzala/client/generated/model/ContactSummaryTest.java
+src/test/java/org/imzala/client/generated/model/ContractNumberTest.java
 src/test/java/org/imzala/client/generated/model/ContractTermInputTest.java
 src/test/java/org/imzala/client/generated/model/ContractTermTest.java
 src/test/java/org/imzala/client/generated/model/CreateDemandRequestTest.java

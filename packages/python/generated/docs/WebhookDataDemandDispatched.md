@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **demand_id** | **UUID** |  |
 **title** | **str** |  |
 **dispatched_by** | **UUID** | Gönderimi yapan kullanıcının kimliği; belirlenemiyorsa &#x60;null&#x60;. |
+**contract_numbers** | [**List[ContractNumber]**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.  | [optional]
 
 ## Example
 

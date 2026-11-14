@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **status** | **str** | Bilinen değerler: COMPLETED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın. |
 **completed_at** | **datetime** |  |
 **parties** | [**List[WebhookDataDemandCompletedPartiesInner]**](WebhookDataDemandCompletedPartiesInner.md) |  |
+**contract_numbers** | [**List[ContractNumber]**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.  | [optional]
 **backfill** | **bool** | Replay bayrağı (yan etkileri atla) | [optional]
 
 ## Example

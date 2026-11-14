@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **parties_total** | **int** |  | [optional]
 **parties_signed** | **int** |  | [optional]
 **pdf_url** | **str** | COMPLETED ise imzalı PDF public URL&#39;i. Açık rıza belgesi bu herkese açık bağlantıdan verilmez (zarfın ilk belgesi açık rıza belgesiyse 404 döner); API anahtarıyla &#x60;GET /api/v1/demands/{id}/pdf&#x60; kullanın. | [optional]
+**contract_numbers** | [**List[ContractNumber]**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları. Numara yoksa boş dizi.  | [optional]
 
 ## Example
 
