@@ -366,9 +366,9 @@ public class IdempotentWriteTests
         api.Setup(a => a.ApiV1DemandsUploadPostAsync(
                 It.IsAny<List<FileParameter>>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Returns<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, CancellationToken>(
-                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, ct) =>
+                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, string?, CancellationToken>(
+                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss, ct) =>
                 {
                     // Reading the stream here consumes it, like a real HTTP send would.
                     using var reader = new StreamReader(files[0].Content);

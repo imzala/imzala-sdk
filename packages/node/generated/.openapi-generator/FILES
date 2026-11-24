@@ -40,6 +40,7 @@ docs/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/ApiV1DemandsGet200Response.md
 docs/ApiV1DemandsGet200ResponseData.md
 docs/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/ApiV1DemandsGet400Response.md
 docs/ApiV1DemandsIdArchivePost200Response.md
 docs/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/ApiV1DemandsIdCancelPost200Response.md
@@ -49,6 +50,9 @@ docs/ApiV1DemandsIdDelete409Response.md
 docs/ApiV1DemandsIdEmbedSessionPost200Response.md
 docs/ApiV1DemandsIdEmbedSessionPost200ResponseData.md
 docs/ApiV1DemandsIdEmbedSessionPostRequest.md
+docs/ApiV1DemandsIdExternalRefPatch200Response.md
+docs/ApiV1DemandsIdExternalRefPatch200ResponseData.md
+docs/ApiV1DemandsIdExternalRefPatchRequest.md
 docs/ApiV1DemandsIdGet200Response.md
 docs/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md
 docs/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md

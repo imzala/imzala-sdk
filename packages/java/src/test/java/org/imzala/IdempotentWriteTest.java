@@ -331,7 +331,7 @@ class IdempotentWriteTest {
 
   @Test
   void upload_document_with_key_retries_once_with_the_key_in_slot_three() throws ApiException {
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenThrow(tooMany("1"))
         .thenReturn(new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload().id(UUID.randomUUID())));
 
@@ -340,13 +340,13 @@ class IdempotentWriteTest {
 
     assertNotNull(result.getId());
     verify(demandsApi, times(2)).apiV1DemandsUploadPost(anyList(), anyString(), eq("upload-7"),
-        isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
+        isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
     assertEquals(List.of(1_000L), sleeper.waits);
   }
 
   @Test
   void upload_document_without_key_is_a_single_attempt() throws ApiException {
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenThrow(tooMany("1"));
 
     DemandsResource resource = new DemandsResource(demandsApi, remindersApi, retry());
@@ -358,7 +358,7 @@ class IdempotentWriteTest {
   @Test
   void upload_document_retry_resends_existing_files_and_cleans_up_afterwards() throws ApiException {
     List<List<File>> seen = new ArrayList<>();
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenAnswer(inv -> {
           List<File> files = inv.getArgument(0);
           assertTrue(files.get(0).exists(), "temp file must exist while the request is sent");

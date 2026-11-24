@@ -2,9 +2,9 @@
 /* eslint-disable */
 /**
  * imzala External API
- * imzala.org dış API\'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.17.3 · **Son güncelleme:** 2026-11-23  ## Auth Tüm istekler `X-API-Key` header\'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field\'lar) `POST /api/v1/demands` payload\'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field\'lar   (örn. Kira sözleşmesinde Kiraya Veren\'in `address`, `iban` field\'ları) - `variables` (root) — **partilerden bağımsız** field\'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item\'ın template_party_id\'si var ve o parti slug\'ı göndermişse → uygula 2. Yoksa root `variables`\'tan ara → varsa uygula 3. Yoksa atla  Dashboard\'daki **API Kullanımı** tab\'ı (`/sablonlar/<id>`) hangi field\'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint\'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array\'ı, gönderdiğiniz ama şablonda eşleşmeyen slug\'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log\'ta veya dashboard\'da kontrol edin.  ## Onaylayan (onay adımı) Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan içeren sözleşmelerde davetler iki aşamada gönderilir: - Sözleşme oluşturulurken (`POST /api/v1/demands`,   `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`   çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.   Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla   davet edilir. - İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet   edilir. - Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;   `dispatch` çağrısı da kimseye davet göndermez. - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.  Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.  **Kredi:** Sözleşmede bilgileri girilmiş en az bir imzacı varsa, taraf listesindeki sıraya göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi kredisi düşülmez). Bilgileri girilmiş imzacı yoksa (boş bırakılan imzacı satırları sayılmaz) onaylayanlar imzacı gibi ücretlendirilir. Kural API ve toplu gönderimle oluşturulan sözleşmelerde de geçerlidir. Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz; yanlış kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim kredi kullanır. Kural, 22 Ekim 2026\'daki güncellemeden sonra gönderilen sözleşmelerde uygulanır; daha önce gönderilmiş sözleşmeler eski kurala tabidir. Bu sözleşmelerin tutarı değişmez ve `credits` alanı tahsil edilen tutarı gösterir. Daha önce oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits` alanları ve kredi ön kontrolü aynı kuralla hesaplanır.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler) tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır. Yanıt gövdesi:  ```json {   \"error\": \"AI_TOOL_ACCESS_DISABLED\",   \"code\": \"AI_TOOL_ACCESS_DISABLED\",   \"message\": \"Kurumunuz yapay zekâ araçlarının erişimini kapattı.\" } ```  ## Loglar Tüm API istekleriniz dashboard\'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta\'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker\'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body\'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default\'unu   ezer, sadece bu demand\'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint\'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response\'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez. - Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan   onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş   taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde   `skipped` olarak `reason: \"party_not_eligible\"` ile döner.  ```bash # Default — SMS + e-posta birlikte (parti eligibility\'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d \'{}\'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d \'{\"channels\": [\"sms\"], \"force\": true}\' ```  Detay için **Reminders** tag\'i altındaki endpoint\'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL\'ye `POST` ile JSON payload gönderir. Webhook\'lar dashboard\'dan yönetilir: **Ayarlar -> Webhook\'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook\'u** (org workspace\'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event\'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace\'te) → sadece sizin kendi   event\'lerinizde tetiklenir  ### Olay tipleri (12) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.dispatched` | Sözleşme imzaya gönderildi | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header\'lar Her istekte aşağıdaki header\'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB\'de unique key). - `type`: yukarıdaki 12 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header\'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require(\'crypto\');  function verify(rawBody, header, secret) {   const expected = \'sha256=\' + crypto     .createHmac(\'sha256\', secret)     .update(rawBody, \'utf8\')     .digest(\'hex\');   return crypto.timingSafeEqual(     Buffer.from(header || \'\', \'utf8\'),     Buffer.from(expected, \'utf8\')   ); }  // Express app.post(\'/webhook\', express.raw({ type: \'application/json\' }), (req, res) => {   const sig = req.header(\'X-Imzala-Signature-256\');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send(\'invalid signature\');   }   const event = JSON.parse(req.body.toString(\'utf8\'));   // ... event\'i kuyruğa koy ve hemen 2xx dön   res.status(200).send(\'ok\'); }); ```  > **Önemli:** Body\'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware\'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard\'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint\'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB\'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix\'inden sonra kayıp event\'leri yakalamak) için bazı payload\'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow\'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send(\'replay accepted\'); } ```  ### Manuel yeniden gönderim Dashboard\'da `Ayarlar -> Webhook\'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5\'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`\'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn\'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload\'larda side-effect\'leri atla. 5. `X-Imzala-Delivery` UUID\'sini log\'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret\'i env var\'da sakla, koda gömme.
+ * imzala.org dış API\'si — şablondan sözleşme oluşturma ve takip.  **Sürüm:** 1.18.3 · **Son güncelleme:** 2026-11-23  ## Auth Tüm istekler `X-API-Key` header\'ı gerektirir. API key dashboard üzerinden oluşturulur: **API & Geliştirici** sayfası (https://app.imzala.org/developer) veya **Hesap Ayarları -> API Anahtarları**.  ## Workspace (organizasyon) Organizasyon içinde oluşturulmuş bir API anahtarı kendi organizasyonuna bağlıdır: `X-Workspace-Id` başlığı gönderilmezse anahtarın organizasyonu otomatik uygulanır; gönderilirse anahtarın organizasyonuyla aynı olmalıdır (aksi halde 403 `WORKSPACE_MISMATCH`). Kişisel anahtarlar için bu başlık gerekmez.  ## Multi-Party Variables (parti-bazlı ve ortak field\'lar) `POST /api/v1/demands` payload\'ında iki tip \"variables\" alanı vardır:  - `party_mapping[i].variables` — **bu partiye ait** field\'lar   (örn. Kira sözleşmesinde Kiraya Veren\'in `address`, `iban` field\'ları) - `variables` (root) — **partilerden bağımsız** field\'lar   (örn. `kira_baslangic_tarihi`, `kira_bedeli`)  Resolution sırası: 1. Item\'ın template_party_id\'si var ve o parti slug\'ı göndermişse → uygula 2. Yoksa root `variables`\'tan ara → varsa uygula 3. Yoksa atla  Dashboard\'daki **API Kullanımı** tab\'ı (`/sablonlar/<id>`) hangi field\'in hangi gruba gittiğini gösterir. Veya yeni `GET /api/v1/templates/{id}/usage` endpoint\'i aynı bilgiyi JSON olarak döner.  ## Sessiz Başarısızlık Yok `POST /api/v1/demands` cevabında `variables_ignored` array\'ı, gönderdiğiniz ama şablonda eşleşmeyen slug\'ları listeler. Boş olmadığında yazım hatası yapmışsınız demektir — log\'ta veya dashboard\'da kontrol edin.  ## Onaylayan (onay adımı) Şablonda bir taraf **Onaylayan** olarak işaretlenmişse, o şablondan oluşturulan sözleşmede bu taraf belgeyi imzalamaz, onaylar. Onaylayan içeren sözleşmelerde davetler iki aşamada gönderilir: - Sözleşme oluşturulurken (`POST /api/v1/demands`,   `POST /api/v1/demands/bulk`) ve `POST /api/v1/demands/{demandId}/dispatch`   çağrıldığında önce yalnızca onay bekleyen onaylayanlar davet edilir.   Sıralı sözleşmede (`ordered: true`) onaylayanlar da kendi sıralarıyla   davet edilir. - İmzacılar, tüm onaylayanlar onayladıktan sonra otomatik olarak davet   edilir. - Bir onaylayan sözleşmeyi reddederse imzacılar davet edilmez;   `dispatch` çağrısı da kimseye davet göndermez. - Onay vermiş bir onaylayan `dispatch` ile yeniden davet edilmez.  Onaylayan içermeyen sözleşmelerde davet davranışı değişmez.  **Kredi:** Sözleşmede bilgileri girilmiş en az bir imzacı varsa, taraf listesindeki sıraya göre ilk 3 onaylayan için kredi düşülmez; 4. ve sonraki onaylayanlar için yalnız doğrulama yöntemlerinin kredisi düşülür (imza ve koruma seviyesi kredisi düşülmez). Bilgileri girilmiş imzacı yoksa (boş bırakılan imzacı satırları sayılmaz) onaylayanlar imzacı gibi ücretlendirilir. Kural API ve toplu gönderimle oluşturulan sözleşmelerde de geçerlidir. Doğrulamasını başlatmış ya da tamamlamış bir tarafın iletişim ve kimlik bilgileri ile rolü değiştirilemez ve taraf sözleşmeden çıkarılamaz; yanlış kişiyse sözleşmeyi iptal edip yeniden gönderin. Yeniden gönderim kredi kullanır. Kural, 22 Ekim 2026\'daki güncellemeden sonra gönderilen sözleşmelerde uygulanır; daha önce gönderilmiş sözleşmeler eski kurala tabidir. Bu sözleşmelerin tutarı değişmez ve `credits` alanı tahsil edilen tutarı gösterir. Daha önce oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits` alanları ve kredi ön kontrolü aynı kuralla hesaplanır.  ## Takip numarası (`external_ref`) Sözleşmeye kendi sisteminizdeki kayıt numarasını (ör. sipariş no) ekleyebilirsiniz: `POST /demands`, `POST /demands/upload` ve `POST /demands/bulk` (satır başına `rows[i].external_ref`) ile oluştururken ya da sonradan `PATCH /demands/{id}/external-ref` ile. Değer sözleşme detayında, listede ve webhook yüklerinde döner; listede `?external_ref=` ile tam eşleşme filtrelenir.  Takip numarası benzersiz değildir: aynı değer birden çok sözleşmede olabilir. `idempotency_key` / `Idempotency-Key` ile karıştırmayın; o anahtar her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller. Webhook alıcısında tekrar işlemeyi olay `id`\'si ile önleyin, `external_ref` ile değil. Kimlik numarası, e-posta veya telefon yazmayın.  ## Rate Limit - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve   gövdede `code: \"RATE_LIMIT_EXCEEDED\"` bulunur. - `Retry-After` başlığı kaç saniye beklemeniz gerektiğini bildirir; gövdedeki   `retry_after_seconds` alanı aynı değeri taşır. - Limit bilgisi standart `RateLimit-*` yanıt başlıklarıyla gelir   (`X-RateLimit-*` **değil**): `RateLimit-Limit`, `RateLimit-Remaining`,   `RateLimit-Reset`, `RateLimit-Policy`. - Anahtar başına limit yükseltilebilir; ihtiyacınız varsa bize yazın. - Bazı uçlarda daha sıkı, uç-bazlı limitler ayrıca geçerlidir:    | Uç | Limit |   |----|-------|   | `POST /api/v1/timestamps` | 10 istek/dakika |   | `POST /api/v1/demands/bulk` | 5 istek/dakika |   | `POST /api/v1/demands/{id}/embed-session` | 5 istek/dakika |   | `POST /api/v1/field-templates/{id}/preview-layout` | 5 istek/dakika |  ## Hatalar Standart HTTP kodları: 400 (geçersiz veri), 401 (auth), 403 (yetki), 404 (yok), 429 (rate limit), 500 (sunucu)  `403 AI_TOOL_ACCESS_DISABLED`: organizasyon yöneticisi, organizasyonun yapay zekâ araçlarıyla erişimini kapatmıştır. Bu kontrol resmî İmzala MCP istemcisini (`User-Agent` başlığı `imzala-mcp/` ile başlayan istekler) tanır ve yalnız organizasyon çalışma alanını hedefleyen isteklerde uygulanır. Yanıt gövdesi:  ```json {   \"error\": \"AI_TOOL_ACCESS_DISABLED\",   \"code\": \"AI_TOOL_ACCESS_DISABLED\",   \"message\": \"Kurumunuz yapay zekâ araçlarının erişimini kapattı.\" } ```  ## Loglar Tüm API istekleriniz dashboard\'da `Geliştirici -> Etkinlik Logu` sayfasında görünür (request body, response body, headers, status code, süre). 30 gün retention.  ## Hatırlatma Sistemi İmzalanmamış taraflara hatırlatma SMS/e-posta\'sı **iki yolla** gönderilir:  **1. Otomatik (scheduled) hatırlatmalar — şablona/sözleşmeye gömülü**  Şablon (Template) seviyesinde `reminder_settings` (interval saatleri, max sayısı, kanallar) tanımlayabilirsiniz. Şablondan demand oluştururken bu değerler yeni sözleşmenin `ReminderConfig` satırına otomatik kopyalanır ve BullMQ worker\'ı zamanı geldiğinde sessiz şekilde hatırlatır.  - Dashboard editörden ayarlanır: `app.imzala.org/sablonlar/<id>/duzenle`   → **Sözleşme Ayarları** → **Otomatik Hatırlatma** + **Hatırlatma Kanalı** - Veya `POST /api/v1/demands` çağrısında body\'de `reminder_settings`   alanıyla **bu sözleşme için override** edebilirsiniz (şablon default\'unu   ezer, sadece bu demand\'a uygulanır) - Default: `{enabled: true, intervals_hours: [48], max_reminders: 1, channels: [\"email\"]}`  **2. Manuel (anlık) hatırlatma — tetikleme endpoint\'i**  `POST /api/v1/demands/{id}/reminders` ile **şu an** SMS/e-posta hatırlatması gönderebilirsiniz. Anti-spam: Aynı sözleşme için son hatırlatmadan 5 dakika geçmemişse 429 `RATE_LIMITED` döner; `force: true` ile override edilebilir.  **Kişi başına sert sınırlar (override edilemez):** - Bir kişiye en fazla 3 SMS reminder gönderilebilir (otomatik scheduled +   manuel trigger toplam). - Bir kişiye en fazla 3 e-posta reminder gönderilebilir. - Sınıra ulaşan kişi response\'un `details[]` listesinde   `skipped` olarak görünür (`reason: \"party_sms_cap_reached (3)\"` veya   `\"party_email_cap_reached (3)\"`); diğer kişilere gönderim devam eder. - `force: true` bu kişi-başı sınırları override etmez. - Hatırlatma yalnızca davet sırası gelmiş taraflara gönderilir. Onaylayan   onayını beklerken imzacılar, sıralı sözleşmede sırası henüz gelmemiş   taraflar ve bir onaylayan reddettiyse tüm taraflar `details[]` içinde   `skipped` olarak `reason: \"party_not_eligible\"` ile döner.  ```bash # Default — SMS + e-posta birlikte (parti eligibility\'sine göre) curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" -d \'{}\'  # Sadece SMS, anti-spam override curl -X POST https://api-prd.imzala.org/api/v1/demands/<demand_id>/reminders \\   -H \"X-API-Key: imz_...\" \\   -H \"Content-Type: application/json\" \\   -d \'{\"channels\": [\"sms\"], \"force\": true}\' ```  Detay için **Reminders** tag\'i altındaki endpoint\'e bakın.  ## Webhooks imzala olay gerçekleştiğinde (sözleşme tamamlandı, taraf imzaladı vb.) sizin belirlediğiniz HTTPS URL\'ye `POST` ile JSON payload gönderir. Webhook\'lar dashboard\'dan yönetilir: **Ayarlar -> Webhook\'lar** (https://app.imzala.org/settings/webhooks). API üzerinden CRUD desteklenmez.  ### Workspace kapsamı - **Organizasyon webhook\'u** (org workspace\'inde oluşturulduysa) → o   organizasyon altındaki TÜM üyelerin event\'lerinde tetiklenir - **Kişisel webhook** (kişisel workspace\'te) → sadece sizin kendi   event\'lerinizde tetiklenir  ### Olay tipleri (12) | Olay | Tetikleyici | |------|-------------| | `demand.created` | Yeni sözleşme oluşturuldu | | `demand.dispatched` | Sözleşme imzaya gönderildi | | `demand.completed` | Tüm taraflar imzaladı | | `demand.expired` | Sözleşme süresi doldu | | `party.signed` | Bir taraf imzaladı | | `party.viewed` | Bir taraf imza sayfasını ilk kez açtı | | `party.rejected` | Bir taraf reddetti | | `kyc.completed` | Kimlik doğrulama başarıyla tamamlandı | | `kyc.failed` | Kimlik doğrulama başarısız sonuçlandı | | `contract.expiring` | Takip edilen sözleşme bitiş tarihine yaklaşıyor | | `contract.ended` | Takip edilen sözleşmenin platformdaki bitiş tarihi geçti | | `contract.advanced` | Otomatik yenilenen sözleşmenin takip edilen bitişi ileri alındı |  > **Not (contract.\\* olayları):** Bunlar platformun **takip amaçlı** > kayıtlarıdır; sözleşmenin hukuken yenilendiğini veya sona erdiğini > BELİRTMEZ. Detay için `ContractTerm` şemasına ve `state` alanına bakın.  ### Header\'lar Her istekte aşağıdaki header\'lar gönderilir:  ``` Content-Type: application/json User-Agent: Imzala-Webhook/1.0 X-Imzala-Event: <olay tipi, örn. demand.completed> X-Imzala-Delivery: <delivery UUID — idempotency key> X-Imzala-Signature-256: sha256=<HMAC-SHA256 hex> ```  ### Payload zarfı Tüm olaylar aynı zarfı kullanır:  ```json {   \"id\": \"evt_abc123...\",   \"type\": \"demand.completed\",   \"created_at\": \"2026-05-07T08:30:00.000Z\",   \"data\": { \"...olay-özel alanlar...\" } } ```  - `id` — `evt_<32-hex>`. Idempotency için kullanın (DB\'de unique key). - `type`: yukarıdaki 12 olay tipinden biri (lowercase). - `created_at` — olay zamanı (ISO 8601 UTC). - `data` — her olaya özel (aşağıda her olay için ayrı şema).  ### İmza doğrulama (HMAC-SHA256) Webhook oluşturduğunuzda dashboard size `whsec_<64-hex>` formatında bir secret döner — **sadece bir kez gösterilir**, güvenli yere kaydedin.  Her isteğin ham gövdesi (body) bu secret ile HMAC-SHA256 imzalanır ve `X-Imzala-Signature-256: sha256=<hex>` header\'ında gönderilir. Doğrulama Node.js örneği:  ```js const crypto = require(\'crypto\');  function verify(rawBody, header, secret) {   const expected = \'sha256=\' + crypto     .createHmac(\'sha256\', secret)     .update(rawBody, \'utf8\')     .digest(\'hex\');   return crypto.timingSafeEqual(     Buffer.from(header || \'\', \'utf8\'),     Buffer.from(expected, \'utf8\')   ); }  // Express app.post(\'/webhook\', express.raw({ type: \'application/json\' }), (req, res) => {   const sig = req.header(\'X-Imzala-Signature-256\');   if (!verify(req.body, sig, process.env.IMZALA_WEBHOOK_SECRET)) {     return res.status(401).send(\'invalid signature\');   }   const event = JSON.parse(req.body.toString(\'utf8\'));   // ... event\'i kuyruğa koy ve hemen 2xx dön   res.status(200).send(\'ok\'); }); ```  > **Önemli:** Body\'yi parse etmeden ham byte üzerinden imzalayın. Çoğu > framework (Express, FastAPI vs.) \"raw body\" middleware\'i sağlar.  ### Yeniden deneme politikası - **Başarı:** HTTP 2xx — delivery `SENT` olarak işaretlenir. - **Başarısızlık:** 2xx dışı veya bağlantı hatası — yeniden denenir. - **Per-attempt timeout:** 10 saniye (yapılandırılabilir env: `WEBHOOK_TIMEOUT_MS`). - **Maksimum deneme:** 6 (ilk + 5 retry). - **Backoff (exponential):** 30s → 2dk → 10dk → 30dk → 2sa. - **Tükenirse:** delivery `DEAD_LETTER` olur, dashboard\'dan manuel   \"Tekrar Gönder\" mümkün.  Endpoint\'iniz **10 saniyeden kısa sürede 2xx dönmelidir**. Ağır işleri (DB yazma, e-posta vs.) async kuyruğa atın.  ### Idempotency Aynı olay birden fazla kez gönderilebilir (network retry, manuel redeliver, backfill). Receiver tarafında **`payload.id`** unique olduğu için bunu DB\'de tek seferlik kayıt için kullanın:  ```sql CREATE TABLE imzala_webhook_seen (   event_id TEXT PRIMARY KEY,   received_at TIMESTAMPTZ DEFAULT now() ); -- INSERT ... ON CONFLICT DO NOTHING; sonuç 0 satır ise zaten gördük → skip ```  ### Backfill flag Geçmiş olayları yeniden tetiklemek (örn. webhook bug fix\'inden sonra kayıp event\'leri yakalamak) için bazı payload\'larda `data._backfill: true` bayrağı bulunur. Bu durumda receiver:  - Loglama için kayıt edebilir - Side-effect tetikleyicilerini (ödeme, e-posta gönderme, vs.) **atlamalı** - `id` zaten görülmüşse normal flow\'a devam edebilir  ```js if (event.data._backfill === true) {   await logReplay(event);   return res.status(200).send(\'replay accepted\'); } ```  ### Manuel yeniden gönderim Dashboard\'da `Ayarlar -> Webhook\'lar -> <webhook> -> Teslim Geçmişi`:  - Her satırda **Tekrar Gönder** butonu (PENDING dışında her statü için) - Üstte **Son 5\'i Tekrar Gönder** toplu butonu (max 50 değiştirilebilir) - Yeni delivery kaydı oluşur, orijinali bozmaz (audit trail korunur)  ### En iyi pratikler 1. Aynı `id`\'yi tekrar görürseniz işlemi atla (idempotency). 2. İmzayı **timing-safe compare** ile doğrula (string equality değil). 3. 10sn\'den hızlı 2xx dön; ağır işi kuyruğa at. 4. `_backfill: true` payload\'larda side-effect\'leri atla. 5. `X-Imzala-Delivery` UUID\'sini log\'la — destek talebinde bizimkiyle    eşleşmesini kolaylaştırır. 6. HTTPS endpoint kullan; secret\'i env var\'da sakla, koda gömme.
  *
- * The version of the OpenAPI document: 1.17.3
+ * The version of the OpenAPI document: 1.18.3
  * Contact: destek@imzala.org
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -84,6 +84,10 @@ export interface ApiV1DemandsBulkPost200ResponseDataResultsInner {
      */
     'status'?: string;
     /**
+     * Yalnız status=created ise; satıra kaydedilen takip numarası (yoksa `null`).
+     */
+    'external_ref'?: string | null;
+    /**
      * status=created ise; veya status=failed olup sözleşme oluşturulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa (taslak, davet gönderilmedi)
      */
     'demand_id'?: string;
@@ -106,7 +110,7 @@ export interface ApiV1DemandsBulkPost200ResponseDataResultsInner {
      */
     'dispatched'?: number;
     /**
-     * status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, PARTY_PHONE_MISSING, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)
+     * status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE, INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, PARTY_PHONE_MISSING, INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS, INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, EXTERNAL_REF_INVALID, EXTERNAL_REF_TOO_LONG, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)
      */
     'error'?: string;
     /**
@@ -244,6 +248,10 @@ export interface ApiV1DemandsBulkPostRequestRowsInner {
      */
     'variables'?: object;
     'documents'?: DocumentSelectionInput;
+    /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
 }
 export interface ApiV1DemandsBulkPostRequestRowsInnerPartyMappingInner {
     'template_party_id'?: string;
@@ -441,9 +449,19 @@ export interface ApiV1DemandsGet200ResponseDataDemandsInner {
      */
     'pdf_url'?: string | null;
     /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
+    /**
      * Sözleşmeye verilmiş sözleşme numaraları. Numara yoksa boş dizi.
      */
     'contract_numbers'?: Array<ContractNumber>;
+}
+export interface ApiV1DemandsGet400Response {
+    'success'?: boolean;
+    'error'?: string;
+    'code'?: string;
+    'param'?: string;
 }
 export interface ApiV1DemandsIdArchivePost200Response {
     'success'?: boolean;
@@ -504,6 +522,23 @@ export interface ApiV1DemandsIdEmbedSessionPostRequest {
      * İmzacı dili. `tr` (Türkçe), `en` (İngilizce) veya `null` (atanmadı).  Bilinen değerler: tr, en. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
     'locale'?: string | null;
+}
+export interface ApiV1DemandsIdExternalRefPatch200Response {
+    'success'?: boolean;
+    'data'?: ApiV1DemandsIdExternalRefPatch200ResponseData;
+}
+export interface ApiV1DemandsIdExternalRefPatch200ResponseData {
+    'id'?: string;
+    /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
+}
+export interface ApiV1DemandsIdExternalRefPatchRequest {
+    /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref': string | null;
 }
 export interface ApiV1DemandsIdGet200Response {
     'success'?: boolean;
@@ -978,6 +1013,10 @@ export interface CreateDemandRequest {
     'title'?: string;
     'description'?: string;
     /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
+    /**
      * `Idempotency-Key` başlığının gövde karşılığı; başlık ekleyemeyen istemciler için. İkisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.
      */
     'idempotency_key'?: string;
@@ -1081,6 +1120,10 @@ export interface CreatedDemand {
     'id'?: string;
     'title'?: string;
     /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
+    /**
      * Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
     'status'?: string;
@@ -1138,6 +1181,10 @@ export interface CreatedDemandStampsAppliedInner {
 export interface CreatedDemandUpload {
     'id'?: string;
     'title'?: string;
+    /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
     'status'?: string;
     /**
      * Oluşturulan sözleşmedeki her sayfanın `id` ve `order` bilgisi. `POST /api/v1/demands/{id}/items` endpoint\'ine alan yerleştirmek için `page_id` parametresi olarak kullanın.
@@ -1237,6 +1284,10 @@ export interface DemandPage {
 export interface DemandStatus {
     'id'?: string;
     'title'?: string;
+    /**
+     * Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.  En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme, kontrol veya görünmez yön karakteri içeren değer `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.  `idempotency_key` ile farkı: idempotency anahtarı her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller; takip numarası ise tekrar edebilir ve tekrar korumasının yerine geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`). Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı olarak benzersizlik kuralı yoktur.  Tanımlı değilse `null` döner. Sonradan `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir. İmzacılara gösterilmez.
+     */
+    'external_ref'?: string | null;
     /**
      * Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED. Sunucu ileride yeni değer ekleyebilir; bilinmeyen değeri hata saymayın.
      */
@@ -2101,6 +2152,10 @@ export interface WebhookDataDemandCompleted {
      */
     'contract_numbers'?: Array<ContractNumber>;
     /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
+    /**
      * Replay bayrağı (yan etkileri atla)
      */
     '_backfill'?: boolean;
@@ -2122,6 +2177,10 @@ export interface WebhookDataDemandCreated {
      */
     'contract_numbers'?: Array<ContractNumber>;
     /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
+    /**
      * Geçmiş event\'i replay etmek için bayrak. Receiver yan etkileri (e-posta gönderme, ödeme tetikleme vs.) atlamalı.
      */
     '_backfill'?: boolean;
@@ -2137,6 +2196,10 @@ export interface WebhookDataDemandDispatched {
      * Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.
      */
     'contract_numbers'?: Array<ContractNumber>;
+    /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
 }
 export interface WebhookDataDemandExpired {
     'demand_id': string;
@@ -2147,6 +2210,10 @@ export interface WebhookDataDemandExpired {
      * Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.
      */
     'contract_numbers'?: Array<ContractNumber>;
+    /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
 }
 export interface WebhookDataDemandExpiredPartiesInner {
     'id'?: string;
@@ -2190,6 +2257,10 @@ export interface WebhookDataPartyRejected {
     'demand_id': string;
     'party': WebhookDataPartyRejectedParty;
     'rejected_at': string;
+    /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
 }
 export interface WebhookDataPartyRejectedParty {
     'id': string;
@@ -2205,6 +2276,10 @@ export interface WebhookDataPartySigned {
     'demand_id': string;
     'party_id': string;
     /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
+    /**
      * Replay bayrağı
      */
     '_backfill'?: boolean;
@@ -2212,6 +2287,10 @@ export interface WebhookDataPartySigned {
 export interface WebhookDataPartyViewed {
     'demand_id': string;
     'party_id': string;
+    /**
+     * Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay `id`\'si ile önleyin, `external_ref` ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.
+     */
+    'external_ref'?: string | null;
 }
 /**
  * Tüm webhook payload\'larının ortak zarfı. `data` alanı olay tipine göre değişir; her olay için ayrı veri şeması yukarıda dokümante.
@@ -2993,10 +3072,11 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
          * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`.
          * @summary Sözleşme listesi (counts-only, PII\'siz)
          * @param {ApiV1DemandsGetStatusEnum} [status]
-         * @param {string} [q] Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+         * @param {string} [q] Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. &#x60;CODECK-2026-042&#x60;) veya takip numarasında (&#x60;external_ref&#x60;, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
          * @param {string} [from]
          * @param {string} [to]
          * @param {string} [templateId]
+         * @param {string} [externalRef] Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için &#x60;q&#x60;). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. &#x60;external_ref[contains]&#x3D;&#x60;) &#x60;400 EXTERNAL_REF_INVALID&#x60;, 255 karakteri aşan değer &#x60;400 EXTERNAL_REF_TOO_LONG&#x60; döner.
          * @param {number} [page]
          * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
          * @param {string} [sort] alan:yön (ör. createdAt:desc)
@@ -3004,7 +3084,7 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1DemandsGet: async (status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1DemandsGet: async (status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, externalRef?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/demands`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3042,6 +3122,10 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
 
             if (templateId !== undefined) {
                 localVarQueryParameter['template_id'] = templateId;
+            }
+
+            if (externalRef !== undefined) {
+                localVarQueryParameter['external_ref'] = externalRef;
             }
 
             if (page !== undefined) {
@@ -3304,6 +3388,48 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(apiV1DemandsIdEmbedSessionPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF\'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+         * @summary Sözleşme takip numarasını güncelle
+         * @param {string} id
+         * @param {ApiV1DemandsIdExternalRefPatchRequest} apiV1DemandsIdExternalRefPatchRequest
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdExternalRefPatch: async (id: string, apiV1DemandsIdExternalRefPatchRequest: ApiV1DemandsIdExternalRefPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1DemandsIdExternalRefPatch', 'id', id)
+            // verify required parameter 'apiV1DemandsIdExternalRefPatchRequest' is not null or undefined
+            assertParamExists('apiV1DemandsIdExternalRefPatch', 'apiV1DemandsIdExternalRefPatchRequest', apiV1DemandsIdExternalRefPatchRequest)
+            const localVarPath = `/api/v1/demands/{id}/external-ref`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-Key", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1DemandsIdExternalRefPatchRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3682,12 +3808,13 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [description]
          * @param {string} [fieldTemplateId] Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.
          * @param {ApiV1DemandsUploadPostForceEnum} [force] Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.
+         * @param {string} [externalRef] Takip numarası; kurallar ve hata kodları için &#x60;DemandExternalRef&#x60; şemasına bakın (geçersiz değer 400, &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;; sözleşme oluşturulmaz). Boş değer &#x60;null&#x60; sayılır.
          * @param {ApiV1DemandsUploadPostSendInvitationsEnum} [sendInvitations] &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.
          * @param {ApiV1DemandsUploadPostOnAnchorMissEnum} [onAnchorMiss] Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API\\\&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1DemandsUploadPost: async (files: Array<File>, parties: string, idempotencyKey?: string, order?: string, title?: string, description?: string, fieldTemplateId?: string, force?: ApiV1DemandsUploadPostForceEnum, sendInvitations?: ApiV1DemandsUploadPostSendInvitationsEnum, onAnchorMiss?: ApiV1DemandsUploadPostOnAnchorMissEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1DemandsUploadPost: async (files: Array<File>, parties: string, idempotencyKey?: string, order?: string, title?: string, description?: string, fieldTemplateId?: string, force?: ApiV1DemandsUploadPostForceEnum, externalRef?: string, sendInvitations?: ApiV1DemandsUploadPostSendInvitationsEnum, onAnchorMiss?: ApiV1DemandsUploadPostOnAnchorMissEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'files' is not null or undefined
             assertParamExists('apiV1DemandsUploadPost', 'files', files)
             // verify required parameter 'parties' is not null or undefined
@@ -3737,6 +3864,10 @@ export const DemandsApiAxiosParamCreator = function (configuration?: Configurati
 
             if (force !== undefined) {
                 localVarFormParams.append('force', force as any);
+            }
+
+            if (externalRef !== undefined) {
+                localVarFormParams.append('external_ref', externalRef as any);
             }
 
             if (sendInvitations !== undefined) {
@@ -3961,10 +4092,11 @@ export const DemandsApiFp = function(configuration?: Configuration) {
          * Workspace + rol farkındalıklı sözleşme listesi. KVKK veri minimizasyonu: yalnızca sözleşme başlığı/durumu + imzacı SAYILARI döner (`parties_total`, `parties_signed`). Taraf adı/e-posta/telefon ve ham IP/cihaz/TC/konum HİÇ döndürülmez — taraf detayı için `GET /demands/{id}`.
          * @summary Sözleşme listesi (counts-only, PII\'siz)
          * @param {ApiV1DemandsGetStatusEnum} [status]
-         * @param {string} [q] Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+         * @param {string} [q] Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. &#x60;CODECK-2026-042&#x60;) veya takip numarasında (&#x60;external_ref&#x60;, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
          * @param {string} [from]
          * @param {string} [to]
          * @param {string} [templateId]
+         * @param {string} [externalRef] Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için &#x60;q&#x60;). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. &#x60;external_ref[contains]&#x3D;&#x60;) &#x60;400 EXTERNAL_REF_INVALID&#x60;, 255 karakteri aşan değer &#x60;400 EXTERNAL_REF_TOO_LONG&#x60; döner.
          * @param {number} [page]
          * @param {number} [limit] Sayfa boyutu (page_size ile aynı)
          * @param {string} [sort] alan:yön (ör. createdAt:desc)
@@ -3972,8 +4104,8 @@ export const DemandsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1DemandsGet(status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsGet200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsGet(status, q, from, to, templateId, page, limit, sort, archived, options);
+        async apiV1DemandsGet(status?: ApiV1DemandsGetStatusEnum, q?: string, from?: string, to?: string, templateId?: string, externalRef?: string, page?: number, limit?: number, sort?: string, archived?: ApiV1DemandsGetArchivedEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsGet(status, q, from, to, templateId, externalRef, page, limit, sort, archived, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4058,6 +4190,20 @@ export const DemandsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdEmbedSessionPost(id, apiV1DemandsIdEmbedSessionPostRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdEmbedSessionPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF\'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+         * @summary Sözleşme takip numarasını güncelle
+         * @param {string} id
+         * @param {ApiV1DemandsIdExternalRefPatchRequest} apiV1DemandsIdExternalRefPatchRequest
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1DemandsIdExternalRefPatch(id: string, apiV1DemandsIdExternalRefPatchRequest: ApiV1DemandsIdExternalRefPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsIdExternalRefPatch200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsIdExternalRefPatch(id, apiV1DemandsIdExternalRefPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsIdExternalRefPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4194,13 +4340,14 @@ export const DemandsApiFp = function(configuration?: Configuration) {
          * @param {string} [description]
          * @param {string} [fieldTemplateId] Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.
          * @param {ApiV1DemandsUploadPostForceEnum} [force] Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.
+         * @param {string} [externalRef] Takip numarası; kurallar ve hata kodları için &#x60;DemandExternalRef&#x60; şemasına bakın (geçersiz değer 400, &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;; sözleşme oluşturulmaz). Boş değer &#x60;null&#x60; sayılır.
          * @param {ApiV1DemandsUploadPostSendInvitationsEnum} [sendInvitations] &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.
          * @param {ApiV1DemandsUploadPostOnAnchorMissEnum} [onAnchorMiss] Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API\\\&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1DemandsUploadPost(files: Array<File>, parties: string, idempotencyKey?: string, order?: string, title?: string, description?: string, fieldTemplateId?: string, force?: ApiV1DemandsUploadPostForceEnum, sendInvitations?: ApiV1DemandsUploadPostSendInvitationsEnum, onAnchorMiss?: ApiV1DemandsUploadPostOnAnchorMissEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsUploadPost201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsUploadPost(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, options);
+        async apiV1DemandsUploadPost(files: Array<File>, parties: string, idempotencyKey?: string, order?: string, title?: string, description?: string, fieldTemplateId?: string, force?: ApiV1DemandsUploadPostForceEnum, externalRef?: string, sendInvitations?: ApiV1DemandsUploadPostSendInvitationsEnum, onAnchorMiss?: ApiV1DemandsUploadPostOnAnchorMissEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1DemandsUploadPost201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1DemandsUploadPost(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DemandsApi.apiV1DemandsUploadPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4327,7 +4474,7 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsGet200Response> {
-            return localVarFp.apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(axios, basePath));
+            return localVarFp.apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.externalRef, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(axios, basePath));
         },
         /**
          * Arşiv sözleşmenin `status`\'unu DEĞİŞTİRMEZ; yalnız `archived_at` damgası ekler ve arşivlenen sözleşmeyi salt-okunur yapar (`PATCH .../term` gibi mutasyonlar 409 `DEMAND_ARCHIVED` ile reddedilir; `GET` uçları etkilenmez). Yalnız tamamlanmış, iptal edilmiş veya süresi dolmuş sözleşmeler arşivlenebilir. Zaten arşivliyse idempotent (200, mevcut `archived_at` ile).
@@ -4388,6 +4535,16 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
          */
         apiV1DemandsIdEmbedSessionPost(requestParameters: DemandsApiApiV1DemandsIdEmbedSessionPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdEmbedSessionPost200Response> {
             return localVarFp.apiV1DemandsIdEmbedSessionPost(requestParameters.id, requestParameters.apiV1DemandsIdEmbedSessionPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF\'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+         * @summary Sözleşme takip numarasını güncelle
+         * @param {DemandsApiApiV1DemandsIdExternalRefPatchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1DemandsIdExternalRefPatch(requestParameters: DemandsApiApiV1DemandsIdExternalRefPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsIdExternalRefPatch200Response> {
+            return localVarFp.apiV1DemandsIdExternalRefPatch(requestParameters.id, requestParameters.apiV1DemandsIdExternalRefPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Kurum çalışma alanında erişim, sözleşme listesi ile aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri görür. Erişim yoksa 404 döner.
@@ -4487,7 +4644,7 @@ export const DemandsApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         apiV1DemandsUploadPost(requestParameters: DemandsApiApiV1DemandsUploadPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1DemandsUploadPost201Response> {
-            return localVarFp.apiV1DemandsUploadPost(requestParameters.files, requestParameters.parties, requestParameters.idempotencyKey, requestParameters.order, requestParameters.title, requestParameters.description, requestParameters.fieldTemplateId, requestParameters.force, requestParameters.sendInvitations, requestParameters.onAnchorMiss, options).then((request) => request(axios, basePath));
+            return localVarFp.apiV1DemandsUploadPost(requestParameters.files, requestParameters.parties, requestParameters.idempotencyKey, requestParameters.order, requestParameters.title, requestParameters.description, requestParameters.fieldTemplateId, requestParameters.force, requestParameters.externalRef, requestParameters.sendInvitations, requestParameters.onAnchorMiss, options).then((request) => request(axios, basePath));
         },
         /**
          * Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF\'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API\'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 90 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`).
@@ -4617,7 +4774,7 @@ export interface DemandsApiApiV1DemandsGetRequest {
     readonly status?: ApiV1DemandsGetStatusEnum
 
     /**
-     * Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+     * Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. &#x60;CODECK-2026-042&#x60;) veya takip numarasında (&#x60;external_ref&#x60;, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
      */
     readonly q?: string
 
@@ -4626,6 +4783,11 @@ export interface DemandsApiApiV1DemandsGetRequest {
     readonly to?: string
 
     readonly templateId?: string
+
+    /**
+     * Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için &#x60;q&#x60;). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. &#x60;external_ref[contains]&#x3D;&#x60;) &#x60;400 EXTERNAL_REF_INVALID&#x60;, 255 karakteri aşan değer &#x60;400 EXTERNAL_REF_TOO_LONG&#x60; döner.
+     */
+    readonly externalRef?: string
 
     readonly page?: number
 
@@ -4702,6 +4864,15 @@ export interface DemandsApiApiV1DemandsIdEmbedSessionPostRequest {
     readonly id: string
 
     readonly apiV1DemandsIdEmbedSessionPostRequest: ApiV1DemandsIdEmbedSessionPostRequest
+}
+
+/**
+ * Request parameters for apiV1DemandsIdExternalRefPatch operation in DemandsApi.
+ */
+export interface DemandsApiApiV1DemandsIdExternalRefPatchRequest {
+    readonly id: string
+
+    readonly apiV1DemandsIdExternalRefPatchRequest: ApiV1DemandsIdExternalRefPatchRequest
 }
 
 /**
@@ -4825,6 +4996,11 @@ export interface DemandsApiApiV1DemandsUploadPostRequest {
      * Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.
      */
     readonly force?: ApiV1DemandsUploadPostForceEnum
+
+    /**
+     * Takip numarası; kurallar ve hata kodları için &#x60;DemandExternalRef&#x60; şemasına bakın (geçersiz değer 400, &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;; sözleşme oluşturulmaz). Boş değer &#x60;null&#x60; sayılır.
+     */
+    readonly externalRef?: string
 
     /**
      * &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.
@@ -4968,7 +5144,7 @@ export class DemandsApi extends BaseAPI {
      * @throws {RequiredError}
      */
     public apiV1DemandsGet(requestParameters: DemandsApiApiV1DemandsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return DemandsApiFp(this.configuration).apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(this.axios, this.basePath));
+        return DemandsApiFp(this.configuration).apiV1DemandsGet(requestParameters.status, requestParameters.q, requestParameters.from, requestParameters.to, requestParameters.templateId, requestParameters.externalRef, requestParameters.page, requestParameters.limit, requestParameters.sort, requestParameters.archived, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5035,6 +5211,17 @@ export class DemandsApi extends BaseAPI {
      */
     public apiV1DemandsIdEmbedSessionPost(requestParameters: DemandsApiApiV1DemandsIdEmbedSessionPostRequest, options?: RawAxiosRequestConfig) {
         return DemandsApiFp(this.configuration).apiV1DemandsIdEmbedSessionPost(requestParameters.id, requestParameters.apiV1DemandsIdEmbedSessionPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF\'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+     * @summary Sözleşme takip numarasını güncelle
+     * @param {DemandsApiApiV1DemandsIdExternalRefPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1DemandsIdExternalRefPatch(requestParameters: DemandsApiApiV1DemandsIdExternalRefPatchRequest, options?: RawAxiosRequestConfig) {
+        return DemandsApiFp(this.configuration).apiV1DemandsIdExternalRefPatch(requestParameters.id, requestParameters.apiV1DemandsIdExternalRefPatchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5144,7 +5331,7 @@ export class DemandsApi extends BaseAPI {
      * @throws {RequiredError}
      */
     public apiV1DemandsUploadPost(requestParameters: DemandsApiApiV1DemandsUploadPostRequest, options?: RawAxiosRequestConfig) {
-        return DemandsApiFp(this.configuration).apiV1DemandsUploadPost(requestParameters.files, requestParameters.parties, requestParameters.idempotencyKey, requestParameters.order, requestParameters.title, requestParameters.description, requestParameters.fieldTemplateId, requestParameters.force, requestParameters.sendInvitations, requestParameters.onAnchorMiss, options).then((request) => request(this.axios, this.basePath));
+        return DemandsApiFp(this.configuration).apiV1DemandsUploadPost(requestParameters.files, requestParameters.parties, requestParameters.idempotencyKey, requestParameters.order, requestParameters.title, requestParameters.description, requestParameters.fieldTemplateId, requestParameters.force, requestParameters.externalRef, requestParameters.sendInvitations, requestParameters.onAnchorMiss, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

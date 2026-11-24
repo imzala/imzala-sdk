@@ -144,6 +144,10 @@ final class ErrorCodes
         'BAD_BASE64' => 'file_base64 geçerli standart Base64 değil.',
         'STAMP_INVALID' => 'Zaman damgası sunucusu geçersiz bir yanıt döndürdü.',
         'TSA_UNAVAILABLE' => 'Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar deneyin.',
+        'RENDER_BUSY' => 'Sayfa görselleri hazırlanırken sunucu yoğun; istek işlenmedi, sözleşme veya belge oluşturulmadı, kredi düşülmedi. Retry-After başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.',
+        'EXTERNAL_REF_INVALID' => 'external_ref geçersiz (metin olmalı; satır sonu ve sekme içeremez); filtrede dizi ya da nesne biçimi de bu kodu döndürür. Sözleşme oluşturulmaz, kredi düşülmez.',
+        'EXTERNAL_REF_TOO_LONG' => 'external_ref 255 karakteri aşıyor. Sözleşme oluşturulmaz, kredi düşülmez.',
+        'INVALID_FILTER' => 'Liste filtresi geçersiz; yanıttaki param alanı reddedilen parametreyi gösterir.',
 
         'INVALID_DOCUMENT_COLLECTION_TIMING' => 'Belge Toplama zamanı BEFORE_SIGNING, AFTER_SIGNING veya null olmalı.',
         'INVALID_DOCUMENT_COLLECTION_FLAG' => 'Belge Toplama boolean alanları boolean veya null olmalı.',

@@ -315,7 +315,7 @@ final class DemandsResource
         ?string $archived = null,
     ): ApiV1DemandsGet200ResponseData {
         return Http::unwrapRetryableGet(
-            fn () => $this->api->apiV1DemandsGetWithHttpInfo($status, $q, $from, $to, $templateId, $page, $limit, $sort, $archived),
+            fn () => $this->api->apiV1DemandsGetWithHttpInfo($status, $q, $from, $to, $templateId, null, $page, $limit, $sort, $archived),
             $this->retryConfig,
         );
     }

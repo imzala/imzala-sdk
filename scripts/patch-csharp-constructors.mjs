@@ -11,6 +11,9 @@ const STRIP = {
   documentCollectionTiming: { decl: 'DocumentCollectionTimingEnum? documentCollectionTiming = default, ', prop: 'DocumentCollectionTiming' },
   documentCollectionBlockSigning: { decl: 'bool? documentCollectionBlockSigning = default, ', prop: 'DocumentCollectionBlockSigning' },
   allowedSignatureVariants: { decl: 'List<AllowedSignatureVariantsEnum> allowedSignatureVariants = default, ', prop: 'AllowedSignatureVariants' },
+  // API 1.18.0 external_ref sits between description and idempotencyKey in the
+  // generated order; inserting it would shift every later positional argument.
+  externalRef: { decl: 'string externalRef = default, ', prop: 'ExternalRef' },
   documentVariables: {
     decl: 'Dictionary<string, Dictionary<string, PartyMappingInputVariablesValue>> documentVariables = default, ',
     prop: 'DocumentVariables',
@@ -43,7 +46,7 @@ const TERM_WIRE = [
   'renewal_period_months', 'notice_days', 'reminder_offsets', 'notify_counterparty',
 ];
 for (const [model, expectedCount, strip] of [
-  ['CreateDemandRequest', 19, ['allowedSignatureVariants', 'documentVariables', ...TERM]],
+  ['CreateDemandRequest', 19, ['allowedSignatureVariants', 'externalRef', 'documentVariables', ...TERM]],
   ['ApiV1DemandsBulkPostRequestOptions', 9, ['allowedSignatureVariants']],
 ]) {
   const file = path.join(directory, 'src/ImzalaApiClient/Model', model + '.cs');

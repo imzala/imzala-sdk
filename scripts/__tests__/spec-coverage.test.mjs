@@ -33,6 +33,7 @@ const REQUIRED_PATHS = [
   '/api/v1/demands/{id}/parties/{partyId}/resend',
   '/api/v1/demands/{id}/term',
   '/api/v1/demands/{id}/archive',
+  '/api/v1/demands/{id}/external-ref',
   '/api/v1/demands/{id}/unarchive',
   '/api/v1/demands/{demandId}/documents',
   '/api/v1/demands/{demandId}/documents/upload',

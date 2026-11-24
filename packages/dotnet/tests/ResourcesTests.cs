@@ -296,9 +296,9 @@ public class ResourcesTests
         api.Setup(a => a.ApiV1DemandsUploadPostAsync(
                 It.IsAny<List<FileParameter>>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, CancellationToken>(
-                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, _) =>
+                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, string?, CancellationToken>(
+                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss, _) =>
                 {
                     call.Files = files;
                     call.Parties = parties;

@@ -20,6 +20,7 @@ All URIs are relative to *https://api-prd.imzala.org*
 | [**ApiV1DemandsIdCertificateGet**](DemandsApi.md#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
 | [**ApiV1DemandsIdDelete**](DemandsApi.md#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
 | [**ApiV1DemandsIdEmbedSessionPost**](DemandsApi.md#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
+| [**ApiV1DemandsIdExternalRefPatch**](DemandsApi.md#apiv1demandsidexternalrefpatch) | **PATCH** /api/v1/demands/{id}/external-ref | Sözleşme takip numarasını güncelle |
 | [**ApiV1DemandsIdGet**](DemandsApi.md#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**ApiV1DemandsIdItemsItemIdStampPatch**](DemandsApi.md#apiv1demandsiditemsitemidstamppatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme) |
 | [**ApiV1DemandsIdItemsPost**](DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
@@ -131,7 +132,7 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Batch tamamlandı (kısmi başarı dahil). &#x60;results&#x60; giriş sırasında, her satır &#x60;row_index&#x60; ile eşlenir.  |  -  |
-| **400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
+| **400** | Geçersiz istek. Olası kodlar: &#x60;BULK_MAX_10&#x60; (&#x60;rows&#x60; 10&#39;dan fazla), boş &#x60;rows&#x60;, eksik &#x60;template_id&#x60;, &#x60;INVALID_DOCUMENT_SELECTION&#x60; (&#x60;options.documents&#x60; gönderildi; belge seçimi satır başınadır, bkz. &#x60;rows[i].documents&#x60;), &#x60;INVALID_DOCUMENT_VARIABLES&#x60; (&#x60;options.document_variables&#x60; gönderildi; bu uçta desteklenmez, &#x60;details.reason: \&quot;unsupported_endpoint\&quot;&#x60;), &#x60;INVALID_PADES_LEVEL&#x60; (&#x60;options.qes_pades_level&#x60; satılabilir seviyelerden biri değil), &#x60;FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE&#x60; (verilen kimlik bir Alan Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken &#x60;eidas_timestamp&#x60; gönderilirse de 400 döner.  &#x60;EXTERNAL_REF_INVALID&#x60;: &#x60;options.external_ref&#x60; gönderildi. Takip numarası satır başınadır (&#x60;rows[i].external_ref&#x60;); hiçbir satır oluşturulmaz. Satırdaki geçersiz takip numarası yalnız o satırı &#x60;failed&#x60; yapar (&#x60;error&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;).  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;options.allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. Batch-seviye kontrol olduğu için hiçbir satır oluşturulmaz. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 | **402** | INSUFFICIENT_CREDITS: N satırın toplam tahmini maliyeti için yeterli kredi yok (ön kontrol; hiçbir sözleşme yaratılmadı). Satır bazlı yetersiz kredi durumları burada DEĞİL, 200 yanıtı içindeki &#x60;results[].status: \&quot;failed\&quot;&#x60; altında döner.  |  -  |
 | **403** | INSUFFICIENT_SCOPE (demands:write yok) veya SMS_CUSTOMIZATION_NOT_ALLOWED |  -  |
@@ -996,13 +997,14 @@ catch (ApiException e)
 | **413** | &#x60;FILE_TOO_LARGE&#x60; — 90 MB sınırı. |  -  |
 | **415** | Desteklenmeyen dosya türü. |  -  |
 | **422** | &#x60;IMAGE_DECODE_FAILED&#x60; — görsel çözümlenemedi. |  -  |
-| **429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı (&#x60;/demands/upload&#x60; sınırından ayrı sayılır). Gövdede &#x60;retry_after_seconds&#x60; döner.  |  -  |
+| **429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı (&#x60;/demands/upload&#x60; sınırından ayrı sayılır). Gövdede &#x60;retry_after_seconds&#x60; döner. Aynı hesapla eşzamanlı yükleme sınırı aşıldığında da bu kod döner (&#x60;Retry-After&#x60; başlığıyla).  |  -  |
+| **503** | &#x60;RENDER_BUSY&#x60;: sayfa görselleri hazırlanırken sunucu şu an yoğun; istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve kredi düşülmedi. &#x60;Retry-After&#x60; başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 <a id="apiv1demandsget"></a>
 # **ApiV1DemandsGet**
-> ApiV1DemandsGet200Response ApiV1DemandsGet (string? status = null, string? q = null, DateOnly? from = null, DateOnly? to = null, Guid? templateId = null, int? page = null, int? limit = null, string? sort = null, string? archived = null)
+> ApiV1DemandsGet200Response ApiV1DemandsGet (string? status = null, string? q = null, DateOnly? from = null, DateOnly? to = null, Guid? templateId = null, string? externalRef = null, int? page = null, int? limit = null, string? sort = null, string? archived = null)
 
 Sözleşme listesi (counts-only, PII'siz)
 
@@ -1035,10 +1037,11 @@ namespace Example
             HttpClientHandler httpClientHandler = new HttpClientHandler();
             var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
             var status = "DRAFT";  // string? |  (optional)
-            var q = "q_example";  // string? | Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. `CODECK-2026-042`) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. (optional)
+            var q = "q_example";  // string? | Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. `CODECK-2026-042`) veya takip numarasında (`external_ref`, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. (optional)
             var from = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional)
             var to = DateOnly.Parse("2013-10-20");  // DateOnly? |  (optional)
             var templateId = "templateId_example";  // Guid? |  (optional)
+            var externalRef = SIP-2026-00042;  // string? | Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için `q`). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. `external_ref[contains]=`) `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner.  (optional)
             var page = 1;  // int? |  (optional)  (default to 1)
             var limit = 20;  // int? | Sayfa boyutu (page_size ile aynı) (optional)  (default to 20)
             var sort = "sort_example";  // string? | alan:yön (ör. createdAt:desc) (optional)
@@ -1047,7 +1050,7 @@ namespace Example
             try
             {
                 // Sözleşme listesi (counts-only, PII'siz)
-                ApiV1DemandsGet200Response result = apiInstance.ApiV1DemandsGet(status, q, from, to, templateId, page, limit, sort, archived);
+                ApiV1DemandsGet200Response result = apiInstance.ApiV1DemandsGet(status, q, from, to, templateId, externalRef, page, limit, sort, archived);
                 Debug.WriteLine(result);
             }
             catch (ApiException  e)
@@ -1068,7 +1071,7 @@ This returns an ApiResponse object which contains the response data, status code
 try
 {
     // Sözleşme listesi (counts-only, PII'siz)
-    ApiResponse<ApiV1DemandsGet200Response> response = apiInstance.ApiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, page, limit, sort, archived);
+    ApiResponse<ApiV1DemandsGet200Response> response = apiInstance.ApiV1DemandsGetWithHttpInfo(status, q, from, to, templateId, externalRef, page, limit, sort, archived);
     Debug.Write("Status Code: " + response.StatusCode);
     Debug.Write("Response Headers: " + response.Headers);
     Debug.Write("Response Body: " + response.Data);
@@ -1086,10 +1089,11 @@ catch (ApiException e)
 | Name | Type | Description | Notes |
 |------|------|-------------|-------|
 | **status** | **string?** |  | [optional]  |
-| **q** | **string?** | Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional]  |
+| **q** | **string?** | Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. &#x60;CODECK-2026-042&#x60;) veya takip numarasında (&#x60;external_ref&#x60;, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional]  |
 | **from** | **DateOnly?** |  | [optional]  |
 | **to** | **DateOnly?** |  | [optional]  |
 | **templateId** | **Guid?** |  | [optional]  |
+| **externalRef** | **string?** | Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için &#x60;q&#x60;). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. &#x60;external_ref[contains]&#x3D;&#x60;) &#x60;400 EXTERNAL_REF_INVALID&#x60;, 255 karakteri aşan değer &#x60;400 EXTERNAL_REF_TOO_LONG&#x60; döner.  | [optional]  |
 | **page** | **int?** |  | [optional] [default to 1] |
 | **limit** | **int?** | Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
 | **sort** | **string?** | alan:yön (ör. createdAt:desc) | [optional]  |
@@ -1113,6 +1117,7 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Başarılı |  -  |
+| **400** | Geçersiz filtre. &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60; (bkz. &#x60;external_ref&#x60; parametresi), diğer geçersiz filtrelerde &#x60;INVALID_FILTER&#x60;; &#x60;param&#x60; reddedilen parametreyi gösterir.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1737,6 +1742,111 @@ catch (ApiException e)
 | **404** | Sözleşme veya taraf bulunamadı. İki durum ayrıştırılmaz (IDOR koruması): - &#x60;Sözleşme bulunamadı&#x60; — demand bu workspace&#39;te yok - &#x60;Taraf bulunamadı&#x60; — party_id bu demand&#39;e ait değil  |  -  |
 | **409** | Token üretilemez. Olası nedenler: - &#x60;Bu taraf zaten imzaladı&#x60; — taraf imzalamış - &#x60;Bu taraf imzayı reddetti&#x60; — taraf reddetmiş - &#x60;embed_allowed_origins tanımlı değil&#x60; — API anahtarında izin verilen   origin listesi boş; dashboard&#39;dan API anahtarı düzenleyerek ekleyin.  |  -  |
 | **429** | Rate limit aşıldı (per API key + demand + party kombinasyonu) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+<a id="apiv1demandsidexternalrefpatch"></a>
+# **ApiV1DemandsIdExternalRefPatch**
+> ApiV1DemandsIdExternalRefPatch200Response ApiV1DemandsIdExternalRefPatch (Guid id, ApiV1DemandsIdExternalRefPatchRequest apiV1DemandsIdExternalRefPatchRequest)
+
+Sözleşme takip numarasını güncelle
+
+Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+
+### Example
+```csharp
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using ImzalaApiClient.Api;
+using ImzalaApiClient.Client;
+using ImzalaApiClient.Model;
+
+namespace Example
+{
+    public class ApiV1DemandsIdExternalRefPatchExample
+    {
+        public static void Main()
+        {
+            Configuration config = new Configuration();
+            config.BasePath = "https://api-prd.imzala.org";
+            // Configure API key authorization: ApiKeyAuth
+            config.AddApiKey("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // config.AddApiKeyPrefix("X-API-Key", "Bearer");
+
+            // create instances of HttpClient, HttpClientHandler to be reused later with different Api classes
+            HttpClient httpClient = new HttpClient();
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            var apiInstance = new DemandsApi(httpClient, config, httpClientHandler);
+            var id = "id_example";  // Guid |
+            var apiV1DemandsIdExternalRefPatchRequest = new ApiV1DemandsIdExternalRefPatchRequest(); // ApiV1DemandsIdExternalRefPatchRequest |
+
+            try
+            {
+                // Sözleşme takip numarasını güncelle
+                ApiV1DemandsIdExternalRefPatch200Response result = apiInstance.ApiV1DemandsIdExternalRefPatch(id, apiV1DemandsIdExternalRefPatchRequest);
+                Debug.WriteLine(result);
+            }
+            catch (ApiException  e)
+            {
+                Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdExternalRefPatch: " + e.Message);
+                Debug.Print("Status Code: " + e.ErrorCode);
+                Debug.Print(e.StackTrace);
+            }
+        }
+    }
+}
+```
+
+#### Using the ApiV1DemandsIdExternalRefPatchWithHttpInfo variant
+This returns an ApiResponse object which contains the response data, status code and headers.
+
+```csharp
+try
+{
+    // Sözleşme takip numarasını güncelle
+    ApiResponse<ApiV1DemandsIdExternalRefPatch200Response> response = apiInstance.ApiV1DemandsIdExternalRefPatchWithHttpInfo(id, apiV1DemandsIdExternalRefPatchRequest);
+    Debug.Write("Status Code: " + response.StatusCode);
+    Debug.Write("Response Headers: " + response.Headers);
+    Debug.Write("Response Body: " + response.Data);
+}
+catch (ApiException e)
+{
+    Debug.Print("Exception when calling DemandsApi.ApiV1DemandsIdExternalRefPatchWithHttpInfo: " + e.Message);
+    Debug.Print("Status Code: " + e.ErrorCode);
+    Debug.Print(e.StackTrace);
+}
+```
+
+### Parameters
+
+| Name | Type | Description | Notes |
+|------|------|-------------|-------|
+| **id** | **Guid** |  |  |
+| **apiV1DemandsIdExternalRefPatchRequest** | [**ApiV1DemandsIdExternalRefPatchRequest**](ApiV1DemandsIdExternalRefPatchRequest.md) |  |  |
+
+### Return type
+
+[**ApiV1DemandsIdExternalRefPatch200Response**](ApiV1DemandsIdExternalRefPatch200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Güncellendi |  -  |
+| **400** | &#x60;EXTERNAL_REF_INVALID&#x60;: gövde nesne değil, &#x60;external_ref&#x60; eksik, gövdede başka anahtar var ya da değer geçersiz (metin değil; satır sonu, sekme, kontrol veya görünmez yön karakteri içeriyor). &#x60;EXTERNAL_REF_TOO_LONG&#x60;: değer 255 karakteri aşıyor. Hata mesajı gönderdiğiniz değeri içermez.  |  -  |
+| **401** | API key geçersiz veya eksik |  -  |
+| **404** | Kayıt bulunamadı |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2669,7 +2779,7 @@ catch (ApiException e)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** | Sözleşme oluşturuldu |  -  |
-| **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_PHONE_VERIFICATION&#x60;: &#x60;party_mapping[i].require_phone_verification&#x60; &#x60;true&#x60;, &#x60;false&#x60; veya &#x60;null&#x60; değil. Sözleşme oluşturulmaz, kredi düşülmez.  &#x60;PHONE_REQUIRED_FOR_VERIFICATION&#x60;: &#x60;party_mapping[i].require_phone_verification&#x60; &#x60;true&#x60; ama tarafın &#x60;phone&#x60; alanı boş. Telefon doğrulaması açık tarafa SMS ile kod gönderilebilmesi için numara gerekir. Sözleşme oluşturulmaz, kredi düşülmez. Alan gönderilmeyen tarafta bu kontrol yapılmaz.  &#x60;CONSENT_SINGLE_PARTY&#x60;: açık rıza belgesi her imzacı için ayrı açıldığında zarf 20 belge sınırını aşıyor. Daha az rol eşleyin ya da şablondaki rıza belgelerini tek role atayın. Sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
+| **400** | Geçersiz istek. Örnek hatalar: - \&quot;template_id gerekli\&quot; - \&quot;party_mapping gerekli (en az 1 taraf)\&quot; - \&quot;party_mapping[0].first_name ve last_name gerekli\&quot; - \&quot;party_mapping[0].email veya phone gerekli\&quot; - \&quot;party_mapping[0].variables object olmalı\&quot; - \&quot;party_mapping[0].variables.adres value&#39;su string|number|boolean|null olmali\&quot; - \&quot;variables object olmalı\&quot; - \&quot;template_party_id duplicate&#39;i bulundu: &lt;id&gt;\&quot;  &#x60;INVALID_EXPIRY_DATE&#x60;: &#x60;expiry_date&#x60; çözümlenemiyor veya takvimde olmayan bir gün (ör. &#x60;2026-02-30&#x60;). Bu hatada &#x60;error&#x60; insan-okur mesajı, &#x60;code&#x60; alanı makinece okunur kodu taşır.  &#x60;INVALID_LOCALE&#x60;: &#x60;party_mapping[i].locale&#x60; &#x60;tr&#x60;, &#x60;en&#x60; veya &#x60;null&#x60; değil. &#x60;error&#x60; hatalı alanın yolunu taşır; sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_PHONE_VERIFICATION&#x60;: &#x60;party_mapping[i].require_phone_verification&#x60; &#x60;true&#x60;, &#x60;false&#x60; veya &#x60;null&#x60; değil. Sözleşme oluşturulmaz, kredi düşülmez.  &#x60;PHONE_REQUIRED_FOR_VERIFICATION&#x60;: &#x60;party_mapping[i].require_phone_verification&#x60; &#x60;true&#x60; ama tarafın &#x60;phone&#x60; alanı boş. Telefon doğrulaması açık tarafa SMS ile kod gönderilebilmesi için numara gerekir. Sözleşme oluşturulmaz, kredi düşülmez. Alan gönderilmeyen tarafta bu kontrol yapılmaz.  &#x60;CONSENT_SINGLE_PARTY&#x60;: açık rıza belgesi her imzacı için ayrı açıldığında zarf 20 belge sınırını aşıyor. Daha az rol eşleyin ya da şablondaki rıza belgelerini tek role atayın. Sözleşme oluşturulmaz, kredi düşülmez.  &#x60;INVALID_DOCUMENT_SELECTION&#x60;: belge seçimi hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, bilinmeyen alan, kimlik metin değil, 20&#39;den fazla kimlik), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;conflict&#x60; (aynı kimlik iki listede), &#x60;empty&#x60; (seçim sonucunda belge kalmadı). Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra ve kredi kontrolünden önce döner.  &#x60;INVALID_DOCUMENT_VARIABLES&#x60;: &#x60;document_variables&#x60; hatası; &#x60;details.reason&#x60; şu değerlerden biridir: &#x60;shape&#x60; (biçim: nesne değil, değer string|number|boolean|null değil, boş ya da ayrılmış anahtar, 20&#39;den fazla belge), &#x60;unknown_document&#x60; (kimlik bu şablonun belgesi değil), &#x60;unselected_document&#x60; (belge bu istekte gönderilmiyor; &#x60;documents.include&#x60; ile ekleyin). &#x60;details.path&#x60; hatalı alanı (&#x60;document_variables&#x60; ya da &#x60;party_mapping[i].document_variables&#x60;), &#x60;details.document_ids&#x60; yalnız gönderdiğiniz kimlikleri taşır. Biçim hataları kredi kontrolünden önce, şablona bağlı hatalar şablon erişim kontrolünden sonra döner; hiçbirinde sözleşme oluşturulmaz.  &#x60;SIGNATURE_VARIANTS_PHONE_ONLY&#x60;: &#x60;allowed_signature_variants&#x60; yalnız &#x60;phone&#x60; içeriyor. Telefonda çizim tek başına seçilemez; listede en az bir &#x60;phone&#x60; olmayan yöntem bırakın.  &#x60;SIGNATURE_VARIANTS_PHONE_DRAW_EXCLUSIVE&#x60;: &#x60;allowed_signature_variants&#x60; içinde &#x60;phone_draw&#x60; başka bir yöntemle birlikte gönderildi. &#x60;phone_draw&#x60; yalnız tek başına kullanılabilir (&#x60;[\&quot;phone_draw\&quot;]&#x60;).  &#x60;TERM_INVALID&#x60;: sözleşme süre/yenileme (&#x60;ContractTermInput&#x60;) alanlarında geçersiz veya çelişkili bir kombinasyon (ör. &#x60;term_fixed_end_date&#x60; ile &#x60;term_duration_months&#x60; birlikte, veya &#x60;renewal_type: AUTO_RENEW&#x60; periyotsuz). &#x60;field&#x60; hangi anahtarın reddedildiğini gösterir.  &#x60;EXTERNAL_REF_INVALID&#x60; / &#x60;EXTERNAL_REF_TOO_LONG&#x60;: &#x60;external_ref&#x60; geçersiz (bkz. &#x60;DemandExternalRef&#x60;). Sözleşme oluşturulmaz, kredi düşülmez. Belge Toplama ön kontrolü: &#x60;INVALID_DOCUMENT_COLLECTION_TIMING&#x60;, &#x60;INVALID_DOCUMENT_COLLECTION_FLAG&#x60;, &#x60;DOCUMENT_COLLECTION_TEMPLATE_REQUIRED&#x60;. Seçili şablonun kalem politikası geçersizse &#x60;code&#x60; daima &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60;, &#x60;error&#x60; ise kaynak makine kodudur: &#x60;DOCUMENT_TYPE_INVALID&#x60; (tür null veya &#x60;TR_RESIDENCE&#x60; değil), &#x60;VERIFICATION_POLICY_INVALID&#x60; (politika &#x60;NONE&#x60; veya &#x60;SOURCE_AND_FIELDS&#x60; değil), &#x60;VERIFICATION_INSTRUCTION_INVALID&#x60; (alıcı/amaç metin değil, çok uzun veya kontrol/gizli yön karakteri içeriyor), &#x60;VERIFICATION_CONTEXT_REQUIRED&#x60; (doğrulama için tür ya da açık alıcı/amaç eksik), &#x60;VERIFICATION_POLICY_CONFLICT&#x60; (&#x60;NONE&#x60; ile dolu alıcı/amaç). Bu zarfta &#x60;error&#x60; insan-okur metin değildir. Hiçbir sözleşme oluşturulmaz.  |  -  |
 | **401** | API key geçersiz veya eksik |  -  |
 | **402** | Kredi mutabakatı başarısız: &#x60;INSUFFICIENT_CREDITS&#x60; (bakiye yetersiz) veya &#x60;MEMBER_LIMIT_EXCEEDED&#x60; (organizasyon üyesinin aylık kredi limiti aşıldı, havuzda bakiye olsa bile).  Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir: gövdede &#x60;data.id&#x60; ile aynı sözleşmenin kimliği ve &#x60;data.status: \&quot;DRAFT_UNDISPATCHED\&quot;&#x60; döner. Kredi yükleyip aynı sözleşmeyi &#x60;POST /demands/{id}/dispatch&#x60; ile gönderin; sözleşme silinmez.  |  -  |
 | **403** | **SMS_CUSTOMIZATION_NOT_ALLOWED** — Body&#39;de &#x60;sms_content&#x60; alanı dolu gönderildi ama çağıran organizasyon PRO/ENTERPRISE planda değil veya kendi SMS sağlayıcı config&#39;i (sender_name dolu) yok. &#x60;sms_content&#x60; alanını çıkarın veya planınızı yükseltip kendi SMS sağlayıcınızı tanımlayın.  |  -  |
@@ -2682,7 +2792,7 @@ catch (ApiException e)
 
 <a id="apiv1demandsuploadpost"></a>
 # **ApiV1DemandsUploadPost**
-> ApiV1DemandsUploadPost201Response ApiV1DemandsUploadPost (List<FileParameter> files, string parties, string? idempotencyKey = null, string? order = null, string? title = null, string? description = null, Guid? fieldTemplateId = null, string? force = null, string? sendInvitations = null, string? onAnchorMiss = null)
+> ApiV1DemandsUploadPost201Response ApiV1DemandsUploadPost (List<FileParameter> files, string parties, string? idempotencyKey = null, string? order = null, string? title = null, string? description = null, Guid? fieldTemplateId = null, string? force = null, string? externalRef = null, string? sendInvitations = null, string? onAnchorMiss = null)
 
 Dosya upload ile sözleşme oluştur (şablonsuz)
 
@@ -2722,13 +2832,14 @@ namespace Example
             var description = "description_example";  // string? |  (optional)
             var fieldTemplateId = "fieldTemplateId_example";  // Guid? | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.  (optional)
             var force = "true";  // string? | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  (optional)
+            var externalRef = "externalRef_example";  // string? | Takip numarası; kurallar ve hata kodları için `DemandExternalRef` şemasına bakın (geçersiz değer 400, `code`: `EXTERNAL_REF_INVALID` veya `EXTERNAL_REF_TOO_LONG`; sözleşme oluşturulmaz). Boş değer `null` sayılır.  (optional)
             var sendInvitations = "true";  // string? | `\\\"true\\\"` (veya `\\\"1\\\"`) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca `POST /api/v1/demands/{id}/parties/{partyId}/resend` çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`   döner (fail-closed). - **Açık değerler:** `\\\"true\\\"`, `\\\"1\\\"`, `\\\"all\\\"`, `\\\"email\\\"`, `\\\"sms\\\"`. - **Kapalı değerler:** `\\\"false\\\"`, `\\\"0\\\"`, `\\\"off\\\"`, `\\\"no\\\"`,   `\\\"hayir\\\"`, `\\\"hayır\\\"`. - Ad bilerek `dispatch_notifications` **değildir**: o   parametre `POST /api/v1/demands` ve `/demands/bulk`   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: `\\\"true\\\"`, `\\\"1\\\"` ve `\\\"all\\\"` tüm kanalları kullanır;   `\\\"email\\\"` yalnız e-posta, `\\\"sms\\\"` telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   `send_sms`/`send_email` bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (`dispatch.error = DISPATCH_TOO_MANY`), tarafları   `resend` ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği `Idempotency-Key`   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı `DUPLICATE_SUSPECTED` yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte `Idempotency-Key` gönderin;   anahtar yoksa yeniden göndermek yerine   `GET /api/v1/demands?...` ile sonucu doğrulayın.  (optional)
             var onAnchorMiss = "block";  // string? | Çapa bulunamadığında ne yapılacağı. Yalnız `field_template_id` ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır. - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`   ise uygulanır; aksi halde yok sayılır, `block` uygulanır   ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner. - İmza alanlarında `drop` hiçbir koşulda uygulanmaz. - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).  Yanıttaki `data.field_layout.on_anchor_miss` istenen değil, **uygulanan** değeri taşır.  (optional)
 
             try
             {
                 // Dosya upload ile sözleşme oluştur (şablonsuz)
-                ApiV1DemandsUploadPost201Response result = apiInstance.ApiV1DemandsUploadPost(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss);
+                ApiV1DemandsUploadPost201Response result = apiInstance.ApiV1DemandsUploadPost(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss);
                 Debug.WriteLine(result);
             }
             catch (ApiException  e)
@@ -2749,7 +2860,7 @@ This returns an ApiResponse object which contains the response data, status code
 try
 {
     // Dosya upload ile sözleşme oluştur (şablonsuz)
-    ApiResponse<ApiV1DemandsUploadPost201Response> response = apiInstance.ApiV1DemandsUploadPostWithHttpInfo(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss);
+    ApiResponse<ApiV1DemandsUploadPost201Response> response = apiInstance.ApiV1DemandsUploadPostWithHttpInfo(files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss);
     Debug.Write("Status Code: " + response.StatusCode);
     Debug.Write("Response Headers: " + response.Headers);
     Debug.Write("Response Body: " + response.Data);
@@ -2774,6 +2885,7 @@ catch (ApiException e)
 | **description** | **string?** |  | [optional]  |
 | **fieldTemplateId** | **Guid?** | Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;.  | [optional]  |
 | **force** | **string?** | Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.  | [optional]  |
+| **externalRef** | **string?** | Takip numarası; kurallar ve hata kodları için &#x60;DemandExternalRef&#x60; şemasına bakın (geçersiz değer 400, &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;; sözleşme oluşturulmaz). Boş değer &#x60;null&#x60; sayılır.  | [optional]  |
 | **sendInvitations** | **string?** | &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın.  | [optional]  |
 | **onAnchorMiss** | **string?** | Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır.  | [optional]  |
 
@@ -2804,8 +2916,9 @@ catch (ApiException e)
 | **413** | Dosya boyut limiti aşıldı (FILE_TOO_LARGE) |  -  |
 | **415** | &#x60;field_template_id&#x60; yolunda PDF olmayan dosya (&#x60;UNSUPPORTED_FILE_TYPE&#x60;).  |  -  |
 | **422** | Görsel okunamadı (&#x60;IMAGE_DECODE_FAILED&#x60;) **veya** alan yerleşimi bu belgeye uygulanamadı (&#x60;FIELD_LAYOUT_UNRESOLVED&#x60;). İkinci durumda sözleşme oluşturulmaz ve kredi düşülmez.  |  -  |
-| **429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve &#x60;send_invitations&#x60; ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın hızını kırmak içindir.  |  -  |
+| **429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve &#x60;send_invitations&#x60; ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın hızını kırmak içindir. Aynı hesapla eşzamanlı yükleme sınırı aşıldığında da bu kod döner (&#x60;Retry-After&#x60; başlığıyla).  |  -  |
 | **500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir; gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  &#x60;DISPATCH_PREPARATION_FAILED&#x60;: sözleşme oluşturuldu ama gönderim öncesi kontrollerde beklenmedik bir hata oluştu. Sözleşme taslağa düşürülür; gövdede &#x60;demand_id&#x60; döner. Kredi düşülmez, davet gönderilmez. Aynı yükleme isteğini tekrarlamayın; sözleşmeyi &#x60;POST /demands/{demandId}/dispatch&#x60; ile gönderin.  |  -  |
+| **503** | &#x60;RENDER_BUSY&#x60;: sayfa görselleri hazırlanırken sunucu şu an yoğun; istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve kredi düşülmedi. &#x60;Retry-After&#x60; başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2917,7 +3030,7 @@ catch (ApiException e)
 | **413** | Dosya boyut limiti aşıldı |  -  |
 | **415** | PDF olmayan dosya (&#x60;UNSUPPORTED_FILE_TYPE&#x60;) |  -  |
 | **422** | Belge okunamadı: parola korumalı PDF (&#x60;ENCRYPTED_PDF&#x60;) veya metin çıkarma süre bütçesi aşıldı (&#x60;TEXT_EXTRACTION_TIMEOUT&#x60;).  |  -  |
-| **429** | Dakikalık önizleme sınırı aşıldı (&#x60;RATE_LIMITED&#x60;) |  -  |
+| **429** | Dakikalık önizleme sınırı aşıldı (&#x60;RATE_LIMITED&#x60;) veya aynı hesapla eşzamanlı yükleme sınırı aşıldı (&#x60;TOO_MANY_REQUESTS&#x60;, &#x60;Retry-After&#x60; başlığıyla).  |  -  |
 | **503** | Sınırlayıcı geçici olarak kullanılamıyor (&#x60;RATE_LIMITER_UNAVAILABLE&#x60;) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

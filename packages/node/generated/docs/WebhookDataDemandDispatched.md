@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **title** | **string** |  | [default to undefined]
 **dispatched_by** | **string** | Gönderimi yapan kullanıcının kimliği; belirlenemiyorsa &#x60;null&#x60;. | [default to undefined]
 **contract_numbers** | [**Array&lt;ContractNumber&gt;**](ContractNumber.md) | Sözleşmeye verilmiş sözleşme numaraları; numara yoksa boş dizi. Numaralar okunamadığında bildirim bu alan olmadan gönderilir.  | [optional] [default to undefined]
+**external_ref** | **string** | Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse &#x60;null&#x60;. Takip numarası tekrar edebilir: alıcı tarafta tekrar işlemeyi zarftaki olay &#x60;id&#x60;\&#39;si ile önleyin, &#x60;external_ref&#x60; ile değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan gönderilir.  | [optional] [default to undefined]
 
 ## Example
 
@@ -20,6 +21,7 @@ const instance: WebhookDataDemandDispatched = {
     title,
     dispatched_by,
     contract_numbers,
+    external_ref,
 };
 ```
 

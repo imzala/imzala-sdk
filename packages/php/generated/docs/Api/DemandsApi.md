@@ -22,6 +22,7 @@ All URIs are relative to https://api-prd.imzala.org, except if the operation def
 | [**apiV1DemandsIdCertificateGet()**](DemandsApi.md#apiV1DemandsIdCertificateGet) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T) |
 | [**apiV1DemandsIdDelete()**](DemandsApi.md#apiV1DemandsIdDelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış) |
 | [**apiV1DemandsIdEmbedSessionPost()**](DemandsApi.md#apiV1DemandsIdEmbedSessionPost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint) |
+| [**apiV1DemandsIdExternalRefPatch()**](DemandsApi.md#apiV1DemandsIdExternalRefPatch) | **PATCH** /api/v1/demands/{id}/external-ref | Sözleşme takip numarasını güncelle |
 | [**apiV1DemandsIdGet()**](DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi |
 | [**apiV1DemandsIdItemsItemIdStampPatch()**](DemandsApi.md#apiV1DemandsIdItemsItemIdStampPatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme) |
 | [**apiV1DemandsIdItemsPost()**](DemandsApi.md#apiV1DemandsIdItemsPost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace) |
@@ -626,7 +627,7 @@ try {
 ## `apiV1DemandsGet()`
 
 ```php
-apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort, $archived): \Imzala\Client\Model\ApiV1DemandsGet200Response
+apiV1DemandsGet($status, $q, $from, $to, $template_id, $external_ref, $page, $limit, $sort, $archived): \Imzala\Client\Model\ApiV1DemandsGet200Response
 ```
 
 Sözleşme listesi (counts-only, PII'siz)
@@ -653,17 +654,18 @@ $apiInstance = new Imzala\Client\Api\DemandsApi(
     $config
 );
 $status = 'status_example'; // string
-$q = 'q_example'; // string | Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. `CODECK-2026-042`) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
+$q = 'q_example'; // string | Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. `CODECK-2026-042`) veya takip numarasında (`external_ref`, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez.
 $from = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
 $to = new \DateTime('2013-10-20T19:20:30+01:00'); // \DateTime
 $template_id = 'template_id_example'; // string
+$external_ref = SIP-2026-00042; // string | Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için `q`). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. `external_ref[contains]=`) `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer `400 EXTERNAL_REF_TOO_LONG` döner.
 $page = 1; // int
 $limit = 20; // int | Sayfa boyutu (page_size ile aynı)
 $sort = 'sort_example'; // string | alan:yön (ör. createdAt:desc)
 $archived = 'archived_example'; // string | Arşiv durumu filtresi. `exclude`: yalnız arşivsiz sözleşmeler. `only`: yalnız arşivli sözleşmeler. Parametre gönderilmezse varsayılan `include`: tüm sözleşmeler (arşivli ve arşivsiz).
 
 try {
-    $result = $apiInstance->apiV1DemandsGet($status, $q, $from, $to, $template_id, $page, $limit, $sort, $archived);
+    $result = $apiInstance->apiV1DemandsGet($status, $q, $from, $to, $template_id, $external_ref, $page, $limit, $sort, $archived);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DemandsApi->apiV1DemandsGet: ', $e->getMessage(), PHP_EOL;
@@ -675,10 +677,11 @@ try {
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **status** | **string**|  | [optional] |
-| **q** | **string**| Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarasında (ör. &#x60;CODECK-2026-042&#x60;) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] |
+| **q** | **string**| Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ör. &#x60;CODECK-2026-042&#x60;) veya takip numarasında (&#x60;external_ref&#x60;, parça eşleşme) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi bu uçtan dönmez. | [optional] |
 | **from** | **\DateTime**|  | [optional] |
 | **to** | **\DateTime**|  | [optional] |
 | **template_id** | **string**|  | [optional] |
+| **external_ref** | **string**| Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf duyarlı (parça arama için &#x60;q&#x60;). Değer kırpılır, boş değer filtre uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer alır: dizi ya da nesne biçimi (ör. &#x60;external_ref[contains]&#x3D;&#x60;) &#x60;400 EXTERNAL_REF_INVALID&#x60;, 255 karakteri aşan değer &#x60;400 EXTERNAL_REF_TOO_LONG&#x60; döner. | [optional] |
 | **page** | **int**|  | [optional] [default to 1] |
 | **limit** | **int**| Sayfa boyutu (page_size ile aynı) | [optional] [default to 20] |
 | **sort** | **string**| alan:yön (ör. createdAt:desc) | [optional] |
@@ -1067,6 +1070,70 @@ try {
 ### Return type
 
 [**\Imzala\Client\Model\ApiV1DemandsIdEmbedSessionPost200Response**](../Model/ApiV1DemandsIdEmbedSessionPost200Response.md)
+
+### Authorization
+
+[ApiKeyAuth](../../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+[[Back to top]](#) [[Back to API list]](../../README.md#endpoints)
+[[Back to Model list]](../../README.md#models)
+[[Back to README]](../../README.md)
+
+## `apiV1DemandsIdExternalRefPatch()`
+
+```php
+apiV1DemandsIdExternalRefPatch($id, $api_v1_demands_id_external_ref_patch_request): \Imzala\Client\Model\ApiV1DemandsIdExternalRefPatch200Response
+```
+
+Sözleşme takip numarasını güncelle
+
+Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref` anahtarını içerir; başka anahtar gönderilirse `400 EXTERNAL_REF_INVALID`.  Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de güncellenebilir; belge içeriğini, imzaları ve imzalı PDF'i değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik yapmadan başarılı döner.  Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu sözleşmeleri günceller. Erişim yoksa 404 döner.
+
+### Example
+
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+
+// Configure API key authorization: ApiKeyAuth
+$config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// $config = Imzala\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+
+$apiInstance = new Imzala\Client\Api\DemandsApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client(),
+    $config
+);
+$id = 'id_example'; // string
+$api_v1_demands_id_external_ref_patch_request = {"external_ref":"SIP-2026-00042"}; // \Imzala\Client\Model\ApiV1DemandsIdExternalRefPatchRequest
+
+try {
+    $result = $apiInstance->apiV1DemandsIdExternalRefPatch($id, $api_v1_demands_id_external_ref_patch_request);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DemandsApi->apiV1DemandsIdExternalRefPatch: ', $e->getMessage(), PHP_EOL;
+}
+```
+
+### Parameters
+
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **id** | **string**|  | |
+| **api_v1_demands_id_external_ref_patch_request** | [**\Imzala\Client\Model\ApiV1DemandsIdExternalRefPatchRequest**](../Model/ApiV1DemandsIdExternalRefPatchRequest.md)|  | |
+
+### Return type
+
+[**\Imzala\Client\Model\ApiV1DemandsIdExternalRefPatch200Response**](../Model/ApiV1DemandsIdExternalRefPatch200Response.md)
 
 ### Authorization
 
@@ -1616,7 +1683,7 @@ $apiInstance = new Imzala\Client\Api\DemandsApi(
     new GuzzleHttp\Client(),
     $config
 );
-$create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]}; // \Imzala\Client\Model\CreateDemandRequest
+$create_demand_request = {"template_id":"7ec4b653-e84a-47f1-9e0b-7671e1aae2a1","title":"Vize Danışmanlığı - Ayşe Yılmaz","external_ref":"SIP-2026-00042","party_mapping":[{"template_party_id":"e5b4e0cb-c2d5-473f-9f62-44d51c76f56e","first_name":"Ayşe","last_name":"Yılmaz","email":"ayse@example.com","phone":"+905551112233","government_id":"36747474747","variables":{"adres":"Atatürk Cad. No: 12, Çankaya/Ankara","danismanlik_ucreti":"5.000 TL","danismanlik_notlar":"Schengen vize başvuru danışmanlığı","randevu_takibi_ucreti":"1.500 TL","randevu_takibi_notlar":"Konsolosluk randevu takibi 60 gün","genel_toplam":"6.500 TL"}}]}; // \Imzala\Client\Model\CreateDemandRequest
 $idempotency_key = 'idempotency_key_example'; // string | Çağıranın kendi referansı (sipariş / dosya numarası olabilir). Aynı API anahtarı + aynı anahtarla gelen İKİNCİ istek yeni sözleşme YARATMAZ: ilk sözleşme `reused: true` + `created_at` ile döner, kredi düşülmez, davet gönderilmez.  🔴 Anahtar KALICIDIR (süre sınırı yoktur). Numaralandırmanızı yıl döngüsünde tekrar kullanıyorsanız yıl/ön ek ekleyin. Aynı anahtar FARKLI içerikle gelirse `409 IDEMPOTENCY_KEY_REUSED` döner.  Tekrar yanıtı ilk yanıtın birebir kopyası DEĞİLDİR: yalnız kalıcı alanlar (kimlik, durum, sayfalar, imza bağlantıları) döner; `dispatch`, `variables_applied`, `field_layout` gibi o isteğin çalışma zamanı çıktıları YOKTUR. Anahtara kişisel veri yazmayın (alan düz metin saklanır).  Multipart uçlarda başlık yerine gövdedeki `idempotency_key` alanı da kullanılabilir; ikisi birden gönderilip ÇELİŞİRSE `400 INVALID_IDEMPOTENCY_KEY`.  Biçim: 1-255 karakter, boşluksuz yazdırılabilir ASCII.
 
 try {
@@ -1654,7 +1721,7 @@ try {
 ## `apiV1DemandsUploadPost()`
 
 ```php
-apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $send_invitations, $on_anchor_miss): \Imzala\Client\Model\ApiV1DemandsUploadPost201Response
+apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $external_ref, $send_invitations, $on_anchor_miss): \Imzala\Client\Model\ApiV1DemandsUploadPost201Response
 ```
 
 Dosya upload ile sözleşme oluştur (şablonsuz)
@@ -1688,11 +1755,12 @@ $title = 'title_example'; // string | Sözleşme başlığı (boşsa varsayılan
 $description = 'description_example'; // string
 $field_template_id = 'field_template_id_example'; // string | Alan Şablonu (`kind: FIELD_LAYOUT`) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - `template_id` ile **birlikte gönderilemez**   (400 `FIELD_TEMPLATE_CONFLICT`). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için `POST /api/v1/field-templates/{id}/preview-layout`.
 $force = 'force_example'; // string | Kopya kapısını bilerek geç. Yalnız `Idempotency-Key` GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için.
+$external_ref = 'external_ref_example'; // string | Takip numarası; kurallar ve hata kodları için `DemandExternalRef` şemasına bakın (geçersiz değer 400, `code`: `EXTERNAL_REF_INVALID` veya `EXTERNAL_REF_TOO_LONG`; sözleşme oluşturulmaz). Boş değer `null` sayılır.
 $send_invitations = 'send_invitations_example'; // string | `\\\"true\\\"` (veya `\\\"1\\\"`) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca `POST /api/v1/demands/{id}/parties/{partyId}/resend` çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 `INVALID_SEND_INVITATIONS`   döner (fail-closed). - **Açık değerler:** `\\\"true\\\"`, `\\\"1\\\"`, `\\\"all\\\"`, `\\\"email\\\"`, `\\\"sms\\\"`. - **Kapalı değerler:** `\\\"false\\\"`, `\\\"0\\\"`, `\\\"off\\\"`, `\\\"no\\\"`,   `\\\"hayir\\\"`, `\\\"hayır\\\"`. - Ad bilerek `dispatch_notifications` **değildir**: o   parametre `POST /api/v1/demands` ve `/demands/bulk`   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: `\\\"true\\\"`, `\\\"1\\\"` ve `\\\"all\\\"` tüm kanalları kullanır;   `\\\"email\\\"` yalnız e-posta, `\\\"sms\\\"` telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   `send_sms`/`send_email` bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (`dispatch.error = DISPATCH_TOO_MANY`), tarafları   `resend` ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği `Idempotency-Key`   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı `DUPLICATE_SUSPECTED` yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte `Idempotency-Key` gönderin;   anahtar yoksa yeniden göndermek yerine   `GET /api/v1/demands?...` ile sonucu doğrulayın.
 $on_anchor_miss = 'on_anchor_miss_example'; // string | Çapa bulunamadığında ne yapılacağı. Yalnız `field_template_id` ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, `block` uygulanır. - `drop`, yalnız şablonun İLGİLİ TÜM alanları zaten `DROP`   ise uygulanır; aksi halde yok sayılır, `block` uygulanır   ve yanıtta `ON_ANCHOR_MISS_NOT_RELAXED` uyarısı döner. - İmza alanlarında `drop` hiçbir koşulda uygulanmaz. - `fallback` bu API'de **yoktur** (400 `INVALID_ON_ANCHOR_MISS`).  Yanıttaki `data.field_layout.on_anchor_miss` istenen değil, **uygulanan** değeri taşır.
 
 try {
-    $result = $apiInstance->apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $send_invitations, $on_anchor_miss);
+    $result = $apiInstance->apiV1DemandsUploadPost($files, $parties, $idempotency_key, $order, $title, $description, $field_template_id, $force, $external_ref, $send_invitations, $on_anchor_miss);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DemandsApi->apiV1DemandsUploadPost: ', $e->getMessage(), PHP_EOL;
@@ -1711,6 +1779,7 @@ try {
 | **description** | **string**|  | [optional] |
 | **field_template_id** | **string**| Alan Şablonu (&#x60;kind: FIELD_LAYOUT&#x60;) kimliği. Verilirse yüklenen belgeye şablonun alan yerleşimi uygulanır.  - Yüklenen dosya **PDF olmak zorundadır** (sihirli bayt   doğrulaması; DOCX/ODT/RTF bu yolda kabul edilmez) ve tek   dosya olmalıdır. - &#x60;template_id&#x60; ile **birlikte gönderilemez**   (400 &#x60;FIELD_TEMPLATE_CONFLICT&#x60;). - Çözümleme sözleşme yaratımından ve kredi düşümünden   ÖNCE koşar: 422 dönen bir istek sözleşme yaratmaz, kredi   düşmez. - Ön kontrol için &#x60;POST /api/v1/field-templates/{id}/preview-layout&#x60;. | [optional] |
 | **force** | **string**| Kopya kapısını bilerek geç. Yalnız &#x60;Idempotency-Key&#x60; GÖNDERİLMEYEN çağrılarda anlamlıdır; aynı belgeyi aynı taraflara kasten ikinci kez göndermek için. | [optional] |
+| **external_ref** | **string**| Takip numarası; kurallar ve hata kodları için &#x60;DemandExternalRef&#x60; şemasına bakın (geçersiz değer 400, &#x60;code&#x60;: &#x60;EXTERNAL_REF_INVALID&#x60; veya &#x60;EXTERNAL_REF_TOO_LONG&#x60;; sözleşme oluşturulmaz). Boş değer &#x60;null&#x60; sayılır. | [optional] |
 | **send_invitations** | **string**| &#x60;\\\&quot;true\\\&quot;&#x60; (veya &#x60;\\\&quot;1\\\&quot;&#x60;) verilirse imza davetleri **aynı istekte** gönderilir; taraf başına ayrıca &#x60;POST /api/v1/demands/{id}/parties/{partyId}/resend&#x60; çağırmanız gerekmez.  - **Varsayılan kapalıdır.** Bu uç tarihsel olarak davet   göndermiyordu; mevcut entegrasyonların davranışı   değişmemelidir. Tanınmayan değer 400 &#x60;INVALID_SEND_INVITATIONS&#x60;   döner (fail-closed). - **Açık değerler:** &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60;, &#x60;\\\&quot;all\\\&quot;&#x60;, &#x60;\\\&quot;email\\\&quot;&#x60;, &#x60;\\\&quot;sms\\\&quot;&#x60;. - **Kapalı değerler:** &#x60;\\\&quot;false\\\&quot;&#x60;, &#x60;\\\&quot;0\\\&quot;&#x60;, &#x60;\\\&quot;off\\\&quot;&#x60;, &#x60;\\\&quot;no\\\&quot;&#x60;,   &#x60;\\\&quot;hayir\\\&quot;&#x60;, &#x60;\\\&quot;hayır\\\&quot;&#x60;. - Ad bilerek &#x60;dispatch_notifications&#x60; **değildir**: o   parametre &#x60;POST /api/v1/demands&#x60; ve &#x60;/demands/bulk&#x60;   uçlarında vardır ve orada varsayılanı **açıktır**.   Karıştırılırsa sessizce ters anlam üretir. - Kanal: &#x60;\\\&quot;true\\\&quot;&#x60;, &#x60;\\\&quot;1\\\&quot;&#x60; ve &#x60;\\\&quot;all\\\&quot;&#x60; tüm kanalları kullanır;   &#x60;\\\&quot;email\\\&quot;&#x60; yalnız e-posta, &#x60;\\\&quot;sms\\\&quot;&#x60; telefon kanalları (SMS   ve WhatsApp) gönderir. Değer yalnız **daraltır**:   sözleşmenin bildirim ayarlarında veya tarafın   &#x60;send_sms&#x60;/&#x60;send_email&#x60; bayraklarında kapalı olan bir   kanalı açamaz. Bu uçtan yaratılan sözleşmelerde bu   ayarlar açık doğar. - En çok **20 tarafa** davet gönderilir; üstünde sözleşme   yine oluşur ama davet gönderilmez   (&#x60;dispatch.error &#x3D; DISPATCH_TOO_MANY&#x60;), tarafları   &#x60;resend&#x60; ile çağırın. - 🔴 **Tekrar denemeye dikkat:** isteği &#x60;Idempotency-Key&#x60;   olmadan zaman aşımında körlemesine tekrarlarsanız **yeni   bir sözleşme, yeni kredi ve ikinci bir davet seti**   oluşabilir (kopya kapısı &#x60;DUPLICATE_SUSPECTED&#x60; yalnız aynı   içerikte ve 10 dakika içinde devreye girer). Tekrar   edebileceğiniz her istekte &#x60;Idempotency-Key&#x60; gönderin;   anahtar yoksa yeniden göndermek yerine   &#x60;GET /api/v1/demands?...&#x60; ile sonucu doğrulayın. | [optional] |
 | **on_anchor_miss** | **string**| Çapa bulunamadığında ne yapılacağı. Yalnız &#x60;field_template_id&#x60; ile anlamlıdır.  Bu parametre şablon ayarını yalnızca **sıkılaştırabilir**: - Gönderilmezse şablon ayarı geçerli değildir, &#x60;block&#x60; uygulanır. - &#x60;drop&#x60;, yalnız şablonun İLGİLİ TÜM alanları zaten &#x60;DROP&#x60;   ise uygulanır; aksi halde yok sayılır, &#x60;block&#x60; uygulanır   ve yanıtta &#x60;ON_ANCHOR_MISS_NOT_RELAXED&#x60; uyarısı döner. - İmza alanlarında &#x60;drop&#x60; hiçbir koşulda uygulanmaz. - &#x60;fallback&#x60; bu API&#39;de **yoktur** (400 &#x60;INVALID_ON_ANCHOR_MISS&#x60;).  Yanıttaki &#x60;data.field_layout.on_anchor_miss&#x60; istenen değil, **uygulanan** değeri taşır. | [optional] |
 

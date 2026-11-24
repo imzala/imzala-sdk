@@ -158,7 +158,7 @@ public class ErrorCodesTests
     public void Same_code_set_as_the_node_catalogue()
     {
         Assert.Equal(NodeCatalogue().Keys.OrderBy(k => k, StringComparer.Ordinal), ErrorCodes.Codes.Keys.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(119, ErrorCodes.Codes.Count);
+        Assert.Equal(123, ErrorCodes.Codes.Count);
     }
 
     [Fact]

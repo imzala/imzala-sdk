@@ -7,7 +7,7 @@ info:
   description: |
     imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-    **Sürüm:** 1.17.3 · **Son güncelleme:** 2026-11-23
+    **Sürüm:** 1.18.3 · **Son güncelleme:** 2026-11-23
 
     ## Auth
     Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -76,6 +76,20 @@ info:
     oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
     kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
     alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
+
+    ## Takip numarası (`external_ref`)
+    Sözleşmeye kendi sisteminizdeki kayıt numarasını (ör. sipariş no)
+    ekleyebilirsiniz: `POST /demands`, `POST /demands/upload` ve
+    `POST /demands/bulk` (satır başına `rows[i].external_ref`) ile oluştururken
+    ya da sonradan `PATCH /demands/{id}/external-ref` ile. Değer sözleşme
+    detayında, listede ve webhook yüklerinde döner; listede
+    `?external_ref=` ile tam eşleşme filtrelenir.
+
+    Takip numarası benzersiz değildir: aynı değer birden çok sözleşmede
+    olabilir. `idempotency_key` / `Idempotency-Key` ile karıştırmayın; o anahtar
+    her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini
+    engeller. Webhook alıcısında tekrar işlemeyi olay `id`'si ile önleyin,
+    `external_ref` ile değil. Kimlik numarası, e-posta veya telefon yazmayın.
 
     ## Rate Limit
     - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -325,7 +339,7 @@ info:
   license:
     name: Proprietary
   title: imzala External API
-  version: 1.17.3
+  version: 1.18.3
 servers:
 - description: Production
   url: https://api-prd.imzala.org
@@ -618,9 +632,10 @@ paths:
           - EXPIRED
           type: string
         style: form
-      - description: "Sözleşme kimliği, başlığı, açıklaması veya sözleşme numarası\
-          nda (ör. `CODECK-2026-042`) arama. Taraf ad, e-posta ve telefon alanları\
-          nda ARAMAZ; taraf bilgisi bu uçtan dönmez."
+      - description: "Sözleşme kimliği, başlığı, açıklaması, sözleşme numarası (ö\
+          r. `CODECK-2026-042`) veya takip numarasında (`external_ref`, parça eşleş\
+          me) arama. Taraf ad, e-posta ve telefon alanlarında ARAMAZ; taraf bilgisi\
+          \ bu uçtan dönmez."
         explode: true
         in: query
         name: q
@@ -650,6 +665,22 @@ paths:
         required: false
         schema:
           format: uuid
+          type: string
+        style: form
+      - description: |
+          Takip numarasına göre filtre: tam eşleşme, büyük/küçük harf
+          duyarlı (parça arama için `q`). Değer kırpılır, boş değer filtre
+          uygulamaz. Aynı değer birden çok sözleşmede olabilir. Tek değer
+          alır: dizi ya da nesne biçimi (ör. `external_ref[contains]=`)
+          `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+          `400 EXTERNAL_REF_TOO_LONG` döner.
+        example: SIP-2026-00042
+        explode: true
+        in: query
+        name: external_ref
+        required: false
+        schema:
+          maxLength: 255
           type: string
         style: form
       - explode: true
@@ -699,6 +730,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/_api_v1_demands_get_200_response"
           description: Başarılı
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands_get_400_response"
+          description: |
+            Geçersiz filtre. `code`: `EXTERNAL_REF_INVALID` veya
+            `EXTERNAL_REF_TOO_LONG` (bkz. `external_ref` parametresi), diğer
+            geçersiz filtrelerde `INVALID_FILTER`; `param` reddedilen
+            parametreyi gösterir.
         "401":
           content:
             application/json:
@@ -810,6 +851,7 @@ paths:
                 value:
                   template_id: 7ec4b653-e84a-47f1-9e0b-7671e1aae2a1
                   title: Vize Danışmanlığı - Ayşe Yılmaz
+                  external_ref: SIP-2026-00042
                   party_mapping:
                   - template_party_id: e5b4e0cb-c2d5-473f-9f62-44d51c76f56e
                     first_name: Ayşe
@@ -965,6 +1007,10 @@ paths:
             `term_fixed_end_date` ile `term_duration_months` birlikte, veya
             `renewal_type: AUTO_RENEW` periyotsuz). `field` hangi anahtarın
             reddedildiğini gösterir.
+
+            `EXTERNAL_REF_INVALID` / `EXTERNAL_REF_TOO_LONG`: `external_ref`
+            geçersiz (bkz. `DemandExternalRef`). Sözleşme oluşturulmaz, kredi
+            düşülmez.
             Belge Toplama ön kontrolü: `INVALID_DOCUMENT_COLLECTION_TIMING`,
             `INVALID_DOCUMENT_COLLECTION_FLAG`, `DOCUMENT_COLLECTION_TEMPLATE_REQUIRED`.
             Seçili şablonun kalem politikası geçersizse `code` daima
@@ -1242,6 +1288,12 @@ paths:
             `FIELD_LAYOUT_TEMPLATE_NOT_SENDABLE` (verilen kimlik bir Alan
             Şablonuna ait). AB nitelikli zaman damgası hesabınızda kapalıyken
             `eidas_timestamp` gönderilirse de 400 döner.
+
+            `EXTERNAL_REF_INVALID`: `options.external_ref` gönderildi. Takip
+            numarası satır başınadır (`rows[i].external_ref`); hiçbir satır
+            oluşturulmaz. Satırdaki geçersiz takip numarası yalnız o satırı
+            `failed` yapar (`error`: `EXTERNAL_REF_INVALID` veya
+            `EXTERNAL_REF_TOO_LONG`).
 
             `SIGNATURE_VARIANTS_PHONE_ONLY`:
             `options.allowed_signature_variants` yalnız `phone` içeriyor.
@@ -1741,7 +1793,8 @@ paths:
             `TOO_MANY_REQUESTS` — API anahtarı başına dakikada 30 istek sınırı
             aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve `send_invitations`
             ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın
-            hızını kırmak içindir.
+            hızını kırmak içindir. Aynı hesapla eşzamanlı yükleme sınırı
+            aşıldığında da bu kod döner (`Retry-After` başlığıyla).
         "500":
           content:
             application/json:
@@ -1758,6 +1811,16 @@ paths:
             düşürülür; gövdede `demand_id` döner. Kredi düşülmez, davet
             gönderilmez. Aynı yükleme isteğini tekrarlamayın; sözleşmeyi
             `POST /demands/{demandId}/dispatch` ile gönderin.
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+          description: |
+            `RENDER_BUSY`: sayfa görselleri hazırlanırken sunucu şu an yoğun;
+            istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve
+            kredi düşülmedi. `Retry-After` başlığındaki süre (saniye) sonra
+            aynı isteği tekrarlayın.
       summary: Dosya upload ile sözleşme oluştur (şablonsuz)
       tags:
       - Demands
@@ -1950,7 +2013,10 @@ paths:
             Belge okunamadı: parola korumalı PDF (`ENCRYPTED_PDF`) veya metin
             çıkarma süre bütçesi aşıldı (`TEXT_EXTRACTION_TIMEOUT`).
         "429":
-          description: Dakikalık önizleme sınırı aşıldı (`RATE_LIMITED`)
+          description: |
+            Dakikalık önizleme sınırı aşıldı (`RATE_LIMITED`) veya aynı hesapla
+            eşzamanlı yükleme sınırı aşıldı (`TOO_MANY_REQUESTS`, `Retry-After`
+            başlığıyla).
         "503":
           description: Sınırlayıcı geçici olarak kullanılamıyor (`RATE_LIMITER_UNAVAILABLE`)
       summary: Alan Şablonu yerleşimini bir PDF üzerinde KURU KOŞUM ile dener
@@ -2618,6 +2684,82 @@ paths:
       tags:
       - Demands
       x-required-scope: demands:write
+  /api/v1/demands/{id}/external-ref:
+    patch:
+      description: |
+        Sözleşmenin takip numarasını (`external_ref`) değiştirir; `null` ya
+        da boş dize göndermek numarayı temizler. Gövde yalnız `external_ref`
+        anahtarını içerir; başka anahtar gönderilirse
+        `400 EXTERNAL_REF_INVALID`.
+
+        Tamamlanmış, iptal edilmiş veya arşivlenmiş sözleşmede de
+        güncellenebilir; belge içeriğini, imzaları ve imzalı PDF'i
+        değiştirmez. Aynı değer yeniden gönderilirse istek değişiklik
+        yapmadan başarılı döner.
+
+        Erişim, sözleşme detayıyla aynı rol kuralını izler: OWNER ve ADMIN
+        kurumun tüm sözleşmelerini, MEMBER yalnız kendi oluşturduğu
+        sözleşmeleri günceller. Erişim yoksa 404 döner.
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              external_ref: SIP-2026-00042
+            schema:
+              $ref: "#/components/schemas/_api_v1_demands__id__external_ref_patch_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  id: 3f2c8e9a-6b1d-4c7e-9a05-2d8f1b6e4c73
+                  external_ref: SIP-2026-00042
+              schema:
+                $ref: "#/components/schemas/_api_v1_demands__id__external_ref_patch_200_response"
+          description: Güncellendi
+        "400":
+          content:
+            application/json:
+              example:
+                success: false
+                error: Takip numarası geçersiz karakter içeriyor veya metin değil.
+                code: EXTERNAL_REF_INVALID
+              schema:
+                $ref: "#/components/schemas/CodedError"
+          description: |
+            `EXTERNAL_REF_INVALID`: gövde nesne değil, `external_ref` eksik,
+            gövdede başka anahtar var ya da değer geçersiz (metin değil;
+            satır sonu, sekme, kontrol veya görünmez yön karakteri içeriyor).
+            `EXTERNAL_REF_TOO_LONG`: değer 255 karakteri aşıyor. Hata mesajı
+            gönderdiğiniz değeri içermez.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates_get_401_response"
+          description: API key geçersiz veya eksik
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_api_v1_templates__id__get_404_response"
+          description: Kayıt bulunamadı
+      summary: Sözleşme takip numarasını güncelle
+      tags:
+      - Demands
+      x-required-scope: demands:write
   /api/v1/demands/{id}/archive:
     post:
       description: |
@@ -2941,7 +3083,18 @@ paths:
           description: |
             `TOO_MANY_REQUESTS` — API anahtarı başına dakikada 30 istek sınırı
             aşıldı (`/demands/upload` sınırından ayrı sayılır). Gövdede
-            `retry_after_seconds` döner.
+            `retry_after_seconds` döner. Aynı hesapla eşzamanlı yükleme sınırı
+            aşıldığında da bu kod döner (`Retry-After` başlığıyla).
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+          description: |
+            `RENDER_BUSY`: sayfa görselleri hazırlanırken sunucu şu an yoğun;
+            istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve
+            kredi düşülmedi. `Retry-After` başlığındaki süre (saniye) sonra
+            aynı isteği tekrarlayın.
       summary: Zarfa dosya yükle (belge başına tek dosya)
       tags:
       - Demands
@@ -4672,6 +4825,7 @@ components:
         template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         title: title
         description: description
+        external_ref: SIP-2026-00042
         idempotency_key: idempotency_key
         force: true
         party_mapping:
@@ -4801,6 +4955,32 @@ components:
             ekranında görünebilir; kişisel veya gizli bilgi yazmayın.
           type: string
         description:
+          type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
           type: string
         idempotency_key:
           description: |
@@ -5126,6 +5306,7 @@ components:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         title: title
+        external_ref: SIP-2026-00042
         status: PENDING
         template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         signing_urls:
@@ -5183,6 +5364,32 @@ components:
           format: uuid
           type: string
         title:
+          type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
           type: string
         status:
           description: "Bilinen değerler: DRAFT, PENDING. Sunucu ileride yeni değ\
@@ -5300,6 +5507,7 @@ components:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         title: title
+        external_ref: SIP-2026-00042
         status: PENDING
         pages:
         - id: 12345
@@ -5370,6 +5578,32 @@ components:
           format: uuid
           type: string
         title:
+          type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
           type: string
         status:
           example: PENDING
@@ -5930,6 +6164,32 @@ components:
         data:
           $ref: "#/components/schemas/UpsertItemsResponse_data"
       type: object
+    DemandExternalRef:
+      description: |
+        Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+        En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+        dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+        kontrol veya görünmez yön karakteri içeren değer
+        `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+        `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+        içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+        `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+        isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+        takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+        geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+        gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+        Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+        olarak benzersizlik kuralı yoktur.
+
+        Tanımlı değilse `null` döner. Sonradan
+        `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+        İmzacılara gösterilmez.
+      example: SIP-2026-00042
+      maxLength: 255
+      nullable: true
+      type: string
     ContractNumber:
       description: |
         Sözleşmeye panelde tanımlı bir numaratörden verilen sözleşme numarası.
@@ -5955,6 +6215,7 @@ components:
       example:
         id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         title: title
+        external_ref: SIP-2026-00042
         status: status
         created_at: 2000-01-23T04:56:07.000+00:00
         completed_at: 2000-01-23T04:56:07.000+00:00
@@ -6073,6 +6334,32 @@ components:
           format: uuid
           type: string
         title:
+          type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
           type: string
         status:
           description: "Bilinen değerler: DRAFT, PENDING, COMPLETED, EXPIRED, CANCELLED.\
@@ -6494,6 +6781,15 @@ components:
           items:
             $ref: "#/components/schemas/ContractNumber"
           type: array
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
+          type: string
         _backfill:
           description: |
             Geçmiş event'i replay etmek için bayrak. Receiver yan etkileri
@@ -6523,6 +6819,15 @@ components:
           items:
             $ref: "#/components/schemas/ContractNumber"
           type: array
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
+          type: string
       required:
       - demand_id
       - dispatched_by
@@ -6555,6 +6860,15 @@ components:
           items:
             $ref: "#/components/schemas/ContractNumber"
           type: array
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
+          type: string
         _backfill:
           description: Replay bayrağı (yan etkileri atla)
           type: boolean
@@ -6586,6 +6900,15 @@ components:
           items:
             $ref: "#/components/schemas/ContractNumber"
           type: array
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
+          type: string
       required:
       - demand_id
       - expiry_date
@@ -6599,6 +6922,15 @@ components:
           type: string
         party_id:
           format: uuid
+          type: string
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
           type: string
         _backfill:
           description: Replay bayrağı
@@ -6615,6 +6947,15 @@ components:
         party_id:
           format: uuid
           type: string
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
+          type: string
       required:
       - demand_id
       - party_id
@@ -6628,6 +6969,15 @@ components:
           $ref: "#/components/schemas/WebhookDataPartyRejected_party"
         rejected_at:
           format: date-time
+          type: string
+        external_ref:
+          description: |
+            Sözleşmenin bildirim anındaki takip numarası; tanımlı değilse
+            `null`. Takip numarası tekrar edebilir: alıcı tarafta tekrar
+            işlemeyi zarftaki olay `id`'si ile önleyin, `external_ref` ile
+            değil. Sözleşme bilgisi okunamadığında bildirim bu alan olmadan
+            gönderilir.
+          nullable: true
           type: string
       required:
       - demand_id
@@ -7576,6 +7926,7 @@ components:
         parties_total: 0
         parties_signed: 6
         pdf_url: https://openapi-generator.tech
+        external_ref: SIP-2026-00042
         contract_numbers:
         - sequence_id: 2f8b6a41-7c3d-4e95-a0b2-5d1e9c7f3a68
           value: CODECK-2026-042
@@ -7616,6 +7967,32 @@ components:
           format: uri
           nullable: true
           type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
+          type: string
         contract_numbers:
           description: |
             Sözleşmeye verilmiş sözleşme numaraları. Numara yoksa boş dizi.
@@ -7639,6 +8016,7 @@ components:
           parties_total: 0
           parties_signed: 6
           pdf_url: https://openapi-generator.tech
+          external_ref: SIP-2026-00042
           contract_numbers:
           - sequence_id: 2f8b6a41-7c3d-4e95-a0b2-5d1e9c7f3a68
             value: CODECK-2026-042
@@ -7652,6 +8030,7 @@ components:
           parties_total: 0
           parties_signed: 6
           pdf_url: https://openapi-generator.tech
+          external_ref: SIP-2026-00042
           contract_numbers:
           - sequence_id: 2f8b6a41-7c3d-4e95-a0b2-5d1e9c7f3a68
             value: CODECK-2026-042
@@ -7685,6 +8064,7 @@ components:
             parties_total: 0
             parties_signed: 6
             pdf_url: https://openapi-generator.tech
+            external_ref: SIP-2026-00042
             contract_numbers:
             - sequence_id: 2f8b6a41-7c3d-4e95-a0b2-5d1e9c7f3a68
               value: CODECK-2026-042
@@ -7698,6 +8078,7 @@ components:
             parties_total: 0
             parties_signed: 6
             pdf_url: https://openapi-generator.tech
+            external_ref: SIP-2026-00042
             contract_numbers:
             - sequence_id: 2f8b6a41-7c3d-4e95-a0b2-5d1e9c7f3a68
               value: CODECK-2026-042
@@ -7710,12 +8091,33 @@ components:
         data:
           $ref: "#/components/schemas/_api_v1_demands_get_200_response_data"
       type: object
+    _api_v1_demands_get_400_response:
+      example:
+        success: false
+        error: Geçersiz filtre
+        code: EXTERNAL_REF_INVALID
+        param: external_ref
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          example: Geçersiz filtre
+          type: string
+        code:
+          example: EXTERNAL_REF_INVALID
+          type: string
+        param:
+          example: external_ref
+          type: string
+      type: object
     _api_v1_demands_post_201_response:
       example:
         success: true
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           title: title
+          external_ref: SIP-2026-00042
           status: PENDING
           template_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           signing_urls:
@@ -8020,6 +8422,32 @@ components:
           type: object
         documents:
           $ref: "#/components/schemas/DocumentSelectionInput"
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
+          type: string
       required:
       - party_mapping
       type: object
@@ -8090,6 +8518,7 @@ components:
       example:
         row_index: 0
         status: status
+        external_ref: external_ref
         demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         party_ids:
         - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8130,6 +8559,11 @@ components:
           x-known-values:
           - created
           - failed
+        external_ref:
+          description: Yalnız status=created ise; satıra kaydedilen takip numarası
+            (yoksa `null`).
+          nullable: true
+          type: string
         demand_id:
           description: "status=created ise; veya status=failed olup sözleşme oluş\
             turulduktan SONRA kredi mutabakatı reddettiyse ya da atamasız imzacı bulunduysa\
@@ -8169,9 +8603,9 @@ components:
           description: "status=failed ise makinece okunabilir kod (VALIDATION, INVALID_LOCALE,\
             \ INVALID_PHONE_VERIFICATION, PHONE_REQUIRED_FOR_VERIFICATION, PARTY_PHONE_MISSING,\
             \ INSUFFICIENT_CREDITS, MEMBER_LIMIT_EXCEEDED, PARTY_WITHOUT_DOCUMENTS,\
-            \ INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, TEMPLATE_DOCUMENTS_NOT_READY,\
-            \ DOCUMENT_SOURCE_UNAVAILABLE, RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED,\
-            \ CREATE_FAILED vb.)"
+            \ INVALID_DOCUMENT_SELECTION, INVALID_DOCUMENT_VARIABLES, EXTERNAL_REF_INVALID,\
+            \ EXTERNAL_REF_TOO_LONG, TEMPLATE_DOCUMENTS_NOT_READY, DOCUMENT_SOURCE_UNAVAILABLE,\
+            \ RECONCILE_FAILED, DISPATCH_PREPARATION_FAILED, CREATE_FAILED vb.)"
           type: string
         message:
           description: status=failed ise açıklama
@@ -8186,6 +8620,7 @@ components:
         results:
         - row_index: 0
           status: status
+          external_ref: external_ref
           demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8218,6 +8653,7 @@ components:
           message: message
         - row_index: 0
           status: status
+          external_ref: external_ref
           demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           party_ids:
           - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8277,6 +8713,7 @@ components:
           results:
           - row_index: 0
             status: status
+            external_ref: external_ref
             demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8309,6 +8746,7 @@ components:
             message: message
           - row_index: 0
             status: status
+            external_ref: external_ref
             demand_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
             party_ids:
             - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -8352,6 +8790,7 @@ components:
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           title: title
+          external_ref: SIP-2026-00042
           status: status
           created_at: 2000-01-23T04:56:07.000+00:00
           completed_at: 2000-01-23T04:56:07.000+00:00
@@ -8720,6 +9159,15 @@ components:
           - "true"
           - "1"
           type: string
+        external_ref:
+          description: |
+            Takip numarası; kurallar ve hata kodları için
+            `DemandExternalRef` şemasına bakın (geçersiz değer 400,
+            `code`: `EXTERNAL_REF_INVALID` veya `EXTERNAL_REF_TOO_LONG`;
+            sözleşme oluşturulmaz). Boş değer `null` sayılır.
+          example: SIP-2026-00042
+          maxLength: 255
+          type: string
         send_invitations:
           description: |
             `"true"` (veya `"1"`) verilirse imza davetleri **aynı
@@ -8799,6 +9247,7 @@ components:
         data:
           id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
           title: title
+          external_ref: SIP-2026-00042
           status: PENDING
           pages:
           - id: 12345
@@ -9345,6 +9794,85 @@ components:
           type: boolean
         data:
           $ref: "#/components/schemas/_api_v1_demands__id__term_patch_200_response_data"
+      type: object
+    _api_v1_demands__id__external_ref_patch_request:
+      additionalProperties: false
+      properties:
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
+          type: string
+      required:
+      - external_ref
+      type: object
+    _api_v1_demands__id__external_ref_patch_200_response_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        external_ref: SIP-2026-00042
+      properties:
+        id:
+          format: uuid
+          type: string
+        external_ref:
+          description: |
+            Kendi sisteminizdeki kayıt numarası (ör. sipariş no). Benzersiz olması gerekmez; aynı değerle birden çok sözleşme listelenebilir. Kimlik numarası, e-posta veya telefon yazmayın.
+
+            En fazla 255 karakter. Baştaki ve sondaki boşluklar kırpılır; boş
+            dize `null` sayılır. Metin olmayan değer ya da satır sonu, sekme,
+            kontrol veya görünmez yön karakteri içeren değer
+            `400 EXTERNAL_REF_INVALID`, 255 karakteri aşan değer
+            `400 EXTERNAL_REF_TOO_LONG` döner; hata mesajı gönderdiğiniz değeri
+            içermez. Eşleşme tam ve büyük/küçük harf duyarlıdır.
+
+            `idempotency_key` ile farkı: idempotency anahtarı her oluşturma
+            isteği için benzersizdir ve aynı isteğin iki kez işlenmesini engeller;
+            takip numarası ise tekrar edebilir ve tekrar korumasının yerine
+            geçmez. Aynı `Idempotency-Key` ile farklı bir takip numarası
+            gönderilirse istek farklı içerik sayılır (`409 IDEMPOTENCY_KEY_REUSED`).
+            Kimlik doğrulama (KYC) uçlarındaki `external_ref` alanından farklı
+            olarak benzersizlik kuralı yoktur.
+
+            Tanımlı değilse `null` döner. Sonradan
+            `PATCH /api/v1/demands/{id}/external-ref` ile değiştirilebilir.
+            İmzacılara gösterilmez.
+          example: SIP-2026-00042
+          maxLength: 255
+          nullable: true
+          type: string
+      type: object
+    _api_v1_demands__id__external_ref_patch_200_response:
+      example:
+        success: true
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          external_ref: SIP-2026-00042
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_api_v1_demands__id__external_ref_patch_200_response_data"
       type: object
     _api_v1_demands__id__archive_post_200_response_data:
       example:

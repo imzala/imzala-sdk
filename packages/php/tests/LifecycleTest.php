@@ -57,7 +57,7 @@ final class LifecycleTest extends TestCase
         $api = $this->createMock(DemandsApi::class);
         $api->expects($this->once())
             ->method('apiV1DemandsGetWithHttpInfo')
-            ->with('PENDING', null, null, null, 't1', 1, 20, null)
+            ->with('PENDING', null, null, null, 't1', null, 1, 20, null)
             ->willReturn([$envelope, 200, []]);
 
         $result = $this->demands($api)->list(status: 'PENDING', templateId: 't1', page: 1, limit: 20);

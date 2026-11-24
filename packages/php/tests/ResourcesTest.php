@@ -346,14 +346,15 @@ final class ResourcesTest extends TestCase
         $this->assertSame($data, $this->demands($api)->uploadDocument($params));
 
         // generated order: files, parties, idempotency_key, order, title,
-        // description, field_template_id, force, send_invitations, on_anchor_miss
+        // description, field_template_id, force, external_ref (not sent by the
+        // facade), send_invitations, on_anchor_miss
         $this->assertIsArray($args[0]);
         $parties = json_decode($args[1], true);
         $this->assertSame('rol-1', $parties[0]['template_party_id']);
         $this->assertSame('+905551112233', $parties[0]['phone']);
         $this->assertSame(
-            ['yukleme-1', '[0]', 'Başlık', 'Açıklama', 'ft-1', 'true', 'sms', 'drop'],
-            array_slice($args, 2, 8)
+            ['yukleme-1', '[0]', 'Başlık', 'Açıklama', 'ft-1', 'true', null, 'sms', 'drop'],
+            array_slice($args, 2, 9)
         );
     }
 

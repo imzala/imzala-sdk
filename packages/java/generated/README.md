@@ -2,15 +2,15 @@
 
 imzala External API
 
-- API version: 1.17.3
+- API version: 1.18.3
 
-- Build date: 2026-11-23T20:11:24.064458+03:00[Europe/Istanbul]
+- Build date: 2026-11-24T04:12:34.985720+03:00[Europe/Istanbul]
 
 - Generator version: 7.23.0
 
 imzala.org dış API'si — şablondan sözleşme oluşturma ve takip.
 
-**Sürüm:** 1.17.3 · **Son güncelleme:** 2026-11-23
+**Sürüm:** 1.18.3 · **Son güncelleme:** 2026-11-23
 
 ## Auth
 Tüm istekler `X-API-Key` header'ı gerektirir. API key dashboard üzerinden
@@ -79,6 +79,20 @@ tutarı gösterir. Daha önce
 oluşturulmuş ancak gönderilmemiş taslaklarda onaylayan için ayrılmış
 kredi gönderimde yeni kurala göre düzeltilir. Yanıtlardaki `credits`
 alanları ve kredi ön kontrolü aynı kuralla hesaplanır.
+
+## Takip numarası (`external_ref`)
+Sözleşmeye kendi sisteminizdeki kayıt numarasını (ör. sipariş no)
+ekleyebilirsiniz: `POST /demands`, `POST /demands/upload` ve
+`POST /demands/bulk` (satır başına `rows[i].external_ref`) ile oluştururken
+ya da sonradan `PATCH /demands/{id}/external-ref` ile. Değer sözleşme
+detayında, listede ve webhook yüklerinde döner; listede
+`?external_ref=` ile tam eşleşme filtrelenir.
+
+Takip numarası benzersiz değildir: aynı değer birden çok sözleşmede
+olabilir. `idempotency_key` / `Idempotency-Key` ile karıştırmayın; o anahtar
+her oluşturma isteği için benzersizdir ve aynı isteğin iki kez işlenmesini
+engeller. Webhook alıcısında tekrar işlemeyi olay `id`'si ile önleyin,
+`external_ref` ile değil. Kimlik numarası, e-posta veya telefon yazmayın.
 
 ## Rate Limit
 - Varsayılan: API anahtarı başına **60 istek/dakika**. Aşımda `429` döner ve
@@ -362,7 +376,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>org.imzala</groupId>
   <artifactId>imzala-client-generated</artifactId>
-  <version>1.17.3</version>
+  <version>1.18.3</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -372,7 +386,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.imzala:imzala-client-generated:1.17.3"
+compile "org.imzala:imzala-client-generated:1.18.3"
 ```
 
 ### Others
@@ -385,7 +399,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-- `target/imzala-client-generated-1.17.3.jar`
+- `target/imzala-client-generated-1.18.3.jar`
 - `target/lib/*.jar`
 
 ## Getting Started
@@ -464,6 +478,8 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdDeleteWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdDeleteWithHttpInfo) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPost**](docs/DemandsApi.md#apiV1DemandsIdEmbedSessionPost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPostWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdEmbedSessionPostWithHttpInfo) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
+*DemandsApi* | [**apiV1DemandsIdExternalRefPatch**](docs/DemandsApi.md#apiV1DemandsIdExternalRefPatch) | **PATCH** /api/v1/demands/{id}/external-ref | Sözleşme takip numarasını güncelle
+*DemandsApi* | [**apiV1DemandsIdExternalRefPatchWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdExternalRefPatchWithHttpInfo) | **PATCH** /api/v1/demands/{id}/external-ref | Sözleşme takip numarasını güncelle
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/DemandsApi.md#apiV1DemandsIdGet) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdGetWithHttpInfo**](docs/DemandsApi.md#apiV1DemandsIdGetWithHttpInfo) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdItemsItemIdStampPatch**](docs/DemandsApi.md#apiV1DemandsIdItemsItemIdStampPatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
@@ -547,6 +563,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
  - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
  - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+ - [ApiV1DemandsGet400Response](docs/ApiV1DemandsGet400Response.md)
  - [ApiV1DemandsIdArchivePost200Response](docs/ApiV1DemandsIdArchivePost200Response.md)
  - [ApiV1DemandsIdArchivePost200ResponseData](docs/ApiV1DemandsIdArchivePost200ResponseData.md)
  - [ApiV1DemandsIdCancelPost200Response](docs/ApiV1DemandsIdCancelPost200Response.md)
@@ -556,6 +573,9 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdEmbedSessionPost200Response](docs/ApiV1DemandsIdEmbedSessionPost200Response.md)
  - [ApiV1DemandsIdEmbedSessionPost200ResponseData](docs/ApiV1DemandsIdEmbedSessionPost200ResponseData.md)
  - [ApiV1DemandsIdEmbedSessionPostRequest](docs/ApiV1DemandsIdEmbedSessionPostRequest.md)
+ - [ApiV1DemandsIdExternalRefPatch200Response](docs/ApiV1DemandsIdExternalRefPatch200Response.md)
+ - [ApiV1DemandsIdExternalRefPatch200ResponseData](docs/ApiV1DemandsIdExternalRefPatch200ResponseData.md)
+ - [ApiV1DemandsIdExternalRefPatchRequest](docs/ApiV1DemandsIdExternalRefPatchRequest.md)
  - [ApiV1DemandsIdGet200Response](docs/ApiV1DemandsIdGet200Response.md)
  - [ApiV1DemandsIdPartiesPartyIdResendPost200Response](docs/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
  - [ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData](docs/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md)

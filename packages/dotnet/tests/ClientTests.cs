@@ -149,9 +149,10 @@ public class ClientTests
                 It.IsAny<string?>(),
                 It.IsAny<string?>(),
                 It.IsAny<string?>(),
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, CancellationToken>(
-                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, sendInvitations, onAnchorMiss, ct) =>
+            .Callback<List<FileParameter>, string, string?, string?, string?, string?, Guid?, string?, string?, string?, string?, CancellationToken>(
+                (files, parties, idempotencyKey, order, title, description, fieldTemplateId, force, externalRef, sendInvitations, onAnchorMiss, ct) =>
             {
                 capturedFiles = files;
                 capturedParties = parties;

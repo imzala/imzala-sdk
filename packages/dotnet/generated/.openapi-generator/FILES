@@ -38,6 +38,7 @@ docs/ApiV1DemandsDemandIdDocumentsPostRequest.md
 docs/ApiV1DemandsGet200Response.md
 docs/ApiV1DemandsGet200ResponseData.md
 docs/ApiV1DemandsGet200ResponseDataDemandsInner.md
+docs/ApiV1DemandsGet400Response.md
 docs/ApiV1DemandsIdArchivePost200Response.md
 docs/ApiV1DemandsIdArchivePost200ResponseData.md
 docs/ApiV1DemandsIdCancelPost200Response.md
@@ -47,6 +48,9 @@ docs/ApiV1DemandsIdDelete409Response.md
 docs/ApiV1DemandsIdEmbedSessionPost200Response.md
 docs/ApiV1DemandsIdEmbedSessionPost200ResponseData.md
 docs/ApiV1DemandsIdEmbedSessionPostRequest.md
+docs/ApiV1DemandsIdExternalRefPatch200Response.md
+docs/ApiV1DemandsIdExternalRefPatch200ResponseData.md
+docs/ApiV1DemandsIdExternalRefPatchRequest.md
 docs/ApiV1DemandsIdGet200Response.md
 docs/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md
 docs/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md
@@ -233,6 +237,7 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsDemandIdDocumentsPostRequestTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseDataDemandsInnerTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsGet200ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsGet400ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdArchivePost200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdArchivePost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdCancelPost200ResponseDataTests.cs
@@ -242,6 +247,9 @@ src/ImzalaApiClient.Test/Model/ApiV1DemandsIdDelete409ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdEmbedSessionPost200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdEmbedSessionPost200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdEmbedSessionPostRequestTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdExternalRefPatch200ResponseDataTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdExternalRefPatch200ResponseTests.cs
+src/ImzalaApiClient.Test/Model/ApiV1DemandsIdExternalRefPatchRequestTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdGet200ResponseTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseDataTests.cs
 src/ImzalaApiClient.Test/Model/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseTests.cs
@@ -439,6 +447,7 @@ src/ImzalaApiClient/Model/ApiV1DemandsDemandIdDocumentsPostRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsGet200ResponseDataDemandsInner.cs
+src/ImzalaApiClient/Model/ApiV1DemandsGet400Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdArchivePost200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdArchivePost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdCancelPost200Response.cs
@@ -448,6 +457,9 @@ src/ImzalaApiClient/Model/ApiV1DemandsIdDelete409Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdEmbedSessionPost200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdEmbedSessionPost200ResponseData.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdEmbedSessionPostRequest.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdExternalRefPatch200Response.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdExternalRefPatch200ResponseData.cs
+src/ImzalaApiClient/Model/ApiV1DemandsIdExternalRefPatchRequest.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdGet200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdPartiesPartyIdResendPost200Response.cs
 src/ImzalaApiClient/Model/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.cs

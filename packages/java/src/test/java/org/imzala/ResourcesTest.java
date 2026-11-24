@@ -331,7 +331,7 @@ class ResourcesTest {
   void upload_document_puts_every_new_field_in_its_own_slot() throws ApiException {
     UUID fieldTemplateId = UUID.randomUUID();
     UUID rolePartyA = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload().id(UUID.randomUUID())));
 
     new DemandsResource(demandsApi, remindersApi, NO_RETRY).uploadDocument(
@@ -357,6 +357,7 @@ class ResourcesTest {
         eq("Açıklama"),
         eq(fieldTemplateId),
         eq("true"),
+        isNull(),
         eq("sms"),
         eq("drop"));
     assertEquals("""
@@ -366,7 +367,7 @@ class ResourcesTest {
 
   @Test
   void upload_document_leaves_optional_fields_unset_by_default() throws ApiException {
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload()));
 
     UploadDemandParams params = new UploadDemandParams(
@@ -377,7 +378,7 @@ class ResourcesTest {
 
     ArgumentCaptor<String> parties = ArgumentCaptor.forClass(String.class);
     verify(demandsApi).apiV1DemandsUploadPost(anyList(), parties.capture(),
-        isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
+        isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull());
     assertFalse(parties.getValue().contains("template_party_id"));
     assertNull(params.getSendInvitations());
     assertFalse(params.getForce());
@@ -388,7 +389,7 @@ class ResourcesTest {
     // onAnchorMiss and sendInvitations are both Strings sitting next to each
     // other; distinct values make a swap fail the verification above. This
     // test pins the other same-typed neighbours (title, description, key).
-    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any()))
+    when(demandsApi.apiV1DemandsUploadPost(anyList(), anyString(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(new ApiV1DemandsUploadPost201Response().success(true).data(new CreatedDemandUpload()));
 
     new DemandsResource(demandsApi, remindersApi, NO_RETRY).uploadDocument(
@@ -399,7 +400,7 @@ class ResourcesTest {
             .sendInvitations("email"));
 
     verify(demandsApi).apiV1DemandsUploadPost(anyList(), anyString(),
-        isNull(), isNull(), isNull(), eq("only-description"), isNull(), isNull(), eq("email"), isNull());
+        isNull(), isNull(), isNull(), eq("only-description"), isNull(), isNull(), isNull(), eq("email"), isNull());
   }
 
   // --- client wiring ---

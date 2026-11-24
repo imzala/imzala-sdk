@@ -1,4 +1,4 @@
-## @imzala/server-sdk-node@1.17.3
+## @imzala/server-sdk-node@1.18.3
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @imzala/server-sdk-node@1.17.3 --save
+npm install @imzala/server-sdk-node@1.18.3 --save
 ```
 
 _unPublished (not recommended):_
@@ -70,6 +70,7 @@ Class | Method | HTTP request | Description
 *DemandsApi* | [**apiV1DemandsIdCertificateGet**](docs/DemandsApi.md#apiv1demandsidcertificateget) | **GET** /api/v1/demands/{id}/certificate | Tamamlanma sertifikası (PAdES B-T)
 *DemandsApi* | [**apiV1DemandsIdDelete**](docs/DemandsApi.md#apiv1demandsiddelete) | **DELETE** /api/v1/demands/{id} | Sözleşme sil (yalnızca tamamlanmamış)
 *DemandsApi* | [**apiV1DemandsIdEmbedSessionPost**](docs/DemandsApi.md#apiv1demandsidembedsessionpost) | **POST** /api/v1/demands/{id}/embed-session | Gömülü imza oturumu başlat (embed token mint)
+*DemandsApi* | [**apiV1DemandsIdExternalRefPatch**](docs/DemandsApi.md#apiv1demandsidexternalrefpatch) | **PATCH** /api/v1/demands/{id}/external-ref | Sözleşme takip numarasını güncelle
 *DemandsApi* | [**apiV1DemandsIdGet**](docs/DemandsApi.md#apiv1demandsidget) | **GET** /api/v1/demands/{id} | Sözleşme durumu + imza ilerlemesi
 *DemandsApi* | [**apiV1DemandsIdItemsItemIdStampPatch**](docs/DemandsApi.md#apiv1demandsiditemsitemidstamppatch) | **PATCH** /api/v1/demands/{id}/items/{itemId}/stamp | Kaşe alanını doldur (kısmi güncelleme)
 *DemandsApi* | [**apiV1DemandsIdItemsPost**](docs/DemandsApi.md#apiv1demandsiditemspost) | **POST** /api/v1/demands/{id}/items | Sözleşmeye alan yerleştir (replace)
@@ -130,6 +131,7 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsGet200Response](docs/ApiV1DemandsGet200Response.md)
  - [ApiV1DemandsGet200ResponseData](docs/ApiV1DemandsGet200ResponseData.md)
  - [ApiV1DemandsGet200ResponseDataDemandsInner](docs/ApiV1DemandsGet200ResponseDataDemandsInner.md)
+ - [ApiV1DemandsGet400Response](docs/ApiV1DemandsGet400Response.md)
  - [ApiV1DemandsIdArchivePost200Response](docs/ApiV1DemandsIdArchivePost200Response.md)
  - [ApiV1DemandsIdArchivePost200ResponseData](docs/ApiV1DemandsIdArchivePost200ResponseData.md)
  - [ApiV1DemandsIdCancelPost200Response](docs/ApiV1DemandsIdCancelPost200Response.md)
@@ -139,6 +141,9 @@ Class | Method | HTTP request | Description
  - [ApiV1DemandsIdEmbedSessionPost200Response](docs/ApiV1DemandsIdEmbedSessionPost200Response.md)
  - [ApiV1DemandsIdEmbedSessionPost200ResponseData](docs/ApiV1DemandsIdEmbedSessionPost200ResponseData.md)
  - [ApiV1DemandsIdEmbedSessionPostRequest](docs/ApiV1DemandsIdEmbedSessionPostRequest.md)
+ - [ApiV1DemandsIdExternalRefPatch200Response](docs/ApiV1DemandsIdExternalRefPatch200Response.md)
+ - [ApiV1DemandsIdExternalRefPatch200ResponseData](docs/ApiV1DemandsIdExternalRefPatch200ResponseData.md)
+ - [ApiV1DemandsIdExternalRefPatchRequest](docs/ApiV1DemandsIdExternalRefPatchRequest.md)
  - [ApiV1DemandsIdGet200Response](docs/ApiV1DemandsIdGet200Response.md)
  - [ApiV1DemandsIdPartiesPartyIdResendPost200Response](docs/ApiV1DemandsIdPartiesPartyIdResendPost200Response.md)
  - [ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData](docs/ApiV1DemandsIdPartiesPartyIdResendPost200ResponseData.md)
