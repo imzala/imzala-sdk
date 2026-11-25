@@ -75,21 +75,25 @@ jobs:
           rm -f ~/.npmrc
 
       # ---------- PyPI ----------
-      - name: Python kur
-        if: inputs.package == 'pypi'
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
-        with: { python-version: '3.11' }
+      # setup-python bu runner'ın işletim sisteminde Python bulamıyor (26 Kas
+      # kuru koşum: "version 3.11 not found"); pinli + sha256'lı uv kendi
+      # Python'unu indirir. Token yalnız uv publish'e env ile gider.
       - name: PyPI derle + yayın
         if: inputs.package == 'pypi'
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          python -m pip install --upgrade pip build twine
+          set -euo pipefail
+          UV_V=0.13.7
+          UV_SHA=c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83
+          curl -fsSL -o /tmp/uv.tgz "https://github.com/astral-sh/uv/releases/download/${UV_V}/uv-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${UV_SHA}  /tmp/uv.tgz" | sha256sum -c -
+          tar xzf /tmp/uv.tgz -C /tmp
+          export PATH="/tmp/uv-x86_64-unknown-linux-gnu:$PATH"
           cd packages/python
-          python -m build
-          twine check dist/*
-          if [ "${{ inputs.dry_run }}" = "false" ]; then twine upload dist/*; fi
+          uv build
+          uvx --from twine==6.1.0 twine check dist/*
+          if [ "${{ inputs.dry_run }}" = "false" ]; then uv publish dist/*; fi
 
       # ---------- NuGet ----------
       - name: .NET kur
@@ -123,6 +127,18 @@ jobs:
           server-password: SONATYPE_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      # Runner'da mvn yok (26 Kas kuru koşum: "mvn: command not found");
+      # pinli + sha512'li Apache Maven arşivinden kurulur.
+      - name: Maven kur
+        if: inputs.package == 'maven'
+        run: |
+          set -euo pipefail
+          MV=3.9.9
+          MSHA=a555254d6b53d267965a3404ecb14e53c3827c09c3b94b5678835887ab404556bfaf78dcfe03ba76fa2508649dca8531c74bca4d5846513522404d48e8c4ac8b
+          curl -fsSL -o /tmp/mvn.tgz "https://archive.apache.org/dist/maven/maven-3/${MV}/binaries/apache-maven-${MV}-bin.tar.gz"
+          echo "${MSHA}  /tmp/mvn.tgz" | sha512sum -c -
+          tar xzf /tmp/mvn.tgz -C /opt
+          echo "/opt/apache-maven-${MV}/bin" >> "$GITHUB_PATH"
       - name: Maven paketle + yükle
         if: inputs.package == 'maven'
         env:
