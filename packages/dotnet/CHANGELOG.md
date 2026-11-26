@@ -2,6 +2,15 @@
 
 Bu paket [Semantic Versioning](https://semver.org/lang/tr/) izler. API sürüm uyumu için README'deki "Sürüm uyumu" tablosuna bakın.
 
+## 1.2.1 (yayınlanmadı)
+
+Konuştuğu API: v1 `1.17.5`. 1.2.0'dan yükseltme kod değişikliği gerektirmez; istek ve yanıt şekli değişmedi, operasyon eklenmedi ya da kaldırılmadı.
+
+- API 1.17.1 - 1.17.2: alan otomatik doldurma kaynağı (`config.defaultSource`) için hesaplanan alan `{{days_between:<baslangic_slug>:<bitis_slug>:calendar|business}}`: aynı belgedeki iki tarih alanı arasındaki gün sayısı (iki uç gün dahil; `business` cumartesi ve pazarı saymaz, resmî tatiller dikkate alınmaz). `variables` ile gönderilen değer kullanılmaz. Şablonda alan elle değiştirilebilir olarak işaretlendiyse gönderen panelde ya da alanın sahibi imzacı imza sayfasında değeri değiştirebilir. Yalnız açıklama değişti.
+- API 1.17.3: belge yükleme sınırı 20 MB'tan 90 MB'a çıktı (`POST /api/v1/demands/upload`, `POST /api/v1/demands/{demandId}/documents/upload`). `documents/upload` için 429 `TOO_MANY_REQUESTS` yanıtı belgelendi (API anahtarı başına dakikada 30 istek; gövdede `retry_after_seconds`).
+- API 1.17.4: iki yükleme ucunda yeni 503 `RENDER_BUSY` yanıtı: sayfa görselleri hazırlanırken sunucu yoğun; istek işlenmedi, sözleşme veya belge oluşturulmadı, kredi düşülmedi. `Retry-After` başlığındaki süre (saniye) sonra aynı isteği tekrarlayın. Aynı hesapla eşzamanlı yükleme sınırı aşıldığında 429 `TOO_MANY_REQUESTS` de `Retry-After` başlığıyla döner. Hata kataloğuna `RENDER_BUSY` eklendi (120 kod).
+- API 1.17.5: sözleşme geçmişi (`GET /api/v1/demands/{id}/timeline`) `event_type` listesine belge toplama olayları eklendi: `DOCUMENT_REVIEW`, `DOCUMENT_UPLOADED`, `DOCUMENT_APPROVED`, `DOCUMENT_REJECTED`, `DOCUMENT_NOTICE_SENT` (bildirimin sağlayıcıya iletildiğini gösterir, teslim edildiğini göstermez). Alan açık metindir; tanımadığınız değerleri olduğu gibi gösterin.
+
 ## 1.2.0
 
 Konuştuğu API: v1 `1.17.0`. 1.1.0'dan yükseltme facade kullanan kod için değişiklik gerektirmez; istek ve yanıt şekli değişmedi, yalnız eklemeler var. Üretilmiş modellerdeki enum türlerine doğrudan başvuran kod için aşağıdaki "Yanıt enum'ları açık metin" maddesine bakın.

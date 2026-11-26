@@ -236,6 +236,11 @@ IMZALA_ERROR_CODES: Dict[str, str] = {
         "Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar "
         "deneyin."
     ),
+    "RENDER_BUSY": (
+        "Sayfa görselleri hazırlanırken sunucu yoğun; istek işlenmedi, sözleşme veya "
+        "belge oluşturulmadı, kredi düşülmedi. Retry-After başlığındaki süre (saniye) "
+        "sonra aynı isteği tekrarlayın."
+    ),
 
     "INVALID_DOCUMENT_COLLECTION_TIMING": "Belge Toplama zamanı BEFORE_SIGNING, AFTER_SIGNING veya null olmalı.",
     "INVALID_DOCUMENT_COLLECTION_FLAG": "Belge Toplama boolean alanları boolean veya null olmalı.",

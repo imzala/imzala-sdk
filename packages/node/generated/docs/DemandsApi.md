@@ -573,9 +573,11 @@ const { status, data } = await apiInstance.apiV1DemandsDemandIdDocumentsUploadPo
 |**400** | &#x60;VALIDATION_FAIL&#x60; (dosya/idempotency_key/başlık eksik) veya &#x60;INVALID_DOC_KIND&#x60;. |  -  |
 |**404** | Kayıt bulunamadı |  -  |
 |**409** | &#x60;ENVELOPE_MULTI_DOC_DISABLED&#x60; — bayrak kapalı. &#x60;IDEMPOTENT_REPLAY&#x60; — aynı &#x60;idempotency_key&#x60; daha önce kullanıldı, yeni belge yaratılmaz (gövdede mevcut belgenin &#x60;document&#x60;\&#39;ı döner). &#x60;DEMAND_NOT_EDITABLE&#x60; / &#x60;SIGNING_ALREADY_STARTED&#x60; / &#x60;ENVELOPE_ALREADY_DISPATCHED&#x60;: bkz. yukarıdaki uç.  |  -  |
-|**413** | &#x60;FILE_TOO_LARGE&#x60; — 20 MB sınırı. |  -  |
+|**413** | &#x60;FILE_TOO_LARGE&#x60; — 90 MB sınırı. |  -  |
 |**415** | Desteklenmeyen dosya türü. |  -  |
 |**422** | &#x60;IMAGE_DECODE_FAILED&#x60; — görsel çözümlenemedi. |  -  |
+|**429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı (&#x60;/demands/upload&#x60; sınırından ayrı sayılır). Gövdede &#x60;retry_after_seconds&#x60; döner. Aynı hesapla eşzamanlı yükleme sınırı aşıldığında da bu kod döner (&#x60;Retry-After&#x60; başlığıyla).  |  -  |
+|**503** | &#x60;RENDER_BUSY&#x60;: sayfa görselleri hazırlanırken sunucu şu an yoğun; istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve kredi düşülmedi. &#x60;Retry-After&#x60; başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1335,7 +1337,7 @@ const { status, data } = await apiInstance.apiV1DemandsIdTermPatch(
 # **apiV1DemandsIdTimelineGet**
 > ApiV1DemandsIdTimelineGet200Response apiV1DemandsIdTimelineGet()
 
-Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir), `REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve onaylayanların yeniden onay vermesi gerekiyor). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
+Sözleşmenin imza denetim izini (görüntüleme/imza/red olayları) döner. KVKK: IP `ip_masked` (son oktet maskeli), actor e-postası maskeli; ham IP/cihaz asla döndürülmez.  `event_type` değerleri: `CREATED`, `SENT`, `VIEWED`, `FIELDS_FILLED`, `COMMENT_ADDED`, `SIGNED`, `APPROVED`, `REJECTED`, `TIMESTAMPED`, `COMPLETED`, `OTP_SENT` (SMS doğrulama kodu gönderildi), `OTP_VERIFIED` (SMS doğrulama kodu doğrulandı), `OTP_LOCKED` (deneme sınırı doldu), `MOBILE_SIGNATURE_CAPTURED` (imza QR kod ile telefonda çizildi; bu olayın `ip_masked` ve `device_label` alanları telefona aittir), `REAPPROVAL_REQUIRED` (gönderen açık bir değişiklik talebi sırasında sözleşme içeriğini güncelledi, önceki onaylar sıfırlandı ve onaylayanların yeniden onay vermesi gerekiyor), `DOCUMENT_REVIEW` (belge kontrolcüsü taraf, diğer bir tarafın yüklediği belgeyi açtı ya da kabul/ret kararı verdi; ya da gönderen bir tarafın belge kontrolcüsü ayarını açtı veya kapattı), `DOCUMENT_UPLOADED` (taraf istenen bir belgeyi yükledi), `DOCUMENT_APPROVED` (tarafın yüklediği belge kabul edildi), `DOCUMENT_REJECTED` (tarafın yüklediği belge kabul edilmedi), `DOCUMENT_NOTICE_SENT` (belge kararı bildirimi tarafa SMS ya da e-posta ile gönderildi; gönderim, sağlayıcıya iletildiğini gösterir, teslim edildiğini göstermez). Liste ileride genişleyebilir; tanımadığınız değeri yok saymanız önerilir.
 
 ### Example
 
@@ -1583,15 +1585,16 @@ const { status, data } = await apiInstance.apiV1DemandsUploadPost(
 |**413** | Dosya boyut limiti aşıldı (FILE_TOO_LARGE) |  -  |
 |**415** | &#x60;field_template_id&#x60; yolunda PDF olmayan dosya (&#x60;UNSUPPORTED_FILE_TYPE&#x60;).  |  -  |
 |**422** | Görsel okunamadı (&#x60;IMAGE_DECODE_FAILED&#x60;) **veya** alan yerleşimi bu belgeye uygulanamadı (&#x60;FIELD_LAYOUT_UNRESOLVED&#x60;). İkinci durumda sözleşme oluşturulmaz ve kredi düşülmez.  |  -  |
-|**429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve &#x60;send_invitations&#x60; ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın hızını kırmak içindir.  |  -  |
+|**429** | &#x60;TOO_MANY_REQUESTS&#x60; — API anahtarı başına dakikada 30 istek sınırı aşıldı. Bu uç yükleme + PDF ayrıştırma yapar ve &#x60;send_invitations&#x60; ile gerçek SMS/e-posta tetikleyebilir; sınır kötüye kullanımın hızını kırmak içindir. Aynı hesapla eşzamanlı yükleme sınırı aşıldığında da bu kod döner (&#x60;Retry-After&#x60; başlığıyla).  |  -  |
 |**500** | &#x60;RECONCILE_FAILED&#x60;: kredi mutabakatı beklenmedik (kredi-dışı) bir hatayla düştü. Sözleşme bu noktada ZATEN oluşturulmuştur ve davet gitmemiştir; gövdedeki &#x60;demand_id&#x60; ile durumu sorgulayın. İstek güvenle tekrarlanabilir (mutabakat idempotenttir).  &#x60;DISPATCH_PREPARATION_FAILED&#x60;: sözleşme oluşturuldu ama gönderim öncesi kontrollerde beklenmedik bir hata oluştu. Sözleşme taslağa düşürülür; gövdede &#x60;demand_id&#x60; döner. Kredi düşülmez, davet gönderilmez. Aynı yükleme isteğini tekrarlamayın; sözleşmeyi &#x60;POST /demands/{demandId}/dispatch&#x60; ile gönderin.  |  -  |
+|**503** | &#x60;RENDER_BUSY&#x60;: sayfa görselleri hazırlanırken sunucu şu an yoğun; istek işlenmeden reddedildi, sözleşme veya belge oluşturulmadı ve kredi düşülmedi. &#x60;Retry-After&#x60; başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1FieldTemplatesIdPreviewLayoutPost**
 > ApiV1FieldTemplatesIdPreviewLayoutPost200Response apiV1FieldTemplatesIdPreviewLayoutPost()
 
-Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF\'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API\'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 20 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`).
+Bir Alan Şablonunun (`kind: FIELD_LAYOUT`) yüklediğiniz PDF\'e nasıl uygulanacağını, **hiçbir yan etki üretmeden** döner.  🔴 Sözleşme oluşturmaz, kredi düşmez, dosyanızı saklamaz.  ### Neden var  `POST /api/v1/demands/upload` + `field_template_id` çağrısı, alan yerleşimi çözülemezse 422 döner ve hiçbir şey yaratmaz. Bu uç, o çağrıyı yapmadan önce sonucu görmenizi sağlar: hangi alanların nereye yerleşeceğini, hangi çapaların tutmadığını ve belgenin gönderime uygun olup olmadığını.  API\'de insan önizleme ekranı olmadığından, yerleşimin doğruluğunu gönderimden önce kontrol etme imkânı bu uçla sunulur; entegrasyonunuzda bu adımı çalıştırmanız önerilir.  ### Durum kodu semantiği  Çözümlenemeyen bir belge de **200** döner (`data.resolvable: false`) — kuru koşumun cevabı \"uygulanamaz\"dır, isteğin kendisi başarısız değildir. Belgenin okunamaması (parola korumalı PDF, sayfa tavanı) gerçek bir girdi hatasıdır ve kendi 4xx kodunu döner.  ### Sınırlar  Yalnızca PDF (sihirli bayt doğrulaması), tek dosya, en fazla 90 MB. Bu uç kredi tüketmediği için kullanıcı başına dakikada 5 istekle sınırlıdır (aşımda 429 `RATE_LIMITED`).
 
 ### Example
 
@@ -1649,7 +1652,7 @@ const { status, data } = await apiInstance.apiV1FieldTemplatesIdPreviewLayoutPos
 |**413** | Dosya boyut limiti aşıldı |  -  |
 |**415** | PDF olmayan dosya (&#x60;UNSUPPORTED_FILE_TYPE&#x60;) |  -  |
 |**422** | Belge okunamadı: parola korumalı PDF (&#x60;ENCRYPTED_PDF&#x60;) veya metin çıkarma süre bütçesi aşıldı (&#x60;TEXT_EXTRACTION_TIMEOUT&#x60;).  |  -  |
-|**429** | Dakikalık önizleme sınırı aşıldı (&#x60;RATE_LIMITED&#x60;) |  -  |
+|**429** | Dakikalık önizleme sınırı aşıldı (&#x60;RATE_LIMITED&#x60;) veya aynı hesapla eşzamanlı yükleme sınırı aşıldı (&#x60;TOO_MANY_REQUESTS&#x60;, &#x60;Retry-After&#x60; başlığıyla).  |  -  |
 |**503** | Sınırlayıcı geçici olarak kullanılamıyor (&#x60;RATE_LIMITER_UNAVAILABLE&#x60;) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

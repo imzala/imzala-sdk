@@ -231,6 +231,8 @@ public final class ErrorCodes {
         "Zaman damgası sunucusu geçersiz bir yanıt döndürdü.");
     m.put("TSA_UNAVAILABLE",
         "Zaman damgası servisi geçici olarak erişilemiyor; kısa süre sonra tekrar deneyin.");
+    m.put("RENDER_BUSY",
+        "Sayfa görselleri hazırlanırken sunucu yoğun; istek işlenmedi, sözleşme veya belge oluşturulmadı, kredi düşülmedi. Retry-After başlığındaki süre (saniye) sonra aynı isteği tekrarlayın.");
     m.put("INVALID_DOCUMENT_COLLECTION_TIMING", "Belge Toplama zamanı BEFORE_SIGNING, AFTER_SIGNING veya null olmalı.");
     m.put("INVALID_DOCUMENT_COLLECTION_FLAG", "Belge Toplama boolean alanları boolean veya null olmalı.");
     m.put("DOCUMENT_COLLECTION_TEMPLATE_REQUIRED", "Etkin Belge Toplama için bir Belge Toplama şablonu seçilmelidir.");

@@ -57,6 +57,11 @@ final class ErrorCodesTest extends TestCase
         'BEFORE_SIGNING' => 'document collection timing value, not an error',
         'AFTER_SIGNING' => 'document collection timing value, not an error',
         'REAPPROVAL_REQUIRED' => 'timeline event_type value',
+        'DOCUMENT_REVIEW' => 'timeline event_type value',
+        'DOCUMENT_UPLOADED' => 'timeline event_type value',
+        'DOCUMENT_APPROVED' => 'timeline event_type value',
+        'DOCUMENT_REJECTED' => 'timeline event_type value',
+        'DOCUMENT_NOTICE_SENT' => 'timeline event_type value',
         'FIXED_TERM' => 'renewal_type value',
     ];
 
@@ -152,7 +157,7 @@ final class ErrorCodesTest extends TestCase
         sort($node);
         sort($php);
         $this->assertSame($node, $php);
-        $this->assertCount(119, $php);
+        $this->assertCount(120, $php);
     }
 
     public function testSameDescriptionsAsTheNodeCatalogue(): void

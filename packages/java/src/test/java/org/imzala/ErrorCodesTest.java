@@ -83,6 +83,11 @@ class ErrorCodesTest {
     NOT_ERROR_CODES.put("BEFORE_SIGNING", "document collection timing value, not an error");
     NOT_ERROR_CODES.put("AFTER_SIGNING", "document collection timing value, not an error");
     NOT_ERROR_CODES.put("REAPPROVAL_REQUIRED", "timeline event_type value");
+    NOT_ERROR_CODES.put("DOCUMENT_REVIEW", "timeline event_type value");
+    NOT_ERROR_CODES.put("DOCUMENT_UPLOADED", "timeline event_type value");
+    NOT_ERROR_CODES.put("DOCUMENT_APPROVED", "timeline event_type value");
+    NOT_ERROR_CODES.put("DOCUMENT_REJECTED", "timeline event_type value");
+    NOT_ERROR_CODES.put("DOCUMENT_NOTICE_SENT", "timeline event_type value");
     NOT_ERROR_CODES.put("FIXED_TERM", "renewal_type value");
   }
 
@@ -191,7 +196,7 @@ class ErrorCodesTest {
   @Test
   void same_code_set_as_the_node_catalogue() {
     assertEquals(new TreeSet<>(nodeCatalogue().keySet()), new TreeSet<>(ErrorCodes.CODES.keySet()));
-    assertEquals(119, ErrorCodes.CODES.size());
+    assertEquals(120, ErrorCodes.CODES.size());
   }
 
   @Test

@@ -18,7 +18,7 @@ from .errors import (
 from .files import FileInput, UploadPartyInput
 from .webhook import verify_webhook
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 __all__ = [
     "Imzala",
